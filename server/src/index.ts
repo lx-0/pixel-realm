@@ -5,8 +5,24 @@ import { Server } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ZoneRoom } from "./rooms/ZoneRoom";
 import { startAuthServer } from "./auth/fastify";
+import { runMigrations } from "./db/migrate";
+import { seed } from "./db/seed";
 
 const PORT = Number(process.env.PORT ?? 2567);
+
+// ── DB bootstrap ──────────────────────────────────────────────────────────────
+
+async function initDb(): Promise<void> {
+  try {
+    await runMigrations();
+    await seed();
+  } catch (err) {
+    // Non-fatal: log and continue so the game runs without a DB in dev
+    console.warn("[DB] Init failed (running without persistence):", (err as Error).message);
+  }
+}
+
+initDb();
 
 // ── Express app ───────────────────────────────────────────────────────────────
 

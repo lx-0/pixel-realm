@@ -1,17 +1,25 @@
 /**
- * User and session storage backed by Redis.
+ * User and session storage.
  *
- * Keys:
- *   user:id:{userId}       → JSON UserRecord
- *   user:name:{username}   → userId  (index for login lookups)
- *   session:{jti}          → JSON SessionRecord
+ * Users   → PostgreSQL (persistent, relational)
+ * Sessions → Redis      (ephemeral, fast-access)
+ *
+ * Redis keys:
+ *   session:{jti}  → JSON SessionRecord
  */
 
 import { randomUUID } from "crypto";
-import bcrypt from "bcryptjs";
+import {
+  createPlayerRecord,
+  findPlayerByUsername as dbFindByUsername,
+  findPlayerById as dbFindById,
+  verifyPlayerPassword,
+  initPlayerState,
+} from "../db/players";
+import type { Player } from "../db/schema";
 import { getRedis } from "./redis";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Re-exported types (consumers expect UserRecord shape) ─────────────────────
 
 export interface UserRecord {
   id: string;
@@ -29,54 +37,45 @@ export interface SessionRecord {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const BCRYPT_ROUNDS = 12;
-const SESSION_TTL_S = 7 * 24 * 60 * 60; // 7 days (matches refresh token)
+const SESSION_TTL_S = 7 * 24 * 60 * 60; // 7 days
+
+// ── Adapters: map DB Player → UserRecord ──────────────────────────────────────
+
+function toUserRecord(player: Player): UserRecord {
+  return {
+    id: player.id,
+    username: player.username,
+    passwordHash: player.passwordHash,
+    createdAt: player.createdAt.getTime(),
+  };
+}
 
 // ── User helpers ──────────────────────────────────────────────────────────────
 
 export async function createUser(username: string, password: string): Promise<UserRecord> {
-  const redis = getRedis();
-
-  // Case-insensitive uniqueness check
-  const existing = await redis.get(`user:name:${username.toLowerCase()}`);
-  if (existing) throw new Error("USERNAME_TAKEN");
-
-  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-  const user: UserRecord = {
-    id: randomUUID(),
-    username,
-    passwordHash,
-    createdAt: Date.now(),
-  };
-
-  await redis
-    .pipeline()
-    .set(`user:id:${user.id}`, JSON.stringify(user))
-    .set(`user:name:${username.toLowerCase()}`, user.id)
-    .exec();
-
-  return user;
+  const player = await createPlayerRecord(username, password);
+  // Bootstrap player_state row so the game has defaults from first login
+  await initPlayerState(player.id).catch((err: Error) =>
+    console.warn("[store] initPlayerState failed:", err.message),
+  );
+  return toUserRecord(player);
 }
 
 export async function findUserByUsername(username: string): Promise<UserRecord | null> {
-  const redis = getRedis();
-  const userId = await redis.get(`user:name:${username.toLowerCase()}`);
-  if (!userId) return null;
-  const raw = await redis.get(`user:id:${userId}`);
-  return raw ? (JSON.parse(raw) as UserRecord) : null;
+  const player = await dbFindByUsername(username);
+  return player ? toUserRecord(player) : null;
 }
 
 export async function findUserById(userId: string): Promise<UserRecord | null> {
-  const redis = getRedis();
-  const raw = await redis.get(`user:id:${userId}`);
-  return raw ? (JSON.parse(raw) as UserRecord) : null;
+  const player = await dbFindById(userId);
+  return player ? toUserRecord(player) : null;
 }
 
 export async function verifyPassword(user: UserRecord, password: string): Promise<boolean> {
-  return bcrypt.compare(password, user.passwordHash);
+  return verifyPlayerPassword({ passwordHash: user.passwordHash } as Player, password);
 }
 
-// ── Session helpers ───────────────────────────────────────────────────────────
+// ── Session helpers (Redis-backed) ────────────────────────────────────────────
 
 export async function createSession(userId: string, username: string): Promise<SessionRecord> {
   const redis = getRedis();
@@ -87,7 +86,6 @@ export async function createSession(userId: string, username: string): Promise<S
     username,
     expiresAt: Date.now() + SESSION_TTL_S * 1000,
   };
-
   await redis.set(`session:${jti}`, JSON.stringify(session), "EX", SESSION_TTL_S);
   return session;
 }
@@ -103,7 +101,6 @@ export async function deleteSession(jti: string): Promise<void> {
   await redis.del(`session:${jti}`);
 }
 
-/** Rotate a session: delete old JTI, create a new one for the same user. */
 export async function rotateSession(
   oldJti: string,
   userId: string,

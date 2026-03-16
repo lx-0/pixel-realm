@@ -1,5 +1,6 @@
 import { Room, Client, Delayed } from "@colyseus/core";
 import { ZoneGameState, Player, Enemy, Projectile } from "./schema/GameState";
+import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -52,6 +53,7 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
 interface JoinOptions {
   zoneId?: string;
   playerName?: string;
+  userId?: string; // from auth JWT — used to load/save persisted state
 }
 
 interface MoveMessage {
@@ -74,6 +76,12 @@ function uid(): string {
 }
 
 // ── Room ──────────────────────────────────────────────────────────────────────
+
+// Maps sessionId → userId for persistence lookups
+const sessionUserMap = new Map<string, string>();
+
+// Interval (ms) between automatic mid-session saves
+const PERSIST_INTERVAL_MS = 30_000;
 
 export class ZoneRoom extends Room<ZoneGameState> {
   maxClients = 16;
@@ -101,10 +109,13 @@ export class ZoneRoom extends Room<ZoneGameState> {
     // Begin first wave after prep time
     this.clock.setTimeout(() => this.startNextWave(), WAVE_PREP_MS);
 
+    // Periodic mid-session persistence (every 30 s)
+    this.clock.setInterval(() => this.persistAllPlayers(), PERSIST_INTERVAL_MS);
+
     console.log(`[ZoneRoom] created room ${this.roomId} for zone ${zoneId}`);
   }
 
-  onJoin(client: Client, options: JoinOptions) {
+  async onJoin(client: Client, options: JoinOptions) {
     const player = new Player();
     player.sessionId = client.sessionId;
     player.name = options?.playerName ?? "Hero";
@@ -113,16 +124,70 @@ export class ZoneRoom extends Room<ZoneGameState> {
     player.y = 50  + Math.random() * 80;
 
     this.state.players.set(client.sessionId, player);
+
+    // Load persisted state if the client supplied a userId
+    if (options?.userId) {
+      sessionUserMap.set(client.sessionId, options.userId);
+      try {
+        await initPlayerState(options.userId);
+        const saved = await loadPlayerState(options.userId);
+        if (saved) {
+          player.hp      = saved.hp;
+          player.maxHp   = saved.maxHp;
+          player.mana    = saved.mana;
+          player.maxMana = saved.maxMana;
+          player.level   = saved.level;
+          player.xp      = saved.xp;
+        }
+      } catch (err) {
+        console.warn(`[ZoneRoom] Failed to load state for ${options.userId}:`, (err as Error).message);
+      }
+    }
+
     console.log(`[ZoneRoom] ${client.sessionId} joined zone ${this.state.zoneId} (${this.clients.length} players)`);
   }
 
-  onLeave(client: Client, consented: boolean) {
+  async onLeave(client: Client, consented: boolean) {
+    await this.persistPlayer(client.sessionId);
+    sessionUserMap.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
     console.log(`[ZoneRoom] ${client.sessionId} left (consented=${consented})`);
   }
 
-  onDispose() {
+  async onDispose() {
+    // Persist all remaining players on room teardown
+    await this.persistAllPlayers();
     console.log(`[ZoneRoom] disposing room ${this.roomId}`);
+  }
+
+  // ── Persistence Helpers ───────────────────────────────────────────────────────
+
+  private async persistPlayer(sessionId: string): Promise<void> {
+    const userId = sessionUserMap.get(sessionId);
+    if (!userId) return;
+    const player = this.state.players.get(sessionId);
+    if (!player) return;
+    try {
+      await savePlayerState(userId, {
+        hp: player.hp,
+        maxHp: player.maxHp,
+        mana: player.mana,
+        maxMana: player.maxMana,
+        level: player.level,
+        xp: player.xp,
+        currentZone: this.state.zoneId,
+      });
+    } catch (err) {
+      console.warn(`[ZoneRoom] Failed to save state for ${userId}:`, (err as Error).message);
+    }
+  }
+
+  private async persistAllPlayers(): Promise<void> {
+    const promises: Promise<void>[] = [];
+    this.state.players.forEach((_player, sessionId) => {
+      promises.push(this.persistPlayer(sessionId));
+    });
+    await Promise.allSettled(promises);
   }
 
   // ── Message Handlers ─────────────────────────────────────────────────────────
