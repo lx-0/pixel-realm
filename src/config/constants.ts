@@ -29,6 +29,18 @@ export const ENEMIES = {
   AI_REACTION_MS: 200,
 } as const;
 
+// Combat tuning
+export const COMBAT = {
+  ATTACK_DAMAGE: 25,             // damage per melee hit to enemy
+  ATTACK_RANGE_PX: 28,           // melee range radius in pixels
+  ATTACK_COOLDOWN_MS: 500,       // minimum ms between attacks
+  ATTACK_KNOCKBACK: 150,         // px/s velocity applied to enemy on hit
+  PLAYER_HIT_DAMAGE: 10,         // HP player loses per enemy contact
+  PLAYER_INVINCIBILITY_MS: 1000, // ms of invincibility after taking a hit
+  ENEMY_HP: 50,                  // base HP for each enemy
+  WAVE_BASE_ENEMY_COUNT: 5,      // enemies in wave 1; +2 per additional wave
+} as const;
+
 // Economy tuning
 export const ECONOMY = {
   MARKETPLACE_FEE_PCT: 0.025,
