@@ -4,6 +4,7 @@ import cors from "cors";
 import { Server } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ZoneRoom } from "./rooms/ZoneRoom";
+import { startAuthServer } from "./auth/fastify";
 
 const PORT = Number(process.env.PORT ?? 2567);
 
@@ -41,4 +42,11 @@ gameServer.listen(PORT).then(() => {
 }).catch((err) => {
   console.error("[PixelRealm] Failed to start server:", err);
   process.exit(1);
+});
+
+// ── Auth server (Fastify) ─────────────────────────────────────────────────────
+
+startAuthServer().catch((err) => {
+  console.error("[Auth] Failed to start auth server:", err);
+  // Non-fatal: game server keeps running even if auth fails to start
 });
