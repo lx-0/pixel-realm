@@ -73,8 +73,19 @@ export class GameScene extends Phaser.Scene {
     const worldW = CANVAS.WIDTH * 3;
     const worldH = CANVAS.HEIGHT * 3;
 
-    // Dark background
-    this.add.rectangle(worldW / 2, worldH / 2, worldW, worldH, 0x1a1a2e);
+    // ── Parallax background layers ────────────────────────────────────────
+    // Sky fills the whole world and tiles horizontally
+    for (let x = 0; x < worldW; x += 320) {
+      for (let y = 0; y < worldH; y += 60) {
+        this.add.image(x, y, 'bg_sky').setOrigin(0, 0).setScrollFactor(0.05, 0.02).setDepth(-3);
+      }
+    }
+    for (let x = 0; x < worldW; x += 320) {
+      this.add.image(x, worldH - 120, 'bg_hills_far').setOrigin(0, 0).setScrollFactor(0.15, 0.05).setDepth(-2);
+    }
+    for (let x = 0; x < worldW; x += 320) {
+      this.add.image(x, worldH - 110, 'bg_hills_near').setOrigin(0, 0).setScrollFactor(0.3, 0.08).setDepth(-1);
+    }
 
     // Ground tiles (bottom two rows)
     this.ground = this.physics.add.staticGroup();
@@ -116,6 +127,23 @@ export class GameScene extends Phaser.Scene {
     else if (this.cursors.down.isDown || this.wasd.S.isDown) vy = vel;
 
     this.player.setVelocity(vx, vy);
+
+    // ── Animations ─────────────────────────────────────────────────────────
+    const moving = vx !== 0 || vy !== 0;
+    const attackAnim = this.player.anims.currentAnim?.key === 'player-attack';
+    const deathAnim  = this.player.anims.currentAnim?.key === 'player-death';
+
+    if (!deathAnim && !attackAnim) {
+      if (moving) {
+        if (this.anims.exists('player-walk')) this.player.anims.play('player-walk', true);
+      } else {
+        if (this.anims.exists('player-idle')) this.player.anims.play('player-idle', true);
+      }
+    }
+
+    // Flip sprite based on horizontal movement direction
+    if (vx < 0) this.player.setFlipX(true);
+    else if (vx > 0) this.player.setFlipX(false);
   }
 
   // ─── Enemies ──────────────────────────────────────────────────────────────
@@ -165,12 +193,19 @@ export class GameScene extends Phaser.Scene {
         const dx = this.player.x - enemy.x;
         const dy = this.player.y - enemy.y;
         const len = Math.sqrt(dx * dx + dy * dy) || 1;
-        enemy.setVelocity((dx / len) * patrolSpeed * 1.5, (dy / len) * patrolSpeed * 1.5);
+        const chaseVx = (dx / len) * patrolSpeed * 1.5;
+        const chaseVy = (dy / len) * patrolSpeed * 1.5;
+        enemy.setVelocity(chaseVx, chaseVy);
+        if (this.anims.exists('enemy-walk')) enemy.anims.play('enemy-walk', true);
+        if (chaseVx < 0) enemy.setFlipX(true);
+        else if (chaseVx > 0) enemy.setFlipX(false);
       } else {
         // Patrol left/right
         const dir = enemy.getData('patrolDir') as number;
         enemy.setVelocityX(dir * patrolSpeed);
         enemy.setVelocityY(0);
+        if (this.anims.exists('enemy-walk')) enemy.anims.play('enemy-walk', true);
+        enemy.setFlipX(dir < 0);
 
         if (enemy.x <= 20 || enemy.x >= worldW - 20) {
           enemy.setData('patrolDir', -dir);
@@ -187,13 +222,18 @@ export class GameScene extends Phaser.Scene {
 
     this.lastAttackTime = time;
 
-    // Player flash
-    this.tweens.add({
-      targets: this.player,
-      alpha: 0.4,
-      duration: 60,
-      yoyo: true,
-    });
+    // Player attack animation
+    if (this.anims.exists('player-attack')) {
+      this.player.anims.play('player-attack', true);
+      this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'player-attack', () => {
+        if (!this.isDead && this.anims.exists('player-idle')) {
+          this.player.anims.play('player-idle', true);
+        }
+      });
+    } else {
+      // Fallback flash if no spritesheet
+      this.tweens.add({ targets: this.player, alpha: 0.4, duration: 60, yoyo: true });
+    }
 
     // Show attack ring
     this.showAttackRing();
@@ -281,7 +321,12 @@ export class GameScene extends Phaser.Scene {
 
   private playerDead(): void {
     this.isDead = true;
-    this.player.setTint(0x888888);
+    if (this.anims.exists('player-death')) {
+      this.player.clearTint();
+      this.player.anims.play('player-death', true);
+    } else {
+      this.player.setTint(0x888888);
+    }
 
     const cx = CANVAS.WIDTH / 2;
     const cy = CANVAS.HEIGHT / 2;
