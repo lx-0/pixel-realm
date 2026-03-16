@@ -133,6 +133,6 @@ export class MenuScene extends Phaser.Scene {
   private startGame(): void {
     this.sfx.playMenuClick();
     this.cameras.main.fadeOut(300, 0, 0, 0);
-    this.time.delayedCall(300, () => this.scene.start(SCENES.GAME));
+    this.time.delayedCall(300, () => this.scene.start(SCENES.LEVEL_SELECT));
   }
 }

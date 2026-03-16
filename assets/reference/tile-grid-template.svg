@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="400" viewBox="0 0 560 400" style="font-family: monospace; image-rendering: pixelated;">
+  <rect width="560" height="400" fill="#1a1a1a"/>
+  <text x="16" y="24" fill="#f0f0f0" font-size="13" font-weight="bold">PixelRealm — Tile Grid Template (16×16 px)</text>
+  <text x="16" y="38" fill="#6e6e6e" font-size="9">Each cell = 16×16 px. Display scale ×3 = 48×48 px. Tileset: 16 tiles wide, N rows.</text>
+
+  <!-- 16x16 grid cells, shown at 5x (80×80 px each), 4×4 visible -->
+  <!-- Pixel grid overlay inside each cell -->
+
+  <!-- Cell (0,0) - grass example -->
+  <rect x="48" y="56" width="80" height="80" fill="#4c9b4c"/>
+  <!-- pixel dots pattern -->
+  <rect x="50" y="58" width="4" height="4" fill="#78c878"/>
+  <rect x="66" y="62" width="4" height="4" fill="#78c878"/>
+  <rect x="58" y="74" width="4" height="4" fill="#2d6e2d"/>
+  <rect x="80" y="70" width="4" height="4" fill="#78c878"/>
+  <rect x="72" y="58" width="4" height="4" fill="#2d6e2d"/>
+  <rect x="56" y="90" width="4" height="4" fill="#78c878"/>
+  <rect x="88" y="86" width="4" height="4" fill="#2d6e2d"/>
+  <rect x="64" y="108" width="4" height="4" fill="#78c878"/>
+  <rect x="100" y="96" width="4" height="4" fill="#78c878"/>
+  <rect x="90" y="108" width="4" height="4" fill="#2d6e2d"/>
+  <text x="88" y="148" fill="#969696" font-size="7" text-anchor="middle">grass_01</text>
+
+  <!-- Cell (1,0) - stone wall -->
+  <rect x="136" y="56" width="80" height="80" fill="#4a4a4a"/>
+  <rect x="138" y="58" width="36" height="18" fill="#6e6e6e"/>
+  <rect x="178" y="58" width="36" height="18" fill="#6e6e6e"/>
+  <rect x="138" y="80" width="16" height="18" fill="#6e6e6e"/>
+  <rect x="158" y="80" width="36" height="18" fill="#6e6e6e"/>
+  <rect x="138" y="102" width="36" height="18" fill="#6e6e6e"/>
+  <rect x="178" y="102" width="36" height="18" fill="#6e6e6e"/>
+  <text x="176" y="148" fill="#969696" font-size="7" text-anchor="middle">wall_stone</text>
+
+  <!-- Cell (2,0) - water -->
+  <rect x="224" y="56" width="80" height="80" fill="#1a4a8a"/>
+  <rect x="224" y="70" width="80" height="8" fill="#2a7ac0" opacity="0.6"/>
+  <rect x="224" y="90" width="80" height="6" fill="#2a7ac0" opacity="0.4"/>
+  <rect x="224" y="110" width="80" height="8" fill="#2a7ac0" opacity="0.6"/>
+  <text x="264" y="148" fill="#969696" font-size="7" text-anchor="middle">water_anim</text>
+
+  <!-- Cell (3,0) - sand -->
+  <rect x="312" y="56" width="80" height="80" fill="#b8843f"/>
+  <rect x="314" y="62" width="6" height="4" fill="#d4a85a"/>
+  <rect x="330" y="78" width="6" height="4" fill="#d4a85a"/>
+  <rect x="348" y="64" width="6" height="4" fill="#e8d08a"/>
+  <rect x="320" y="96" width="6" height="4" fill="#d4a85a"/>
+  <rect x="360" y="100" width="6" height="4" fill="#e8d08a"/>
+  <rect x="336" y="112" width="6" height="4" fill="#d4a85a"/>
+  <text x="352" y="148" fill="#969696" font-size="7" text-anchor="middle">sand_01</text>
+
+  <!-- Cell (0,1) - dungeon floor -->
+  <rect x="48" y="160" width="80" height="80" fill="#2b2b2b"/>
+  <rect x="50" y="162" width="76" height="8" fill="#1a1a1a" opacity="0.5"/>
+  <rect x="50" y="208" width="76" height="8" fill="#1a1a1a" opacity="0.5"/>
+  <rect x="50" y="162" width="8" height="76" fill="#1a1a1a" opacity="0.5"/>
+  <rect x="118" y="162" width="8" height="76" fill="#1a1a1a" opacity="0.5"/>
+  <text x="88" y="252" fill="#969696" font-size="7" text-anchor="middle">dungeon_floor</text>
+
+  <!-- Cell (1,1) - lava -->
+  <rect x="136" y="160" width="80" height="80" fill="#5a0a0a"/>
+  <rect x="138" y="180" width="40" height="16" fill="#d42020" rx="2"/>
+  <rect x="168" y="168" width="30" height="14" fill="#f06020" rx="2"/>
+  <rect x="142" y="204" width="50" height="12" fill="#d42020" rx="2"/>
+  <rect x="176" y="196" width="36" height="20" fill="#f06020" rx="2"/>
+  <text x="176" y="252" fill="#969696" font-size="7" text-anchor="middle">lava_anim</text>
+
+  <!-- Cell (2,1) - ice -->
+  <rect x="224" y="160" width="80" height="80" fill="#90d0f8"/>
+  <rect x="226" y="162" width="76" height="76" fill="#c8f0ff" opacity="0.3"/>
+  <rect x="240" y="170" width="16" height="4" fill="#f0f0f0" opacity="0.7"/>
+  <rect x="270" y="190" width="24" height="4" fill="#f0f0f0" opacity="0.5"/>
+  <rect x="248" y="210" width="20" height="4" fill="#f0f0f0" opacity="0.6"/>
+  <text x="264" y="252" fill="#969696" font-size="7" text-anchor="middle">ice_floor</text>
+
+  <!-- Cell (3,1) - dark/cursed -->
+  <rect x="312" y="160" width="80" height="80" fill="#1a0a3a"/>
+  <rect x="330" y="178" width="4" height="4" fill="#d090ff" opacity="0.8"/>
+  <rect x="350" y="190" width="4" height="4" fill="#9050e0" opacity="0.9"/>
+  <rect x="320" y="208" width="4" height="4" fill="#d090ff" opacity="0.6"/>
+  <rect x="368" y="170" width="4" height="4" fill="#9050e0" opacity="0.7"/>
+  <rect x="360" y="218" width="4" height="4" fill="#d090ff" opacity="0.5"/>
+  <text x="352" y="252" fill="#969696" font-size="7" text-anchor="middle">cursed_zone</text>
+
+  <!-- Scale reference -->
+  <rect x="48"  y="272" width="16" height="16" fill="#4c9b4c" stroke="#2d6e2d" stroke-width="1"/>
+  <text x="70" y="283" fill="#969696" font-size="8">1:1 (16×16 game px)</text>
+  <rect x="180" y="264" width="48" height="48" fill="#4c9b4c" stroke="#2d6e2d" stroke-width="1"/>
+  <text x="234" y="291" fill="#969696" font-size="8">×3 (48×48 display)</text>
+
+  <!-- 16px grid overlay hint -->
+  <text x="48" y="340" fill="#4a4a4a" font-size="9">All tiles must align to 16px grid. No sub-pixel details — everything snaps to whole pixels.</text>
+  <text x="48" y="354" fill="#4a4a4a" font-size="9">Animated tiles: 4 frames in a horizontal strip. Phaser animates via frameConfig.</text>
+  <text x="48" y="368" fill="#4a4a4a" font-size="9">Tileset sheet: 16 tiles wide (256px) × N rows. PNG, no transparency needed for solid tiles.</text>
+
+  <text x="16" y="392" fill="#2b2b2b" font-size="9">PixelRealm v1.0 — Tile Grid Template</text>
+</svg>

@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
 import { CANVAS } from './config/constants';
-import { BootScene }    from './scenes/BootScene';
-import { MenuScene }    from './scenes/MenuScene';
-import { GameScene }    from './scenes/GameScene';
-import { PauseScene }   from './scenes/PauseScene';
-import { GameOverScene } from './scenes/GameOverScene';
+import { BootScene }        from './scenes/BootScene';
+import { MenuScene }        from './scenes/MenuScene';
+import { LevelSelectScene } from './scenes/LevelSelectScene';
+import { GameScene }        from './scenes/GameScene';
+import { PauseScene }       from './scenes/PauseScene';
+import { GameOverScene }    from './scenes/GameOverScene';
+import { CreditsScene }     from './scenes/CreditsScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -13,15 +15,15 @@ const config: Phaser.Types.Core.GameConfig = {
   zoom: CANVAS.SCALE,
   backgroundColor: '#0a0a0a',
   parent: 'game-container',
-  pixelArt: true,  // enables pixel-perfect rendering (nearest-neighbor scaling)
+  pixelArt: true,
   physics: {
     default: 'arcade',
     arcade: {
       gravity: { x: 0, y: 0 },
-      debug: false, // keep off even in DEV to avoid visual clutter
+      debug: false,
     },
   },
-  scene: [BootScene, MenuScene, GameScene, PauseScene, GameOverScene],
+  scene: [BootScene, MenuScene, LevelSelectScene, GameScene, PauseScene, GameOverScene, CreditsScene],
 };
 
 new Phaser.Game(config);

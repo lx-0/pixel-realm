@@ -90,6 +90,6 @@ export class PauseScene extends Phaser.Scene {
   private goMenu(): void {
     this.sfx.playMenuClick();
     this.scene.stop(SCENES.GAME);
-    this.scene.start(SCENES.MENU);
+    this.scene.start(SCENES.LEVEL_SELECT);
   }
 }

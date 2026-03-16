@@ -33,6 +33,39 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_hills_far',  'assets/bg_hills_far.png');
     this.load.image('bg_hills_near', 'assets/bg_hills_near.png');
 
+    // Menu / screen backgrounds
+    this.load.image('bg_menu_title', 'assets/bg_menu_title.png');
+    this.load.image('bg_options',    'assets/bg_options.png');
+    this.load.image('bg_credits',    'assets/bg_credits.png');
+    this.load.image('bg_gameover',   'assets/bg_gameover.png');
+
+    // Additional tilesets (biomes)
+    this.load.image('tileset_desert',   'assets/tileset_desert.png');
+    this.load.image('tileset_ice',      'assets/tileset_ice.png');
+    this.load.image('tileset_volcanic', 'assets/tileset_volcanic.png');
+    this.load.image('tileset_ocean',    'assets/tileset_ocean.png');
+    this.load.image('tileset_dungeon',  'assets/tileset_dungeon.png');
+    this.load.image('tileset_town',     'assets/tileset_town.png');
+
+    // Enemy variants (12 frames × 16×24; boss: 12 frames × 32×32)
+    this.load.spritesheet('enemy_slime',    'assets/char_enemy_slime.png',    { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_skeleton', 'assets/char_enemy_skeleton.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_orc',      'assets/char_enemy_orc.png',      { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_boss',     'assets/char_enemy_boss.png',     { frameWidth: 32, frameHeight: 32 });
+
+    // Pickups & collectibles
+    this.load.image('pickup_health', 'assets/icon_pickup_health.png');
+    this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');
+    this.load.image('pickup_coin',   'assets/icon_pickup_coin.png');
+    this.load.image('pickup_gem',    'assets/icon_pickup_gem.png');
+    this.load.image('pickup_star',   'assets/icon_pickup_star.png');
+
+    // Additional UI elements
+    this.load.image('ui_btn',        'assets/ui_btn.png');
+    this.load.image('ui_cursor',     'assets/ui_cursor.png');
+    this.load.image('ui_icon_skill', 'assets/ui_icon_skill.png');
+    this.load.image('ui_slot',       'assets/ui_slot.png');
+
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();
     });
@@ -48,6 +81,18 @@ export class BootScene extends Phaser.Scene {
     }
     if (this.textures.get('enemy').frameTotal > 1) {
       this.createEnemyAnims();
+    }
+    if (this.textures.get('enemy_slime').frameTotal > 1) {
+      this.createVariantAnims('enemy_slime', 'slime');
+    }
+    if (this.textures.get('enemy_skeleton').frameTotal > 1) {
+      this.createVariantAnims('enemy_skeleton', 'skeleton');
+    }
+    if (this.textures.get('enemy_orc').frameTotal > 1) {
+      this.createVariantAnims('enemy_orc', 'orc');
+    }
+    if (this.textures.get('enemy_boss').frameTotal > 1) {
+      this.createVariantAnims('enemy_boss', 'boss');
     }
 
     this.scene.start(SCENES.MENU);
@@ -69,6 +114,15 @@ export class BootScene extends Phaser.Scene {
     if (!a.exists('enemy-walk'))   a.create({ key: 'enemy-walk',   frames: a.generateFrameNumbers('enemy', { start: 2,  end: 5  }), frameRate: 10, repeat: -1 });
     if (!a.exists('enemy-attack')) a.create({ key: 'enemy-attack', frames: a.generateFrameNumbers('enemy', { start: 6,  end: 9  }), frameRate: 14, repeat: 0  });
     if (!a.exists('enemy-death'))  a.create({ key: 'enemy-death',  frames: a.generateFrameNumbers('enemy', { start: 10, end: 11 }), frameRate: 6,  repeat: 0  });
+  }
+
+  /** Register idle/walk/attack/death animations for a named enemy variant spritesheet. */
+  private createVariantAnims(textureKey: string, name: string): void {
+    const a = this.anims;
+    if (!a.exists(`${name}-idle`))   a.create({ key: `${name}-idle`,   frames: a.generateFrameNumbers(textureKey, { start: 0,  end: 1  }), frameRate: 4,  repeat: -1 });
+    if (!a.exists(`${name}-walk`))   a.create({ key: `${name}-walk`,   frames: a.generateFrameNumbers(textureKey, { start: 2,  end: 5  }), frameRate: 10, repeat: -1 });
+    if (!a.exists(`${name}-attack`)) a.create({ key: `${name}-attack`, frames: a.generateFrameNumbers(textureKey, { start: 6,  end: 9  }), frameRate: 14, repeat: 0  });
+    if (!a.exists(`${name}-death`))  a.create({ key: `${name}-death`,  frames: a.generateFrameNumbers(textureKey, { start: 10, end: 11 }), frameRate: 6,  repeat: 0  });
   }
 
   // ─── Texture generation ───────────────────────────────────────────────────
