@@ -1,11 +1,12 @@
-// Game canvas dimensions (internal resolution — scaled up with pixel-perfect scaling)
+// ── Canvas ────────────────────────────────────────────────────────────────────
+// Internal resolution (pixel-perfect; displayed at SCALE× on screen)
 export const CANVAS = {
   WIDTH: 320,
   HEIGHT: 180,
-  SCALE: 4, // displayed at 1280x720
+  SCALE: 4, // displayed at 1280×720
 } as const;
 
-// Player tuning
+// ── Player ────────────────────────────────────────────────────────────────────
 export const PLAYER = {
   BASE_HP: 100,
   BASE_MANA: 50,
@@ -19,29 +20,46 @@ export const PLAYER = {
   SKILL_COOLDOWN_BASE_MS: 8000,
 } as const;
 
-// Enemy tuning
+// ── Level Progression ─────────────────────────────────────────────────────────
+export const LEVELS = {
+  /** Cumulative XP required to reach level 2, then level 3. */
+  XP_THRESHOLDS: [80, 200] as const,
+  MAX_LEVEL: 3,
+  HP_BONUS_PER_LEVEL: 30,
+  DAMAGE_BONUS_PER_LEVEL: 8,
+  SPEED_BONUS_PER_LEVEL: 10,
+} as const;
+
+// ── Mana ──────────────────────────────────────────────────────────────────────
+export const MANA = {
+  BASE: 50,
+  REGEN_PER_SEC: 6,   // mana recovered per second
+  ATTACK_COST: 5,     // mana used per attack swing
+} as const;
+
+// ── Enemies ───────────────────────────────────────────────────────────────────
 export const ENEMIES = {
   HP_SCALE_PER_TIER: 1.5,
-  AGGRO_RANGE_PX: 80,
-  PATROL_SPEED: 60,
+  AGGRO_RANGE_PX: 90,
+  PATROL_SPEED: 55,
   ELITE_SPAWN_RATE: 0.10,
   BOSS_RESPAWN_MS: 24 * 60 * 60 * 1000,
   AI_REACTION_MS: 200,
 } as const;
 
-// Combat tuning
+// ── Combat ────────────────────────────────────────────────────────────────────
 export const COMBAT = {
-  ATTACK_DAMAGE: 25,             // damage per melee hit to enemy
-  ATTACK_RANGE_PX: 28,           // melee range radius in pixels
-  ATTACK_COOLDOWN_MS: 500,       // minimum ms between attacks
-  ATTACK_KNOCKBACK: 150,         // px/s velocity applied to enemy on hit
-  PLAYER_HIT_DAMAGE: 10,         // HP player loses per enemy contact
-  PLAYER_INVINCIBILITY_MS: 1000, // ms of invincibility after taking a hit
-  ENEMY_HP: 50,                  // base HP for each enemy
-  WAVE_BASE_ENEMY_COUNT: 5,      // enemies in wave 1; +2 per additional wave
+  ATTACK_DAMAGE: 25,             // damage per melee swing
+  ATTACK_RANGE_PX: 30,           // melee radius in pixels
+  ATTACK_COOLDOWN_MS: 480,       // minimum ms between swings
+  ATTACK_KNOCKBACK: 160,         // px/s applied to enemy on hit
+  PLAYER_HIT_DAMAGE: 10,         // HP lost per enemy contact
+  PLAYER_INVINCIBILITY_MS: 900,  // ms of iframes after taking a hit
+  ENEMY_HP: 50,                  // base HP per enemy (scales by wave tier)
+  WAVE_BASE_ENEMY_COUNT: 4,      // enemies in wave 1; +2 per additional wave
 } as const;
 
-// Economy tuning
+// ── Economy ───────────────────────────────────────────────────────────────────
 export const ECONOMY = {
   MARKETPLACE_FEE_PCT: 0.025,
   CRAFTING_FAIL_RATE_HIGH_TIER: 0.15,
@@ -51,11 +69,13 @@ export const ECONOMY = {
   LLM_QUEST_REWARD_MULTIPLIER: 1.2,
 } as const;
 
-// Scene keys
+// ── Scene Keys ────────────────────────────────────────────────────────────────
 export const SCENES = {
   BOOT: 'BootScene',
   PRELOAD: 'PreloadScene',
   MENU: 'MenuScene',
   GAME: 'GameScene',
+  PAUSE: 'PauseScene',
+  GAME_OVER: 'GameOverScene',
   UI: 'UIScene',
 } as const;
