@@ -63,6 +63,11 @@ interface MoveMessage {
   facingY: number;
 }
 
+interface ChatMessage {
+  text: string;
+  whisperTo?: string; // name of target player for private messages
+}
+
 // ── Utility ───────────────────────────────────────────────────────────────────
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -101,6 +106,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
     // Register message handlers
     this.onMessage("move",   (client: Client, msg: MoveMessage) => this.handleMove(client, msg));
     this.onMessage("attack", (client: Client) => this.handleAttack(client));
+    this.onMessage("chat",   (client: Client, msg: ChatMessage) => this.handleChat(client, msg));
 
     // Start game loop
     this.lastTick = Date.now();
@@ -231,6 +237,44 @@ export class ZoneRoom extends Room<ZoneGameState> {
       const p = this.state.players.get(client.sessionId);
       if (p) p.isAttacking = false;
     }, TICK_RATE_MS * 2);
+  }
+
+  private handleChat(client: Client, msg: ChatMessage) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+
+    // Sanitise: cap text length, strip control chars
+    const text = String(msg.text ?? "").replace(/[\x00-\x1f]/g, "").slice(0, 140);
+    if (!text) return;
+
+    const senderName = player.name || "Hero";
+
+    if (msg.whisperTo) {
+      // Private whisper — find target in this zone room
+      const targetName = String(msg.whisperTo).slice(0, 32);
+      let targetClient: Client | undefined;
+      this.state.players.forEach((p: Player, sid: string) => {
+        if (p.name === targetName && sid !== client.sessionId) {
+          targetClient = this.clients.find((c: Client) => c.sessionId === sid);
+        }
+      });
+
+      if (targetClient) {
+        // Send to both sender and recipient
+        client.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+        targetClient.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+      } else {
+        // Target not found in this zone
+        client.send("chat", {
+          sender: "System",
+          text: `Player "${targetName}" is not in this zone.`,
+          whisper: false,
+        });
+      }
+    } else {
+      // Zone-wide broadcast
+      this.broadcast("chat", { sender: senderName, text, whisper: false });
+    }
   }
 
   // ── Wave Management ───────────────────────────────────────────────────────────

@@ -7,6 +7,8 @@ import {
 import { SoundManager } from '../systems/SoundManager';
 import { SaveManager }  from '../systems/SaveManager';
 import { MultiplayerClient, type RemotePlayer, type RemoteEnemy } from '../systems/MultiplayerClient';
+import { ChatOverlay }     from '../ui/ChatOverlay';
+import { PlayerListPanel } from '../ui/PlayerListPanel';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 interface EnemyExtra {
@@ -126,6 +128,12 @@ export class GameScene extends Phaser.Scene {
   /** HUD text showing online player count. */
   private onlineCountText?: Phaser.GameObjects.Text;
 
+  /** Chat overlay (multiplayer only). */
+  private chat?: ChatOverlay;
+
+  /** Player list panel (multiplayer only). */
+  private playerList?: PlayerListPanel;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -194,12 +202,24 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // Chat overlay update (suppress game input while typing)
+    this.chat?.update(delta);
+    this.playerList?.update();
+
     this.handlePlayerMovement();
     this.regenMana(delta);
 
     if (this.isMultiplayer) {
       this.syncRemoteEnemies();
       this.syncRemotePlayers();
+      // Refresh player list every frame (cheap — only redraws when visible)
+      this.playerList?.refresh(
+        localStorage.getItem('pr_username') ?? 'Hero',
+        this.hp,
+        PLAYER.BASE_HP + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL,
+        this.level,
+        this.mp?.players ?? new Map(),
+      );
     } else {
       this.updateEnemyAI(time, delta);
     }
@@ -230,6 +250,32 @@ export class GameScene extends Phaser.Scene {
     this.mp = client;
     this.isMultiplayer = true;
 
+    // Chat overlay
+    this.chat = new ChatOverlay(this);
+    this.chat.onSend = (text, whisperTo) => {
+      this.mp?.sendChat(text, whisperTo);
+    };
+
+    // Player list panel
+    this.playerList = new PlayerListPanel(this);
+
+    // Incoming chat messages
+    client.onChatMessage = (msg) => {
+      const senderName = localStorage.getItem('pr_username') ?? 'Hero';
+      const isOwn = msg.sender === senderName;
+      if (msg.whisper) {
+        const label = isOwn ? `[→${msg.whisperTo}] ${msg.text}` : `[whisper] ${msg.sender}: ${msg.text}`;
+        this.chat?.addMessage(label, '#ffccff');
+      } else {
+        this.chat?.addMessage(`${msg.sender}: ${msg.text}`, '#dddddd');
+      }
+    };
+
+    // Show T-to-chat hint once
+    this.time.delayedCall(2000, () => {
+      this.chat?.addMessage('[T] chat  [Tab] players', '#555577');
+    });
+
     // Wave state changes from server
     client.onWaveStateChange = (wave, waveState) => {
       this.onServerWaveChange(wave, waveState);
@@ -252,6 +298,10 @@ export class GameScene extends Phaser.Scene {
       this.isMultiplayer = false;
       this.mp = null;
       this.clearRemoteSprites();
+      this.chat?.destroy();
+      this.chat = undefined;
+      this.playerList?.destroy();
+      this.playerList = undefined;
       this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20, 'Disconnected — solo mode', '#ff8888');
       // Resume local simulation
       if (!this.isDead && !this.waveTransitioning) this.spawnWave();
@@ -924,6 +974,7 @@ export class GameScene extends Phaser.Scene {
   // ── Attack ────────────────────────────────────────────────────────────────
 
   private handleAttack(time: number): void {
+    if (this.chat?.active) return; // don't attack while chat is open
     if (!Phaser.Input.Keyboard.JustDown(this.attackKey)) return;
     if (time - this.lastAttackTime < COMBAT.ATTACK_COOLDOWN_MS) return;
 
@@ -1184,8 +1235,10 @@ export class GameScene extends Phaser.Scene {
 
     const timeSecs = Math.floor((this.time.now - this.gameStartTime) / 1000);
 
-    // Clean up multiplayer connection before leaving scene
+    // Clean up multiplayer connection and UI before leaving scene
     this.mp?.disconnect().catch(() => {});
+    this.chat?.destroy();
+    this.playerList?.destroy();
 
     this.cameras.main.fadeOut(600, 0, 0, 0);
     this.time.delayedCall(600, () => {
@@ -1216,6 +1269,8 @@ export class GameScene extends Phaser.Scene {
       const timeSecs = Math.floor((this.time.now - this.gameStartTime) / 1000);
 
       this.mp?.disconnect().catch(() => {});
+      this.chat?.destroy();
+      this.playerList?.destroy();
 
       this.cameras.main.fadeOut(500, 0, 0, 0);
       this.time.delayedCall(500, () => {

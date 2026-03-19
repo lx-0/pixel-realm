@@ -37,6 +37,13 @@ export interface RemoteEnemy {
   aiState: string; // "patrol" | "chase" | "dead"
 }
 
+export interface ChatIncomingMessage {
+  sender: string;
+  text: string;
+  whisper: boolean;
+  whisperTo?: string;
+}
+
 export interface ZoneRoomState {
   zoneId: string;
   currentWave: number;
@@ -74,6 +81,7 @@ export class MultiplayerClient {
   onWaveStateChange?: (wave: number, waveState: string) => void;
   onEnemyRemoved?: (id: string) => void;
   onDisconnected?: () => void;
+  onChatMessage?: (msg: ChatIncomingMessage) => void;
 
   constructor() {
     this.client = new Client(SERVER_URL);
@@ -161,6 +169,11 @@ export class MultiplayerClient {
       }
     });
 
+    // ── Chat messages ────────────────────────────────────────────────────
+    room.onMessage('chat', (msg: ChatIncomingMessage) => {
+      this.onChatMessage?.(msg);
+    });
+
     // ── Connection events ────────────────────────────────────────────────
     room.onLeave(() => {
       console.warn('[MP] Left room');
@@ -216,6 +229,18 @@ export class MultiplayerClient {
   /** Notify server of a melee attack. */
   sendAttack(): void {
     this.room?.send('attack');
+  }
+
+  /**
+   * Send a chat message.
+   * @param text Message body (max 140 chars, sanitised server-side).
+   * @param whisperTo Optional player name for a private message.
+   */
+  sendChat(text: string, whisperTo?: string): void {
+    if (!this.room || !text.trim()) return;
+    const msg: { text: string; whisperTo?: string } = { text: text.trim() };
+    if (whisperTo) msg.whisperTo = whisperTo;
+    this.room.send('chat', msg);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
