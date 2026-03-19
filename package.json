@@ -11,10 +11,11 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "colyseus.js": "^0.15.28",
     "phaser": "^3.80.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
+    "typescript": "^5.9.3",
     "vite": "^5.2.0",
     "vitest": "^1.5.0"
   }

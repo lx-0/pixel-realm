@@ -6,6 +6,7 @@ import {
 } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
 import { SaveManager }  from '../systems/SaveManager';
+import { MultiplayerClient, type RemotePlayer, type RemoteEnemy } from '../systems/MultiplayerClient';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 interface EnemyExtra {
@@ -23,6 +24,8 @@ interface EnemyExtra {
   phase2:          boolean;
   isTentacle:      boolean;
   isPillar:        boolean;
+  /** true = managed by server, skip local AI */
+  isRemote:        boolean;
 }
 
 export interface GameSceneData {
@@ -42,8 +45,15 @@ export interface GameOverData {
 
 /**
  * GameScene — zone-based gameplay.
- * Runs 3 enemy waves + 1 boss wave per zone.
- * On boss death: saves progress, unlocks next zone, transitions to game-over (victory).
+ *
+ * Modes:
+ *  - Solo (default): full local simulation identical to original behaviour.
+ *  - Multiplayer: connects to the Colyseus ZoneRoom; enemies and players are
+ *    driven by the server. Falls back to solo if the server is unreachable.
+ *
+ * Runs 3 enemy waves + 1 boss wave per zone (solo) or server-driven waves
+ * (multiplayer).  On boss death / zone completion: saves progress, unlocks
+ * next zone, transitions to game-over (victory).
  */
 export class GameScene extends Phaser.Scene {
   private readonly worldW = CANVAS.WIDTH * 2;
@@ -97,6 +107,25 @@ export class GameScene extends Phaser.Scene {
 
   private sfx!: SoundManager;
 
+  // ── Multiplayer ───────────────────────────────────────────────────────────
+
+  /** Multiplayer client (null in solo mode or before connection). */
+  private mp: MultiplayerClient | null = null;
+  private isMultiplayer = false;
+
+  /** Remote player sprites keyed by sessionId. */
+  private remotePlayerSprites = new Map<string, Phaser.Physics.Arcade.Sprite>();
+  /** Name labels above remote player sprites. */
+  private remotePlayerLabels  = new Map<string, Phaser.GameObjects.Text>();
+  /** HP bar graphics for remote players. */
+  private remotePlayerHpBars  = new Map<string, Phaser.GameObjects.Rectangle>();
+
+  /** Server-synced enemy sprites keyed by server enemy id. */
+  private remoteEnemySprites = new Map<string, Phaser.Physics.Arcade.Sprite>();
+
+  /** HUD text showing online player count. */
+  private onlineCountText?: Phaser.GameObjects.Text;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -131,6 +160,7 @@ export class GameScene extends Phaser.Scene {
     this.tentacles         = [];
     this.bossSprite        = undefined;
     this.bossHudVisible    = false;
+    this.isMultiplayer     = false;
 
     this.sfx = new SoundManager();
 
@@ -145,9 +175,14 @@ export class GameScene extends Phaser.Scene {
     this.setupInput();
     this.setupCamera();
     this.createHUD();
-    this.spawnWave();
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
+
+    // Attempt multiplayer connection. Scene starts in solo mode; if the
+    // server responds we switch to multiplayer without interrupting the fade-in.
+    this.initMultiplayer(zoneId).catch(() => {
+      // initMultiplayer handles its own errors; this is belt-and-suspenders
+    });
   }
 
   update(time: number, delta: number): void {
@@ -161,12 +196,238 @@ export class GameScene extends Phaser.Scene {
 
     this.handlePlayerMovement();
     this.regenMana(delta);
-    this.updateEnemyAI(time, delta);
+
+    if (this.isMultiplayer) {
+      this.syncRemoteEnemies();
+      this.syncRemotePlayers();
+    } else {
+      this.updateEnemyAI(time, delta);
+    }
+
     this.handleAttack(time);
     this.handleEnemyContact(time);
     this.cleanProjectiles();
     this.updateCharmStatus(time);
     if (this.bossHudVisible) this.updateBossHpBar();
+  }
+
+  // ── Multiplayer init ──────────────────────────────────────────────────────
+
+  private async initMultiplayer(zoneId: string): Promise<void> {
+    const client = new MultiplayerClient();
+
+    // Pull saved userId from local storage if available
+    const userId = localStorage.getItem('pr_userId') ?? undefined;
+    const playerName = localStorage.getItem('pr_username') ?? 'Hero';
+
+    const joined = await client.joinZone(zoneId, playerName, userId);
+    if (!joined) {
+      // Server not available — run in solo mode
+      this.spawnWave();
+      return;
+    }
+
+    this.mp = client;
+    this.isMultiplayer = true;
+
+    // Wave state changes from server
+    client.onWaveStateChange = (wave, waveState) => {
+      this.onServerWaveChange(wave, waveState);
+    };
+
+    // Enemy removed by server
+    client.onEnemyRemoved = (id) => {
+      const sprite = this.remoteEnemySprites.get(id);
+      if (sprite) {
+        this.spawnBurst(sprite.x, sprite.y, [0xd42020, 0xf06020, 0x4a4a4a], 8, 140);
+        sprite.destroy();
+        this.remoteEnemySprites.delete(id);
+        this.kills++;
+        this.score += 20;
+        this.updateHUD();
+      }
+    };
+
+    client.onDisconnected = () => {
+      this.isMultiplayer = false;
+      this.mp = null;
+      this.clearRemoteSprites();
+      this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20, 'Disconnected — solo mode', '#ff8888');
+      // Resume local simulation
+      if (!this.isDead && !this.waveTransitioning) this.spawnWave();
+    };
+
+    // Create the online player count HUD item
+    this.onlineCountText = this.add.text(CANVAS.WIDTH / 2, 4, '', {
+      fontSize: '4px', color: '#88ffcc', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(12);
+
+    this.updateHUD();
+  }
+
+  // ── Server wave change ────────────────────────────────────────────────────
+
+  private onServerWaveChange(wave: number, waveState: string): void {
+    this.wave = wave;
+
+    if (waveState === 'active') {
+      const label = `Wave ${wave}/${this.mp?.zoneState.totalWaves ?? 3}`;
+      this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2, `✦  ${label}  ✦`, '#ffd700');
+      this.sfx.playWaveClear();
+    } else if (waveState === 'complete') {
+      this.time.delayedCall(1500, () => this.zoneCleared());
+    }
+
+    this.updateHUD();
+  }
+
+  // ── Remote enemy sync ─────────────────────────────────────────────────────
+
+  private syncRemoteEnemies(): void {
+    if (!this.mp) return;
+
+    const serverEnemies = this.mp.enemies;
+    const seen = new Set<string>();
+
+    serverEnemies.forEach((re: RemoteEnemy) => {
+      seen.add(re.id);
+
+      let sprite = this.remoteEnemySprites.get(re.id);
+      if (!sprite) {
+        // Spawn a new sprite for this server enemy
+        sprite = this.enemies.create(re.x, re.y, 'enemy') as Phaser.Physics.Arcade.Sprite;
+        sprite.setDepth(10);
+        sprite.setCollideWorldBounds(true);
+
+        // Tint by enemy type if known
+        const def = ENEMY_TYPES[re.type as EnemyTypeName];
+        if (def) {
+          sprite.setTint(def.color);
+          sprite.setDisplaySize(def.size * 1.6, def.size * 1.6);
+        }
+
+        if (this.anims.exists('enemy-walk')) sprite.play('enemy-walk');
+
+        // Mark as remote so local AI ignores it
+        const extra: EnemyExtra = {
+          hp: re.hp, maxHp: re.maxHp,
+          typeName: (re.type ?? 'slime') as EnemyTypeName,
+          patrolAngle: 0, burstTimer: 0, burstCooldown: 9999,
+          burstReady: false, shootTimer: 9999, phaseTimer: 0,
+          phaseInvincible: false, phase2: false,
+          isTentacle: false, isPillar: false, isRemote: true,
+        };
+        sprite.setData('extra', extra);
+
+        this.remoteEnemySprites.set(re.id, sprite);
+      } else {
+        // Interpolate toward server position
+        const lerpFactor = 0.25;
+        sprite.x = Phaser.Math.Linear(sprite.x, re.x, lerpFactor);
+        sprite.y = Phaser.Math.Linear(sprite.y, re.y, lerpFactor);
+
+        // Update hp on the local extra so collision logic sees it
+        const extra = sprite.getData('extra') as EnemyExtra;
+        if (extra) {
+          extra.hp = re.hp;
+          extra.maxHp = re.maxHp;
+          sprite.setData('extra', extra);
+        }
+      }
+    });
+
+    // Remove sprites for enemies that disappeared from server state
+    this.remoteEnemySprites.forEach((sprite, id) => {
+      if (!seen.has(id)) {
+        sprite.destroy();
+        this.remoteEnemySprites.delete(id);
+      }
+    });
+
+    // Update enemy-alive count for HUD
+    if (this.mp) this.mp.zoneState.enemiesAlive = serverEnemies.size;
+    this.updateHUD();
+  }
+
+  // ── Remote player sync ────────────────────────────────────────────────────
+
+  private syncRemotePlayers(): void {
+    if (!this.mp) return;
+
+    const serverPlayers = this.mp.players;
+    const seen = new Set<string>();
+
+    serverPlayers.forEach((rp: RemotePlayer) => {
+      if (rp.sessionId === this.mp!.mySessionId) return; // skip self
+      seen.add(rp.sessionId);
+
+      let sprite = this.remotePlayerSprites.get(rp.sessionId);
+      if (!sprite) {
+        sprite = this.physics.add.sprite(rp.x, rp.y, 'player');
+        sprite.setDepth(10).setTint(0x88aaff); // blue tint = remote player
+        if (this.anims.exists('player-walk')) sprite.play('player-walk');
+        this.remotePlayerSprites.set(rp.sessionId, sprite);
+
+        // Name label
+        const label = this.add.text(rp.x, rp.y - 12, rp.name, {
+          fontSize: '4px', color: '#aaddff', fontFamily: 'monospace',
+          stroke: '#000', strokeThickness: 1,
+        }).setOrigin(0.5).setDepth(11);
+        this.remotePlayerLabels.set(rp.sessionId, label);
+
+        // HP bar
+        const hpBar = this.add.rectangle(rp.x, rp.y - 8, 12, 2, 0x00ee44)
+          .setOrigin(0.5).setDepth(11);
+        this.remotePlayerHpBars.set(rp.sessionId, hpBar);
+      } else {
+        const lerpFactor = 0.3;
+        sprite.x = Phaser.Math.Linear(sprite.x, rp.x, lerpFactor);
+        sprite.y = Phaser.Math.Linear(sprite.y, rp.y, lerpFactor);
+      }
+
+      // Update label + hp bar position
+      const label  = this.remotePlayerLabels.get(rp.sessionId);
+      const hpBar  = this.remotePlayerHpBars.get(rp.sessionId);
+      const s      = this.remotePlayerSprites.get(rp.sessionId)!;
+
+      if (label)  { label.x  = s.x; label.y  = s.y - 12; }
+      if (hpBar)  {
+        hpBar.x = s.x; hpBar.y = s.y - 8;
+        const pct = Math.max(0, rp.hp / rp.maxHp);
+        hpBar.scaleX = pct;
+        hpBar.setFillStyle(pct > 0.5 ? 0x00ee44 : pct > 0.25 ? 0xffaa00 : 0xff2222);
+      }
+    });
+
+    // Remove sprites for players who left
+    this.remotePlayerSprites.forEach((sprite, sid) => {
+      if (!seen.has(sid)) {
+        sprite.destroy();
+        this.remotePlayerLabels.get(sid)?.destroy();
+        this.remotePlayerHpBars.get(sid)?.destroy();
+        this.remotePlayerSprites.delete(sid);
+        this.remotePlayerLabels.delete(sid);
+        this.remotePlayerHpBars.delete(sid);
+      }
+    });
+
+    // Update online count HUD
+    if (this.onlineCountText) {
+      const total = this.mp.players.size; // includes self
+      this.onlineCountText.setText(total > 1 ? `Online: ${total}` : '');
+    }
+  }
+
+  private clearRemoteSprites(): void {
+    this.remotePlayerSprites.forEach(s => s.destroy());
+    this.remotePlayerLabels.forEach(l => l.destroy());
+    this.remotePlayerHpBars.forEach(b => b.destroy());
+    this.remotePlayerSprites.clear();
+    this.remotePlayerLabels.clear();
+    this.remotePlayerHpBars.clear();
+
+    this.remoteEnemySprites.forEach(s => s.destroy());
+    this.remoteEnemySprites.clear();
   }
 
   // ── World ─────────────────────────────────────────────────────────────────
@@ -269,6 +530,13 @@ export class GameScene extends Phaser.Scene {
       if (moving  && current !== 'player-walk') this.player.play('player-walk');
       if (!moving && current !== 'player-idle') this.player.play('player-idle');
     }
+
+    // Send position to server in multiplayer mode
+    if (this.isMultiplayer && this.mp) {
+      const facingX = vx !== 0 ? Math.sign(vx) : 1;
+      const facingY = vy !== 0 ? Math.sign(vy) : 0;
+      this.mp.sendMove(this.player.x, this.player.y, facingX, facingY);
+    }
   }
 
   private updateCharmStatus(time: number): void {
@@ -284,7 +552,7 @@ export class GameScene extends Phaser.Scene {
     if (this.manaBar) this.manaBar.scaleX = this.mana / (PLAYER.BASE_MANA as number);
   }
 
-  // ── Wave management ───────────────────────────────────────────────────────
+  // ── Wave management (solo) ────────────────────────────────────────────────
 
   private spawnWave(): void {
     this.enemies.clear(true, true);
@@ -383,6 +651,7 @@ export class GameScene extends Phaser.Scene {
       phase2:          false,
       isTentacle:      false,
       isPillar:        false,
+      isRemote:        false,
     };
     e.setData('extra', extra);
     return e;
@@ -415,7 +684,7 @@ export class GameScene extends Phaser.Scene {
         hp: 80, maxHp: 80, typeName: 'slime', patrolAngle: 0,
         burstTimer: 0, burstCooldown: 9999, burstReady: false,
         shootTimer: 9999, phaseTimer: 0, phaseInvincible: false,
-        phase2: false, isTentacle: false, isPillar: true,
+        phase2: false, isTentacle: false, isPillar: true, isRemote: false,
       };
       p.setData('extra', extra);
       this.pillars.push(p);
@@ -438,14 +707,14 @@ export class GameScene extends Phaser.Scene {
         hp, maxHp: hp, typeName: 'slime', patrolAngle: 0,
         burstTimer: 0, burstCooldown: 9999, burstReady: false,
         shootTimer: 9999, phaseTimer: 0, phaseInvincible: false,
-        phase2: false, isTentacle: true, isPillar: false,
+        phase2: false, isTentacle: true, isPillar: false, isRemote: false,
       };
       t.setData('extra', extra);
       this.tentacles.push(t);
     }
   }
 
-  // ── Enemy AI ──────────────────────────────────────────────────────────────
+  // ── Enemy AI (solo only) ──────────────────────────────────────────────────
 
   private updateEnemyAI(_time: number, delta: number): void {
     this.enemies.getChildren().forEach(obj => {
@@ -453,6 +722,7 @@ export class GameScene extends Phaser.Scene {
       if (!e.active) return;
       const extra = e.getData('extra') as EnemyExtra;
       if (!extra) return;
+      if (extra.isRemote) return; // handled by server
       if (extra.isPillar || extra.isTentacle) return;
 
       if (extra.typeName === 'boss') {
@@ -661,6 +931,9 @@ export class GameScene extends Phaser.Scene {
     this.mana = Math.max(0, this.mana - MANA.ATTACK_COST);
     this.sfx.playAttack();
 
+    // Notify server
+    if (this.isMultiplayer && this.mp) this.mp.sendAttack();
+
     this.tweens.add({ targets: this.player, scaleX: 1.25, scaleY: 0.82, duration: 55, yoyo: true, ease: 'Power2' });
 
     if (this.anims.exists('player-attack')) {
@@ -672,6 +945,8 @@ export class GameScene extends Phaser.Scene {
 
     this.showAttackRing();
 
+    // In multiplayer: damage is resolved server-side, but we still do local VFX
+    // for responsiveness by checking nearby enemies visually.
     const dmg    = COMBAT.ATTACK_DAMAGE + (this.level - 1) * LEVELS.DAMAGE_BONUS_PER_LEVEL;
     let   hitAny = false;
 
@@ -685,6 +960,16 @@ export class GameScene extends Phaser.Scene {
       const dist      = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
       if (dist > hitRadius) return;
 
+      if (this.isMultiplayer && extra.isRemote) {
+        // Server handles damage; show VFX only
+        hitAny = true;
+        this.spawnBurst(e.x, e.y, [0xffffff, 0xffe040, 0xf0f0f0], 5, 110);
+        this.sfx.playHit();
+        this.floatingText(e.x, e.y - 10, `hit!`, '#ffaaaa');
+        return;
+      }
+
+      // Solo: full local damage resolution
       // Archon immunity while pillars alive
       if (extra.typeName === 'boss' && extra.bossType === 'archon' && this.pillars.some(p => p.active)) return;
       // Kraken immunity while tentacles alive
@@ -899,6 +1184,9 @@ export class GameScene extends Phaser.Scene {
 
     const timeSecs = Math.floor((this.time.now - this.gameStartTime) / 1000);
 
+    // Clean up multiplayer connection before leaving scene
+    this.mp?.disconnect().catch(() => {});
+
     this.cameras.main.fadeOut(600, 0, 0, 0);
     this.time.delayedCall(600, () => {
       this.scene.start(SCENES.GAME_OVER, {
@@ -926,6 +1214,9 @@ export class GameScene extends Phaser.Scene {
 
     this.time.delayedCall(1700, () => {
       const timeSecs = Math.floor((this.time.now - this.gameStartTime) / 1000);
+
+      this.mp?.disconnect().catch(() => {});
+
       this.cameras.main.fadeOut(500, 0, 0, 0);
       this.time.delayedCall(500, () => {
         this.scene.start(SCENES.GAME_OVER, {
@@ -1111,11 +1402,23 @@ export class GameScene extends Phaser.Scene {
     const atMax = this.level >= LEVELS.MAX_LEVEL;
     if (this.xpBar) this.xpBar.scaleX = atMax ? 1 : Math.min(1, this.xp / LEVELS.XP_THRESHOLDS[this.level - 1]);
     this.levelText?.setText(`Lv.${this.level}${atMax ? ' MAX' : ''}`);
-    const wLabel = this.isBossWave ? 'BOSS!' : `Wave ${this.wave}/${this.zone.waves}`;
+
+    let wLabel: string;
+    if (this.isMultiplayer && this.mp) {
+      const zs = this.mp.zoneState;
+      wLabel = zs.waveState === 'waiting' ? 'Waiting...'
+             : zs.waveState === 'complete' ? 'Zone Complete!'
+             : `Wave ${zs.currentWave}/${zs.totalWaves}`;
+    } else {
+      wLabel = this.isBossWave ? 'BOSS!' : `Wave ${this.wave}/${this.zone.waves}`;
+    }
     this.waveText?.setText(wLabel);
     this.waveText?.setColor(this.isBossWave ? '#ff4422' : '#ffd700');
     this.killText?.setText(`Kills: ${this.kills}`);
-    const alive = this.enemies?.countActive(true) ?? 0;
+
+    const alive = this.isMultiplayer
+      ? (this.mp?.zoneState.enemiesAlive ?? 0)
+      : (this.enemies?.countActive(true) ?? 0);
     this.enemyCountText?.setText(alive > 0 ? `Enemies: ${alive}` : '');
   }
 
