@@ -92,6 +92,24 @@ export const zoneState = pgTable("zone_state", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Generated Quests (LLM quest cache) ────────────────────────────────────────
+
+export const generatedQuests = pgTable("generated_quests", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  zoneId: varchar("zone_id", { length: 50 }).notNull(),
+  playerLevelBucket: integer("player_level_bucket").notNull(),
+  questType: varchar("quest_type", { length: 30 }).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description").notNull(),
+  objectives: jsonb("objectives").notNull().default([]),
+  rewards: jsonb("rewards").notNull().default({}),
+  dialogue: jsonb("dialogue").notNull().default({}),
+  completionConditions: jsonb("completion_conditions").notNull().default({}),
+  cacheKey: varchar("cache_key", { length: 100 }).notNull().unique(),
+  generatedAt: timestamp("generated_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -101,3 +119,4 @@ export type Item = typeof items.$inferSelect;
 export type InventoryRow = typeof inventory.$inferSelect;
 export type ProgressionRow = typeof progression.$inferSelect;
 export type ZoneStateRow = typeof zoneState.$inferSelect;
+export type GeneratedQuestRow = typeof generatedQuests.$inferSelect;

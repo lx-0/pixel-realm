@@ -1,6 +1,7 @@
 import { Room, Client, Delayed } from "@colyseus/core";
 import { ZoneGameState, Player, Enemy, Projectile } from "./schema/GameState";
 import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
+import { getOrGenerateQuest, completeQuestForPlayer } from "../quests/db";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -68,6 +69,14 @@ interface ChatMessage {
   whisperTo?: string; // name of target player for private messages
 }
 
+interface QuestNpcMessage {
+  npcId: string; // which quest NPC the player interacted with
+}
+
+interface QuestCompleteMessage {
+  questId: string;
+}
+
 // ── Utility ───────────────────────────────────────────────────────────────────
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -104,9 +113,11 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.state.waveState = "waiting";
 
     // Register message handlers
-    this.onMessage("move",   (client: Client, msg: MoveMessage) => this.handleMove(client, msg));
-    this.onMessage("attack", (client: Client) => this.handleAttack(client));
-    this.onMessage("chat",   (client: Client, msg: ChatMessage) => this.handleChat(client, msg));
+    this.onMessage("move",             (client: Client, msg: MoveMessage)       => this.handleMove(client, msg));
+    this.onMessage("attack",           (client: Client)                         => this.handleAttack(client));
+    this.onMessage("chat",             (client: Client, msg: ChatMessage)        => this.handleChat(client, msg));
+    this.onMessage("quest_npc_interact", (client: Client, msg: QuestNpcMessage) => this.handleQuestNpcInteract(client, msg));
+    this.onMessage("quest_complete",   (client: Client, msg: QuestCompleteMessage) => this.handleQuestComplete(client, msg));
 
     // Start game loop
     this.lastTick = Date.now();
@@ -274,6 +285,51 @@ export class ZoneRoom extends Room<ZoneGameState> {
     } else {
       // Zone-wide broadcast
       this.broadcast("chat", { sender: senderName, text, whisper: false });
+    }
+  }
+
+  // ── Quest NPC Handlers ────────────────────────────────────────────────────────
+
+  private async handleQuestNpcInteract(client: Client, _msg: QuestNpcMessage) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) {
+      client.send("quest_error", { message: "You must be logged in to accept quests." });
+      return;
+    }
+
+    try {
+      const { quest, isNew } = await getOrGenerateQuest(
+        userId,
+        this.state.zoneId,
+        player.level,
+      );
+      client.send("quest_data", { quest, isNew });
+    } catch (err) {
+      const msg = (err as Error).message ?? "Quest generation failed.";
+      console.warn(`[ZoneRoom] Quest generation error for ${userId}:`, msg);
+      client.send("quest_error", { message: msg });
+    }
+  }
+
+  private async handleQuestComplete(client: Client, msg: QuestCompleteMessage) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    const questId = String(msg.questId ?? "").slice(0, 100);
+    if (!questId) return;
+
+    try {
+      await completeQuestForPlayer(userId, this.state.zoneId, questId);
+      client.send("quest_completed", { questId });
+      console.log(`[ZoneRoom] Quest ${questId} completed by ${userId}`);
+    } catch (err) {
+      console.warn(`[ZoneRoom] Quest completion error for ${userId}:`, (err as Error).message);
     }
   }
 
