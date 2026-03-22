@@ -82,6 +82,19 @@ export class BootScene extends Phaser.Scene {
     this.load.image('ui_icon_skill', 'assets/ui_icon_skill.png');
     this.load.image('ui_slot',       'assets/ui_slot.png');
 
+    // Skill tree UI assets
+    this.load.image('ui_skill_tree_panel_bg',   'assets/ui/skill_tree/ui_skill_tree_panel_bg.png');
+    this.load.image('ui_skill_node_unlocked',    'assets/ui/skill_tree/ui_skill_node_unlocked.png');
+    this.load.image('ui_skill_node_available',   'assets/ui/skill_tree/ui_skill_node_available.png');
+    this.load.image('ui_skill_node_locked',      'assets/ui/skill_tree/ui_skill_node_locked.png');
+    this.load.image('ui_skill_connector_h',      'assets/ui/skill_tree/ui_skill_connector_h.png');
+    this.load.image('ui_skill_connector_v',      'assets/ui/skill_tree/ui_skill_connector_v.png');
+    this.load.image('ui_skill_point_pip',        'assets/ui/skill_tree/ui_skill_point_pip.png');
+    this.load.image('ui_skill_point_pip_empty',  'assets/ui/skill_tree/ui_skill_point_pip_empty.png');
+    this.load.image('ui_archetype_badge_warrior', 'assets/ui/skill_tree/ui_archetype_badge_warrior.png');
+    this.load.image('ui_archetype_badge_mage',    'assets/ui/skill_tree/ui_archetype_badge_mage.png');
+    this.load.image('ui_archetype_badge_ranger',  'assets/ui/skill_tree/ui_archetype_badge_ranger.png');
+
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();
     });

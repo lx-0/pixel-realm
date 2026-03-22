@@ -30,6 +30,22 @@ export class Player extends Schema {
   // Facing direction (for combat hit detection)
   @type("float32") facingX: number = 1;
   @type("float32") facingY: number = 0;
+
+  // Skill tree
+  @type("int8")    skillPoints: number = 0;
+  @type("string")  classId: string = "warrior";
+  /** JSON-encoded string[]: unlocked skill ids */
+  @type("string")  unlockedSkills: string = "[]";
+  /** JSON-encoded string[6]: hotbar skill ids (empty string = empty slot) */
+  @type("string")  hotbar: string = "[]";
+  /** JSON-encoded Record<skillId, expiresAtMs>: active skill cooldowns */
+  @type("string")  skillCooldowns: string = "{}";
+  /** Non-zero = player is in a timed buff state, value = buff flags bitmask */
+  @type("int8")    buffFlags: number = 0;
+  /** When the current buff expires (ms epoch) */
+  @type("int32")   buffExpiresAt: number = 0;
+  /** Absorb shield HP remaining (from arcane_shield) */
+  @type("int16")   shieldAbsorb: number = 0;
 }
 
 // ── Enemy ─────────────────────────────────────────────────────────────────────

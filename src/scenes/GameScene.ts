@@ -18,6 +18,11 @@ import { MiniMapOverlay }    from '../ui/MiniMapOverlay';
 import { TutorialOverlay }  from '../ui/TutorialOverlay';
 import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
+import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
+import {
+  SKILL_BY_ID, computePassiveBonuses,
+  type ClassId,
+} from '../config/skills';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 
@@ -212,6 +217,43 @@ export class GameScene extends Phaser.Scene {
   /** Marketplace / auction-house panel (multiplayer only). */
   private marketplace?: MarketplacePanel;
 
+  // ── Skill tree ─────────────────────────────────────────────────────────────
+
+  /** Skill tree panel (always present, K to open). */
+  private skillTree?: SkillTreePanel;
+
+  /** Current class id. */
+  private classId: ClassId = 'warrior';
+
+  /** Set of unlocked skill ids. */
+  private unlockedSkills: Set<string> = new Set();
+
+  /** Unspent skill points. */
+  private skillPoints = 0;
+
+  /** Active skill ids on hotbar slots 0-5 (empty string = empty). */
+  private hotbar: string[] = ['', '', '', '', '', ''];
+
+  /** Per-skill cooldown expiry timestamps (ms). */
+  private skillCooldowns: Map<string, number> = new Map();
+
+  /** Whether arcane_surge buff is active + expiry. */
+  private arcaneSurgeUntil = 0;
+  /** Whether berserk_mode buff is active + expiry. */
+  private berserkUntil = 0;
+  /** Arcane shield absorb remaining. */
+  private shieldAbsorb = 0;
+
+  /** HUD objects for hotbar display. */
+  private hotbarSlotBgs:    Phaser.GameObjects.Rectangle[]    = [];
+  private hotbarSlotLabels: Phaser.GameObjects.Text[]          = [];
+  private hotbarCdOverlays: Phaser.GameObjects.Rectangle[]    = [];
+  private hotbarCdTexts:    Phaser.GameObjects.Text[]          = [];
+  private skillPointsBadge?: Phaser.GameObjects.Text;
+
+  /** Hotbar key objects (1–6). */
+  private hotbarKeys: Phaser.Input.Keyboard.Key[] = [];
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -254,6 +296,10 @@ export class GameScene extends Phaser.Scene {
     this.bossHudVisible    = false;
     this.isMultiplayer     = false;
 
+    // Load solo skill state from localStorage
+    this.loadSoloSkillState();
+    this.applyPassiveBonuses();
+
     this.sfx = SoundManager.getInstance();
 
     // Unlock audio + start zone music on first user interaction (autoplay policy)
@@ -275,6 +321,14 @@ export class GameScene extends Phaser.Scene {
     this.createHUD();
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
+
+    // Skill tree panel (always present)
+    this.skillTree = new SkillTreePanel(this);
+    this.skillTree.updateState(this.buildSkillTreeState());
+    this.skillTree.onAllocSkill  = (id) => this.allocSkill(id);
+    this.skillTree.onSetHotbar   = (hb) => this.setHotbar(hb);
+    this.skillTree.onRespec      = () => this.respecSkills();
+    this.skillTree.onSetClass    = (c)  => this.setClass(c);
 
     // Show tutorial for first-time players entering zone1
     if (!save.tutorialCompleted && zoneId === 'zone1') {
@@ -298,6 +352,7 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
       // Escape closes any open panel before pausing
       const panelClosed =
+        this.skillTree?.closeIfOpen()     ||
         this.tradeWindow?.closeIfOpen()   ||
         this.marketplace?.closeIfOpen()   ||
         this.npcDialogue?.closeIfOpen()   ||
@@ -309,6 +364,16 @@ export class GameScene extends Phaser.Scene {
         this.scene.launch(SCENES.PAUSE, { zoneId: this.zone.id });
         this.scene.pause();
         return;
+      }
+    }
+
+    // Skill tree panel (K key is handled inside the panel)
+    this.skillTree?.update();
+
+    // Hotbar skill activation (keys 1–6)
+    for (let i = 0; i < 6; i++) {
+      if (this.hotbarKeys[i] && Phaser.Input.Keyboard.JustDown(this.hotbarKeys[i])) {
+        if (!this.skillTree?.isVisible) this.activateSkillSlot(i, time);
       }
     }
 
@@ -347,6 +412,7 @@ export class GameScene extends Phaser.Scene {
       this.craftingPanel?.hide();
       this.npcDialogue?.hide();
       this.marketplace?.hide();
+      this.skillTree?.hide();
     } else if (!invWas && invNow) {
       // Inventory just opened — close others
       this.questLog?.hide();
@@ -374,6 +440,7 @@ export class GameScene extends Phaser.Scene {
     this.handlePlayerMovement(delta);
     this.regenMana(delta);
     this.updateDodgeCooldownHUD(time);
+    this.updateHotbarHUD();
 
     if (this.isMultiplayer) {
       this.syncRemoteEnemies();
@@ -523,9 +590,45 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
+    // Wire up skill callbacks from server
+    client.onSkillPointsUpdated = (pts) => {
+      this.skillPoints = pts;
+      this.skillTree?.updateState(this.buildSkillTreeState());
+      this.updateHotbarHUD();
+      if (pts > 0) this.chat?.addMessage(`✦ Skill point earned! (${pts} available) — Press K`, '#ffe040');
+    };
+    client.onSkillAllocOk = (skillId, pts) => {
+      this.unlockedSkills.add(skillId);
+      this.skillPoints = pts;
+      this.applyPassiveBonuses();
+      this.skillTree?.updateState(this.buildSkillTreeState());
+      this.updateHotbarHUD();
+    };
+    client.onSkillHotbarOk = (hotbar) => {
+      this.hotbar = hotbar;
+      this.skillTree?.updateState(this.buildSkillTreeState());
+      this.updateHotbarHUD();
+    };
+    client.onSkillRespecOk = (pts) => {
+      this.unlockedSkills.clear();
+      this.skillPoints = pts;
+      this.hotbar = ['', '', '', '', '', ''];
+      this.applyPassiveBonuses();
+      this.skillTree?.updateState(this.buildSkillTreeState());
+      this.updateHotbarHUD();
+      this.chat?.addMessage('Skill tree respecced.', '#aaaaff');
+    };
+    client.onSkillUsed = (skillId, _cd, expiresAt) => {
+      this.skillCooldowns.set(skillId, expiresAt);
+      this.updateHotbarHUD();
+    };
+    client.onSkillError = (msg) => {
+      this.chat?.addMessage(`Skill: ${msg}`, '#ff8888');
+    };
+
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [Tab] players  [Q] quests  [I] inventory  [E] NPC  [F] craft  [M] market  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [Tab] players  [Q] quests  [I] inventory  [E] NPC  [F] craft  [M] market  [K] skills  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -1166,7 +1269,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private regenMana(delta: number): void {
-    this.mana = Math.min(PLAYER.BASE_MANA as number, this.mana + (MANA.REGEN_PER_SEC as number) * delta / 1000);
+    this.mana = Math.min(this.getMaxMana(), this.mana + this.getEffectiveManaRegen() * delta / 1000);
     if (this.manaBar) this.manaBar.scaleX = this.mana / (PLAYER.BASE_MANA as number);
   }
 
@@ -1847,6 +1950,21 @@ export class GameScene extends Phaser.Scene {
   }
 
   private applyDamageToPlayer(dmg: number, _time: number, tint: number): void {
+    // Divine shield — completely block damage
+    if ((this as any)._divineShieldUntil > this.time.now) return;
+
+    // Arcane shield absorb
+    if (this.shieldAbsorb > 0) {
+      const absorbed = Math.min(this.shieldAbsorb, dmg);
+      this.shieldAbsorb -= absorbed;
+      dmg -= absorbed;
+      if (dmg <= 0) return;
+    }
+
+    // Passive damage reduction
+    const dr  = this.getDamageReduction();
+    dmg = Math.max(1, Math.round(dmg * (1 - dr)));
+
     this.hp = Math.max(0, this.hp - dmg);
     this.player.setTint(tint);
     this.time.delayedCall(300, () => {
@@ -2023,6 +2141,13 @@ export class GameScene extends Phaser.Scene {
     const maxHp = PLAYER.BASE_HP + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL;
     this.hp = Math.min(maxHp, this.hp + 30);
 
+    // Grant 1 skill point per level-up
+    this.skillPoints += 1;
+    this.saveSoloSkillState();
+    this.skillTree?.updateState(this.buildSkillTreeState());
+    this.updateHotbarHUD();
+    if (this.isMultiplayer && this.mp) this.mp.sendLevelUp();
+
     this.spawnBurst(this.player.x, this.player.y, [0xffe040, 0xf0f0f0, 0x9050e0, 0xd090ff], 22, 160);
     this.cameras.main.shake(280, 0.016);
     this.screenFlash(0xffe040, 0.4);
@@ -2066,6 +2191,16 @@ export class GameScene extends Phaser.Scene {
     this.upKey           = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.downKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
     this.craftConfirmKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+    // Hotbar skill keys 1–6
+    const hotbarKeyCodes = [
+      Phaser.Input.Keyboard.KeyCodes.ONE,
+      Phaser.Input.Keyboard.KeyCodes.TWO,
+      Phaser.Input.Keyboard.KeyCodes.THREE,
+      Phaser.Input.Keyboard.KeyCodes.FOUR,
+      Phaser.Input.Keyboard.KeyCodes.FIVE,
+      Phaser.Input.Keyboard.KeyCodes.SIX,
+    ];
+    this.hotbarKeys = hotbarKeyCodes.map(code => this.input.keyboard!.addKey(code));
   }
 
   private setupCamera(): void {
@@ -2141,9 +2276,57 @@ export class GameScene extends Phaser.Scene {
     this.bossHpBar = this.add.rectangle(bossX, bossY + bossH / 2, bossW, bossH, 0xff2222)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z + 5).setVisible(false);
 
-    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD: Move  |  SHIFT: Sprint  |  Q: Dodge  |  SPACE: Attack  |  M: Map  |  F: Craft  |  ESC: Pause', {
+    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD:Move  SHIFT:Sprint  Q:Dodge  SPACE:Attack  1-6:Skills  K:SkillTree  M:Map  F:Craft  ESC:Pause', {
       fontSize: '4px', color: '#333344', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(Z);
+
+    // ── Hotbar skill slots (1–6) at bottom-center ────────────────────────
+    const hotbarSlotW = 14;
+    const hotbarSlotH = 12;
+    const hotbarY     = CANVAS.HEIGHT - 14;
+    const totalW      = 6 * (hotbarSlotW + 2) - 2;
+    const hotbarStartX = (CANVAS.WIDTH - totalW) / 2;
+
+    this.hotbarSlotBgs    = [];
+    this.hotbarSlotLabels = [];
+    this.hotbarCdOverlays = [];
+    this.hotbarCdTexts    = [];
+
+    for (let i = 0; i < 6; i++) {
+      const sx = hotbarStartX + i * (hotbarSlotW + 2);
+      const bg = this.add.rectangle(sx + hotbarSlotW / 2, hotbarY, hotbarSlotW, hotbarSlotH, 0x0d0d1a)
+        .setOrigin(0.5, 0.5).setStrokeStyle(1, 0x334466).setScrollFactor(0).setDepth(Z + 2);
+      this.hotbarSlotBgs.push(bg);
+
+      const label = this.add.text(sx + hotbarSlotW / 2, hotbarY,
+        '',
+        { fontSize: '3px', color: '#aaddff', fontFamily: 'monospace' },
+      ).setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(Z + 3);
+      this.hotbarSlotLabels.push(label);
+
+      const keyLabel = this.add.text(sx + 1, hotbarY - hotbarSlotH / 2 + 1,
+        `${i + 1}`,
+        { fontSize: '3px', color: '#555577', fontFamily: 'monospace' },
+      ).setScrollFactor(0).setDepth(Z + 4);
+      this.add.existing(keyLabel);
+
+      const cdOverlay = this.add.rectangle(sx + hotbarSlotW / 2, hotbarY, hotbarSlotW, hotbarSlotH, 0x000033, 0.7)
+        .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(Z + 4).setVisible(false);
+      this.hotbarCdOverlays.push(cdOverlay);
+
+      const cdTxt = this.add.text(sx + hotbarSlotW / 2, hotbarY,
+        '',
+        { fontSize: '3px', color: '#aaaaff', fontFamily: 'monospace' },
+      ).setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(Z + 5).setVisible(false);
+      this.hotbarCdTexts.push(cdTxt);
+    }
+
+    // Skill points badge (top-right of hotbar area)
+    this.skillPointsBadge = this.add.text(
+      CANVAS.WIDTH - 4, CANVAS.HEIGHT - 10,
+      '',
+      { fontSize: '5px', color: '#ffe040', fontFamily: 'monospace', stroke: '#000', strokeThickness: 2 },
+    ).setOrigin(1, 0.5).setScrollFactor(0).setDepth(Z + 3).setVisible(false);
 
     this.miniMap = new MiniMapOverlay(this);
 
@@ -2167,11 +2350,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateHUD(): void {
-    const maxHp = PLAYER.BASE_HP + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL;
+    const maxHp  = this.getMaxHp();
+    const maxMana = this.getMaxMana();
     const hpPct = Math.max(0, this.hp / maxHp);
     this.hpBar.scaleX = hpPct;
     this.hpBar.setFillStyle(hpPct > 0.5 ? 0x00ee44 : hpPct > 0.25 ? 0xffaa00 : 0xff2222);
-    if (this.manaBar) this.manaBar.scaleX = Math.max(0, this.mana / (PLAYER.BASE_MANA as number));
+    if (this.manaBar) this.manaBar.scaleX = Math.max(0, this.mana / maxMana);
     const atMax = this.level >= LEVELS.MAX_LEVEL;
     if (this.xpBar) this.xpBar.scaleX = atMax ? 1 : Math.min(1, this.xp / LEVELS.XP_THRESHOLDS[this.level - 1]);
     this.levelText?.setText(`Lv.${this.level}${atMax ? ' MAX' : ''}`);
@@ -2234,5 +2418,433 @@ export class GameScene extends Phaser.Scene {
   private hitStop(ms: number): void {
     this.physics.pause();
     setTimeout(() => { if (this.scene.isActive(SCENES.GAME) && !this.isDead) this.physics.resume(); }, ms);
+  }
+
+  // ── Skill tree system ──────────────────────────────────────────────────────
+
+  private readonly SKILL_SAVE_KEY = 'pixelrealm_skills_v1';
+
+  private loadSoloSkillState(): void {
+    try {
+      const raw = localStorage.getItem(this.SKILL_SAVE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw) as {
+        classId?: string;
+        unlockedSkills?: string[];
+        skillPoints?: number;
+        hotbar?: string[];
+      };
+      this.classId        = (data.classId as ClassId) ?? 'warrior';
+      this.unlockedSkills = new Set(data.unlockedSkills ?? []);
+      this.skillPoints    = data.skillPoints ?? 0;
+      this.hotbar         = (data.hotbar ?? ['', '', '', '', '', '']).slice(0, 6);
+      while (this.hotbar.length < 6) this.hotbar.push('');
+    } catch { /* ignore */ }
+  }
+
+  private saveSoloSkillState(): void {
+    try {
+      const data = {
+        classId:        this.classId,
+        unlockedSkills: [...this.unlockedSkills],
+        skillPoints:    this.skillPoints,
+        hotbar:         this.hotbar,
+      };
+      localStorage.setItem(this.SKILL_SAVE_KEY, JSON.stringify(data));
+    } catch { /* quota */ }
+  }
+
+  private buildSkillTreeState(): SkillTreeState {
+    return {
+      classId:        this.classId,
+      unlockedSkills: [...this.unlockedSkills],
+      skillPoints:    this.skillPoints,
+      hotbar:         [...this.hotbar],
+    };
+  }
+
+  /** Recalculate passive stat bonuses and apply them to player stats. */
+  private applyPassiveBonuses(): void {
+    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
+    // Apply max HP / mana bonuses (re-derive from level base)
+    const baseHp   = PLAYER.BASE_HP + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL;
+    const baseMana = PLAYER.BASE_MANA;
+    const newMaxHp   = baseHp   + bonuses.maxHpFlat;
+    const newMaxMana = baseMana + bonuses.maxManaFlat;
+    this.hp   = Math.min(this.hp,   newMaxHp);
+    this.mana = Math.min(this.mana, newMaxMana);
+    // (max values are derived dynamically in updateHUD / movement code)
+  }
+
+  /** Get effective max HP including passive bonuses. */
+  private getMaxHp(): number {
+    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
+    return PLAYER.BASE_HP + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL + bonuses.maxHpFlat;
+  }
+
+  /** Get effective max mana including passive bonuses. */
+  private getMaxMana(): number {
+    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
+    return PLAYER.BASE_MANA + bonuses.maxManaFlat;
+  }
+
+  /** Get effective mana regen per second including passive bonuses. */
+  private getEffectiveManaRegen(): number {
+    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
+    return MANA.REGEN_PER_SEC + bonuses.manaRegenFlat;
+  }
+
+  /** Get damage reduction fraction (0–0.8 capped). */
+  private getDamageReduction(): number {
+    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
+    let dr = bonuses.damageReductionPct;
+    // last_stand: extra 30% DR when below 25% HP
+    if (this.unlockedSkills.has('last_stand') && this.hp < this.getMaxHp() * 0.25) {
+      dr += 0.30;
+    }
+    return Math.min(0.80, dr);
+  }
+
+  /** Skill panel callbacks ─────────────────────────────────────────────────── */
+
+  private allocSkill(skillId: string): void {
+    if (this.skillPoints <= 0) return;
+    const skillDef = SKILL_BY_ID.get(skillId);
+    if (!skillDef) return;
+    if (skillDef.classId !== this.classId) return;
+    if (this.unlockedSkills.has(skillId)) return;
+    if (skillDef.prerequisiteId && !this.unlockedSkills.has(skillDef.prerequisiteId)) return;
+
+    if (this.isMultiplayer && this.mp) {
+      this.mp.sendSkillAlloc(skillId);
+      // Optimistic update while waiting for server ack
+      this.unlockedSkills.add(skillId);
+      this.skillPoints -= 1;
+    } else {
+      this.unlockedSkills.add(skillId);
+      this.skillPoints -= 1;
+      this.applyPassiveBonuses();
+      this.saveSoloSkillState();
+    }
+    this.skillTree?.updateState(this.buildSkillTreeState());
+    this.updateHotbarHUD();
+  }
+
+  private setHotbar(hotbar: string[]): void {
+    this.hotbar = hotbar.slice(0, 6);
+    while (this.hotbar.length < 6) this.hotbar.push('');
+    if (this.isMultiplayer && this.mp) {
+      this.mp.sendSkillHotbar(this.hotbar);
+    } else {
+      this.saveSoloSkillState();
+    }
+    this.skillTree?.updateState(this.buildSkillTreeState());
+    this.updateHotbarHUD();
+  }
+
+  private setClass(classId: ClassId): void {
+    if (this.unlockedSkills.size > 0) return; // must respec first
+    this.classId = classId;
+    if (this.isMultiplayer && this.mp) {
+      this.mp.sendSkillClass(classId);
+    } else {
+      this.saveSoloSkillState();
+    }
+    this.skillTree?.updateState(this.buildSkillTreeState());
+  }
+
+  private respecSkills(): void {
+    const refunded = this.unlockedSkills.size;
+    this.unlockedSkills.clear();
+    this.hotbar = ['', '', '', '', '', ''];
+    this.skillPoints += refunded;
+    this.skillCooldowns.clear();
+    if (this.isMultiplayer && this.mp) {
+      this.mp.sendSkillRespec();
+    } else {
+      this.applyPassiveBonuses();
+      this.saveSoloSkillState();
+    }
+    this.skillTree?.updateState(this.buildSkillTreeState());
+    this.updateHotbarHUD();
+    this.floatingText(this.player.x, this.player.y - 20, 'Respecced!', '#aaaaff');
+  }
+
+  /** Activate skill in hotbar slot i. */
+  private activateSkillSlot(slot: number, _time: number): void {
+    const skillId = this.hotbar[slot];
+    if (!skillId) return;
+    const skillDef = SKILL_BY_ID.get(skillId);
+    if (!skillDef || skillDef.type !== 'active') return;
+    if (!this.unlockedSkills.has(skillId)) return;
+
+    const now = this.time.now;
+    const cdExpiry = this.skillCooldowns.get(skillId) ?? 0;
+    if (now < cdExpiry) {
+      // On cooldown — brief visual feedback
+      this.floatingText(this.player.x, this.player.y - 12, 'CD!', '#888888');
+      return;
+    }
+
+    // Mana check
+    const surgeBuff  = now < this.arcaneSurgeUntil;
+    const manaCost   = surgeBuff ? 0 : (skillDef.manaCost ?? 0);
+    if (this.mana < manaCost) {
+      this.floatingText(this.player.x, this.player.y - 12, 'No Mana!', '#9090ff');
+      return;
+    }
+
+    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
+    const cdMult  = Math.max(0.2, 1 - bonuses.allCdReductionPct);
+    const cd      = Math.round((skillDef.cooldownMs ?? 0) * cdMult);
+    this.skillCooldowns.set(skillId, now + cd);
+    this.mana = Math.max(0, this.mana - manaCost);
+    this.updateHotbarHUD();
+
+    if (this.isMultiplayer && this.mp) {
+      this.mp.sendSkillUse(skillId);
+      // Visual-only feedback (server handles effects)
+      this.floatingText(this.player.x, this.player.y - 14, skillDef.name, '#aaddff');
+    } else {
+      this.executeSkillSolo(skillId, now, bonuses.damagePct);
+    }
+  }
+
+  /** Execute skill effects in solo mode. */
+  private executeSkillSolo(skillId: string, now: number, bonusDamagePct: number): void {
+    const berserk    = now < this.berserkUntil ? 1.5 : 1.0;
+    const surge      = now < this.arcaneSurgeUntil ? 2.0 : 1.0;
+    const dmgMult    = (1 + bonusDamagePct) * berserk * surge;
+    const baseDmg    = COMBAT.ATTACK_DAMAGE + (this.level - 1) * LEVELS.DAMAGE_BONUS_PER_LEVEL;
+
+    switch (skillId) {
+      // ── Berserker ────────────────────────────────────────────────────────
+      case 'reckless_strike': {
+        const hit = this.nearestEnemySolo(COMBAT.ATTACK_RANGE_PX * 2);
+        if (hit) this.applySkillDamageToEnemy(hit, Math.round(baseDmg * 2 * dmgMult));
+        this.floatingText(this.player.x, this.player.y - 14, 'Reckless Strike!', '#ff8844');
+        break;
+      }
+      case 'blade_fury': {
+        let count = 0;
+        this.enemies.getChildren().forEach(obj => {
+          const e = obj as Phaser.Physics.Arcade.Sprite;
+          if (!e.active) return;
+          if (Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) > 110) return;
+          this.applySkillDamageToEnemy(e, Math.round(baseDmg * 1.5 * dmgMult));
+          count++;
+        });
+        this.spawnBurst(this.player.x, this.player.y, [0xff8844, 0xffcc44, 0xffffff], 18, 130);
+        this.floatingText(this.player.x, this.player.y - 14, `Blade Fury ×${count}`, '#ff8844');
+        break;
+      }
+      case 'berserk_mode': {
+        this.berserkUntil = now + 6000;
+        this.screenFlash(0xff4400, 0.25);
+        this.floatingText(this.player.x, this.player.y - 14, '⚡ BERSERK!', '#ff6600');
+        break;
+      }
+      // ── Guardian ────────────────────────────────────────────────────────
+      case 'shield_bash': {
+        const hit = this.nearestEnemySolo(COMBAT.ATTACK_RANGE_PX * 2);
+        if (hit) {
+          this.applySkillDamageToEnemy(hit, Math.round(baseDmg * 0.7 * dmgMult));
+          // Visual stun effect
+          this.tweens.add({ targets: hit, tint: 0xffffaa, duration: 200, yoyo: true, repeat: 3 });
+        }
+        this.floatingText(this.player.x, this.player.y - 14, 'Shield Bash!', '#aaddff');
+        break;
+      }
+      case 'taunt': {
+        // Visual cue; enemy AI logic continues normally in solo
+        this.spawnBurst(this.player.x, this.player.y, [0xaaaaff, 0x8888ff], 8, 80);
+        this.floatingText(this.player.x, this.player.y - 14, 'TAUNT', '#aaaaff');
+        break;
+      }
+      // ── Paladin ──────────────────────────────────────────────────────────
+      case 'holy_mending': {
+        this.hp = Math.min(this.getMaxHp(), this.hp + 50);
+        this.spawnBurst(this.player.x, this.player.y, [0xffffff, 0xffe040, 0x88ff88], 12, 90);
+        this.floatingText(this.player.x, this.player.y - 14, '+50 HP', '#88ff88');
+        break;
+      }
+      case 'sacred_strike': {
+        const hit = this.nearestEnemySolo(COMBAT.ATTACK_RANGE_PX * 2);
+        if (hit) this.applySkillDamageToEnemy(hit, Math.round(baseDmg * 1.8 * dmgMult));
+        this.floatingText(this.player.x, this.player.y - 14, 'Sacred Strike!', '#ffe040');
+        break;
+      }
+      case 'divine_shield': {
+        this.lastHitTime = now;            // reuse lastHitTime as invuln until
+        const invulnMs = 3000;
+        this.screenFlash(0xffffff, 0.3);
+        this.time.delayedCall(invulnMs, () => { /* auto-expires */ });
+        this.floatingText(this.player.x, this.player.y - 14, '✦ DIVINE SHIELD', '#ffffff');
+        // Mark invuln window
+        (this as any)._divineShieldUntil = now + invulnMs;
+        break;
+      }
+      // ── Pyromancer ───────────────────────────────────────────────────────
+      case 'fireball': {
+        const hit = this.nearestEnemySolo(400);
+        if (hit) {
+          this.applySkillDamageToEnemy(hit, Math.round(60 * dmgMult));
+          this.spawnBurst(hit.x, hit.y, [0xff4400, 0xff8844, 0xffcc44], 10, 100);
+        }
+        this.floatingText(this.player.x, this.player.y - 14, 'Fireball!', '#ff6622');
+        break;
+      }
+      case 'inferno_ring': {
+        this.enemies.getChildren().forEach(obj => {
+          const e = obj as Phaser.Physics.Arcade.Sprite;
+          if (!e.active) return;
+          if (Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) > 110) return;
+          this.applySkillDamageToEnemy(e, Math.round(80 * dmgMult));
+        });
+        this.spawnBurst(this.player.x, this.player.y, [0xff4400, 0xff8844, 0xcc2200], 24, 180);
+        this.cameras.main.shake(200, 0.01);
+        this.floatingText(this.player.x, this.player.y - 14, '🔥 INFERNO!', '#ff4400');
+        break;
+      }
+      case 'meteor_strike': {
+        this.enemies.getChildren().forEach(obj => {
+          const e = obj as Phaser.Physics.Arcade.Sprite;
+          if (!e.active) return;
+          if (Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) > 165) return;
+          this.applySkillDamageToEnemy(e, Math.round(150 * dmgMult));
+        });
+        this.spawnBurst(this.player.x, this.player.y, [0xffffff, 0xff8800, 0xff4400, 0xcc2200], 35, 250);
+        this.cameras.main.shake(350, 0.022);
+        this.screenFlash(0xff4400, 0.25);
+        this.floatingText(this.player.x, this.player.y - 14, '☄ METEOR!', '#ff4400');
+        break;
+      }
+      // ── Frostbinder ──────────────────────────────────────────────────────
+      case 'ice_lance': {
+        const hit = this.nearestEnemySolo(400);
+        if (hit) {
+          this.applySkillDamageToEnemy(hit, Math.round(45 * dmgMult));
+          this.tweens.add({ targets: hit, tint: 0x88ccff, duration: 300, yoyo: true });
+          this.spawnBurst(hit.x, hit.y, [0x88ccff, 0xaaddff, 0xffffff], 8, 80);
+        }
+        this.floatingText(this.player.x, this.player.y - 14, 'Ice Lance!', '#88ccff');
+        break;
+      }
+      case 'blizzard': {
+        this.enemies.getChildren().forEach(obj => {
+          const e = obj as Phaser.Physics.Arcade.Sprite;
+          if (!e.active) return;
+          if (Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) > 130) return;
+          this.tweens.add({ targets: e, tint: 0x88ccff, alpha: 0.7, duration: 3000, yoyo: true });
+        });
+        this.spawnBurst(this.player.x, this.player.y, [0x88ccff, 0xaaddff, 0xffffff], 20, 150);
+        this.floatingText(this.player.x, this.player.y - 14, '❄ Blizzard!', '#88ccff');
+        break;
+      }
+      case 'glacial_nova': {
+        this.enemies.getChildren().forEach(obj => {
+          const e = obj as Phaser.Physics.Arcade.Sprite;
+          if (!e.active) return;
+          if (Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) > 165) return;
+          this.applySkillDamageToEnemy(e, Math.round(100 * dmgMult));
+          this.tweens.add({ targets: e, tint: 0x44aaff, duration: 3000, yoyo: true });
+        });
+        this.spawnBurst(this.player.x, this.player.y, [0x44aaff, 0x88ccff, 0xffffff], 30, 220);
+        this.cameras.main.shake(280, 0.018);
+        this.screenFlash(0x44aaff, 0.2);
+        this.floatingText(this.player.x, this.player.y - 14, '❄ GLACIAL NOVA!', '#44aaff');
+        break;
+      }
+      // ── Arcanist ─────────────────────────────────────────────────────────
+      case 'arcane_bolt': {
+        const hit = this.nearestEnemySolo(400);
+        if (hit) {
+          this.applySkillDamageToEnemy(hit, Math.round(70 * dmgMult));
+          this.spawnBurst(hit.x, hit.y, [0xaa66ff, 0xdd88ff, 0xffffff], 10, 110);
+        }
+        this.floatingText(this.player.x, this.player.y - 14, 'Arcane Bolt!', '#cc88ff');
+        break;
+      }
+      case 'arcane_shield': {
+        this.shieldAbsorb = 80;
+        this.screenFlash(0x8844ff, 0.2);
+        this.floatingText(this.player.x, this.player.y - 14, '✦ Arcane Shield (80)', '#cc88ff');
+        break;
+      }
+      case 'arcane_surge': {
+        this.arcaneSurgeUntil = now + 10000;
+        this.screenFlash(0xaa66ff, 0.3);
+        this.floatingText(this.player.x, this.player.y - 14, '⚡ ARCANE SURGE!', '#cc88ff');
+        break;
+      }
+      default: break;
+    }
+    this.updateHUD();
+  }
+
+  /** Apply skill damage to an enemy sprite in solo mode. */
+  private applySkillDamageToEnemy(
+    sprite: Phaser.Physics.Arcade.Sprite,
+    damage: number,
+  ): void {
+    const extra = sprite.getData('extra') as EnemyExtra | undefined;
+    if (!extra || extra.hp <= 0) return;
+
+    extra.hp = Math.max(0, extra.hp - damage);
+    this.floatingText(sprite.x, sprite.y - 10, `-${damage}`, '#ffcc44');
+    this.sfx.playHit();
+
+    if (extra.hp <= 0) {
+      // Reuse the standard enemy kill flow
+      this.killEnemy(sprite);
+    }
+  }
+
+  /** Returns the nearest active enemy sprite within maxDist px, or null. */
+  private nearestEnemySolo(maxDist: number): Phaser.Physics.Arcade.Sprite | null {
+    let nearest: Phaser.Physics.Arcade.Sprite | null = null;
+    let nearestD = maxDist;
+    this.enemies.getChildren().forEach(obj => {
+      const e = obj as Phaser.Physics.Arcade.Sprite;
+      if (!e.active) return;
+      const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
+      if (d < nearestD) { nearestD = d; nearest = e; }
+    });
+    return nearest;
+  }
+
+  /** Update the hotbar HUD slots. */
+  private updateHotbarHUD(): void {
+    const now = this.time.now;
+    for (let i = 0; i < 6; i++) {
+      const skillId  = this.hotbar[i] ?? '';
+      const skillDef = skillId ? SKILL_BY_ID.get(skillId) : undefined;
+      const label    = this.hotbarSlotLabels[i];
+      const cdOverlay = this.hotbarCdOverlays[i];
+      const cdTxt    = this.hotbarCdTexts[i];
+
+      if (label) label.setText(skillDef ? skillDef.name.slice(0, 5) : '');
+
+      const cdExpiry = skillId ? (this.skillCooldowns.get(skillId) ?? 0) : 0;
+      const onCd     = now < cdExpiry;
+      if (cdOverlay) cdOverlay.setVisible(onCd);
+      if (cdTxt) {
+        if (onCd) {
+          const secsLeft = ((cdExpiry - now) / 1000).toFixed(1);
+          cdTxt.setText(secsLeft).setVisible(true);
+        } else {
+          cdTxt.setVisible(false);
+        }
+      }
+    }
+
+    // Skill points badge
+    if (this.skillPointsBadge) {
+      if (this.skillPoints > 0) {
+        this.skillPointsBadge.setText(`${this.skillPoints} SP`).setVisible(true);
+      } else {
+        this.skillPointsBadge.setVisible(false);
+      }
+    }
   }
 }

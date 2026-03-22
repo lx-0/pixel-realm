@@ -131,6 +131,15 @@ export class MultiplayerClient {
   onQuestError?: (message: string) => void;
   onQuestCompleted?: (questId: string) => void;
 
+  // Skill callbacks
+  onSkillPointsUpdated?: (skillPoints: number) => void;
+  onSkillAllocOk?: (skillId: string, skillPoints: number) => void;
+  onSkillHotbarOk?: (hotbar: string[]) => void;
+  onSkillRespecOk?: (skillPoints: number) => void;
+  onSkillUsed?: (skillId: string, cooldownMs: number, expiresAt: number) => void;
+  onSkillOnCooldown?: (skillId: string, expiresAt: number) => void;
+  onSkillError?: (message: string) => void;
+
   // Trade callbacks
   onTradeInvited?: (fromSessionId: string, fromName: string) => void;
   onTradePending?: (withSessionId: string) => void;
@@ -279,6 +288,29 @@ export class MultiplayerClient {
       this.onTradeError?.(msg.message);
     });
 
+    // ── Skill messages ────────────────────────────────────────────────────
+    room.onMessage('skill_points_updated', (msg: { skillPoints: number }) => {
+      this.onSkillPointsUpdated?.(msg.skillPoints);
+    });
+    room.onMessage('skill_alloc_ok', (msg: { skillId: string; skillPoints: number }) => {
+      this.onSkillAllocOk?.(msg.skillId, msg.skillPoints);
+    });
+    room.onMessage('skill_hotbar_ok', (msg: { hotbar: string[] }) => {
+      this.onSkillHotbarOk?.(msg.hotbar);
+    });
+    room.onMessage('skill_respec_ok', (msg: { skillPoints: number }) => {
+      this.onSkillRespecOk?.(msg.skillPoints);
+    });
+    room.onMessage('skill_used', (msg: { skillId: string; cooldownMs: number; expiresAt: number }) => {
+      this.onSkillUsed?.(msg.skillId, msg.cooldownMs, msg.expiresAt);
+    });
+    room.onMessage('skill_on_cooldown', (msg: { skillId: string; expiresAt: number }) => {
+      this.onSkillOnCooldown?.(msg.skillId, msg.expiresAt);
+    });
+    room.onMessage('skill_error', (msg: { message: string }) => {
+      this.onSkillError?.(msg.message);
+    });
+
     // ── Connection events ────────────────────────────────────────────────
     room.onLeave(() => {
       console.warn('[MP] Left room');
@@ -378,6 +410,32 @@ export class MultiplayerClient {
 
   sendTradeCancel(): void {
     this.room?.send('trade_cancel');
+  }
+
+  // ── Skill tree messages ───────────────────────────────────────────────────
+
+  sendLevelUp(): void {
+    this.room?.send('level_up');
+  }
+
+  sendSkillUse(skillId: string): void {
+    this.room?.send('skill_use', { skillId });
+  }
+
+  sendSkillAlloc(skillId: string): void {
+    this.room?.send('skill_alloc', { skillId });
+  }
+
+  sendSkillHotbar(hotbar: string[]): void {
+    this.room?.send('skill_hotbar', { hotbar });
+  }
+
+  sendSkillClass(classId: string): void {
+    this.room?.send('skill_class', { classId });
+  }
+
+  sendSkillRespec(): void {
+    this.room?.send('skill_respec', { confirm: true });
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

@@ -147,6 +147,22 @@ export const tradeHistory = pgTable("trade_history", {
   completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Skill Allocations (skill tree progress per player) ────────────────────────
+
+export const skillAllocations = pgTable("skill_allocations", {
+  playerId: uuid("player_id")
+    .primaryKey()
+    .references(() => players.id, { onDelete: "cascade" }),
+  classId: varchar("class_id", { length: 20 }).notNull().default("warrior"),
+  /** JSON: Record<skillId, 1> — set of unlocked skill ids */
+  unlockedSkills: jsonb("unlocked_skills").notNull().default({}),
+  /** Unspent skill points available to allocate */
+  skillPoints: integer("skill_points").notNull().default(0),
+  /** Ordered list of up to 6 active skill ids on hotbar (JSON string array) */
+  hotbar: jsonb("hotbar").notNull().default([]),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -159,3 +175,4 @@ export type ZoneStateRow = typeof zoneState.$inferSelect;
 export type GeneratedQuestRow = typeof generatedQuests.$inferSelect;
 export type MarketplaceListing = typeof marketplaceListings.$inferSelect;
 export type TradeHistoryRow = typeof tradeHistory.$inferSelect;
+export type SkillAllocationsRow = typeof skillAllocations.$inferSelect;

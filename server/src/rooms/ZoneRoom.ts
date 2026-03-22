@@ -4,6 +4,8 @@ import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players
 import { getOrGenerateQuest, completeQuestForPlayer } from "../quests/db";
 import { verifyRoomToken, AuthPayload } from "../auth/middleware";
 import { executeP2PTrade, type TradeItem } from "../db/marketplace";
+import { initSkillState, loadSkillState, saveSkillState, type SkillState } from "../db/skills";
+import { ALL_SKILLS, SKILL_BY_ID, computePassiveBonuses, type ClassId } from "../skills";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -18,6 +20,15 @@ const PROJECTILE_SPEED = 100;
 const PROJECTILE_LIFETIME_MS = 2000;
 const WAVE_PREP_MS = 5000;        // 5 s between waves
 const BASE_ENEMY_COUNT = 4;       // enemies in wave 1; +2 per additional wave
+
+// ── Skill buff flags (bitmask, synced to player.buffFlags) ───────────────────
+const BUFF_BERSERK      = 1; // +50% dmg, +20% spd for 6 s
+const BUFF_DIVINE_SHIELD = 2; // invulnerable for 3 s
+const BUFF_ARCANE_SURGE = 4; // 2× skill dmg, no mana cost for 10 s
+
+// ── Player skill range constants ──────────────────────────────────────────────
+const SKILL_AoE_RADIUS = 55;  // pixels — for AoE skills
+const SKILL_MELEE_RANGE = 38; // pixels — for targeted melee skills
 
 // ── Status effect flags (bitmask, mirrors client STATUS_EFFECTS) ──────────────
 const STATUS_FLAG_FREEZE = 4; // bit 2
@@ -112,6 +123,13 @@ interface TradeConfirmMessage {
   confirmed: boolean; // both must confirm to execute
 }
 
+// Skill messages
+interface SkillUseMessage   { skillId: string }
+interface SkillAllocMessage { skillId: string }
+interface SkillHotbarMessage { hotbar: string[] }  // ordered array of skill ids (len ≤ 6)
+interface SkillClassMessage  { classId: string }
+interface SkillRespecMessage { confirm: boolean }
+
 // Per-room pending trade state
 interface PendingTrade {
   initiatorSessionId: string;
@@ -150,6 +168,12 @@ export class ZoneRoom extends Room<ZoneGameState> {
   // Active P2P trades keyed by the initiator's sessionId
   private pendingTrades = new Map<string, PendingTrade>();
 
+  // ── Skill tree state (in-memory per session) ──────────────────────────────
+  /** Skill allocation state, keyed by sessionId */
+  private skillStateMap = new Map<string, SkillState>();
+  /** Per-player skill cooldowns: sessionId → skillId → expiresAtMs */
+  private skillCooldowns = new Map<string, Record<string, number>>();
+
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -172,6 +196,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("chat",             (client: Client, msg: ChatMessage)        => this.handleChat(client, msg));
     this.onMessage("quest_npc_interact", (client: Client, msg: QuestNpcMessage) => this.handleQuestNpcInteract(client, msg));
     this.onMessage("quest_complete",   (client: Client, msg: QuestCompleteMessage) => this.handleQuestComplete(client, msg));
+
+    // Skill tree messages
+    this.onMessage("level_up",     (client: Client)                           => this.handleLevelUp(client));
+    this.onMessage("skill_use",    (client: Client, msg: SkillUseMessage)    => this.handleSkillUse(client, msg));
+    this.onMessage("skill_alloc",  (client: Client, msg: SkillAllocMessage)  => this.handleSkillAlloc(client, msg));
+    this.onMessage("skill_hotbar", (client: Client, msg: SkillHotbarMessage) => this.handleSkillHotbar(client, msg));
+    this.onMessage("skill_class",  (client: Client, msg: SkillClassMessage)  => this.handleSkillClass(client, msg));
+    this.onMessage("skill_respec", (client: Client, msg: SkillRespecMessage) => this.handleSkillRespec(client, msg));
 
     // P2P trade messages
     this.onMessage("trade_request",  (client: Client, msg: TradeRequestMessage)  => this.handleTradeRequest(client, msg));
@@ -219,6 +251,12 @@ export class ZoneRoom extends Room<ZoneGameState> {
           player.level   = saved.level;
           player.xp      = saved.xp;
         }
+        // Load skill allocations and apply passive bonuses
+        const skillState = await initSkillState(userId);
+        this.skillStateMap.set(client.sessionId, skillState);
+        this.skillCooldowns.set(client.sessionId, {});
+        this.applySkillPassives(player, skillState);
+        this.syncSkillState(player, skillState);
       } catch (err) {
         console.warn(`[ZoneRoom] Failed to load state for ${userId}:`, (err as Error).message);
       }
@@ -230,6 +268,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
   async onLeave(client: Client, consented: boolean) {
     this.cancelTradesForClient(client.sessionId);
     await this.persistPlayer(client.sessionId);
+    this.skillStateMap.delete(client.sessionId);
+    this.skillCooldowns.delete(client.sessionId);
     sessionUserMap.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
     console.log(`[ZoneRoom] ${client.sessionId} left (consented=${consented})`);
@@ -258,6 +298,10 @@ export class ZoneRoom extends Room<ZoneGameState> {
         xp: player.xp,
         currentZone: this.state.zoneId,
       });
+      const skillState = this.skillStateMap.get(sessionId);
+      if (skillState) {
+        await saveSkillState(userId, skillState);
+      }
     } catch (err) {
       console.warn(`[ZoneRoom] Failed to save state for ${userId}:`, (err as Error).message);
     }
@@ -484,6 +528,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.tickProjectiles(dt, now);
     this.tickManaRegen(dt);
     this.tickStatusEffects(now);
+    this.tickBuffs(now);
   }
 
   /** Expire player status effects whose duration has elapsed. */
@@ -554,7 +599,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
     if (now < player.invincibleUntil) return;
     if (dist(enemy.x, enemy.y, player.x, player.y) > 12) return;
 
-    player.hp = Math.max(0, player.hp - PLAYER_HIT_DAMAGE);
+    // Arcane shield absorb
+    let dmgToApply = PLAYER_HIT_DAMAGE;
+    if (player.shieldAbsorb > 0) {
+      const absorbed = Math.min(player.shieldAbsorb, dmgToApply);
+      player.shieldAbsorb -= absorbed;
+      dmgToApply -= absorbed;
+    }
+    player.hp = Math.max(0, player.hp - dmgToApply);
     player.invincibleUntil = now + PLAYER_INVINCIBILITY_MS;
 
     // Apply status effect from this enemy type (e.g. frost_wolf → freeze)
@@ -593,7 +645,13 @@ export class ZoneRoom extends Room<ZoneGameState> {
         if (now < player.invincibleUntil) return;
         if (dist(proj.x, proj.y, player.x, player.y) > 8) return;
 
-        player.hp = Math.max(0, player.hp - proj.damage);
+        let projDmg = proj.damage;
+        if (player.shieldAbsorb > 0) {
+          const absorbed = Math.min(player.shieldAbsorb, projDmg);
+          player.shieldAbsorb -= absorbed;
+          projDmg -= absorbed;
+        }
+        player.hp = Math.max(0, player.hp - projDmg);
         player.invincibleUntil = now + PLAYER_INVINCIBILITY_MS;
         toDelete.push(proj.id);
       });
@@ -855,5 +913,338 @@ export class ZoneRoom extends Room<ZoneGameState> {
       }
     }
     return { isInitiator: false };
+  }
+
+  // ── Skill Tree Handlers ───────────────────────────────────────────────────────
+
+  /** Apply all passive bonuses from unlocked skills to the Colyseus Player schema. */
+  private applySkillPassives(player: Player, skillState: SkillState): void {
+    const bonuses = computePassiveBonuses(Object.keys(skillState.unlockedSkills));
+    const baseHp   = 100 + (player.level - 1) * 20;
+    const baseMana =  50;
+    player.maxHp   = baseHp   + bonuses.maxHpFlat;
+    player.maxMana = baseMana + bonuses.maxManaFlat;
+    // Clamp current values to new maxes
+    player.hp   = Math.min(player.hp,   player.maxHp);
+    player.mana = Math.min(player.mana, player.maxMana);
+  }
+
+  /** Push skill state into the Colyseus-synced Player fields. */
+  private syncSkillState(player: Player, skillState: SkillState): void {
+    player.classId        = skillState.classId;
+    player.skillPoints    = skillState.skillPoints;
+    player.unlockedSkills = JSON.stringify(Object.keys(skillState.unlockedSkills));
+    player.hotbar         = JSON.stringify(skillState.hotbar.slice(0, 6));
+  }
+
+  /** Called by the client on level-up — grant one skill point. */
+  private handleLevelUp(client: Client): void {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const skillState = this.skillStateMap.get(client.sessionId);
+    if (!skillState) return;
+    skillState.skillPoints += 1;
+    player.skillPoints = skillState.skillPoints;
+    client.send("skill_points_updated", { skillPoints: skillState.skillPoints });
+  }
+
+  /** Player spends a skill point to unlock a skill. */
+  private handleSkillAlloc(client: Client, msg: SkillAllocMessage): void {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const skillState = this.skillStateMap.get(client.sessionId);
+    if (!skillState) return;
+
+    const skillId = String(msg.skillId ?? "").slice(0, 50);
+    const skillDef = SKILL_BY_ID.get(skillId);
+    if (!skillDef) { client.send("skill_error", { message: "Unknown skill" }); return; }
+    if (skillDef.classId !== skillState.classId) { client.send("skill_error", { message: "Wrong class" }); return; }
+    if (skillState.unlockedSkills[skillId]) { client.send("skill_error", { message: "Already unlocked" }); return; }
+    if (skillState.skillPoints <= 0) { client.send("skill_error", { message: "No skill points" }); return; }
+
+    // Check prerequisite
+    if (skillDef.prerequisiteId && !skillState.unlockedSkills[skillDef.prerequisiteId]) {
+      client.send("skill_error", { message: "Prerequisite not met" }); return;
+    }
+
+    skillState.unlockedSkills[skillId] = 1;
+    skillState.skillPoints -= 1;
+
+    this.applySkillPassives(player, skillState);
+    this.syncSkillState(player, skillState);
+    client.send("skill_alloc_ok", { skillId, skillPoints: skillState.skillPoints });
+  }
+
+  /** Player updates their hotbar layout. */
+  private handleSkillHotbar(client: Client, msg: SkillHotbarMessage): void {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const skillState = this.skillStateMap.get(client.sessionId);
+    if (!skillState) return;
+
+    const hotbar = (Array.isArray(msg.hotbar) ? msg.hotbar : [])
+      .slice(0, 6)
+      .map(id => String(id).slice(0, 50));
+
+    // Only allow skills they've unlocked (or empty slots "")
+    const validated = hotbar.map(id => {
+      if (!id) return "";
+      const def = SKILL_BY_ID.get(id);
+      if (!def || !skillState.unlockedSkills[id] || def.type !== "active") return "";
+      return id;
+    });
+
+    skillState.hotbar = validated;
+    player.hotbar = JSON.stringify(validated);
+    client.send("skill_hotbar_ok", { hotbar: validated });
+  }
+
+  /** Player switches class (only allowed if no skills unlocked yet). */
+  private handleSkillClass(client: Client, msg: SkillClassMessage): void {
+    const skillState = this.skillStateMap.get(client.sessionId);
+    if (!skillState) return;
+    const classId = String(msg.classId ?? "").slice(0, 20) as ClassId;
+    if (classId !== "warrior" && classId !== "mage") {
+      client.send("skill_error", { message: "Invalid class" }); return;
+    }
+    if (Object.keys(skillState.unlockedSkills).length > 0) {
+      client.send("skill_error", { message: "Respec first to change class" }); return;
+    }
+    skillState.classId = classId;
+    const player = this.state.players.get(client.sessionId);
+    if (player) player.classId = classId;
+    client.send("skill_class_ok", { classId });
+  }
+
+  /** Respec: refund all skill points (resets unlocked skills). */
+  private handleSkillRespec(client: Client, msg: SkillRespecMessage): void {
+    if (!msg.confirm) return;
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const skillState = this.skillStateMap.get(client.sessionId);
+    if (!skillState) return;
+
+    const refunded = Object.keys(skillState.unlockedSkills).length;
+    skillState.unlockedSkills = {};
+    skillState.hotbar         = [];
+    skillState.skillPoints    += refunded;
+
+    this.applySkillPassives(player, skillState);
+    this.syncSkillState(player, skillState);
+    client.send("skill_respec_ok", { skillPoints: skillState.skillPoints });
+  }
+
+  /** Player activates an active skill. */
+  private handleSkillUse(client: Client, msg: SkillUseMessage): void {
+    const player = this.state.players.get(client.sessionId);
+    if (!player || player.hp <= 0) return;
+    const skillState = this.skillStateMap.get(client.sessionId);
+    if (!skillState) return;
+
+    const skillId = String(msg.skillId ?? "").slice(0, 50);
+    const skillDef = SKILL_BY_ID.get(skillId);
+    if (!skillDef || skillDef.type !== "active") return;
+    if (!skillState.unlockedSkills[skillId]) return;
+
+    const now = Date.now();
+    const cds = this.skillCooldowns.get(client.sessionId) ?? {};
+
+    // Check cooldown
+    if ((cds[skillId] ?? 0) > now) {
+      client.send("skill_on_cooldown", { skillId, expiresAt: cds[skillId] });
+      return;
+    }
+
+    // Check mana (unless arcane_surge is active)
+    const surgeBuff = (player.buffFlags & BUFF_ARCANE_SURGE) !== 0 && now < player.buffExpiresAt;
+    const manaCost  = surgeBuff ? 0 : (skillDef.manaCost ?? 0);
+    if (player.mana < manaCost) {
+      client.send("skill_no_mana", { skillId }); return;
+    }
+
+    // Cooldown reduction from passives
+    const bonuses = computePassiveBonuses(Object.keys(skillState.unlockedSkills));
+    const cdMult  = Math.max(0.2, 1 - bonuses.allCdReductionPct);
+    const cd      = Math.round((skillDef.cooldownMs ?? 0) * cdMult);
+    cds[skillId]  = now + cd;
+    this.skillCooldowns.set(client.sessionId, cds);
+    player.mana = Math.max(0, player.mana - manaCost);
+
+    // Skill multipliers
+    const surgeMult  = surgeBuff ? 2.0 : 1.0;
+    const berserkMult = ((player.buffFlags & BUFF_BERSERK) !== 0 && now < player.buffExpiresAt) ? 1.5 : 1.0;
+    const dmgBonus   = 1 + bonuses.damagePct;
+
+    this.executeSkillEffect(client, player, skillId, now, surgeMult * berserkMult * dmgBonus);
+
+    // Broadcast cooldown info back to the caster
+    player.skillCooldowns = JSON.stringify(cds);
+    client.send("skill_used", { skillId, cooldownMs: cd, expiresAt: cds[skillId] });
+  }
+
+  private executeSkillEffect(client: Client, player: Player, skillId: string, now: number, dmgMult: number): void {
+    switch (skillId) {
+      // ── Warrior — Berserker ──────────────────────────────────────────────────
+      case "reckless_strike": {
+        const enemy = this.nearestEnemyTo(player, SKILL_MELEE_RANGE * 2);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(50 * dmgMult), player);
+        break;
+      }
+      case "blade_fury": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS) return;
+          this.dealDamageToEnemy(e, Math.round(38 * dmgMult), player);
+        });
+        break;
+      }
+      case "berserk_mode": {
+        player.buffFlags    |= BUFF_BERSERK;
+        player.buffExpiresAt = now + 6000;
+        break;
+      }
+
+      // ── Warrior — Guardian ───────────────────────────────────────────────────
+      case "shield_bash": {
+        const enemy = this.nearestEnemyTo(player, SKILL_MELEE_RANGE * 2);
+        if (enemy) {
+          enemy.statusFlags |= 8; // stun
+          // Use spawnedAt as a temporary stun-expiry tag (repurposed field)
+          enemy.spawnedAt = now + 1500;
+        }
+        break;
+      }
+      case "taunt": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState !== "dead") {
+            e.aiState  = "chase";
+            e.targetId = player.sessionId;
+          }
+        });
+        // Taunt lasts 4s on client — server just forces chase state
+        break;
+      }
+      case "last_stand": break; // purely passive (handled in applySkillPassives)
+
+      // ── Warrior — Paladin ────────────────────────────────────────────────────
+      case "holy_mending": {
+        player.hp = Math.min(player.maxHp, player.hp + 50);
+        break;
+      }
+      case "sacred_strike": {
+        const enemy = this.nearestEnemyTo(player, SKILL_MELEE_RANGE * 2);
+        if (enemy) {
+          this.dealDamageToEnemy(enemy, Math.round(45 * dmgMult), player);
+          // Apply burn (flag 2)
+          enemy.statusFlags |= 2;
+        }
+        break;
+      }
+      case "divine_shield": {
+        player.buffFlags    |= BUFF_DIVINE_SHIELD;
+        player.buffExpiresAt = now + 3000;
+        player.invincibleUntil = now + 3000;
+        break;
+      }
+
+      // ── Mage — Pyromancer ────────────────────────────────────────────────────
+      case "fireball": {
+        const enemy = this.nearestEnemyTo(player, 200);
+        if (enemy) {
+          this.dealDamageToEnemy(enemy, Math.round(60 * dmgMult), player);
+          enemy.statusFlags |= 2; // burn
+        }
+        break;
+      }
+      case "inferno_ring": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS) return;
+          this.dealDamageToEnemy(e, Math.round(80 * dmgMult), player);
+          e.statusFlags |= 2; // burn
+        });
+        break;
+      }
+      case "meteor_strike": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS * 1.5) return;
+          this.dealDamageToEnemy(e, Math.round(150 * dmgMult), player);
+        });
+        break;
+      }
+
+      // ── Mage — Frostbinder ───────────────────────────────────────────────────
+      case "ice_lance": {
+        const enemy = this.nearestEnemyTo(player, 200);
+        if (enemy) {
+          this.dealDamageToEnemy(enemy, Math.round(45 * dmgMult), player);
+          enemy.statusFlags |= 4; // freeze
+        }
+        break;
+      }
+      case "blizzard": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS * 1.3) return;
+          e.statusFlags |= 4; // freeze
+        });
+        break;
+      }
+      case "glacial_nova": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS * 1.5) return;
+          this.dealDamageToEnemy(e, Math.round(100 * dmgMult), player);
+          e.statusFlags |= 4; // freeze
+        });
+        break;
+      }
+
+      // ── Mage — Arcanist ──────────────────────────────────────────────────────
+      case "arcane_bolt": {
+        const enemy = this.nearestEnemyTo(player, 200);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(70 * dmgMult), player);
+        break;
+      }
+      case "arcane_shield": {
+        player.shieldAbsorb = 80;
+        break;
+      }
+      case "arcane_surge": {
+        player.buffFlags    |= BUFF_ARCANE_SURGE;
+        player.buffExpiresAt = now + 10000;
+        break;
+      }
+
+      default: break;
+    }
+  }
+
+  /** Deals damage to an enemy, accounting for arcane shield on player (not applicable here). */
+  private dealDamageToEnemy(enemy: Enemy, damage: number, _player: Player): void {
+    enemy.hp = Math.max(0, enemy.hp - damage);
+    if (enemy.hp === 0) this.killEnemy(enemy);
+  }
+
+  /** Returns the closest alive enemy within maxRange of the player, or null. */
+  private nearestEnemyTo(player: Player, maxRange: number): Enemy | null {
+    let nearest: Enemy | null = null;
+    let nearestDist = maxRange;
+    this.state.enemies.forEach((e: Enemy) => {
+      if (e.aiState === "dead") return;
+      const d = dist(player.x, player.y, e.x, e.y);
+      if (d < nearestDist) { nearestDist = d; nearest = e; }
+    });
+    return nearest;
+  }
+
+  /** Tick buff expiry and expire buff flags. */
+  private tickBuffs(now: number): void {
+    this.state.players.forEach((player: Player) => {
+      if (player.buffFlags !== 0 && now > player.buffExpiresAt) {
+        player.buffFlags = 0;
+      }
+    });
   }
 }
