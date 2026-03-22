@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import {
-  CANVAS, PLAYER, COMBAT, MANA, LEVELS, SCENES,
+  CANVAS, PLAYER, COMBAT, MANA, LEVELS, SCENES, SPRINT, DODGE,
   ZONES, ENEMY_TYPES, BOSS_TYPES,
   type EnemyTypeName, type BossTypeName, type ZoneConfig,
 } from '../config/constants';
@@ -80,10 +80,22 @@ export class GameScene extends Phaser.Scene {
   private charmed        = false;
   private charmedUntil   = 0;
 
+  // ── Sprint ───────────────────────────────────────────────────────────────
+  private sprintDustTimer = 0;
+
+  // ── Dodge ────────────────────────────────────────────────────────────────
+  private isDodging          = false;
+  private dodgeEndTime       = 0;   // time.now when dash ends
+  private dodgeCooldownEndTime = 0; // time.now when dodge becomes available again
+  private dodgeVx            = 0;
+  private dodgeVy            = 0;
+
   private cursors!:   Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!:      { W: Phaser.Input.Keyboard.Key; A: Phaser.Input.Keyboard.Key; S: Phaser.Input.Keyboard.Key; D: Phaser.Input.Keyboard.Key };
   private attackKey!: Phaser.Input.Keyboard.Key;
   private escKey!:    Phaser.Input.Keyboard.Key;
+  private sprintKey!: Phaser.Input.Keyboard.Key;
+  private dodgeKey!:  Phaser.Input.Keyboard.Key;
 
   private zone!:            ZoneConfig;
   private zoneIdx          = 0;
@@ -107,6 +119,7 @@ export class GameScene extends Phaser.Scene {
   private killText!:        Phaser.GameObjects.Text;
   private enemyCountText!:  Phaser.GameObjects.Text;
   private charmIndicator!:  Phaser.GameObjects.Text;
+  private dodgeCooldownText?: Phaser.GameObjects.Text;
   private bossHpBar!:       Phaser.GameObjects.Rectangle;
   private bossNameText!:    Phaser.GameObjects.Text;
   private bossHudVisible    = false;
@@ -189,6 +202,10 @@ export class GameScene extends Phaser.Scene {
     this.isDead            = false;
     this.charmed           = false;
     this.charmedUntil      = 0;
+    this.sprintDustTimer   = 0;
+    this.isDodging         = false;
+    this.dodgeEndTime      = 0;
+    this.dodgeCooldownEndTime = 0;
     this.wave              = 1;
     this.isBossWave        = false;
     this.kills             = 0;
@@ -295,8 +312,10 @@ export class GameScene extends Phaser.Scene {
     // Crafting station proximity hint
     this.updateCraftingStationHint();
 
-    this.handlePlayerMovement();
+    this.handleDodgeRoll(time);
+    this.handlePlayerMovement(delta);
     this.regenMana(delta);
+    this.updateDodgeCooldownHUD(time);
 
     if (this.isMultiplayer) {
       this.syncRemoteEnemies();
@@ -782,8 +801,14 @@ export class GameScene extends Phaser.Scene {
     if (this.anims.exists('player-idle')) this.player.play('player-idle');
   }
 
-  private handlePlayerMovement(): void {
-    const speed = PLAYER.MOVE_SPEED + (this.level - 1) * LEVELS.SPEED_BONUS_PER_LEVEL;
+  private handlePlayerMovement(delta: number): void {
+    // Dodge overrides normal movement for its duration
+    if (this.isDodging) {
+      this.player.setVelocity(this.dodgeVx, this.dodgeVy);
+      return;
+    }
+
+    let speed = PLAYER.MOVE_SPEED + (this.level - 1) * LEVELS.SPEED_BONUS_PER_LEVEL;
     let vx = 0;
     let vy = 0;
     const left  = this.cursors.left.isDown  || this.wasd.A.isDown;
@@ -804,6 +829,25 @@ export class GameScene extends Phaser.Scene {
       vx *= inv;
       vy *= inv;
     }
+
+    // Sprint: hold Shift while moving, mana must be available
+    const wantsToSprint = this.sprintKey.isDown && (vx !== 0 || vy !== 0) && this.mana > 0;
+    if (wantsToSprint) {
+      speed *= SPRINT.SPEED_MULT;
+      vx    *= SPRINT.SPEED_MULT;
+      vy    *= SPRINT.SPEED_MULT;
+      this.mana = Math.max(0, this.mana - SPRINT.MANA_COST_PER_SEC * delta / 1000);
+
+      // Spawn dust trail periodically
+      this.sprintDustTimer -= delta;
+      if (this.sprintDustTimer <= 0) {
+        this.spawnBurst(this.player.x, this.player.y + 4, [0xaaddaa, 0xdddddd, 0xffffff], 3, 28);
+        this.sprintDustTimer = 90;
+      }
+    } else {
+      this.sprintDustTimer = 0;
+    }
+
     this.player.setVelocity(vx, vy);
 
     if (this.anims.exists('player-walk') && this.anims.exists('player-idle')) {
@@ -832,6 +876,63 @@ export class GameScene extends Phaser.Scene {
   private regenMana(delta: number): void {
     this.mana = Math.min(PLAYER.BASE_MANA as number, this.mana + (MANA.REGEN_PER_SEC as number) * delta / 1000);
     if (this.manaBar) this.manaBar.scaleX = this.mana / (PLAYER.BASE_MANA as number);
+  }
+
+  private handleDodgeRoll(time: number): void {
+    // End dodge when duration expires
+    if (this.isDodging && time >= this.dodgeEndTime) {
+      this.isDodging = false;
+      this.dodgeCooldownEndTime = time + DODGE.COOLDOWN_MS;
+      this.player.clearTint();
+    }
+
+    // Trigger new dodge on Q press
+    if (!Phaser.Input.Keyboard.JustDown(this.dodgeKey)) return;
+    if (this.isDodging) return;
+    if (time < this.dodgeCooldownEndTime) return;
+    if (this.mana < DODGE.MANA_COST) return;
+
+    // Determine dash direction from movement input (fallback: right)
+    const left  = this.cursors.left.isDown  || this.wasd.A.isDown;
+    const right = this.cursors.right.isDown || this.wasd.D.isDown;
+    const up    = this.cursors.up.isDown    || this.wasd.W.isDown;
+    const down  = this.cursors.down.isDown  || this.wasd.S.isDown;
+    let dx = (right ? 1 : 0) - (left ? 1 : 0);
+    let dy = (down  ? 1 : 0) - (up   ? 1 : 0);
+    if (dx === 0 && dy === 0) dx = 1; // default dash right
+    if (dx !== 0 && dy !== 0) {
+      const inv = 1 / Math.SQRT2;
+      dx *= inv;
+      dy *= inv;
+    }
+
+    // Consume mana and start dash
+    this.mana -= DODGE.MANA_COST;
+    this.isDodging  = true;
+    this.dodgeEndTime = time + DODGE.DURATION_MS;
+    this.dodgeVx    = dx * DODGE.DASH_SPEED;
+    this.dodgeVy    = dy * DODGE.DASH_SPEED;
+
+    // Visual feedback: white-blue flash tint for roll duration
+    this.player.setTint(0xaaddff);
+
+    // Burst particles in dash direction
+    this.spawnBurst(this.player.x, this.player.y, [0xaaddff, 0xffffff, 0x88bbff], 6, 90);
+
+    // Screen flash (subtle)
+    this.screenFlash(0x4488ff, 0.08);
+  }
+
+  private updateDodgeCooldownHUD(time: number): void {
+    if (!this.dodgeCooldownText) return;
+    const ready = !this.isDodging && time >= this.dodgeCooldownEndTime;
+    if (ready) {
+      this.dodgeCooldownText.setText('Q DODGE').setColor('#44ffaa');
+    } else {
+      const remaining = Math.ceil((this.dodgeCooldownEndTime - time) / 1000);
+      const label = this.isDodging ? 'ROLLING' : `Q ${remaining}s`;
+      this.dodgeCooldownText.setText(label).setColor('#888888');
+    }
   }
 
   // ── Wave management (solo) ────────────────────────────────────────────────
@@ -1370,6 +1471,7 @@ export class GameScene extends Phaser.Scene {
   // ── Player damage ─────────────────────────────────────────────────────────
 
   private handleEnemyContact(time: number): void {
+    if (this.isDodging || time < this.dodgeEndTime + (DODGE.INVULN_MS - DODGE.DURATION_MS)) return;
     if (time - this.lastHitTime < COMBAT.PLAYER_INVINCIBILITY_MS) return;
     const pb = this.player.getBounds();
     let   hit = false;
@@ -1397,6 +1499,7 @@ export class GameScene extends Phaser.Scene {
     this.spawnBurst(p.x, p.y, [0xffaa44, 0xffffff], 4, 80);
 
     if (isCharm && !this.charmed) {
+      if (this.isDodging) return; // dodge negates charm projectiles too
       this.charmed      = true;
       this.charmedUntil = this.time.now + 2000;
       this.player.setTint(0x00ffcc);
@@ -1405,6 +1508,7 @@ export class GameScene extends Phaser.Scene {
       this.sfx.playPlayerHit();
     } else {
       const now = this.time.now;
+      if (this.isDodging || now < this.dodgeEndTime + (DODGE.INVULN_MS - DODGE.DURATION_MS)) return;
       if (now - this.lastHitTime >= COMBAT.PLAYER_INVINCIBILITY_MS) {
         this.lastHitTime = now;
         this.applyDamageToPlayer(dmg, now, 0xff4444);
@@ -1620,6 +1724,8 @@ export class GameScene extends Phaser.Scene {
     this.wasd            = this.input.keyboard!.addKeys('W,A,S,D') as typeof this.wasd;
     this.attackKey       = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.escKey          = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    this.sprintKey       = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+    this.dodgeKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
     this.npcKey          = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.upKey           = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.downKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
@@ -1639,7 +1745,7 @@ export class GameScene extends Phaser.Scene {
     const bw = 58;
     const Z  = 12;
 
-    this.add.rectangle(bx + bw / 2 + 4, 32, bw + 36, 66, 0x000000, 0.5).setScrollFactor(0).setDepth(Z - 1);
+    this.add.rectangle(bx + bw / 2 + 4, 28, bw + 36, 66, 0x000000, 0.5).setScrollFactor(0).setDepth(Z - 1);
 
     this.add.text(lx, 5, 'HP', { fontSize: '5px', color: '#ff8888', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.add.rectangle(bx + bw / 2, 5, bw, 4, 0x440000).setScrollFactor(0).setDepth(Z - 1);
@@ -1657,6 +1763,8 @@ export class GameScene extends Phaser.Scene {
 
     this.waveText = this.add.text(lx, 28, 'Wave 1', { fontSize: '5px', color: '#ffd700', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.killText = this.add.text(lx, 37, 'Kills: 0', { fontSize: '5px', color: '#aaaaaa', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+
+    this.dodgeCooldownText = this.add.text(lx, 46, 'Q DODGE', { fontSize: '5px', color: '#44ffaa', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
 
     this.enemyCountText = this.add.text(CANVAS.WIDTH - 4, 4, '', { fontSize: '5px', color: '#ff8888', fontFamily: 'monospace' })
       .setOrigin(1, 0).setScrollFactor(0).setDepth(Z);
@@ -1681,7 +1789,7 @@ export class GameScene extends Phaser.Scene {
     this.bossHpBar = this.add.rectangle(bossX, bossY + bossH / 2, bossW, bossH, 0xff2222)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z + 5).setVisible(false);
 
-    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD: Move  |  SPACE: Attack  |  F: Craft  |  ESC: Pause', {
+    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD: Move  |  SHIFT: Sprint  |  Q: Dodge  |  SPACE: Attack  |  F: Craft  |  ESC: Pause', {
       fontSize: '4px', color: '#333344', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(Z);
 

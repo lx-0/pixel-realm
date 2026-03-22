@@ -36,6 +36,21 @@ export const MANA = {
   ATTACK_COST: 5,     // mana used per attack swing
 } as const;
 
+// ── Sprint ────────────────────────────────────────────────────────────────────
+export const SPRINT = {
+  SPEED_MULT:        1.5,  // speed multiplier while holding Shift
+  MANA_COST_PER_SEC: 15,   // mana drained per second while sprinting
+} as const;
+
+// ── Dodge ─────────────────────────────────────────────────────────────────────
+export const DODGE = {
+  DASH_SPEED:  300,   // px/s during roll
+  DURATION_MS: 220,   // how long the dash lasts
+  INVULN_MS:   300,   // total i-frame window (≥ DURATION_MS)
+  COOLDOWN_MS: 1500,  // time before dodge can be used again
+  MANA_COST:   8,     // mana spent per dodge
+} as const;
+
 // ── Enemies ───────────────────────────────────────────────────────────────────
 export const ENEMIES = {
   HP_SCALE_PER_TIER: 1.5,
