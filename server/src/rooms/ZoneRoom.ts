@@ -6,6 +6,7 @@ import { verifyRoomToken, AuthPayload } from "../auth/middleware";
 import { executeP2PTrade, type TradeItem } from "../db/marketplace";
 import { initSkillState, loadSkillState, saveSkillState, type SkillState } from "../db/skills";
 import { ALL_SKILLS, SKILL_BY_ID, computePassiveBonuses, type ClassId } from "../skills";
+import { addItem } from "../db/inventory";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -37,6 +38,34 @@ const STATUS_FREEZE_MS   = 3000;
 const MELEE_STATUS_MAP: Record<string, { flag: number; durationMs: number }> = {
   frost_wolf:    { flag: STATUS_FLAG_FREEZE, durationMs: STATUS_FREEZE_MS },
   crystal_golem: { flag: STATUS_FLAG_FREEZE, durationMs: STATUS_FREEZE_MS },
+};
+
+// ── Crafting material loot tables (per zone) ──────────────────────────────────
+/** Each entry rolls independently on enemy death. */
+const ZONE_LOOT: Record<string, Array<{ itemId: string; chance: number }>> = {
+  zone1: [
+    { itemId: "mat_slime_gel",      chance: 0.40 },
+    { itemId: "mat_leather_scraps", chance: 0.25 },
+  ],
+  zone2: [
+    { itemId: "mat_iron_ore",       chance: 0.35 },
+    { itemId: "mat_leather_scraps", chance: 0.30 },
+    { itemId: "mat_bone_fragment",  chance: 0.15 },
+  ],
+  zone3: [
+    { itemId: "mat_iron_ore",       chance: 0.30 },
+    { itemId: "mat_magic_crystal",  chance: 0.20 },
+    { itemId: "mat_bone_fragment",  chance: 0.25 },
+  ],
+  zone4: [
+    { itemId: "mat_leather_scraps", chance: 0.25 },
+    { itemId: "mat_magic_crystal",  chance: 0.25 },
+    { itemId: "mat_bone_fragment",  chance: 0.20 },
+  ],
+  zone5: [
+    { itemId: "mat_magic_crystal",  chance: 0.30 },
+    { itemId: "mat_bone_fragment",  chance: 0.25 },
+  ],
 };
 
 // Zone → enemy type tables
@@ -123,6 +152,12 @@ interface TradeConfirmMessage {
   confirmed: boolean; // both must confirm to execute
 }
 
+// Crafting notify message — sent by client after a successful craft
+interface CraftNotifyMessage {
+  itemId: string;
+  itemName: string;
+}
+
 // Skill messages
 interface SkillUseMessage   { skillId: string }
 interface SkillAllocMessage { skillId: string }
@@ -204,6 +239,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("skill_hotbar", (client: Client, msg: SkillHotbarMessage) => this.handleSkillHotbar(client, msg));
     this.onMessage("skill_class",  (client: Client, msg: SkillClassMessage)  => this.handleSkillClass(client, msg));
     this.onMessage("skill_respec", (client: Client, msg: SkillRespecMessage) => this.handleSkillRespec(client, msg));
+
+    // Crafting notify — broadcast to other players in the zone
+    this.onMessage("craft_notify", (client: Client, msg: CraftNotifyMessage) => this.handleCraftNotify(client, msg));
 
     // P2P trade messages
     this.onMessage("trade_request",  (client: Client, msg: TradeRequestMessage)  => this.handleTradeRequest(client, msg));
@@ -347,7 +385,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
       enemy.hp = Math.max(0, enemy.hp - ATTACK_DAMAGE);
       if (enemy.hp === 0) {
-        this.killEnemy(enemy);
+        this.killEnemy(enemy, client.sessionId);
       }
     });
 
@@ -494,14 +532,58 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.state.enemiesAlive = count;
   }
 
-  private killEnemy(enemy: Enemy) {
+  private killEnemy(enemy: Enemy, killerSessionId?: string) {
     enemy.aiState = "dead";
+    // Drop crafting materials for the killer
+    if (killerSessionId) {
+      this.dropLootForPlayer(killerSessionId).catch(() => {/* best-effort */});
+    }
     // Remove from state after a short delay (so clients can play death animation)
     this.clock.setTimeout(() => {
       this.state.enemies.delete(enemy.id);
       this.updateEnemiesAlive();
       this.checkWaveComplete();
     }, 500);
+  }
+
+  /** Rolls loot table for the current zone and adds dropped materials to the killer's inventory. */
+  private async dropLootForPlayer(sessionId: string): Promise<void> {
+    const userId = sessionUserMap.get(sessionId);
+    if (!userId) return;
+
+    const lootTable = ZONE_LOOT[this.state.zoneId] ?? [];
+    const droppedItems: string[] = [];
+
+    for (const entry of lootTable) {
+      if (Math.random() < entry.chance) {
+        await addItem(userId, entry.itemId, 1);
+        droppedItems.push(entry.itemId);
+      }
+    }
+
+    if (droppedItems.length > 0) {
+      // Notify the killer's client so it can show floating pickup text
+      const killerClient = this.clients.find((c: Client) => c.sessionId === sessionId);
+      if (killerClient) {
+        killerClient.send("loot_drop", { items: droppedItems });
+      }
+    }
+  }
+
+  /** Broadcast crafting event to all other players in the zone. */
+  private handleCraftNotify(client: Client, msg: CraftNotifyMessage) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const playerName = player.name || "Hero";
+    const itemName = String(msg.itemName ?? "").slice(0, 50);
+    if (!itemName) return;
+
+    // Broadcast to everyone else in the room
+    this.broadcast(
+      "craft_event",
+      { playerName, itemName },
+      { except: client },
+    );
   }
 
   private checkWaveComplete() {
@@ -1083,18 +1165,19 @@ export class ZoneRoom extends Room<ZoneGameState> {
   }
 
   private executeSkillEffect(client: Client, player: Player, skillId: string, now: number, dmgMult: number): void {
+    const sid = client.sessionId;
     switch (skillId) {
       // ── Warrior — Berserker ──────────────────────────────────────────────────
       case "reckless_strike": {
         const enemy = this.nearestEnemyTo(player, SKILL_MELEE_RANGE * 2);
-        if (enemy) this.dealDamageToEnemy(enemy, Math.round(50 * dmgMult), player);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(50 * dmgMult), player, sid);
         break;
       }
       case "blade_fury": {
         this.state.enemies.forEach((e: Enemy) => {
           if (e.aiState === "dead") return;
           if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS) return;
-          this.dealDamageToEnemy(e, Math.round(38 * dmgMult), player);
+          this.dealDamageToEnemy(e, Math.round(38 * dmgMult), player, sid);
         });
         break;
       }
@@ -1134,7 +1217,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
       case "sacred_strike": {
         const enemy = this.nearestEnemyTo(player, SKILL_MELEE_RANGE * 2);
         if (enemy) {
-          this.dealDamageToEnemy(enemy, Math.round(45 * dmgMult), player);
+          this.dealDamageToEnemy(enemy, Math.round(45 * dmgMult), player, sid);
           // Apply burn (flag 2)
           enemy.statusFlags |= 2;
         }
@@ -1151,7 +1234,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
       case "fireball": {
         const enemy = this.nearestEnemyTo(player, 200);
         if (enemy) {
-          this.dealDamageToEnemy(enemy, Math.round(60 * dmgMult), player);
+          this.dealDamageToEnemy(enemy, Math.round(60 * dmgMult), player, sid);
           enemy.statusFlags |= 2; // burn
         }
         break;
@@ -1160,7 +1243,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
         this.state.enemies.forEach((e: Enemy) => {
           if (e.aiState === "dead") return;
           if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS) return;
-          this.dealDamageToEnemy(e, Math.round(80 * dmgMult), player);
+          this.dealDamageToEnemy(e, Math.round(80 * dmgMult), player, sid);
           e.statusFlags |= 2; // burn
         });
         break;
@@ -1169,7 +1252,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
         this.state.enemies.forEach((e: Enemy) => {
           if (e.aiState === "dead") return;
           if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS * 1.5) return;
-          this.dealDamageToEnemy(e, Math.round(150 * dmgMult), player);
+          this.dealDamageToEnemy(e, Math.round(150 * dmgMult), player, sid);
         });
         break;
       }
@@ -1178,7 +1261,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
       case "ice_lance": {
         const enemy = this.nearestEnemyTo(player, 200);
         if (enemy) {
-          this.dealDamageToEnemy(enemy, Math.round(45 * dmgMult), player);
+          this.dealDamageToEnemy(enemy, Math.round(45 * dmgMult), player, sid);
           enemy.statusFlags |= 4; // freeze
         }
         break;
@@ -1195,7 +1278,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
         this.state.enemies.forEach((e: Enemy) => {
           if (e.aiState === "dead") return;
           if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS * 1.5) return;
-          this.dealDamageToEnemy(e, Math.round(100 * dmgMult), player);
+          this.dealDamageToEnemy(e, Math.round(100 * dmgMult), player, sid);
           e.statusFlags |= 4; // freeze
         });
         break;
@@ -1204,7 +1287,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
       // ── Mage — Arcanist ──────────────────────────────────────────────────────
       case "arcane_bolt": {
         const enemy = this.nearestEnemyTo(player, 200);
-        if (enemy) this.dealDamageToEnemy(enemy, Math.round(70 * dmgMult), player);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(70 * dmgMult), player, sid);
         break;
       }
       case "arcane_shield": {
@@ -1221,10 +1304,10 @@ export class ZoneRoom extends Room<ZoneGameState> {
     }
   }
 
-  /** Deals damage to an enemy, accounting for arcane shield on player (not applicable here). */
-  private dealDamageToEnemy(enemy: Enemy, damage: number, _player: Player): void {
+  /** Deals damage to an enemy. killerSessionId is used for loot drops on kill. */
+  private dealDamageToEnemy(enemy: Enemy, damage: number, _player: Player, killerSessionId?: string): void {
     enemy.hp = Math.max(0, enemy.hp - damage);
-    if (enemy.hp === 0) this.killEnemy(enemy);
+    if (enemy.hp === 0) this.killEnemy(enemy, killerSessionId);
   }
 
   /** Returns the closest alive enemy within maxRange of the player, or null. */

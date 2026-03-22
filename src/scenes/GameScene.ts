@@ -517,7 +517,7 @@ export class GameScene extends Phaser.Scene {
 
     // Crafting panel
     this.craftingPanel = new CraftingPanel(this);
-    this.craftingPanel.onCraftSuccess = (_itemId) => {
+    this.craftingPanel.onCraftSuccess = (itemId, itemName) => {
       this.floatingText(
         CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20,
         `✦ Crafted!`,
@@ -532,6 +532,10 @@ export class GameScene extends Phaser.Scene {
           yoyo: true,
           repeat: 3,
         });
+      }
+      // Notify other zone players in multiplayer
+      if (this.isMultiplayer && this.mp && itemName) {
+        this.mp.sendCraftNotify(itemId, itemName);
       }
     };
 
@@ -624,6 +628,26 @@ export class GameScene extends Phaser.Scene {
     };
     client.onSkillError = (msg) => {
       this.chat?.addMessage(`Skill: ${msg}`, '#ff8888');
+    };
+
+    // Crafting events — show floating zone-wide notifications
+    client.onCraftEvent = (playerName, itemName) => {
+      this.chat?.addMessage(`${playerName} crafted ${itemName}`, '#ffcc88');
+    };
+
+    // Loot drops — show floating text for received materials
+    client.onLootDrop = (items) => {
+      items.forEach((itemId, i) => {
+        const label = itemId.replace('mat_', '').replace(/_/g, ' ');
+        this.time.delayedCall(i * 300, () => {
+          this.floatingText(
+            this.player.x + (Math.random() - 0.5) * 20,
+            this.player.y - 14 - i * 8,
+            `+${label}`,
+            '#88ee88',
+          );
+        });
+      });
     };
 
     // Show control hints once

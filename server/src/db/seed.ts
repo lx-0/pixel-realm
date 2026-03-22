@@ -142,6 +142,22 @@ const SEED_ITEMS = [
   },
   // ── Crafted Gear ─────────────────────────────────────────────────────────────
   {
+    id: "boots_leather",
+    name: "Leather Boots",
+    type: "armor",
+    stats: { defense: 6, speed: 0.1 },
+    description: "Sturdy boots cut from thick leather. Light on the feet.",
+    rarity: "common",
+  },
+  {
+    id: "scroll_fire",
+    name: "Fire Scroll",
+    type: "consumable",
+    stats: { fireDamage: 40 },
+    description: "A volatile scroll inscribed with fire runes. Use with care.",
+    rarity: "uncommon",
+  },
+  {
     id: "shield_iron",
     name: "Iron Shield",
     type: "armor",

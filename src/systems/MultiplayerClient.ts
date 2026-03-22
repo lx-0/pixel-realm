@@ -140,6 +140,12 @@ export class MultiplayerClient {
   onSkillOnCooldown?: (skillId: string, expiresAt: number) => void;
   onSkillError?: (message: string) => void;
 
+  // Crafting callbacks
+  /** Called when another player in the zone crafts an item. */
+  onCraftEvent?: (playerName: string, itemName: string) => void;
+  /** Called when the local player receives crafting material drops after a kill. */
+  onLootDrop?: (items: string[]) => void;
+
   // Trade callbacks
   onTradeInvited?: (fromSessionId: string, fromName: string) => void;
   onTradePending?: (withSessionId: string) => void;
@@ -286,6 +292,14 @@ export class MultiplayerClient {
     });
     room.onMessage('trade_error', (msg: { message: string }) => {
       this.onTradeError?.(msg.message);
+    });
+
+    // ── Crafting messages ─────────────────────────────────────────────────
+    room.onMessage('craft_event', (msg: { playerName: string; itemName: string }) => {
+      this.onCraftEvent?.(msg.playerName, msg.itemName);
+    });
+    room.onMessage('loot_drop', (msg: { items: string[] }) => {
+      this.onLootDrop?.(msg.items);
     });
 
     // ── Skill messages ────────────────────────────────────────────────────
@@ -436,6 +450,13 @@ export class MultiplayerClient {
 
   sendSkillRespec(): void {
     this.room?.send('skill_respec', { confirm: true });
+  }
+
+  // ── Crafting messages ─────────────────────────────────────────────────────
+
+  /** Notify other zone players that this player just crafted an item. */
+  sendCraftNotify(itemId: string, itemName: string): void {
+    this.room?.send('craft_notify', { itemId, itemName });
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

@@ -68,8 +68,8 @@ export class CraftingPanel {
   private statusMsg = '';
   private statusColor = '#88ee88';
 
-  /** Called with the crafted item id on success so GameScene can show feedback. */
-  onCraftSuccess?: (itemId: string) => void;
+  /** Called with the crafted item id and name on success so GameScene can show feedback. */
+  onCraftSuccess?: (itemId: string, itemName: string) => void;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -205,8 +205,21 @@ export class CraftingPanel {
           this.statusMsg   = `✓ ${body.message}`;
           this.statusColor = '#88ee88';
           SoundManager.getInstance().playCraft();
-          this.onCraftSuccess?.(body.outputItemId);
+          this.onCraftSuccess?.(body.outputItemId, recipe.name);
           // Refresh inventory to reflect consumed materials
+          const uid = localStorage.getItem('pr_userId') ?? '';
+          if (uid) {
+            fetch(`${SERVER_HTTP}/inventory/${uid}`)
+              .then(r => r.ok ? r.json() : Promise.reject())
+              .then((inv: InventoryItem[]) => { this.inventory = inv; this.rebuild(); })
+              .catch(() => {/* keep old inventory */});
+          }
+        } else if (body.craftFailed) {
+          // High-tier failure — materials consumed but item not created
+          this.statusMsg   = `✗ ${body.message ?? 'Craft failed! Materials lost.'}`;
+          this.statusColor = '#ffaa44';
+          SoundManager.getInstance().playCraft(); // play fail sound if available
+          // Refresh inventory since materials were consumed
           const uid = localStorage.getItem('pr_userId') ?? '';
           if (uid) {
             fetch(`${SERVER_HTTP}/inventory/${uid}`)

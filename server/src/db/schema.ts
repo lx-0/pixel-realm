@@ -147,6 +147,24 @@ export const tradeHistory = pgTable("trade_history", {
   completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Crafting Progress (recipes learned + craft counts per player) ─────────────
+
+export const craftingProgress = pgTable(
+  "crafting_progress",
+  {
+    playerId: uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    recipeId: varchar("recipe_id", { length: 100 }).notNull(),
+    craftCount: integer("craft_count").notNull().default(1),
+    firstCraftedAt: timestamp("first_crafted_at", { withTimezone: true }).notNull().defaultNow(),
+    lastCraftedAt: timestamp("last_crafted_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.recipeId] }),
+  }),
+);
+
 // ── Skill Allocations (skill tree progress per player) ────────────────────────
 
 export const skillAllocations = pgTable("skill_allocations", {
@@ -176,3 +194,4 @@ export type GeneratedQuestRow = typeof generatedQuests.$inferSelect;
 export type MarketplaceListing = typeof marketplaceListings.$inferSelect;
 export type TradeHistoryRow = typeof tradeHistory.$inferSelect;
 export type SkillAllocationsRow = typeof skillAllocations.$inferSelect;
+export type CraftingProgressRow = typeof craftingProgress.$inferSelect;

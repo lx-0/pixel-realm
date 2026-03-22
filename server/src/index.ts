@@ -8,7 +8,7 @@ import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
 import { getInventory } from "./db/inventory";
-import { RECIPES, craftItem } from "./db/crafting";
+import { RECIPES, craftItem, getCraftingProgress } from "./db/crafting";
 import {
   getActiveListings,
   createListing,
@@ -101,14 +101,32 @@ app.post("/crafting/craft", async (req, res) => {
   }
   try {
     const result = await craftItem(userId, recipeId);
-    if (!result.success) {
+    if (!result.success && !result.craftFailed) {
+      // Missing materials or unknown recipe — client error
       res.status(422).json({ error: result.message });
     } else {
+      // Either success or high-tier failure (materials consumed) — both return 200
       res.json(result);
     }
   } catch (err) {
     console.warn("[REST] Crafting failed:", (err as Error).message);
     res.status(500).json({ error: "Crafting failed" });
+  }
+});
+
+// GET /crafting/progress/:userId — returns the player's crafting history
+app.get("/crafting/progress/:userId", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+  try {
+    const progress = await getCraftingProgress(userId);
+    res.json(progress);
+  } catch (err) {
+    console.warn("[REST] Failed to fetch crafting progress:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch crafting progress" });
   }
 });
 
