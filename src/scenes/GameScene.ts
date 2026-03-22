@@ -1416,7 +1416,7 @@ export class GameScene extends Phaser.Scene {
 
   private regenMana(delta: number): void {
     this.mana = Math.min(this.getMaxMana(), this.mana + this.getEffectiveManaRegen() * delta / 1000);
-    if (this.manaBar) this.manaBar.scaleX = this.mana / (PLAYER.BASE_MANA as number);
+    if (this.manaBar) this.manaBar.scaleX = Math.max(0, this.mana / this.getMaxMana());
   }
 
   private handleDodgeRoll(time: number): void {
