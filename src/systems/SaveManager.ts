@@ -13,6 +13,7 @@ export interface SaveData {
   totalKills: number;
   highScores: Record<string, number>;
   completedGame: boolean;
+  tutorialCompleted: boolean;
 }
 
 const DEFAULT_SAVE: SaveData = {
@@ -22,6 +23,7 @@ const DEFAULT_SAVE: SaveData = {
   totalKills: 0,
   highScores: {},
   completedGame: false,
+  tutorialCompleted: false,
 };
 
 export class SaveManager {
@@ -31,12 +33,13 @@ export class SaveManager {
       if (!raw) return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
       const p = JSON.parse(raw) as Partial<SaveData>;
       return {
-        unlockedZones: p.unlockedZones ?? ['zone1'],
-        playerLevel:   p.playerLevel   ?? 1,
-        playerXP:      p.playerXP      ?? 0,
-        totalKills:    p.totalKills     ?? 0,
-        highScores:    p.highScores     ?? {},
-        completedGame: p.completedGame  ?? false,
+        unlockedZones:     p.unlockedZones     ?? ['zone1'],
+        playerLevel:       p.playerLevel       ?? 1,
+        playerXP:          p.playerXP          ?? 0,
+        totalKills:        p.totalKills        ?? 0,
+        highScores:        p.highScores        ?? {},
+        completedGame:     p.completedGame     ?? false,
+        tutorialCompleted: p.tutorialCompleted ?? false,
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
@@ -84,6 +87,12 @@ export class SaveManager {
 
     SaveManager.save(data);
     return data;
+  }
+
+  static completeTutorial(): void {
+    const data = SaveManager.load();
+    data.tutorialCompleted = true;
+    SaveManager.save(data);
   }
 
   static reset(): void {

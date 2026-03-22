@@ -15,6 +15,7 @@ import { InventoryPanel }     from '../ui/InventoryPanel';
 import { NpcDialogueOverlay } from '../ui/NpcDialogueOverlay';
 import { CraftingPanel }      from '../ui/CraftingPanel';
 import { MiniMapOverlay }    from '../ui/MiniMapOverlay';
+import { TutorialOverlay }  from '../ui/TutorialOverlay';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 
@@ -200,6 +201,9 @@ export class GameScene extends Phaser.Scene {
   /** Mini-map HUD overlay (always present, M key toggles). */
   private miniMap?: MiniMapOverlay;
 
+  /** Tutorial overlay — shown only for first-time players on zone1. */
+  private tutorial?: TutorialOverlay;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -263,6 +267,15 @@ export class GameScene extends Phaser.Scene {
     this.createHUD();
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
+
+    // Show tutorial for first-time players entering zone1
+    if (!save.tutorialCompleted && zoneId === 'zone1') {
+      this.tutorial = new TutorialOverlay(this);
+      this.tutorial.onComplete = () => {
+        SaveManager.completeTutorial();
+        this.tutorial = undefined;
+      };
+    }
 
     // Attempt multiplayer connection. Scene starts in solo mode; if the
     // server responds we switch to multiplayer without interrupting the fade-in.
@@ -369,6 +382,8 @@ export class GameScene extends Phaser.Scene {
       this.mp?.players ?? new Map(),
       this.remoteEnemySprites,
     );
+
+    this.tutorial?.update(time, delta);
   }
 
   // ── Multiplayer init ──────────────────────────────────────────────────────
@@ -382,8 +397,14 @@ export class GameScene extends Phaser.Scene {
 
     const joined = await client.joinZone(zoneId, playerName, userId);
     if (!joined) {
-      // Server not available — run in solo mode
-      this.spawnWave();
+      // Server not available — run in solo mode.
+      // Give tutorial players a brief grace period before the first wave.
+      const waveDelay = this.tutorial ? 4000 : 0;
+      if (waveDelay > 0) {
+        this.time.delayedCall(waveDelay, () => { if (!this.isDead) this.spawnWave(); });
+      } else {
+        this.spawnWave();
+      }
       return;
     }
 
@@ -873,6 +894,9 @@ export class GameScene extends Phaser.Scene {
       vy *= sm;
     }
 
+    // Tutorial: notify movement
+    if (this.tutorial && (vx !== 0 || vy !== 0)) this.tutorial.notifyMoved();
+
     // Sprint: hold Shift while moving, mana must be available
     const wantsToSprint = this.sprintKey.isDown && (vx !== 0 || vy !== 0) && this.mana > 0;
     if (wantsToSprint) {
@@ -887,6 +911,8 @@ export class GameScene extends Phaser.Scene {
         this.spawnBurst(this.player.x, this.player.y + 4, [0xaaddaa, 0xdddddd, 0xffffff], 3, 28);
         this.sprintDustTimer = 90;
       }
+      // Tutorial: notify sprint
+      this.tutorial?.notifySprinted();
     } else {
       this.sprintDustTimer = 0;
     }
@@ -1130,6 +1156,7 @@ export class GameScene extends Phaser.Scene {
     // Consume mana and start dash
     this.mana -= DODGE.MANA_COST;
     this.isDodging  = true;
+    this.tutorial?.notifyDodged();
     this.dodgeEndTime = time + DODGE.DURATION_MS;
     this.dodgeVx    = dx * DODGE.DASH_SPEED;
     this.dodgeVy    = dy * DODGE.DASH_SPEED;
@@ -1545,6 +1572,7 @@ export class GameScene extends Phaser.Scene {
     this.lastAttackTime = time;
     this.mana = Math.max(0, this.mana - MANA.ATTACK_COST);
     this.sfx.playAttack();
+    this.tutorial?.notifyAttacked();
 
     // Notify server
     if (this.isMultiplayer && this.mp) this.mp.sendAttack();
