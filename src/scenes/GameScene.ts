@@ -2977,6 +2977,8 @@ export class GameScene extends Phaser.Scene {
           const e = obj as Phaser.Physics.Arcade.Sprite;
           if (!e.active) return;
           if (Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) > 130) return;
+          const extra = e.getData('extra') as EnemyExtra;
+          if (extra) this.applyEffectToEnemy(e, extra, 'freeze', now);
           this.tweens.add({ targets: e, tint: 0x88ccff, alpha: 0.7, duration: 3000, yoyo: true });
         });
         this.spawnBurst(this.player.x, this.player.y, [0x88ccff, 0xaaddff, 0xffffff], 20, 150);
