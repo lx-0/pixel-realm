@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import {
   CANVAS, PLAYER, COMBAT, MANA, LEVELS, SCENES, SPRINT, DODGE,
   ZONES, ENEMY_TYPES, BOSS_TYPES,
-  type EnemyTypeName, type BossTypeName, type ZoneConfig,
+  STATUS_EFFECTS, MELEE_STATUS_ON_HIT, PROJECTILE_STATUS_ON_HIT,
+  type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
 } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
 import { SaveManager }  from '../systems/SaveManager';
@@ -16,6 +17,13 @@ import { CraftingPanel }      from '../ui/CraftingPanel';
 import { MiniMapOverlay }    from '../ui/MiniMapOverlay';
 
 // ── Internal types ────────────────────────────────────────────────────────────
+
+interface StatusEffectState {
+  expiresAt:  number;  // ms timestamp
+  nextTickAt: number;  // when next DoT tick fires (0 for non-DoT effects)
+  ticksLeft:  number;  // remaining DoT ticks (0 for non-DoT effects)
+}
+
 interface EnemyExtra {
   hp:              number;
   maxHp:           number;
@@ -33,6 +41,10 @@ interface EnemyExtra {
   isPillar:        boolean;
   /** true = managed by server, skip local AI */
   isRemote:        boolean;
+  /** Active status effects on this enemy. */
+  effects:         Partial<Record<EffectKey, StatusEffectState>>;
+  /** Immunity end timestamps — keyed by EffectKey. */
+  effectImmunity:  Partial<Record<EffectKey, number>>;
 }
 
 export interface GameSceneData {
@@ -80,6 +92,11 @@ export class GameScene extends Phaser.Scene {
   private isDead         = false;
   private charmed        = false;
   private charmedUntil   = 0;
+
+  // ── Status effects ────────────────────────────────────────────────────────
+  private playerEffects:        Partial<Record<EffectKey, StatusEffectState>> = {};
+  private playerEffectImmunity: Partial<Record<EffectKey, number>>            = {};
+  private statusHudIndicators:  Partial<Record<EffectKey, Phaser.GameObjects.Text>> = {};
 
   // ── Sprint ───────────────────────────────────────────────────────────────
   private sprintDustTimer = 0;
@@ -204,9 +221,11 @@ export class GameScene extends Phaser.Scene {
     this.lastAttackTime    = 0;
     this.lastHitTime       = 0;
     this.isDead            = false;
-    this.charmed           = false;
-    this.charmedUntil      = 0;
-    this.sprintDustTimer   = 0;
+    this.charmed              = false;
+    this.charmedUntil         = 0;
+    this.playerEffects        = {};
+    this.playerEffectImmunity = {};
+    this.sprintDustTimer      = 0;
     this.isDodging         = false;
     this.dodgeEndTime      = 0;
     this.dodgeCooldownEndTime = 0;
@@ -340,6 +359,8 @@ export class GameScene extends Phaser.Scene {
     this.handleEnemyContact(time);
     this.cleanProjectiles();
     this.updateCharmStatus(time);
+    this.updateStatusEffects(time);
+    this.applyEnemyStatusVelocity();
     if (this.bossHudVisible) this.updateBossHpBar();
 
     this.miniMap?.update(
@@ -578,6 +599,7 @@ export class GameScene extends Phaser.Scene {
           burstReady: false, shootTimer: 9999, phaseTimer: 0,
           phaseInvincible: false, phase2: false,
           isTentacle: false, isPillar: false, isRemote: true,
+          effects: {}, effectImmunity: {},
         };
         sprite.setData('extra', extra);
 
@@ -841,6 +863,16 @@ export class GameScene extends Phaser.Scene {
       vy *= inv;
     }
 
+    // Status effect movement penalties
+    if (this.playerEffects.stun) {
+      vx = 0;
+      vy = 0;
+    } else if (this.playerEffects.freeze) {
+      const sm = STATUS_EFFECTS.freeze.speedMult ?? 0.5;
+      vx *= sm;
+      vy *= sm;
+    }
+
     // Sprint: hold Shift while moving, mana must be available
     const wantsToSprint = this.sprintKey.isDown && (vx !== 0 || vy !== 0) && this.mana > 0;
     if (wantsToSprint) {
@@ -880,8 +912,184 @@ export class GameScene extends Phaser.Scene {
     if (this.charmed && time > this.charmedUntil) {
       this.charmed = false;
       this.charmIndicator?.setVisible(false);
-      this.player.clearTint();
+      const effectTint = this.getPlayerStatusTint();
+      if (effectTint !== null) this.player.setTint(effectTint);
+      else this.player.clearTint();
     }
+  }
+
+  // ── Status Effects ────────────────────────────────────────────────────────
+
+  /** Returns the tint color for the highest-priority active player status effect, or null. */
+  private getPlayerStatusTint(): number | null {
+    for (const key of ['stun', 'freeze', 'burn', 'poison'] as EffectKey[]) {
+      if (this.playerEffects[key]) return STATUS_EFFECTS[key].tint;
+    }
+    return null;
+  }
+
+  /** Apply a status effect to the local player (respects immunity). */
+  private applyEffectToPlayer(effectKey: EffectKey, time: number): void {
+    const immuneUntil = this.playerEffectImmunity[effectKey] ?? 0;
+    if (time < immuneUntil) return;
+    const def = STATUS_EFFECTS[effectKey];
+    this.playerEffects[effectKey] = {
+      expiresAt:  time + def.durationMs,
+      nextTickAt: def.tickIntervalMs ? time + def.tickIntervalMs : 0,
+      ticksLeft:  def.ticks ?? 0,
+    };
+    const tintHex = `#${def.tint.toString(16).padStart(6, '0')}`;
+    this.floatingText(this.player.x, this.player.y - 16, effectKey.toUpperCase() + '!', tintHex);
+    this.sfx.playStatusApply(effectKey);
+  }
+
+  /** Apply a status effect to an enemy (respects immunity). */
+  private applyEffectToEnemy(
+    e: Phaser.Physics.Arcade.Sprite,
+    extra: EnemyExtra,
+    effectKey: EffectKey,
+    time: number,
+  ): void {
+    const immuneUntil = extra.effectImmunity[effectKey] ?? 0;
+    if (time < immuneUntil) return;
+    const def = STATUS_EFFECTS[effectKey];
+    extra.effects[effectKey] = {
+      expiresAt:  time + def.durationMs,
+      nextTickAt: def.tickIntervalMs ? time + def.tickIntervalMs : 0,
+      ticksLeft:  def.ticks ?? 0,
+    };
+    e.setData('extra', extra);
+    const burstColors: Record<EffectKey, number[]> = {
+      poison: [0x44ee44, 0x22aa22, 0x88ff88],
+      burn:   [0xff7722, 0xff8844, 0xffaa00],
+      freeze: [0x88ccff, 0xaaddff, 0xffffff],
+      stun:   [0xffffaa, 0xffff44, 0xffffff],
+    };
+    this.spawnBurst(e.x, e.y, burstColors[effectKey], effectKey === 'stun' ? 8 : 5, effectKey === 'stun' ? 100 : 70);
+    const tintHex = `#${def.tint.toString(16).padStart(6, '0')}`;
+    this.floatingText(e.x, e.y - 12, effectKey.toUpperCase() + '!', tintHex);
+    this.sfx.playStatusApply(effectKey);
+  }
+
+  /** Tick active status effects for both the player and all enemies. */
+  private updateStatusEffects(time: number): void {
+    const effectKeys: EffectKey[] = ['stun', 'freeze', 'burn', 'poison'];
+
+    // ── Player ──────────────────────────────────────────────────────────────
+    let playerTint: number | null = null;
+    for (const key of effectKeys) {
+      const state = this.playerEffects[key];
+      if (!state) continue;
+
+      if (time > state.expiresAt) {
+        this.playerEffectImmunity[key] = time + STATUS_EFFECTS[key].immunityMs;
+        delete this.playerEffects[key];
+        this.sfx.playStatusExpire();
+        continue;
+      }
+
+      const def = STATUS_EFFECTS[key];
+      if (def.dmgPerTick && state.ticksLeft > 0 && time >= state.nextTickAt) {
+        state.nextTickAt = time + (def.tickIntervalMs ?? 2000);
+        state.ticksLeft--;
+        this.applyDotDamage(def.dmgPerTick, key);
+      }
+
+      if (playerTint === null) playerTint = def.tint;
+    }
+
+    // Maintain persistent tint for active effects (don't fight dodge/charm tints)
+    if (!this.isDodging && !this.charmed) {
+      if (playerTint !== null) this.player.setTint(playerTint);
+    }
+
+    // ── Enemies ─────────────────────────────────────────────────────────────
+    this.enemies.getChildren().forEach(obj => {
+      const e = obj as Phaser.Physics.Arcade.Sprite;
+      if (!e.active) return;
+      const extra = e.getData('extra') as EnemyExtra;
+      if (!extra?.effects) return;
+
+      let enemyEffectTint: number | null = null;
+
+      for (const key of effectKeys) {
+        const state = extra.effects[key];
+        if (!state) continue;
+
+        if (time > state.expiresAt) {
+          extra.effectImmunity[key] = time + STATUS_EFFECTS[key].immunityMs;
+          delete extra.effects[key];
+          e.setData('extra', extra);
+          this.sfx.playStatusExpire();
+          continue;
+        }
+
+        const def = STATUS_EFFECTS[key];
+        if (def.dmgPerTick && state.ticksLeft > 0 && time >= state.nextTickAt) {
+          state.nextTickAt = time + (def.tickIntervalMs ?? 2000);
+          state.ticksLeft--;
+          extra.hp -= def.dmgPerTick;
+          const tintHex = `#${def.tint.toString(16).padStart(6, '0')}`;
+          this.floatingText(e.x, e.y - 10, `-${def.dmgPerTick}`, tintHex);
+          if (key === 'poison') this.spawnBurst(e.x, e.y, [def.tint, 0x22aa22], 3, 40);
+          else if (key === 'burn') this.spawnBurst(e.x, e.y, [def.tint, 0xff8844], 4, 60);
+          e.setData('extra', extra);
+          if (extra.hp <= 0) { this.killEnemy(e); return; }
+        }
+
+        if (enemyEffectTint === null) enemyEffectTint = def.tint;
+      }
+
+      if (enemyEffectTint !== null) {
+        e.setTint(enemyEffectTint);
+      } else if (!extra.phaseInvincible) {
+        // Restore base color when no effect is active
+        const col = extra.typeName === 'boss'
+          ? BOSS_TYPES[extra.bossType!].color
+          : (ENEMY_TYPES[extra.typeName as EnemyTypeName]?.color ?? 0xffffff);
+        e.setTint(col);
+      }
+    });
+
+    // ── HUD ──────────────────────────────────────────────────────────────────
+    for (const key of effectKeys) {
+      this.statusHudIndicators[key]?.setVisible(!!this.playerEffects[key]);
+    }
+  }
+
+  /** Apply DoT damage to the player without triggering full hit feedback. */
+  private applyDotDamage(dmg: number, effectKey: EffectKey): void {
+    this.hp = Math.max(0, this.hp - dmg);
+    const def = STATUS_EFFECTS[effectKey];
+    const tintHex = `#${def.tint.toString(16).padStart(6, '0')}`;
+    this.floatingText(this.player.x, this.player.y - 14, `-${dmg}`, tintHex);
+    const burstColors: Record<EffectKey, number[]> = {
+      poison: [0x44ee44, 0x22aa22, 0x88ff88],
+      burn:   [0xff7722, 0xff8844, 0xffaa00],
+      freeze: [0x88ccff, 0xaaddff, 0xffffff],
+      stun:   [0xffffaa, 0xffff44, 0xffffff],
+    };
+    this.spawnBurst(this.player.x, this.player.y, burstColors[effectKey], 3, 50);
+    this.updateHUD();
+    if (this.hp <= 0) this.playerDead();
+  }
+
+  /** After enemy AI sets velocity, clamp it for frozen/stunned enemies. */
+  private applyEnemyStatusVelocity(): void {
+    const now = this.time.now;
+    this.enemies.getChildren().forEach(obj => {
+      const e = obj as Phaser.Physics.Arcade.Sprite;
+      if (!e.active) return;
+      const extra = e.getData('extra') as EnemyExtra;
+      if (!extra?.effects || extra.isPillar || extra.isTentacle || extra.isRemote) return;
+
+      if (extra.effects.stun && now < extra.effects.stun.expiresAt) {
+        e.setVelocity(0, 0);
+      } else if (extra.effects.freeze && now < extra.effects.freeze.expiresAt) {
+        const body = e.body as Phaser.Physics.Arcade.Body;
+        body.velocity.scale(STATUS_EFFECTS.freeze.speedMult ?? 0.5);
+      }
+    });
   }
 
   private regenMana(delta: number): void {
@@ -894,7 +1102,9 @@ export class GameScene extends Phaser.Scene {
     if (this.isDodging && time >= this.dodgeEndTime) {
       this.isDodging = false;
       this.dodgeCooldownEndTime = time + DODGE.COOLDOWN_MS;
-      this.player.clearTint();
+      const effectTint = this.getPlayerStatusTint();
+      if (effectTint !== null && !this.charmed) this.player.setTint(effectTint);
+      else if (!this.charmed) this.player.clearTint();
     }
 
     // Trigger new dodge on Q press
@@ -1046,6 +1256,8 @@ export class GameScene extends Phaser.Scene {
       isTentacle:      false,
       isPillar:        false,
       isRemote:        false,
+      effects:         {},
+      effectImmunity:  {},
     };
     e.setData('extra', extra);
     return e;
@@ -1079,6 +1291,7 @@ export class GameScene extends Phaser.Scene {
         burstTimer: 0, burstCooldown: 9999, burstReady: false,
         shootTimer: 9999, phaseTimer: 0, phaseInvincible: false,
         phase2: false, isTentacle: false, isPillar: true, isRemote: false,
+        effects: {}, effectImmunity: {},
       };
       p.setData('extra', extra);
       this.pillars.push(p);
@@ -1102,6 +1315,7 @@ export class GameScene extends Phaser.Scene {
         burstTimer: 0, burstCooldown: 9999, burstReady: false,
         shootTimer: 9999, phaseTimer: 0, phaseInvincible: false,
         phase2: false, isTentacle: true, isPillar: false, isRemote: false,
+        effects: {}, effectImmunity: {},
       };
       t.setData('extra', extra);
       this.tentacles.push(t);
@@ -1304,6 +1518,11 @@ export class GameScene extends Phaser.Scene {
     proj.setVelocity(Math.cos(angle) * 130, Math.sin(angle) * 130);
     proj.setData('damage',  Math.floor(dmg * (1 + (this.level - 1) * 0.1)));
     proj.setData('isCharm', isCharm);
+    // Tag projectile with status effect based on enemy type
+    const extra = enemy.getData('extra') as EnemyExtra;
+    const typeName = extra?.typeName as string ?? '';
+    const statusEffect = PROJECTILE_STATUS_ON_HIT[typeName as EnemyTypeName | BossTypeName];
+    if (statusEffect) proj.setData('statusEffect', statusEffect);
     this.time.delayedCall(2500, () => { if (proj.active) proj.destroy(); });
   }
 
@@ -1319,6 +1538,7 @@ export class GameScene extends Phaser.Scene {
 
   private handleAttack(time: number): void {
     if (this.chat?.active) return; // don't attack while chat is open
+    if (this.playerEffects.stun) return; // stunned — can't attack
     if (!Phaser.Input.Keyboard.JustDown(this.attackKey)) return;
     if (time - this.lastAttackTime < COMBAT.ATTACK_COOLDOWN_MS) return;
 
@@ -1395,6 +1615,17 @@ export class GameScene extends Phaser.Scene {
       const hitDmg = isCrit ? Math.floor(dmg * 1.5) : dmg;
       extra.hp -= hitDmg;
       e.setData('extra', extra);
+
+      // Zone-infused weapon: player attacks carry a zone-specific effect (25% chance on non-boss enemies)
+      if (extra.typeName !== 'boss' && !extra.isPillar && !extra.isTentacle && Math.random() < 0.25) {
+        const zoneEffectMap: Partial<Record<string, EffectKey>> = {
+          zone1: 'poison',
+          zone2: 'burn',
+          zone5: 'freeze',
+        };
+        const zoneEffect = zoneEffectMap[this.zone.id];
+        if (zoneEffect) this.applyEffectToEnemy(e, extra, zoneEffect, time);
+      }
 
       const kbMult = def ? def.knockbackMultiplier : 1.0;
       const dx     = e.x - this.player.x;
@@ -1485,17 +1716,27 @@ export class GameScene extends Phaser.Scene {
     if (this.isDodging || time < this.dodgeEndTime + (DODGE.INVULN_MS - DODGE.DURATION_MS)) return;
     if (time - this.lastHitTime < COMBAT.PLAYER_INVINCIBILITY_MS) return;
     const pb = this.player.getBounds();
-    let   hit = false;
+    let   hit      = false;
+    let   hitExtra: EnemyExtra | null = null;
     this.enemies.getChildren().forEach(obj => {
       const e     = obj as Phaser.Physics.Arcade.Sprite;
       if (!e.active) return;
       const extra = e.getData('extra') as EnemyExtra;
       if (extra?.isPillar || extra?.isTentacle) return;
-      if (Phaser.Geom.Intersects.RectangleToRectangle(pb, e.getBounds())) hit = true;
+      if (Phaser.Geom.Intersects.RectangleToRectangle(pb, e.getBounds())) {
+        hit = true;
+        if (!hitExtra) hitExtra = extra;
+      }
     });
     if (!hit) return;
     this.lastHitTime = time;
     this.applyDamageToPlayer(COMBAT.PLAYER_HIT_DAMAGE + Math.floor((this.wave - 1) * 1.5), time, 0xff4444);
+    // Apply melee status effect from this enemy type
+    const he = hitExtra as EnemyExtra | null;
+    if (he && he.typeName !== 'boss') {
+      const effectKey = MELEE_STATUS_ON_HIT[he.typeName as EnemyTypeName];
+      if (effectKey) this.applyEffectToPlayer(effectKey, time);
+    }
   }
 
   private onProjectileHit(
@@ -1523,6 +1764,9 @@ export class GameScene extends Phaser.Scene {
       if (now - this.lastHitTime >= COMBAT.PLAYER_INVINCIBILITY_MS) {
         this.lastHitTime = now;
         this.applyDamageToPlayer(dmg, now, 0xff4444);
+        // Apply projectile status effect if present
+        const statusEffect = p.getData('statusEffect') as EffectKey | undefined;
+        if (statusEffect) this.applyEffectToPlayer(statusEffect, now);
       }
     }
   }
@@ -1530,7 +1774,13 @@ export class GameScene extends Phaser.Scene {
   private applyDamageToPlayer(dmg: number, _time: number, tint: number): void {
     this.hp = Math.max(0, this.hp - dmg);
     this.player.setTint(tint);
-    this.time.delayedCall(300, () => { if (!this.isDead) this.player.clearTint(); });
+    this.time.delayedCall(300, () => {
+      if (!this.isDead) {
+        const effectTint = this.getPlayerStatusTint();
+        if (effectTint !== null && !this.charmed) this.player.setTint(effectTint);
+        else if (!this.charmed) this.player.clearTint();
+      }
+    });
     this.cameras.main.shake(200, 0.014);
     this.screenFlash(0xff2020, 0.28);
     this.sfx.playPlayerHit();
@@ -1783,6 +2033,22 @@ export class GameScene extends Phaser.Scene {
     const accentHex = `#${this.zone.accentColor.toString(16).padStart(6, '0')}`;
     this.add.text(CANVAS.WIDTH - 4, 14, this.zone.name, { fontSize: '4px', color: accentHex, fontFamily: 'monospace' })
       .setOrigin(1, 0).setScrollFactor(0).setDepth(Z);
+
+    // Status effect HUD indicators (below dodge cooldown)
+    const effectDefs: [EffectKey, string, string][] = [
+      ['poison', 'PSN', '#44ee44'],
+      ['burn',   'BRN', '#ff7722'],
+      ['freeze', 'FRZ', '#88ccff'],
+      ['stun',   'STN', '#ffffaa'],
+    ];
+    let iconX = lx;
+    for (const [key, label, color] of effectDefs) {
+      const icon = this.add.text(iconX, 55, label, {
+        fontSize: '4px', color, fontFamily: 'monospace',
+      }).setScrollFactor(0).setDepth(Z).setVisible(false);
+      this.statusHudIndicators[key] = icon;
+      iconX += 14;
+    }
 
     this.charmIndicator = this.add.text(CANVAS.WIDTH / 2, 8, '⚡ CHARMED — Controls Reversed!', {
       fontSize: '5px', color: '#00ffcc', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1,

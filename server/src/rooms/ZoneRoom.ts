@@ -18,6 +18,15 @@ const PROJECTILE_LIFETIME_MS = 2000;
 const WAVE_PREP_MS = 5000;        // 5 s between waves
 const BASE_ENEMY_COUNT = 4;       // enemies in wave 1; +2 per additional wave
 
+// ── Status effect flags (bitmask, mirrors client STATUS_EFFECTS) ──────────────
+const STATUS_FLAG_FREEZE = 4; // bit 2
+const STATUS_FREEZE_MS   = 3000;
+/** Enemy types whose melee contact applies a status flag to the player. */
+const MELEE_STATUS_MAP: Record<string, { flag: number; durationMs: number }> = {
+  frost_wolf:    { flag: STATUS_FLAG_FREEZE, durationMs: STATUS_FREEZE_MS },
+  crystal_golem: { flag: STATUS_FLAG_FREEZE, durationMs: STATUS_FREEZE_MS },
+};
+
 // Zone → enemy type tables
 interface EnemyDef {
   type: string;
@@ -47,6 +56,11 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
     { type: "crab",    hp: 60,  dmg: 12, speed: 65, aggroRange: 80  },
     { type: "wisp",    hp: 110, dmg: 28, speed: 72, aggroRange: 100, ranged: true },
     { type: "raider",  hp: 140, dmg: 32, speed: 50, aggroRange: 90  },
+  ],
+  zone5: [
+    { type: "ice_elemental", hp: 90,  dmg: 22, speed: 55,  aggroRange: 110, ranged: true },
+    { type: "frost_wolf",    hp: 75,  dmg: 18, speed: 100, aggroRange: 120 },
+    { type: "crystal_golem", hp: 250, dmg: 40, speed: 28,  aggroRange: 75  },
   ],
 };
 
@@ -428,6 +442,16 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.tickEnemyAI(dt, now);
     this.tickProjectiles(dt, now);
     this.tickManaRegen(dt);
+    this.tickStatusEffects(now);
+  }
+
+  /** Expire player status effects whose duration has elapsed. */
+  private tickStatusEffects(now: number) {
+    this.state.players.forEach((player: Player) => {
+      if (player.statusFlags !== 0 && now > player.statusExpiry) {
+        player.statusFlags = 0;
+      }
+    });
   }
 
   // ── Enemy AI ──────────────────────────────────────────────────────────────────
@@ -491,6 +515,13 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
     player.hp = Math.max(0, player.hp - PLAYER_HIT_DAMAGE);
     player.invincibleUntil = now + PLAYER_INVINCIBILITY_MS;
+
+    // Apply status effect from this enemy type (e.g. frost_wolf → freeze)
+    const statusDef = MELEE_STATUS_MAP[enemy.type];
+    if (statusDef && now >= player.statusExpiry) {
+      player.statusFlags |= statusDef.flag;
+      player.statusExpiry = now + statusDef.durationMs;
+    }
 
     if (player.hp === 0) {
       console.log(`[ZoneRoom] player ${player.sessionId} died`);

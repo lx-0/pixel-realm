@@ -175,6 +175,41 @@ export interface ZoneConfig {
   unlockRequirement: string | null;
 }
 
+// ── Status Effects ────────────────────────────────────────────────────────────
+
+export type EffectKey = 'poison' | 'burn' | 'freeze' | 'stun';
+
+export interface EffectDef {
+  durationMs:      number;
+  immunityMs:      number;
+  tint:            number;
+  ticks?:          number;
+  tickIntervalMs?: number;
+  dmgPerTick?:     number;
+  speedMult?:      number; // 0 = full stop (stun), 0.5 = half (freeze)
+}
+
+export const STATUS_EFFECTS: Record<EffectKey, EffectDef> = {
+  poison: { durationMs: 6000, immunityMs: 1000, tint: 0x44ee44, ticks: 3, tickIntervalMs: 2000, dmgPerTick: 5 },
+  burn:   { durationMs: 4000, immunityMs: 1000, tint: 0xff7722, ticks: 2, tickIntervalMs: 2000, dmgPerTick: 10 },
+  freeze: { durationMs: 3000, immunityMs: 1000, tint: 0x88ccff, speedMult: 0.5 },
+  stun:   { durationMs: 1500, immunityMs: 1000, tint: 0xffffaa, speedMult: 0.0 },
+} as const;
+
+/** Which enemy melee contact applies a status effect to the player. */
+export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
+  frost_wolf:    'freeze',
+  crystal_golem: 'freeze',
+  mushroom:      'poison',
+};
+
+/** Which enemy projectile applies a status effect to the player. */
+export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeName, EffectKey>> = {
+  ice_elemental: 'freeze',
+  bandit:        'burn',
+  glacial_wyrm:  'freeze',
+};
+
 export const ZONES: ZoneConfig[] = [
   {
     id: 'zone1',

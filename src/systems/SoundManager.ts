@@ -4,6 +4,8 @@
  * Starts muted; call unlock() on first user interaction to satisfy autoplay policy.
  */
 
+import type { EffectKey } from '../config/constants';
+
 /** [frequency_hz, duration_sec] — frequency 0 = rest */
 type Note = [number, number];
 
@@ -188,6 +190,22 @@ export class SoundManager {
   playQuestComplete(): void {
     [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.tone(f, 0.3, 'sine', 0.25, undefined, i * 0.12));
   }
+
+  /** Status effect applied to an entity (poison/burn/freeze/stun). */
+  playStatusApply(type: EffectKey): void {
+    switch (type) {
+      case 'poison': this.tone(140, 0.15, 'sawtooth', 0.18, 90);  break;
+      case 'burn':   this.tone(600, 0.08, 'square',   0.22, 900); break;
+      case 'freeze': this.tone(880, 0.14, 'sine',     0.20, 440); break;
+      case 'stun':
+        this.tone(200, 0.18, 'square', 0.30, 80);
+        this.tone(600, 0.10, 'sine',   0.15, undefined, 0.12);
+        break;
+    }
+  }
+
+  /** Status effect expires. */
+  playStatusExpire(): void { this.tone(660, 0.08, 'sine', 0.12); }
 
   /** Item successfully crafted at a crafting station. */
   playCraft(): void {

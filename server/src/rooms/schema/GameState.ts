@@ -23,6 +23,10 @@ export class Player extends Schema {
   @type("int32")   lastAttackAt: number = 0;
   @type("int32")   invincibleUntil: number = 0;
 
+  // Status effects (bitmask: 1=poison 2=burn 4=freeze 8=stun)
+  @type("int8")    statusFlags: number = 0;
+  @type("int32")   statusExpiry: number = 0;
+
   // Facing direction (for combat hit detection)
   @type("float32") facingX: number = 1;
   @type("float32") facingY: number = 0;
@@ -44,6 +48,9 @@ export class Enemy extends Schema {
   @type("int16")   damage: number = 5;
   @type("float32") speed: number = 45;
   @type("float32") aggroRange: number = 80;
+
+  // Status effects (bitmask: 1=poison 2=burn 4=freeze 8=stun)
+  @type("int8")    statusFlags: number = 0;
 
   // AI state
   @type("string")  aiState: string = "patrol";   // "patrol" | "chase" | "dead"
