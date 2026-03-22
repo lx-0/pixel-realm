@@ -84,7 +84,7 @@ export class MarketplacePanel {
     this.scene = scene;
     this.container = scene.add.container(0, 0)
       .setScrollFactor(0).setDepth(DEPTH).setVisible(false);
-    this.mKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+    this.mKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.J);
     this.rebuild();
   }
 

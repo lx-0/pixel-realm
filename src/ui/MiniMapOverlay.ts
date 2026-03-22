@@ -1,13 +1,13 @@
 /**
- * MiniMapOverlay — top-right HUD mini-map.
+ * MiniMapOverlay — always-visible top-right HUD mini-map.
  *
  * Renders a scaled-down view of the current zone showing:
  *  - Playable area boundary
- *  - Local player (yellow dot)
+ *  - Local player (yellow directional arrow)
+ *  - NPC positions (teal dots)
  *  - Enemies (red dots)
  *  - Remote players (blue dots, multiplayer only)
- *
- * Press M to toggle visibility.
+ *  - Quest markers (yellow diamond) at NPC locations when a quest is active
  */
 
 import Phaser from 'phaser';
@@ -33,11 +33,15 @@ const SCALE_Y = MAP_H / WORLD_H; // ≈0.0889
 // Wall thickness in world px (matches buildWorld border walls)
 const WALL_PX = 32;
 
+export interface NpcMarker {
+  x: number;
+  y: number;
+  hasQuest: boolean;
+}
+
 export class MiniMapOverlay {
-  private visible  = true;
-  private mKey!:   Phaser.Input.Keyboard.Key;
-  private gfx:     Phaser.GameObjects.Graphics;
-  private header:  Phaser.GameObjects.Text;
+  private gfx:    Phaser.GameObjects.Graphics;
+  private header: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene) {
     this.gfx = scene.add.graphics()
@@ -50,8 +54,6 @@ export class MiniMapOverlay {
       color: '#667788',
       fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH);
-
-    this.mKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.M);
   }
 
   // ── Update ─────────────────────────────────────────────────────────────────
@@ -61,15 +63,9 @@ export class MiniMapOverlay {
     enemies:            Phaser.Physics.Arcade.Group,
     remotePlayers:      Map<string, RemotePlayer>,
     remoteEnemySprites: Map<string, Phaser.Physics.Arcade.Sprite>,
+    npcMarkers:         NpcMarker[] = [],
   ): void {
-    // Toggle on M press
-    if (Phaser.Input.Keyboard.JustDown(this.mKey)) {
-      this.visible = !this.visible;
-      this.header.setVisible(this.visible);
-    }
-
     this.gfx.clear();
-    if (!this.visible) return;
 
     // ── Background ───────────────────────────────────────────────────────────
     this.gfx.fillStyle(0x000000, 0.65);
@@ -89,6 +85,23 @@ export class MiniMapOverlay {
       MAP_W - wx * 2,
       MAP_H - wy * 2,
     );
+
+    // ── NPC markers ──────────────────────────────────────────────────────────
+    for (const npc of npcMarkers) {
+      const mx = MAP_X + npc.x * SCALE_X;
+      const my = MAP_Y + npc.y * SCALE_Y;
+
+      if (npc.hasQuest) {
+        // Quest marker: yellow diamond
+        this.gfx.fillStyle(0xffdd00, 1);
+        this.gfx.fillTriangle(mx, my - 2.5, mx + 2, my, mx, my + 2.5);
+        this.gfx.fillTriangle(mx, my - 2.5, mx - 2, my, mx, my + 2.5);
+      } else {
+        // Plain NPC dot (teal)
+        this.gfx.fillStyle(0x22ddcc, 0.9);
+        this.gfx.fillRect(mx - 1, my - 1, 2, 2);
+      }
+    }
 
     // ── Enemies (red) ────────────────────────────────────────────────────────
     this.gfx.fillStyle(0xff3333, 0.9);
@@ -116,13 +129,36 @@ export class MiniMapOverlay {
       this.gfx.fillRect(mx - 1, my - 1, 2, 2);
     });
 
-    // ── Local player (bright yellow, 3×3 so it reads clearly) ───────────
+    // ── Local player — directional arrow (bright yellow) ─────────────────
     if (player.active) {
       const mx = MAP_X + player.x * SCALE_X;
       const my = MAP_Y + player.y * SCALE_Y;
+
+      // Determine facing from velocity; default to up if idle
+      const vx = (player.body as Phaser.Physics.Arcade.Body)?.velocity.x ?? 0;
+      const vy = (player.body as Phaser.Physics.Arcade.Body)?.velocity.y ?? 0;
+      const angle = (vx === 0 && vy === 0) ? -Math.PI / 2 : Math.atan2(vy, vx);
+
       this.gfx.fillStyle(0xffee44, 1);
-      this.gfx.fillRect(mx - 1.5, my - 1.5, 3, 3);
+      this._drawArrow(mx, my, angle, 2.5);
     }
+  }
+
+  /** Draw a small filled directional arrow centred on (cx, cy). */
+  private _drawArrow(cx: number, cy: number, angle: number, r: number): void {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    // Tip of arrow
+    const tx = cx + cos * r;
+    const ty = cy + sin * r;
+    // Left base point (90° left of direction)
+    const lx = cx + Math.cos(angle + Math.PI * 0.75) * r;
+    const ly = cy + Math.sin(angle + Math.PI * 0.75) * r;
+    // Right base point (90° right of direction)
+    const rx2 = cx + Math.cos(angle - Math.PI * 0.75) * r;
+    const ry2 = cy + Math.sin(angle - Math.PI * 0.75) * r;
+
+    this.gfx.fillTriangle(tx, ty, lx, ly, rx2, ry2);
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────

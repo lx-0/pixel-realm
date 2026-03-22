@@ -14,7 +14,8 @@ import { QuestLogPanel }      from '../ui/QuestLogPanel';
 import { InventoryPanel }     from '../ui/InventoryPanel';
 import { NpcDialogueOverlay } from '../ui/NpcDialogueOverlay';
 import { CraftingPanel }      from '../ui/CraftingPanel';
-import { MiniMapOverlay }    from '../ui/MiniMapOverlay';
+import { MiniMapOverlay, type NpcMarker } from '../ui/MiniMapOverlay';
+import { WorldMapOverlay } from '../ui/WorldMapOverlay';
 import { TutorialOverlay }  from '../ui/TutorialOverlay';
 import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
@@ -206,8 +207,17 @@ export class GameScene extends Phaser.Scene {
   /** HUD prompt shown when player is near crafting station. */
   private craftStationHint?: Phaser.GameObjects.Text;
 
-  /** Mini-map HUD overlay (always present, M key toggles). */
+  /** Mini-map HUD overlay (always present in corner). */
   private miniMap?: MiniMapOverlay;
+
+  /** Full-screen world map overlay (M key). */
+  private worldMap?: WorldMapOverlay;
+
+  /** Fixed world-space positions for zone NPCs (quest givers). */
+  private npcMarkers: NpcMarker[] = [];
+
+  /** Whether the player currently has an active quest (multiplayer only). */
+  private hasActiveQuest = false;
 
   /** N key — mute/unmute toggle. */
   private muteKey?: Phaser.Input.Keyboard.Key;
@@ -362,6 +372,7 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
       // Escape closes any open panel before pausing
       const panelClosed =
+        this.worldMap?.closeIfOpen()      ||
         this.skillTree?.closeIfOpen()     ||
         this.tradeWindow?.closeIfOpen()   ||
         this.marketplace?.closeIfOpen()   ||
@@ -493,7 +504,15 @@ export class GameScene extends Phaser.Scene {
       this.enemies,
       this.mp?.players ?? new Map(),
       this.remoteEnemySprites,
+      this.npcMarkers,
     );
+
+    const save = SaveManager.load();
+    this.worldMap?.update({
+      currentZoneId:   this.zone.id,
+      unlockedZoneIds: save.unlockedZones,
+      hasActiveQuest:  this.hasActiveQuest,
+    });
 
     this.tutorial?.update(time, delta);
   }
@@ -581,6 +600,8 @@ export class GameScene extends Phaser.Scene {
     this.npcDialogue.onAccept = (quest) => {
       // Quest is already assigned server-side on interact; just acknowledge.
       this.questLog?.setActiveQuest(quest);
+      this.hasActiveQuest = true;
+      this.npcMarkers = this.npcMarkers.map(m => ({ ...m, hasQuest: true }));
       this.chat?.addMessage(`Quest accepted: ${quest.title}`, '#ffd700');
     };
     this.npcDialogue.onDecline = () => {
@@ -605,6 +626,8 @@ export class GameScene extends Phaser.Scene {
 
     client.onQuestCompleted = (questId) => {
       this.questLog?.markCompleted(questId, questId);
+      this.hasActiveQuest = false;
+      this.npcMarkers = this.npcMarkers.map(m => ({ ...m, hasQuest: false }));
       this.chat?.addMessage('Quest completed! Rewards granted.', '#88ee88');
     };
 
@@ -696,7 +719,7 @@ export class GameScene extends Phaser.Scene {
 
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [M] market  [K] skills  [G] guild  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [G] guild  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -2409,6 +2432,19 @@ export class GameScene extends Phaser.Scene {
     ).setOrigin(1, 0.5).setScrollFactor(0).setDepth(Z + 3).setVisible(false);
 
     this.miniMap = new MiniMapOverlay(this);
+
+    // Fixed quest-NPC position: top-right of playable area (opposite the crafting station)
+    const WALL = 32;
+    this.npcMarkers = [
+      { x: this.worldW - WALL - 40, y: WALL + 40, hasQuest: false },
+    ];
+
+    const save = SaveManager.load();
+    this.worldMap = new WorldMapOverlay(this, {
+      currentZoneId:   this.zone.id,
+      unlockedZoneIds: save.unlockedZones,
+      hasActiveQuest:  false,
+    });
 
     this.updateHUD();
   }
