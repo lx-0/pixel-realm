@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { getPool } from "./client";
 
-const MIGRATIONS = ["0001_initial.sql", "0002_quests.sql"];
+const MIGRATIONS = ["0001_initial.sql", "0002_quests.sql", "0003_trading.sql"];
 
 /**
  * Applies pending SQL migrations in order.

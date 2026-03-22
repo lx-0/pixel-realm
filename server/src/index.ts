@@ -9,6 +9,13 @@ import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
 import { getInventory } from "./db/inventory";
 import { RECIPES, craftItem } from "./db/crafting";
+import {
+  getActiveListings,
+  createListing,
+  buyListing,
+  cancelListing,
+  getTradeHistory,
+} from "./db/marketplace";
 import { config } from "./config";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -102,6 +109,104 @@ app.post("/crafting/craft", async (req, res) => {
   } catch (err) {
     console.warn("[REST] Crafting failed:", (err as Error).message);
     res.status(500).json({ error: "Crafting failed" });
+  }
+});
+
+// ── Marketplace REST endpoints ────────────────────────────────────────────────
+
+// GET /marketplace/listings — browse active listings
+app.get("/marketplace/listings", async (_req, res) => {
+  try {
+    const listings = await getActiveListings();
+    res.json(listings);
+  } catch (err) {
+    console.warn("[REST] marketplace/listings failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch listings" });
+  }
+});
+
+// POST /marketplace/list — create a new listing
+app.post("/marketplace/list", async (req, res) => {
+  const { userId, inventoryId, quantity, priceGold } =
+    req.body as { userId?: string; inventoryId?: string; quantity?: number; priceGold?: number };
+
+  if (!userId || !inventoryId || !quantity || !priceGold
+      || userId.length > 100 || inventoryId.length > 100
+      || quantity < 1 || priceGold < 1 || priceGold > 1_000_000) {
+    res.status(400).json({ error: "Invalid parameters" });
+    return;
+  }
+  try {
+    const result = await createListing(userId, inventoryId, quantity, priceGold);
+    if (!result.success) {
+      res.status(422).json({ error: result.error });
+    } else {
+      res.json(result);
+    }
+  } catch (err) {
+    console.warn("[REST] marketplace/list failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to create listing" });
+  }
+});
+
+// POST /marketplace/buy/:listingId — purchase a listing
+app.post("/marketplace/buy/:listingId", async (req, res) => {
+  const { listingId } = req.params as { listingId: string };
+  const { userId } = req.body as { userId?: string };
+
+  if (!userId || userId.length > 100 || !listingId || listingId.length > 100) {
+    res.status(400).json({ error: "Invalid parameters" });
+    return;
+  }
+  try {
+    const result = await buyListing(listingId, userId);
+    if (!result.success) {
+      res.status(422).json({ error: result.error });
+    } else {
+      res.json({ success: true });
+    }
+  } catch (err) {
+    console.warn("[REST] marketplace/buy failed:", (err as Error).message);
+    res.status(500).json({ error: "Purchase failed" });
+  }
+});
+
+// DELETE /marketplace/listings/:listingId — cancel own listing
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(app as any).delete("/marketplace/listings/:listingId", async (req: Request, res: Response) => {
+  const { listingId } = req.params as { listingId: string };
+  const { userId } = req.body as { userId?: string };
+
+  if (!userId || userId.length > 100 || !listingId || listingId.length > 100) {
+    res.status(400).json({ error: "Invalid parameters" });
+    return;
+  }
+  try {
+    const result = await cancelListing(listingId, userId);
+    if (!result.success) {
+      res.status(422).json({ error: result.error });
+    } else {
+      res.json({ success: true });
+    }
+  } catch (err) {
+    console.warn("[REST] marketplace/cancel failed:", (err as Error).message);
+    res.status(500).json({ error: "Cancel failed" });
+  }
+});
+
+// GET /trade/history/:userId — trade log for dispute resolution
+app.get("/trade/history/:userId", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+  try {
+    const history = await getTradeHistory(userId);
+    res.json(history);
+  } catch (err) {
+    console.warn("[REST] trade/history failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch trade history" });
   }
 });
 

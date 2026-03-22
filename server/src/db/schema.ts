@@ -110,6 +110,43 @@ export const generatedQuests = pgTable("generated_quests", {
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
 
+// ── Marketplace Listings (auction house) ──────────────────────────────────────
+
+export const marketplaceListings = pgTable("marketplace_listings", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  sellerId: uuid("seller_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  itemId: varchar("item_id", { length: 50 })
+    .notNull()
+    .references(() => items.id),
+  quantity: integer("quantity").notNull().default(1),
+  priceGold: integer("price_gold").notNull(),
+  listingFee: integer("listing_fee").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default("active"),
+  buyerId: uuid("buyer_id").references(() => players.id),
+  listedAt: timestamp("listed_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+});
+
+// ── Trade History (P2P and marketplace) ───────────────────────────────────────
+
+export const tradeHistory = pgTable("trade_history", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tradeType: varchar("trade_type", { length: 20 }).notNull(), // 'p2p' | 'marketplace'
+  initiatorId: uuid("initiator_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  counterpartId: uuid("counterpart_id").references(() => players.id, { onDelete: "set null" }),
+  initiatorItems: jsonb("initiator_items").notNull().default([]),
+  initiatorGold: integer("initiator_gold").notNull().default(0),
+  counterpartItems: jsonb("counterpart_items").notNull().default([]),
+  counterpartGold: integer("counterpart_gold").notNull().default(0),
+  marketplaceListingId: uuid("marketplace_listing_id").references(() => marketplaceListings.id),
+  completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -120,3 +157,5 @@ export type InventoryRow = typeof inventory.$inferSelect;
 export type ProgressionRow = typeof progression.$inferSelect;
 export type ZoneStateRow = typeof zoneState.$inferSelect;
 export type GeneratedQuestRow = typeof generatedQuests.$inferSelect;
+export type MarketplaceListing = typeof marketplaceListings.$inferSelect;
+export type TradeHistoryRow = typeof tradeHistory.$inferSelect;

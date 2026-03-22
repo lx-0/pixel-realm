@@ -3,6 +3,7 @@ import { ZoneGameState, Player, Enemy, Projectile } from "./schema/GameState";
 import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
 import { getOrGenerateQuest, completeQuestForPlayer } from "../quests/db";
 import { verifyRoomToken, AuthPayload } from "../auth/middleware";
+import { executeP2PTrade, type TradeItem } from "../db/marketplace";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -92,6 +93,35 @@ interface QuestCompleteMessage {
   questId: string;
 }
 
+// P2P trade messages
+interface TradeRequestMessage {
+  targetSessionId: string; // who the initiator wants to trade with
+}
+
+interface TradeRespondMessage {
+  accept: boolean; // true = accept, false = decline
+}
+
+interface TradeOfferMessage {
+  // Both sides call this to lock in their side of the offer before confirming
+  items: Array<{ inventoryId: string; itemId: string; quantity: number }>;
+  gold: number;
+}
+
+interface TradeConfirmMessage {
+  confirmed: boolean; // both must confirm to execute
+}
+
+// Per-room pending trade state
+interface PendingTrade {
+  initiatorSessionId: string;
+  counterpartSessionId: string;
+  initiatorOffer: { items: TradeItem[]; gold: number } | null;
+  counterpartOffer: { items: TradeItem[]; gold: number } | null;
+  initiatorConfirmed: boolean;
+  counterpartConfirmed: boolean;
+}
+
 // ── Utility ───────────────────────────────────────────────────────────────────
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -117,6 +147,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
   private lastTick: number = 0;
 
+  // Active P2P trades keyed by the initiator's sessionId
+  private pendingTrades = new Map<string, PendingTrade>();
+
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -139,6 +172,13 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("chat",             (client: Client, msg: ChatMessage)        => this.handleChat(client, msg));
     this.onMessage("quest_npc_interact", (client: Client, msg: QuestNpcMessage) => this.handleQuestNpcInteract(client, msg));
     this.onMessage("quest_complete",   (client: Client, msg: QuestCompleteMessage) => this.handleQuestComplete(client, msg));
+
+    // P2P trade messages
+    this.onMessage("trade_request",  (client: Client, msg: TradeRequestMessage)  => this.handleTradeRequest(client, msg));
+    this.onMessage("trade_respond",  (client: Client, msg: TradeRespondMessage)  => this.handleTradeRespond(client, msg));
+    this.onMessage("trade_offer",    (client: Client, msg: TradeOfferMessage)    => this.handleTradeOffer(client, msg));
+    this.onMessage("trade_confirm",  (client: Client, msg: TradeConfirmMessage)  => this.handleTradeConfirm(client, msg));
+    this.onMessage("trade_cancel",   (client: Client)                            => this.handleTradeCancel(client));
 
     // Start game loop
     this.lastTick = Date.now();
@@ -188,6 +228,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
   }
 
   async onLeave(client: Client, consented: boolean) {
+    this.cancelTradesForClient(client.sessionId);
     await this.persistPlayer(client.sessionId);
     sessionUserMap.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
@@ -587,5 +628,232 @@ export class ZoneRoom extends Room<ZoneGameState> {
     proj.damage = enemy.damage;
     proj.expiresAt = Date.now() + PROJECTILE_LIFETIME_MS;
     this.state.projectiles.set(proj.id, proj);
+  }
+
+  // ── P2P Trade handlers ────────────────────────────────────────────────────────
+
+  /** Initiator sends a trade invite to another player in the zone. */
+  private handleTradeRequest(client: Client, msg: TradeRequestMessage): void {
+    const target = this.clients.find((c) => c.sessionId === msg.targetSessionId);
+    if (!target) {
+      client.send("trade_error", { message: "Player not found in this zone" });
+      return;
+    }
+    if (target.sessionId === client.sessionId) {
+      client.send("trade_error", { message: "Cannot trade with yourself" });
+      return;
+    }
+    // Check if either side is already in a trade
+    for (const [, trade] of this.pendingTrades) {
+      if (
+        trade.initiatorSessionId === client.sessionId ||
+        trade.counterpartSessionId === client.sessionId ||
+        trade.initiatorSessionId === target.sessionId ||
+        trade.counterpartSessionId === target.sessionId
+      ) {
+        client.send("trade_error", { message: "One of you is already in a trade" });
+        return;
+      }
+    }
+
+    const initiatorName = this.state.players.get(client.sessionId)?.name ?? "Unknown";
+    this.pendingTrades.set(client.sessionId, {
+      initiatorSessionId: client.sessionId,
+      counterpartSessionId: target.sessionId,
+      initiatorOffer: null,
+      counterpartOffer: null,
+      initiatorConfirmed: false,
+      counterpartConfirmed: false,
+    });
+
+    target.send("trade_invited", { from: client.sessionId, fromName: initiatorName });
+    client.send("trade_pending", { with: target.sessionId });
+    console.log(`[Trade] ${client.sessionId} invited ${target.sessionId}`);
+  }
+
+  /** Counterpart accepts or declines a trade invite. */
+  private handleTradeRespond(client: Client, msg: TradeRespondMessage): void {
+    // Find trade where this client is the counterpart
+    let trade: PendingTrade | undefined;
+    let tradeKey: string | undefined;
+    for (const [key, t] of this.pendingTrades) {
+      if (t.counterpartSessionId === client.sessionId) {
+        trade = t;
+        tradeKey = key;
+        break;
+      }
+    }
+    if (!trade || !tradeKey) {
+      client.send("trade_error", { message: "No pending trade invite" });
+      return;
+    }
+
+    const initiatorClient = this.clients.find((c) => c.sessionId === trade!.initiatorSessionId);
+
+    if (!msg.accept) {
+      this.pendingTrades.delete(tradeKey);
+      initiatorClient?.send("trade_declined", { by: client.sessionId });
+      client.send("trade_cancelled", { reason: "You declined" });
+      return;
+    }
+
+    // Both clients enter the offer phase
+    initiatorClient?.send("trade_accepted", { with: client.sessionId });
+    client.send("trade_accepted", { with: trade.initiatorSessionId });
+  }
+
+  /** Each side submits their offer (items + gold). */
+  private handleTradeOffer(client: Client, msg: TradeOfferMessage): void {
+    const { trade, isInitiator } = this.findTrade(client.sessionId);
+    if (!trade) {
+      client.send("trade_error", { message: "No active trade" });
+      return;
+    }
+
+    const offer = {
+      items: msg.items.map((i) => ({
+        inventoryId: i.inventoryId,
+        itemId: i.itemId,
+        quantity: Math.max(1, Math.floor(i.quantity)),
+      })),
+      gold: Math.max(0, Math.floor(msg.gold)),
+    };
+
+    if (isInitiator) {
+      trade.initiatorOffer = offer;
+      trade.initiatorConfirmed = false; // reset on re-offer
+    } else {
+      trade.counterpartOffer = offer;
+      trade.counterpartConfirmed = false;
+    }
+
+    // Notify the other side
+    const otherSessionId = isInitiator
+      ? trade.counterpartSessionId
+      : trade.initiatorSessionId;
+    const otherClient = this.clients.find((c) => c.sessionId === otherSessionId);
+    otherClient?.send("trade_offer_updated", { offer, fromInitiator: isInitiator });
+  }
+
+  /** Each side confirms the current offers. When both confirm → execute. */
+  private handleTradeConfirm(client: Client, msg: TradeConfirmMessage): void {
+    const { trade, isInitiator, tradeKey } = this.findTrade(client.sessionId);
+    if (!trade || !tradeKey) {
+      client.send("trade_error", { message: "No active trade" });
+      return;
+    }
+
+    if (!msg.confirmed) {
+      // Un-confirm resets the other side too
+      trade.initiatorConfirmed = false;
+      trade.counterpartConfirmed = false;
+      const otherSessionId = isInitiator ? trade.counterpartSessionId : trade.initiatorSessionId;
+      const otherClient = this.clients.find((c) => c.sessionId === otherSessionId);
+      otherClient?.send("trade_unconfirmed", {});
+      return;
+    }
+
+    if (isInitiator) {
+      trade.initiatorConfirmed = true;
+    } else {
+      trade.counterpartConfirmed = true;
+    }
+
+    if (trade.initiatorConfirmed && trade.counterpartConfirmed) {
+      this.executeTrade(trade, tradeKey);
+    } else {
+      // Notify the other side they're waiting for them
+      const otherSessionId = isInitiator ? trade.counterpartSessionId : trade.initiatorSessionId;
+      const otherClient = this.clients.find((c) => c.sessionId === otherSessionId);
+      otherClient?.send("trade_awaiting_confirm", {});
+    }
+  }
+
+  /** Either side can cancel at any time before execution. */
+  private handleTradeCancel(client: Client): void {
+    const { trade, tradeKey } = this.findTrade(client.sessionId);
+    if (!trade || !tradeKey) return;
+
+    this.pendingTrades.delete(tradeKey);
+
+    const initiatorClient  = this.clients.find((c) => c.sessionId === trade.initiatorSessionId);
+    const counterpartClient = this.clients.find((c) => c.sessionId === trade.counterpartSessionId);
+    initiatorClient?.send("trade_cancelled", { reason: "Trade was cancelled" });
+    counterpartClient?.send("trade_cancelled", { reason: "Trade was cancelled" });
+  }
+
+  /** Execute a fully-confirmed P2P trade via the DB layer. */
+  private async executeTrade(trade: PendingTrade, tradeKey: string): Promise<void> {
+    const initiatorUserId   = sessionUserMap.get(trade.initiatorSessionId);
+    const counterpartUserId = sessionUserMap.get(trade.counterpartSessionId);
+
+    const initiatorClient   = this.clients.find((c) => c.sessionId === trade.initiatorSessionId);
+    const counterpartClient = this.clients.find((c) => c.sessionId === trade.counterpartSessionId);
+
+    if (!initiatorUserId || !counterpartUserId) {
+      initiatorClient?.send("trade_error", { message: "Trade requires a logged-in account" });
+      counterpartClient?.send("trade_error", { message: "Trade requires a logged-in account" });
+      this.pendingTrades.delete(tradeKey);
+      return;
+    }
+
+    try {
+      const result = await executeP2PTrade(
+        initiatorUserId,
+        counterpartUserId,
+        trade.initiatorOffer?.items ?? [],
+        trade.initiatorOffer?.gold ?? 0,
+        trade.counterpartOffer?.items ?? [],
+        trade.counterpartOffer?.gold ?? 0,
+      );
+
+      this.pendingTrades.delete(tradeKey);
+
+      if (result.success) {
+        initiatorClient?.send("trade_complete", { success: true });
+        counterpartClient?.send("trade_complete", { success: true });
+        console.log(`[Trade] P2P trade completed between ${initiatorUserId} and ${counterpartUserId}`);
+      } else {
+        initiatorClient?.send("trade_error", { message: result.error ?? "Trade failed" });
+        counterpartClient?.send("trade_error", { message: result.error ?? "Trade failed" });
+      }
+    } catch (err) {
+      this.pendingTrades.delete(tradeKey);
+      initiatorClient?.send("trade_error", { message: "Trade execution failed" });
+      counterpartClient?.send("trade_error", { message: "Trade execution failed" });
+      console.error("[Trade] executeTrade error:", (err as Error).message);
+    }
+  }
+
+  /** Cancel all trades involving a disconnecting player. */
+  private cancelTradesForClient(sessionId: string): void {
+    for (const [key, trade] of this.pendingTrades) {
+      if (trade.initiatorSessionId === sessionId || trade.counterpartSessionId === sessionId) {
+        const otherSessionId =
+          trade.initiatorSessionId === sessionId
+            ? trade.counterpartSessionId
+            : trade.initiatorSessionId;
+        const otherClient = this.clients.find((c) => c.sessionId === otherSessionId);
+        otherClient?.send("trade_cancelled", { reason: "Other player disconnected" });
+        this.pendingTrades.delete(key);
+      }
+    }
+  }
+
+  /** Helper: find a pending trade involving sessionId. */
+  private findTrade(sessionId: string): {
+    trade?: PendingTrade;
+    tradeKey?: string;
+    isInitiator: boolean;
+  } {
+    for (const [key, trade] of this.pendingTrades) {
+      if (trade.initiatorSessionId === sessionId) {
+        return { trade, tradeKey: key, isInitiator: true };
+      }
+      if (trade.counterpartSessionId === sessionId) {
+        return { trade, tradeKey: key, isInitiator: false };
+      }
+    }
+    return { isInitiator: false };
   }
 }

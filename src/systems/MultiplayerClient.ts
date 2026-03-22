@@ -84,6 +84,19 @@ export interface ZoneRoomState {
   enemiesAlive: number;
 }
 
+// ── Trade data shapes ─────────────────────────────────────────────────────────
+
+export interface TradeOfferItem {
+  inventoryId: string;
+  itemId: string;
+  quantity: number;
+}
+
+export interface TradeOffer {
+  items: TradeOfferItem[];
+  gold: number;
+}
+
 // ── Client ────────────────────────────────────────────────────────────────────
 
 export class MultiplayerClient {
@@ -117,6 +130,18 @@ export class MultiplayerClient {
   onQuestData?: (quest: ClientQuest, isNew: boolean) => void;
   onQuestError?: (message: string) => void;
   onQuestCompleted?: (questId: string) => void;
+
+  // Trade callbacks
+  onTradeInvited?: (fromSessionId: string, fromName: string) => void;
+  onTradePending?: (withSessionId: string) => void;
+  onTradeAccepted?: (withSessionId: string) => void;
+  onTradeDeclined?: () => void;
+  onTradeCancelled?: (reason: string) => void;
+  onTradeOfferUpdated?: (offer: TradeOffer, fromInitiator: boolean) => void;
+  onTradeAwaitingConfirm?: () => void;
+  onTradeUnconfirmed?: () => void;
+  onTradeComplete?: () => void;
+  onTradeError?: (message: string) => void;
 
   constructor() {
     this.client = new Client(SERVER_URL);
@@ -222,6 +247,38 @@ export class MultiplayerClient {
       this.onQuestCompleted?.(msg.questId);
     });
 
+    // ── Trade messages ────────────────────────────────────────────────────
+    room.onMessage('trade_invited', (msg: { from: string; fromName: string }) => {
+      this.onTradeInvited?.(msg.from, msg.fromName);
+    });
+    room.onMessage('trade_pending', (msg: { with: string }) => {
+      this.onTradePending?.(msg.with);
+    });
+    room.onMessage('trade_accepted', (msg: { with: string }) => {
+      this.onTradeAccepted?.(msg.with);
+    });
+    room.onMessage('trade_declined', () => {
+      this.onTradeDeclined?.();
+    });
+    room.onMessage('trade_cancelled', (msg: { reason: string }) => {
+      this.onTradeCancelled?.(msg.reason);
+    });
+    room.onMessage('trade_offer_updated', (msg: { offer: TradeOffer; fromInitiator: boolean }) => {
+      this.onTradeOfferUpdated?.(msg.offer, msg.fromInitiator);
+    });
+    room.onMessage('trade_awaiting_confirm', () => {
+      this.onTradeAwaitingConfirm?.();
+    });
+    room.onMessage('trade_unconfirmed', () => {
+      this.onTradeUnconfirmed?.();
+    });
+    room.onMessage('trade_complete', () => {
+      this.onTradeComplete?.();
+    });
+    room.onMessage('trade_error', (msg: { message: string }) => {
+      this.onTradeError?.(msg.message);
+    });
+
     // ── Connection events ────────────────────────────────────────────────
     room.onLeave(() => {
       console.warn('[MP] Left room');
@@ -299,6 +356,28 @@ export class MultiplayerClient {
     const msg: { text: string; whisperTo?: string } = { text: text.trim() };
     if (whisperTo) msg.whisperTo = whisperTo;
     this.room.send('chat', msg);
+  }
+
+  // ── Trade outbound messages ───────────────────────────────────────────────
+
+  sendTradeRequest(targetSessionId: string): void {
+    this.room?.send('trade_request', { targetSessionId });
+  }
+
+  sendTradeRespond(accept: boolean): void {
+    this.room?.send('trade_respond', { accept });
+  }
+
+  sendTradeOffer(items: TradeOfferItem[], gold: number): void {
+    this.room?.send('trade_offer', { items, gold });
+  }
+
+  sendTradeConfirm(confirmed: boolean): void {
+    this.room?.send('trade_confirm', { confirmed });
+  }
+
+  sendTradeCancel(): void {
+    this.room?.send('trade_cancel');
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

@@ -16,6 +16,8 @@ import { NpcDialogueOverlay } from '../ui/NpcDialogueOverlay';
 import { CraftingPanel }      from '../ui/CraftingPanel';
 import { MiniMapOverlay }    from '../ui/MiniMapOverlay';
 import { TutorialOverlay }  from '../ui/TutorialOverlay';
+import { TradeWindow }       from '../ui/TradeWindow';
+import { MarketplacePanel }  from '../ui/MarketplacePanel';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 
@@ -204,6 +206,12 @@ export class GameScene extends Phaser.Scene {
   /** Tutorial overlay — shown only for first-time players on zone1. */
   private tutorial?: TutorialOverlay;
 
+  /** P2P trade window (multiplayer only). */
+  private tradeWindow?: TradeWindow;
+
+  /** Marketplace / auction-house panel (multiplayer only). */
+  private marketplace?: MarketplacePanel;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -290,10 +298,12 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
       // Escape closes any open panel before pausing
       const panelClosed =
-        this.npcDialogue?.closeIfOpen()  ||
+        this.tradeWindow?.closeIfOpen()   ||
+        this.marketplace?.closeIfOpen()   ||
+        this.npcDialogue?.closeIfOpen()   ||
         this.craftingPanel?.closeIfOpen() ||
-        this.questLog?.closeIfOpen()     ||
-        this.inventory?.closeIfOpen()    ||
+        this.questLog?.closeIfOpen()      ||
+        this.inventory?.closeIfOpen()     ||
         this.chat?.active;
       if (!panelClosed) {
         this.scene.launch(SCENES.PAUSE, { zoneId: this.zone.id });
@@ -322,26 +332,38 @@ export class GameScene extends Phaser.Scene {
     const qlWas   = this.questLog?.isVisible     ?? false;
     const invWas  = this.inventory?.isVisible    ?? false;
     const crftWas = this.craftingPanel?.isVisible ?? false;
+    const mkWas   = this.marketplace?.isVisible  ?? false;
     this.questLog?.update();
     this.inventory?.update();
     this.craftingPanel?.update();
+    this.marketplace?.update();
     const qlNow   = this.questLog?.isVisible     ?? false;
     const invNow  = this.inventory?.isVisible    ?? false;
     const crftNow = this.craftingPanel?.isVisible ?? false;
+    const mkNow   = this.marketplace?.isVisible  ?? false;
     if (!qlWas && qlNow) {
       // Quest log just opened — close others
       this.inventory?.hide();
       this.craftingPanel?.hide();
       this.npcDialogue?.hide();
+      this.marketplace?.hide();
     } else if (!invWas && invNow) {
       // Inventory just opened — close others
       this.questLog?.hide();
       this.craftingPanel?.hide();
       this.npcDialogue?.hide();
+      this.marketplace?.hide();
     } else if (!crftWas && crftNow) {
       // Crafting panel just opened — close others
       this.questLog?.hide();
       this.inventory?.hide();
+      this.npcDialogue?.hide();
+      this.marketplace?.hide();
+    } else if (!mkWas && mkNow) {
+      // Marketplace just opened — close others
+      this.questLog?.hide();
+      this.inventory?.hide();
+      this.craftingPanel?.hide();
       this.npcDialogue?.hide();
     }
 
@@ -446,6 +468,17 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
+    // Trade window (P2P)
+    this.tradeWindow = new TradeWindow(this, client);
+
+    // Marketplace panel
+    this.marketplace = new MarketplacePanel(this);
+    this.marketplace.onTransactionComplete = () => {
+      // Refresh inventory panel after a buy/list
+      if (this.inventory?.isVisible) this.inventory.show();
+      this.chat?.addMessage('Marketplace transaction complete.', '#ffd700');
+    };
+
     // NPC dialogue overlay
     this.npcDialogue = new NpcDialogueOverlay(this);
     this.npcDialogue.onAccept = (quest) => {
@@ -492,7 +525,7 @@ export class GameScene extends Phaser.Scene {
 
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [Tab] players  [Q] quests  [I] inventory  [E] NPC  [F] craft', '#555577');
+      this.chat?.addMessage('[T] chat  [Tab] players  [Q] quests  [I] inventory  [E] NPC  [F] craft  [M] market  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -529,6 +562,10 @@ export class GameScene extends Phaser.Scene {
       this.npcDialogue = undefined;
       this.craftingPanel?.destroy();
       this.craftingPanel = undefined;
+      this.tradeWindow?.destroy();
+      this.tradeWindow = undefined;
+      this.marketplace?.destroy();
+      this.marketplace = undefined;
       this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20, 'Disconnected — solo mode', '#ff8888');
       // Resume local simulation
       if (!this.isDead && !this.waveTransitioning) this.spawnWave();
@@ -672,6 +709,16 @@ export class GameScene extends Phaser.Scene {
         sprite.setDepth(10).setTint(0x88aaff); // blue tint = remote player
         if (this.anims.exists('player-walk')) sprite.play('player-walk');
         this.remotePlayerSprites.set(rp.sessionId, sprite);
+
+        // Right-click → initiate trade
+        sprite.setInteractive();
+        const capturedSessionId = rp.sessionId;
+        const capturedName      = rp.name;
+        sprite.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
+          if (ptr.rightButtonDown() && this.tradeWindow && !this.tradeWindow.isVisible) {
+            this.tradeWindow.requestTrade(capturedSessionId, capturedName);
+          }
+        });
 
         // Name label
         const label = this.add.text(rp.x, rp.y - 12, rp.name, {
