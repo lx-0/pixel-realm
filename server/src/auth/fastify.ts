@@ -34,6 +34,10 @@ const JWT_SECRET = process.env.JWT_SECRET ?? "pixelrealm-dev-secret-change-in-pr
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL = "7d";
 const AUTH_PORT = Number(process.env.AUTH_PORT ?? 3001);
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 // ── JWT payload types ─────────────────────────────────────────────────────────
 
@@ -57,7 +61,7 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
 
   // ── Plugins ──────────────────────────────────────────────────────────────────
 
-  await app.register(fastifyCors, { origin: true });
+  await app.register(fastifyCors, { origin: ALLOWED_ORIGINS, credentials: true });
 
   // Rate limiting – uses Redis store when available
   await app.register(fastifyRateLimit, {
@@ -133,7 +137,7 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
     "/auth/login",
     {
       config: {
-        rateLimit: { max: 20, timeWindow: "1 minute" },
+        rateLimit: { max: 5, timeWindow: "1 minute" },
       },
       schema: {
         body: {

@@ -2,6 +2,7 @@ import { Room, Client, Delayed } from "@colyseus/core";
 import { ZoneGameState, Player, Enemy, Projectile } from "./schema/GameState";
 import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
 import { getOrGenerateQuest, completeQuestForPlayer } from "../quests/db";
+import { verifyRoomToken, AuthPayload } from "../auth/middleware";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -54,7 +55,7 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
 interface JoinOptions {
   zoneId?: string;
   playerName?: string;
-  userId?: string; // from auth JWT — used to load/save persisted state
+  token?: string; // JWT access token — verified in onAuth
 }
 
 interface MoveMessage {
@@ -104,6 +105,12 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
+  // ── Auth ─────────────────────────────────────────────────────────────────────
+
+  async onAuth(_client: Client, options: JoinOptions): Promise<AuthPayload> {
+    return verifyRoomToken(options.token);
+  }
+
   onCreate(options: JoinOptions) {
     this.setState(new ZoneGameState());
 
@@ -133,21 +140,23 @@ export class ZoneRoom extends Room<ZoneGameState> {
   }
 
   async onJoin(client: Client, options: JoinOptions) {
+    const auth = client.auth as AuthPayload;
     const player = new Player();
     player.sessionId = client.sessionId;
-    player.name = options?.playerName ?? "Hero";
+    player.name = options?.playerName ?? auth?.username ?? "Hero";
     // Spawn at a random position near center
     player.x = 100 + Math.random() * 120;
     player.y = 50  + Math.random() * 80;
 
     this.state.players.set(client.sessionId, player);
 
-    // Load persisted state if the client supplied a userId
-    if (options?.userId) {
-      sessionUserMap.set(client.sessionId, options.userId);
+    // Load persisted state using the verified userId from the JWT
+    const userId = auth?.userId;
+    if (userId) {
+      sessionUserMap.set(client.sessionId, userId);
       try {
-        await initPlayerState(options.userId);
-        const saved = await loadPlayerState(options.userId);
+        await initPlayerState(userId);
+        const saved = await loadPlayerState(userId);
         if (saved) {
           player.hp      = saved.hp;
           player.maxHp   = saved.maxHp;
@@ -157,11 +166,11 @@ export class ZoneRoom extends Room<ZoneGameState> {
           player.xp      = saved.xp;
         }
       } catch (err) {
-        console.warn(`[ZoneRoom] Failed to load state for ${options.userId}:`, (err as Error).message);
+        console.warn(`[ZoneRoom] Failed to load state for ${userId}:`, (err as Error).message);
       }
     }
 
-    console.log(`[ZoneRoom] ${client.sessionId} joined zone ${this.state.zoneId} (${this.clients.length} players)`);
+    console.log(`[ZoneRoom] ${client.sessionId} (${auth?.username}) joined zone ${this.state.zoneId} (${this.clients.length} players)`);
   }
 
   async onLeave(client: Client, consented: boolean) {

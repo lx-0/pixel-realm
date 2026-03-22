@@ -9,6 +9,10 @@ import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
 
 const PORT = Number(process.env.PORT ?? 2567);
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
 
@@ -27,7 +31,7 @@ initDb();
 // ── Express app ───────────────────────────────────────────────────────────────
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
 app.use(express.json());
 
 // Health check
