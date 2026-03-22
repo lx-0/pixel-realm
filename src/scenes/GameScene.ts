@@ -24,6 +24,7 @@ import { GuildPanel } from '../ui/GuildPanel';
 import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
+import { DayNightSystem } from '../systems/DayNightSystem';
 import {
   SKILL_BY_ID, computePassiveBonuses,
   type ClassId, type PassiveBonus,
@@ -246,6 +247,9 @@ export class GameScene extends Phaser.Scene {
   /** Leaderboard panel (always present, L to open). */
   private leaderboardPanel?: LeaderboardPanel;
 
+  /** Day-night cycle — tint overlay + in-game clock HUD. */
+  private dayNight?: DayNightSystem;
+
   /** HUD text showing total achievement points. */
   private achievePtsText?: Phaser.GameObjects.Text;
 
@@ -365,6 +369,7 @@ export class GameScene extends Phaser.Scene {
     this.setupInput();
     this.setupCamera();
     this.createHUD();
+    this.dayNight = new DayNightSystem(this);
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
 
@@ -548,6 +553,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.tutorial?.update(time, delta);
+    this.dayNight?.update(delta);
   }
 
   // ── Multiplayer init ──────────────────────────────────────────────────────
