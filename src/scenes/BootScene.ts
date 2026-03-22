@@ -95,6 +95,54 @@ export class BootScene extends Phaser.Scene {
     this.load.image('ui_archetype_badge_mage',    'assets/ui/skill_tree/ui_archetype_badge_mage.png');
     this.load.image('ui_archetype_badge_ranger',  'assets/ui/skill_tree/ui_archetype_badge_ranger.png');
 
+    // Crafting station spritesheets (4 frames × 32×32 = 128×32)
+    this.load.spritesheet('station_anvil',          'assets/station_anvil.png',          { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('station_alchemy_table',  'assets/station_alchemy_table.png',  { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('station_workbench',      'assets/station_workbench.png',      { frameWidth: 32, frameHeight: 32 });
+
+    // Crafting material icons (16×16)
+    this.load.image('icon_mat_iron_ore',     'assets/icon_mat_iron_ore.png');
+    this.load.image('icon_mat_gold_ore',     'assets/icon_mat_gold_ore.png');
+    this.load.image('icon_mat_crystal',      'assets/icon_mat_crystal.png');
+    this.load.image('icon_mat_herb_green',   'assets/icon_mat_herb_green.png');
+    this.load.image('icon_mat_herb_red',     'assets/icon_mat_herb_red.png');
+    this.load.image('icon_mat_herb_blue',    'assets/icon_mat_herb_blue.png');
+    this.load.image('icon_mat_gem_ruby',     'assets/icon_mat_gem_ruby.png');
+    this.load.image('icon_mat_gem_sapphire', 'assets/icon_mat_gem_sapphire.png');
+    this.load.image('icon_mat_gem_emerald',  'assets/icon_mat_gem_emerald.png');
+    this.load.image('icon_mat_leather',      'assets/icon_mat_leather.png');
+    this.load.image('icon_mat_wood',         'assets/icon_mat_wood.png');
+    this.load.image('icon_mat_cloth',        'assets/icon_mat_cloth.png');
+    this.load.image('icon_mat_bone',         'assets/icon_mat_bone.png');
+    this.load.image('icon_mat_feather',      'assets/icon_mat_feather.png');
+    this.load.image('icon_mat_venom',        'assets/icon_mat_venom.png');
+    this.load.image('icon_mat_coal',         'assets/icon_mat_coal.png');
+    this.load.image('icon_mat_moonstone',    'assets/icon_mat_moonstone.png');
+
+    // Crafted item icons (16×16)
+    this.load.image('icon_craft_iron_sword',    'assets/icon_craft_iron_sword.png');
+    this.load.image('icon_craft_gold_ring',     'assets/icon_craft_gold_ring.png');
+    this.load.image('icon_craft_leather_armor', 'assets/icon_craft_leather_armor.png');
+    this.load.image('icon_craft_wooden_shield', 'assets/icon_craft_wooden_shield.png');
+    this.load.image('icon_craft_health_potion', 'assets/icon_craft_health_potion.png');
+    this.load.image('icon_craft_mana_potion',   'assets/icon_craft_mana_potion.png');
+    this.load.image('icon_craft_fire_scroll',   'assets/icon_craft_fire_scroll.png');
+    this.load.image('icon_craft_iron_helm',     'assets/icon_craft_iron_helm.png');
+    this.load.image('icon_craft_bow',           'assets/icon_craft_bow.png');
+    this.load.image('icon_craft_pickaxe',       'assets/icon_craft_pickaxe.png');
+    this.load.image('icon_craft_staff',         'assets/icon_craft_staff.png');
+    this.load.image('icon_craft_boots',         'assets/icon_craft_boots.png');
+
+    // Crafting UI panel
+    this.load.image('ui_panel_crafting', 'assets/ui_panel_crafting.png');
+
+    // Crafting progress bar (8 frames × 80×10 = 640×10)
+    this.load.spritesheet('ui_craft_progress', 'assets/ui_craft_progress.png', { frameWidth: 80, frameHeight: 10 });
+
+    // Craft result VFX (6 frames × 32×32 = 192×32)
+    this.load.spritesheet('vfx_craft_success', 'assets/vfx_craft_success.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('vfx_craft_failure', 'assets/vfx_craft_failure.png', { frameWidth: 32, frameHeight: 32 });
+
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();
     });
@@ -136,6 +184,19 @@ export class BootScene extends Phaser.Scene {
       this.createVariantAnims('boss_glacial_wyrm', 'glacial_wyrm');
     }
 
+    // Crafting station idle glow animations (4 frames @ 3fps for slow ambient loop)
+    this.createStationAnims('station_anvil', 'anvil');
+    this.createStationAnims('station_alchemy_table', 'alchemy_table');
+    this.createStationAnims('station_workbench', 'workbench');
+
+    // Craft result VFX animations (6 frames)
+    if (this.textures.get('vfx_craft_success').frameTotal > 1) {
+      this.anims.create({ key: 'vfx-craft-success', frames: this.anims.generateFrameNumbers('vfx_craft_success', { start: 0, end: 5 }), frameRate: 12, repeat: 0 });
+    }
+    if (this.textures.get('vfx_craft_failure').frameTotal > 1) {
+      this.anims.create({ key: 'vfx-craft-failure', frames: this.anims.generateFrameNumbers('vfx_craft_failure', { start: 0, end: 5 }), frameRate: 12, repeat: 0 });
+    }
+
     SettingsManager.getInstance().applyAll();
     this.scene.start(SCENES.MENU);
   }
@@ -165,6 +226,16 @@ export class BootScene extends Phaser.Scene {
     if (!a.exists(`${name}-walk`))   a.create({ key: `${name}-walk`,   frames: a.generateFrameNumbers(textureKey, { start: 2,  end: 5  }), frameRate: 10, repeat: -1 });
     if (!a.exists(`${name}-attack`)) a.create({ key: `${name}-attack`, frames: a.generateFrameNumbers(textureKey, { start: 6,  end: 9  }), frameRate: 14, repeat: 0  });
     if (!a.exists(`${name}-death`))  a.create({ key: `${name}-death`,  frames: a.generateFrameNumbers(textureKey, { start: 10, end: 11 }), frameRate: 6,  repeat: 0  });
+  }
+
+  /** Register idle glow animation for a crafting station spritesheet. */
+  private createStationAnims(textureKey: string, name: string): void {
+    if (this.textures.get(textureKey).frameTotal > 1) {
+      const a = this.anims;
+      if (!a.exists(`${name}-idle`)) {
+        a.create({ key: `${name}-idle`, frames: a.generateFrameNumbers(textureKey, { start: 0, end: 3 }), frameRate: 3, repeat: -1 });
+      }
+    }
   }
 
   // ─── Texture generation ───────────────────────────────────────────────────
