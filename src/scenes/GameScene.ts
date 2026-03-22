@@ -1151,7 +1151,9 @@ export class GameScene extends Phaser.Scene {
 
       hitAny = true;
 
-      extra.hp -= dmg;
+      const isCrit = Math.random() < 0.20;
+      const hitDmg = isCrit ? Math.floor(dmg * 1.5) : dmg;
+      extra.hp -= hitDmg;
       e.setData('extra', extra);
 
       const kbMult = def ? def.knockbackMultiplier : 1.0;
@@ -1169,9 +1171,13 @@ export class GameScene extends Phaser.Scene {
         e.setTint(col);
       });
 
-      this.spawnBurst(e.x, e.y, [0xffffff, 0xffe040, 0xf0f0f0], 5, 110);
+      this.spawnBurst(e.x, e.y, isCrit ? [0xffe040, 0xffff80, 0xffffff] : [0xffffff, 0xffe040, 0xf0f0f0], isCrit ? 9 : 5, isCrit ? 150 : 110);
       this.sfx.playHit();
-      this.floatingText(e.x, e.y - 10, `-${dmg}`, '#ff8888');
+      if (isCrit) {
+        this.floatingText(e.x, e.y - 10, `✦${hitDmg}!`, '#ffe040');
+      } else {
+        this.floatingText(e.x, e.y - 10, `-${hitDmg}`, '#ffffff');
+      }
 
       if (extra.hp <= 0) this.killEnemy(e);
     });
@@ -1219,6 +1225,7 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.shake(isBoss ? 300 : 100, isBoss ? 0.02 : 0.006);
     this.hitStop(isBoss ? 100 : 55);
     this.spawnXpOrb(e.x, e.y, xpGain);
+    this.floatingText(e.x, e.y - 14, `+${xpGain} XP`, '#44ff88');
 
     if (isBoss) {
       this.bossAlive    = false;
@@ -1285,6 +1292,7 @@ export class GameScene extends Phaser.Scene {
     this.screenFlash(0xff2020, 0.28);
     this.sfx.playPlayerHit();
     this.spawnBurst(this.player.x, this.player.y, [0xff4444, 0xffffff, 0xffaa00], 5, 80);
+    this.floatingText(this.player.x, this.player.y - 14, `-${dmg}`, '#ff4444');
     this.updateHUD();
     if (this.hp <= 0) this.playerDead();
   }
@@ -1407,6 +1415,15 @@ export class GameScene extends Phaser.Scene {
       duration: 600 + Phaser.Math.Between(0, 200),
       yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
     });
+    const sparkleTimer = this.time.addEvent({
+      delay: 500,
+      callback: () => {
+        if (!orb.active) { sparkleTimer.destroy(); return; }
+        this.spawnBurst(orb.x, orb.y, [0xffe040, 0xffd000, 0xffffff], 2, 25);
+      },
+      loop: true,
+    });
+    orb.setData('sparkleTimer', sparkleTimer);
   }
 
   private collectPickup(
@@ -1421,6 +1438,7 @@ export class GameScene extends Phaser.Scene {
     this.sfx.playPickup();
     this.spawnBurst(orb.x, orb.y, [0xe8b800, 0xffe040, 0xffffff], 5, 80);
     this.floatingText(orb.x, orb.y - 8, `+${value} XP`, '#ffe040');
+    (orb.getData('sparkleTimer') as Phaser.Time.TimerEvent)?.destroy();
     orb.destroy();
     this.checkLevelUp();
     this.updateHUD();
