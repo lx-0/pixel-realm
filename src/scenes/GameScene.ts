@@ -13,6 +13,7 @@ import { QuestLogPanel }      from '../ui/QuestLogPanel';
 import { InventoryPanel }     from '../ui/InventoryPanel';
 import { NpcDialogueOverlay } from '../ui/NpcDialogueOverlay';
 import { CraftingPanel }      from '../ui/CraftingPanel';
+import { MiniMapOverlay }    from '../ui/MiniMapOverlay';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 interface EnemyExtra {
@@ -179,6 +180,9 @@ export class GameScene extends Phaser.Scene {
   /** HUD prompt shown when player is near crafting station. */
   private craftStationHint?: Phaser.GameObjects.Text;
 
+  /** Mini-map HUD overlay (always present, M key toggles). */
+  private miniMap?: MiniMapOverlay;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -337,6 +341,13 @@ export class GameScene extends Phaser.Scene {
     this.cleanProjectiles();
     this.updateCharmStatus(time);
     if (this.bossHudVisible) this.updateBossHpBar();
+
+    this.miniMap?.update(
+      this.player,
+      this.enemies,
+      this.mp?.players ?? new Map(),
+      this.remoteEnemySprites,
+    );
   }
 
   // ── Multiplayer init ──────────────────────────────────────────────────────
@@ -1789,9 +1800,11 @@ export class GameScene extends Phaser.Scene {
     this.bossHpBar = this.add.rectangle(bossX, bossY + bossH / 2, bossW, bossH, 0xff2222)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z + 5).setVisible(false);
 
-    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD: Move  |  SHIFT: Sprint  |  Q: Dodge  |  SPACE: Attack  |  F: Craft  |  ESC: Pause', {
+    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD: Move  |  SHIFT: Sprint  |  Q: Dodge  |  SPACE: Attack  |  M: Map  |  F: Craft  |  ESC: Pause', {
       fontSize: '4px', color: '#333344', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(Z);
+
+    this.miniMap = new MiniMapOverlay(this);
 
     this.updateHUD();
   }
