@@ -21,6 +21,8 @@ import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { GuildPanel } from '../ui/GuildPanel';
+import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
+import { AchievementTracker } from '../systems/AchievementTracker';
 import {
   SKILL_BY_ID, computePassiveBonuses,
   type ClassId,
@@ -237,6 +239,12 @@ export class GameScene extends Phaser.Scene {
   /** Guild panel (multiplayer only). */
   private guildPanel?: GuildPanel;
 
+  /** Achievement panel (always present, H to open). */
+  private achievementPanel?: AchievementPanel;
+
+  /** HUD text showing total achievement points. */
+  private achievePtsText?: Phaser.GameObjects.Text;
+
   // ── Skill tree ─────────────────────────────────────────────────────────────
 
   /** Skill tree panel (always present, K to open). */
@@ -372,15 +380,16 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
       // Escape closes any open panel before pausing
       const panelClosed =
-        this.worldMap?.closeIfOpen()      ||
-        this.skillTree?.closeIfOpen()     ||
-        this.tradeWindow?.closeIfOpen()   ||
-        this.marketplace?.closeIfOpen()   ||
-        this.guildPanel?.closeIfOpen()    ||
-        this.npcDialogue?.closeIfOpen()   ||
-        this.craftingPanel?.closeIfOpen() ||
-        this.questLog?.closeIfOpen()      ||
-        this.inventory?.closeIfOpen()     ||
+        this.worldMap?.closeIfOpen()          ||
+        this.skillTree?.closeIfOpen()         ||
+        this.tradeWindow?.closeIfOpen()       ||
+        this.marketplace?.closeIfOpen()       ||
+        this.guildPanel?.closeIfOpen()        ||
+        this.achievementPanel?.closeIfOpen()  ||
+        this.npcDialogue?.closeIfOpen()       ||
+        this.craftingPanel?.closeIfOpen()     ||
+        this.questLog?.closeIfOpen()          ||
+        this.inventory?.closeIfOpen()         ||
         this.chat?.active;
       if (!panelClosed) {
         this.scene.launch(SCENES.PAUSE, { zoneId: this.zone.id });
@@ -425,6 +434,7 @@ export class GameScene extends Phaser.Scene {
     this.chat?.update(delta);
     this.playerList?.update();
     this.guildPanel?.update();
+    this.achievementPanel?.update();
 
     // Panel updates with mutual exclusion — opening one closes the others
     const qlWas   = this.questLog?.isVisible     ?? false;
@@ -709,6 +719,14 @@ export class GameScene extends Phaser.Scene {
     // Load initial guild state
     this.guildPanel.refresh().catch(() => {/* non-fatal */});
 
+    // Achievement panel (H key — always present in solo and multiplayer)
+    this.achievementPanel = new AchievementPanel(this);
+    this.achievementPanel.userId = localStorage.getItem('pr_userId') ?? undefined;
+
+    // Fire zone_visit event on scene start
+    this.fireAchievementEvent('zone_visited', { distinctZones: SaveManager.load().unlockedZones.length });
+    AchievementTracker.recordEvent('zone_visit');
+
     // Incoming guild chat
     client.onGuildChatMessage = (sender, text) => {
       const senderName = localStorage.getItem('pr_username') ?? 'Hero';
@@ -719,7 +737,7 @@ export class GameScene extends Phaser.Scene {
 
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [G] guild  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [G] guild  [H] achievements  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -760,6 +778,8 @@ export class GameScene extends Phaser.Scene {
       this.tradeWindow = undefined;
       this.marketplace?.destroy();
       this.marketplace = undefined;
+      this.achievementPanel?.destroy();
+      this.achievementPanel = new AchievementPanel(this); // re-create without userId for solo fallback
       this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20, 'Disconnected — solo mode', '#ff8888');
       // Resume local simulation
       if (!this.isDead && !this.waveTransitioning) this.spawnWave();
@@ -1966,6 +1986,18 @@ export class GameScene extends Phaser.Scene {
     this.xp    += xpGain;
     this.score += xpGain * 10;
 
+    // Achievement tracking — kills and boss kills
+    const totalKillsSoFar = SaveManager.load().totalKills + this.kills;
+    const killUnlocks = AchievementTracker.recordEvent('kill', { count: 0 });
+    // Override progress with live total before save (not yet persisted)
+    void killUnlocks; // will be re-read after zone clear when save is updated
+    this.fireAchievementEvent('enemy_killed', { isBoss });
+    if (isBoss) {
+      const bossUnlocks = AchievementTracker.recordEvent('boss_kill');
+      bossUnlocks.forEach(a => this.showAchievementUnlock(a));
+    }
+    void totalKillsSoFar;
+
     this.spawnBurst(e.x, e.y, [0xd42020, 0xf06020, 0x2b2b2b, 0x4a4a4a], isBoss ? 18 : 10, isBoss ? 200 : 140);
     this.sfx.playKill();
     this.cameras.main.shake(isBoss ? 300 : 100, isBoss ? 0.02 : 0.006);
@@ -2129,6 +2161,15 @@ export class GameScene extends Phaser.Scene {
       isLastZone,
     );
 
+    // Achievement tracking — zone complete and kill milestones now that save is updated
+    const zoneCompleteUnlocks = AchievementTracker.recordEvent('zone_complete');
+    zoneCompleteUnlocks.forEach(a => this.showAchievementUnlock(a));
+    const killMilestones = AchievementTracker.recordEvent('kill', { count: 0 });
+    killMilestones.forEach(a => this.showAchievementUnlock(a));
+    this.fireAchievementEvent('zone_completed', { distinctZones: Object.keys(savedData.highScores).length });
+    this.fireAchievementEvent('enemy_killed', {});
+    this.updateAchievementPtsHUD();
+
     const timeSecs = Math.floor((this.time.now - this.gameStartTime) / 1000);
 
     // Clean up multiplayer connection, UI, and audio before leaving scene
@@ -2246,6 +2287,12 @@ export class GameScene extends Phaser.Scene {
     this.updateHotbarHUD();
     if (this.isMultiplayer && this.mp) this.mp.sendLevelUp();
 
+    // Achievement tracking — level milestone
+    const levelUnlocks = AchievementTracker.recordEvent('level_up', { level: this.level });
+    levelUnlocks.forEach(a => this.showAchievementUnlock(a));
+    this.fireAchievementEvent('level_up', { level: this.level });
+    this.updateAchievementPtsHUD();
+
     this.spawnBurst(this.player.x, this.player.y, [0xffe040, 0xf0f0f0, 0x9050e0, 0xd090ff], 22, 160);
     this.cameras.main.shake(280, 0.016);
     this.screenFlash(0xffe040, 0.4);
@@ -2330,6 +2377,8 @@ export class GameScene extends Phaser.Scene {
     this.xpBar = this.add.rectangle(bx, 20, bw, 3, 0xe8b800).setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z);
 
     this.levelText = this.add.text(bx + bw + 4, 5, 'Lv.1', { fontSize: '5px', color: '#ffffff', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.achievePtsText = this.add.text(bx + bw + 4, 13, '0 pts', { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.updateAchievementPtsHUD();
 
     this.waveText = this.add.text(lx, 28, 'Wave 1', { fontSize: '5px', color: '#ffd700', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.killText = this.add.text(lx, 37, 'Kills: 0', { fontSize: '5px', color: '#aaaaaa', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
@@ -2962,5 +3011,71 @@ export class GameScene extends Phaser.Scene {
         this.skillPointsBadge.setVisible(false);
       }
     }
+  }
+
+  // ── Achievement helpers ────────────────────────────────────────────────────
+
+  /**
+   * Update the achievement-points HUD text from local tracker.
+   * Called after events that may unlock achievements.
+   */
+  private updateAchievementPtsHUD(): void {
+    if (!this.achievePtsText) return;
+    const pts = AchievementTracker.getTotalPoints();
+    this.achievePtsText.setText(`${pts}pts`);
+  }
+
+  /**
+   * Show a brief achievement unlock popup notification.
+   * Appears above the HUD then fades out.
+   */
+  private showAchievementUnlock(achievement: { icon: string; title: string; points: number }): void {
+    const cx  = CANVAS.WIDTH / 2;
+    const cy  = CANVAS.HEIGHT - 30;
+    const msg = `${achievement.icon} Achievement: ${achievement.title} (+${achievement.points}pts)`;
+
+    const txt = this.add.text(cx, cy, msg, {
+      fontSize: '6px',
+      color: '#ffd700',
+      fontFamily: 'monospace',
+      stroke: '#000000',
+      strokeThickness: 2,
+      backgroundColor: '#0008',
+      padding: { x: 4, y: 2 },
+    }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(90).setAlpha(0);
+
+    this.tweens.add({ targets: txt, alpha: 1, duration: 250, ease: 'Power2' });
+    this.tweens.add({
+      targets: txt, alpha: 0, y: cy - 18,
+      duration: 1200, delay: 2000, ease: 'Power2',
+      onComplete: () => txt.destroy(),
+    });
+
+    this.updateAchievementPtsHUD();
+    this.achievementPanel?.notifyUnlock(achievement as AchievementData);
+  }
+
+  /**
+   * Send an achievement event to the server for multiplayer / auth mode.
+   * No-op if no userId is available (solo mode).
+   */
+  private fireAchievementEvent(
+    type: string,
+    data: Record<string, unknown> = {},
+  ): void {
+    const userId = localStorage.getItem('pr_userId');
+    if (!userId) return;
+    const wsUrl = ((import.meta as Record<string, any>).env?.VITE_COLYSEUS_URL as string | undefined)
+      ?? 'ws://localhost:2567';
+    const base = wsUrl.replace('ws://', 'http://').replace('wss://', 'https://');
+    fetch(`${base}/achievements/event`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ userId, type, data }),
+    }).then(async (res) => {
+      if (!res.ok) return;
+      const result = await res.json() as { newlyUnlocked?: AchievementData[] };
+      (result.newlyUnlocked ?? []).forEach(a => this.showAchievementUnlock(a));
+    }).catch(() => {/* non-fatal */});
   }
 }

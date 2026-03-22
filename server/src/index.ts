@@ -26,6 +26,13 @@ import {
   promotePlayer,
   demotePlayer,
 } from "./db/guilds";
+import {
+  ACHIEVEMENTS,
+  getPlayerAchievements,
+  getAchievementPoints,
+  processAchievementEvent,
+  type AchievementEventType,
+} from "./db/achievements";
 import { config } from "./config";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -116,6 +123,12 @@ app.post("/crafting/craft", async (req, res) => {
       res.status(422).json({ error: result.message });
     } else {
       // Either success or high-tier failure (materials consumed) — both return 200
+      // Track achievement progress after any craft attempt (even failures consume materials)
+      getCraftingProgress(userId).then((progress) => {
+        const totalCrafts = progress.reduce((s, p) => s + p.craftCount, 0);
+        const distinctRecipes = progress.length;
+        processAchievementEvent(userId, "item_crafted", { totalCrafts, distinctRecipes }).catch(() => {/* non-fatal */});
+      }).catch(() => {/* non-fatal */});
       res.json(result);
     }
   } catch (err) {
@@ -251,7 +264,10 @@ app.post("/guild/create", async (req, res) => {
   try {
     const result = await createGuild(userId, name, tag, description);
     if (!result.success) res.status(422).json({ error: result.error });
-    else res.json({ success: true, guildId: result.guildId });
+    else {
+      processAchievementEvent(userId, "guild_created").catch(() => {/* non-fatal */});
+      res.json({ success: true, guildId: result.guildId });
+    }
   } catch (err) {
     console.warn("[REST] guild/create failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to create guild" });
@@ -297,7 +313,11 @@ app.post("/guild/invite", async (req, res) => {
   try {
     const result = await invitePlayer(userId, targetUsername, guildId);
     if (!result.success) res.status(422).json({ error: result.error });
-    else res.json({ success: true });
+    else {
+      // Count total invites this player has sent (approximate: just increment server-side)
+      processAchievementEvent(userId, "player_invited", { totalInvited: 1 }).catch(() => {/* non-fatal */});
+      res.json({ success: true });
+    }
   } catch (err) {
     console.warn("[REST] guild/invite failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to invite player" });
@@ -372,6 +392,63 @@ app.post("/guild/demote", async (req, res) => {
   } catch (err) {
     console.warn("[REST] guild/demote failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to demote player" });
+  }
+});
+
+// ── Achievement REST endpoints ─────────────────────────────────────────────────
+
+// GET /achievements/definitions — static list of all achievement definitions
+app.get("/achievements/definitions", (_req, res) => {
+  res.json(ACHIEVEMENTS);
+});
+
+// GET /achievements/:userId — player's achievement progress + unlock state
+app.get("/achievements/:userId", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+  try {
+    const achievements = await getPlayerAchievements(userId);
+    const points = achievements.filter((a) => a.unlocked).reduce((s, a) => s + a.points, 0);
+    res.json({ achievements, points });
+  } catch (err) {
+    console.warn("[REST] achievements/:userId failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch achievements" });
+  }
+});
+
+// GET /achievements/:userId/points — just the total points
+app.get("/achievements/:userId/points", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+  try {
+    const points = await getAchievementPoints(userId);
+    res.json({ points });
+  } catch (err) {
+    console.warn("[REST] achievements/points failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch points" });
+  }
+});
+
+// POST /achievements/event — record a progress event and return newly unlocked achievements
+app.post("/achievements/event", async (req, res) => {
+  const { userId, type, data = {} } =
+    req.body as { userId?: string; type?: string; data?: Record<string, unknown> };
+  if (!userId || !type || userId.length > 100 || type.length > 50) {
+    res.status(400).json({ error: "Missing or invalid userId / type" });
+    return;
+  }
+  try {
+    const result = await processAchievementEvent(userId, type as AchievementEventType, data);
+    res.json(result);
+  } catch (err) {
+    console.warn("[REST] achievements/event failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to process achievement event" });
   }
 });
 

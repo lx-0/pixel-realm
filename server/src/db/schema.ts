@@ -211,6 +211,25 @@ export const guildMemberships = pgTable(
   }),
 );
 
+// ── Player Achievements (achievement progress + unlock state per player) ───────
+
+export const playerAchievements = pgTable(
+  "player_achievements",
+  {
+    playerId: uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    achievementId: varchar("achievement_id", { length: 50 }).notNull(),
+    progress: integer("progress").notNull().default(0),
+    unlocked: boolean("unlocked").notNull().default(false),
+    unlockedAt: timestamp("unlocked_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.achievementId] }),
+  }),
+);
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -227,3 +246,4 @@ export type SkillAllocationsRow = typeof skillAllocations.$inferSelect;
 export type CraftingProgressRow = typeof craftingProgress.$inferSelect;
 export type Guild = typeof guilds.$inferSelect;
 export type GuildMembership = typeof guildMemberships.$inferSelect;
+export type PlayerAchievement = typeof playerAchievements.$inferSelect;

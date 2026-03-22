@@ -97,5 +97,7 @@ export class SaveManager {
 
   static reset(): void {
     localStorage.removeItem(SAVE_KEY);
+    // Also clear achievement progress so it stays in sync
+    try { localStorage.removeItem('pixelrealm_achievements_v1'); } catch { /* ignore */ }
   }
 }
