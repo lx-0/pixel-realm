@@ -1,0 +1,67 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache client node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: client-node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: client-node-modules-
+
+      - name: Cache server node_modules
+        uses: actions/cache@v4
+        with:
+          path: server/node_modules
+          key: server-node-modules-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: server-node-modules-
+
+      - name: Install client dependencies
+        run: npm ci
+
+      - name: Install server dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Build client
+        run: npm run build
+
+      - name: Build server
+        run: npm run build
+        working-directory: server
+
+      - name: Deploy via Docker Compose
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd /opt/pixelrealm && git pull && docker compose -f docker-compose.prod.yml up -d --build"
+          rm -f /tmp/deploy_key
