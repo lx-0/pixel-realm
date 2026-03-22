@@ -34,6 +34,7 @@ export const playerState = pgTable("player_state", {
   xp: integer("xp").notNull().default(0),
   gold: integer("gold").notNull().default(0),
   currentZone: varchar("current_zone", { length: 50 }).notNull().default("zone1"),
+  pveKills: integer("pve_kills").notNull().default(0),
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

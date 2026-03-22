@@ -22,6 +22,7 @@ import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { GuildPanel } from '../ui/GuildPanel';
 import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
+import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
 import {
   SKILL_BY_ID, computePassiveBonuses,
@@ -242,6 +243,9 @@ export class GameScene extends Phaser.Scene {
   /** Achievement panel (always present, H to open). */
   private achievementPanel?: AchievementPanel;
 
+  /** Leaderboard panel (always present, L to open). */
+  private leaderboardPanel?: LeaderboardPanel;
+
   /** HUD text showing total achievement points. */
   private achievePtsText?: Phaser.GameObjects.Text;
 
@@ -365,6 +369,9 @@ export class GameScene extends Phaser.Scene {
     this.skillTree.onRespec      = () => this.respecSkills();
     this.skillTree.onSetClass    = (c)  => this.setClass(c);
 
+    // Leaderboard panel (always present, populated once multiplayer connects)
+    this.leaderboardPanel = new LeaderboardPanel(this);
+
     // Show tutorial for first-time players entering zone1
     if (!save.tutorialCompleted && zoneId === 'zone1') {
       this.tutorial = new TutorialOverlay(this);
@@ -393,6 +400,7 @@ export class GameScene extends Phaser.Scene {
         this.marketplace?.closeIfOpen()       ||
         this.guildPanel?.closeIfOpen()        ||
         this.achievementPanel?.closeIfOpen()  ||
+        this.leaderboardPanel?.closeIfOpen()  ||
         this.npcDialogue?.closeIfOpen()       ||
         this.craftingPanel?.closeIfOpen()     ||
         this.questLog?.closeIfOpen()          ||
@@ -442,6 +450,7 @@ export class GameScene extends Phaser.Scene {
     this.playerList?.update();
     this.guildPanel?.update();
     this.achievementPanel?.update();
+    this.leaderboardPanel?.update();
 
     // Panel updates with mutual exclusion — opening one closes the others
     const qlWas   = this.questLog?.isVisible     ?? false;
@@ -730,6 +739,11 @@ export class GameScene extends Phaser.Scene {
     this.achievementPanel = new AchievementPanel(this);
     this.achievementPanel.userId = localStorage.getItem('pr_userId') ?? undefined;
 
+    // Leaderboard panel (L key — always present in multiplayer)
+    this.leaderboardPanel = new LeaderboardPanel(this);
+    this.leaderboardPanel.userId   = localStorage.getItem('pr_userId')   ?? undefined;
+    this.leaderboardPanel.username = localStorage.getItem('pr_username') ?? undefined;
+
     // Fire zone_visit event on scene start
     this.fireAchievementEvent('zone_visited', { distinctZones: SaveManager.load().unlockedZones.length });
     AchievementTracker.recordEvent('zone_visit');
@@ -787,6 +801,8 @@ export class GameScene extends Phaser.Scene {
       this.marketplace = undefined;
       this.achievementPanel?.destroy();
       this.achievementPanel = new AchievementPanel(this); // re-create without userId for solo fallback
+      this.leaderboardPanel?.destroy();
+      this.leaderboardPanel = new LeaderboardPanel(this);
       this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20, 'Disconnected — solo mode', '#ff8888');
       // Resume local simulation
       if (!this.isDead && !this.waveTransitioning) this.spawnWave();

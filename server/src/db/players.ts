@@ -99,6 +99,7 @@ export interface PlayerStateUpdate {
   xp?: number;
   gold?: number;
   currentZone?: string;
+  pveKills?: number;
 }
 
 export async function savePlayerState(

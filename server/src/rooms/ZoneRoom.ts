@@ -1,6 +1,8 @@
 import { Room, Client, Delayed } from "@colyseus/core";
 import { ZoneGameState, Player, Enemy, Projectile } from "./schema/GameState";
 import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
+import { invalidateLeaderboardCache } from "../db/leaderboard";
+import { getPool } from "../db/client";
 import { getOrGenerateQuest, completeQuestForPlayer } from "../quests/db";
 import { verifyRoomToken, AuthPayload } from "../auth/middleware";
 import { executeP2PTrade, type TradeItem } from "../db/marketplace";
@@ -573,9 +575,10 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
   private killEnemy(enemy: Enemy, killerSessionId?: string) {
     enemy.aiState = "dead";
-    // Drop crafting materials for the killer
+    // Drop crafting materials for the killer and increment kill counter
     if (killerSessionId) {
       this.dropLootForPlayer(killerSessionId).catch(() => {/* best-effort */});
+      this.incrementPveKills(killerSessionId).catch(() => {/* best-effort */});
     }
     // Remove from state after a short delay (so clients can play death animation)
     this.clock.setTimeout(() => {
@@ -606,6 +609,22 @@ export class ZoneRoom extends Room<ZoneGameState> {
       if (killerClient) {
         killerClient.send("loot_drop", { items: droppedItems });
       }
+    }
+  }
+
+  /** Increments the PvE kill counter for a player in the DB and invalidates leaderboard cache. */
+  private async incrementPveKills(sessionId: string): Promise<void> {
+    const userId = sessionUserMap.get(sessionId);
+    if (!userId) return;
+    try {
+      const pool = getPool();
+      await pool.query(
+        "UPDATE player_state SET pve_kills = pve_kills + 1 WHERE player_id = $1",
+        [userId],
+      );
+      invalidateLeaderboardCache("kills").catch(() => {/* non-fatal */});
+    } catch (err) {
+      console.warn("[ZoneRoom] Failed to increment pve_kills:", (err as Error).message);
     }
   }
 

@@ -33,6 +33,11 @@ import {
   processAchievementEvent,
   type AchievementEventType,
 } from "./db/achievements";
+import {
+  getLeaderboard,
+  type LeaderboardCategory,
+  type LeaderboardPeriod,
+} from "./db/leaderboard";
 import { config } from "./config";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -449,6 +454,35 @@ app.post("/achievements/event", async (req, res) => {
   } catch (err) {
     console.warn("[REST] achievements/event failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to process achievement event" });
+  }
+});
+
+// ── Leaderboard REST endpoints ────────────────────────────────────────────────
+
+const VALID_CATEGORIES = new Set<LeaderboardCategory>(["xp", "kills", "quests", "achievements", "crafting"]);
+const VALID_PERIODS    = new Set<LeaderboardPeriod>(["all", "weekly", "daily"]);
+
+// GET /leaderboard/:category?period=all|weekly|daily
+// Returns top 100 entries for the given category + period.
+app.get("/leaderboard/:category", async (req, res) => {
+  const category = req.params.category as LeaderboardCategory;
+  const period   = (req.query.period ?? "all") as LeaderboardPeriod;
+
+  if (!VALID_CATEGORIES.has(category)) {
+    res.status(400).json({ error: "Invalid category. Must be one of: xp, kills, quests, achievements, crafting" });
+    return;
+  }
+  if (!VALID_PERIODS.has(period)) {
+    res.status(400).json({ error: "Invalid period. Must be one of: all, weekly, daily" });
+    return;
+  }
+
+  try {
+    const entries = await getLeaderboard(category, period);
+    res.json({ category, period, entries });
+  } catch (err) {
+    console.warn("[REST] leaderboard failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch leaderboard" });
   }
 });
 
