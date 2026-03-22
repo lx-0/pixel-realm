@@ -2029,16 +2029,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Achievement tracking — kills and boss kills
-    const totalKillsSoFar = SaveManager.load().totalKills + this.kills;
-    const killUnlocks = AchievementTracker.recordEvent('kill', { count: 0 });
-    // Override progress with live total before save (not yet persisted)
-    void killUnlocks; // will be re-read after zone clear when save is updated
+    const killUnlocks = AchievementTracker.recordEvent('kill', { count: 1 });
+    killUnlocks.forEach(a => this.showAchievementUnlock(a));
     this.fireAchievementEvent('enemy_killed', { isBoss });
     if (isBoss) {
       const bossUnlocks = AchievementTracker.recordEvent('boss_kill');
       bossUnlocks.forEach(a => this.showAchievementUnlock(a));
     }
-    void totalKillsSoFar;
 
     this.spawnBurst(e.x, e.y, [0xd42020, 0xf06020, 0x2b2b2b, 0x4a4a4a], isBoss ? 18 : 10, isBoss ? 200 : 140);
     this.sfx.playKill();
