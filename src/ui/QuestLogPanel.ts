@@ -1,7 +1,7 @@
 /**
  * QuestLogPanel — shows active and completed quests.
  *
- * Press Q to toggle. Escape to close.
+ * Press J to toggle. Escape to close.
  * Styled consistently with ChatOverlay and PlayerListPanel.
  */
 
@@ -30,7 +30,7 @@ export class QuestLogPanel {
     this.scene = scene;
     this.container = scene.add.container(0, 0)
       .setScrollFactor(0).setDepth(DEPTH).setVisible(false);
-    this.qKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+    this.qKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.J);
     this.rebuild();
   }
 

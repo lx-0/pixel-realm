@@ -172,14 +172,21 @@ export class SettingsScene extends Phaser.Scene {
     const items: Phaser.GameObjects.GameObject[] = [];
 
     const bindings: [string, string][] = [
-      ['Move',    'W / A / S / D'],
-      ['Attack',  'SPACE'],
-      ['Sprint',  'SHIFT'],
-      ['Dodge',   'Q'],
-      ['Map',     'M'],
-      ['Craft',   'F'],
-      ['Chat',    'ENTER'],
-      ['Pause',   'ESC'],
+      ['Move',       'W / A / S / D'],
+      ['Attack',     'SPACE'],
+      ['Sprint',     'SHIFT'],
+      ['Dodge',      'Q'],
+      ['NPC Talk',   'E'],
+      ['Inventory',  'I'],
+      ['Quest Log',  'J'],
+      ['Skill Tree', 'K'],
+      ['Achievements','H'],
+      ['World Map',  'M'],
+      ['Craft',      'F'],
+      ['Skills 1–6', '1 – 6'],
+      ['Chat',       'ENTER'],
+      ['Mute',       'N'],
+      ['Close / Pause', 'ESC'],
     ];
 
     items.push(this.add.text(cx, startY - 2, 'Key Bindings (v1 — read only)', {
@@ -187,20 +194,15 @@ export class SettingsScene extends Phaser.Scene {
     }).setOrigin(0.5));
 
     bindings.forEach(([action, key], i) => {
-      const rowY = startY + 8 + i * 9;
+      const rowY = startY + 8 + i * 7;
       items.push(
         this.add.text(cx - 42, rowY, action, {
-          fontSize: '5px', color: '#aaccee', fontFamily: 'monospace',
+          fontSize: '4px', color: '#aaccee', fontFamily: 'monospace',
         }).setOrigin(0, 0.5),
         this.add.text(cx + 42, rowY, key, {
-          fontSize: '5px', color: '#ffffff', fontFamily: 'monospace',
+          fontSize: '4px', color: '#ffffff', fontFamily: 'monospace',
         }).setOrigin(1, 0.5),
       );
-      // Dotted separator
-      const sep = this.add.graphics();
-      sep.lineStyle(1, 0x334455, 0.5);
-      sep.lineBetween(cx - 10, rowY, cx + 10, rowY);
-      items.push(sep);
     });
 
     return this.add.container(0, 0, items).setDepth(3);

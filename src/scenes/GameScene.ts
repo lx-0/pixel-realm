@@ -25,7 +25,7 @@ import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
 import {
   SKILL_BY_ID, computePassiveBonuses,
-  type ClassId,
+  type ClassId, type PassiveBonus,
 } from '../config/skills';
 
 // ── Internal types ────────────────────────────────────────────────────────────
@@ -271,6 +271,13 @@ export class GameScene extends Phaser.Scene {
   private berserkUntil = 0;
   /** Arcane shield absorb remaining. */
   private shieldAbsorb = 0;
+
+  /** Cached passive bonus values — updated by applyPassiveBonuses(). Avoids recomputing every frame. */
+  private passiveBonusCache: Required<PassiveBonus> = {
+    maxHpFlat: 0, maxManaFlat: 0, damagePct: 0, speedPct: 0,
+    manaRegenFlat: 0, critChancePct: 0, attackCdReductionPct: 0,
+    allCdReductionPct: 0, damageReductionPct: 0,
+  };
 
   /** HUD objects for hotbar display. */
   private hotbarSlotBgs:    Phaser.GameObjects.Rectangle[]    = [];
@@ -1128,7 +1135,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    let speed = PLAYER.MOVE_SPEED + (this.level - 1) * LEVELS.SPEED_BONUS_PER_LEVEL;
+    let speed = (PLAYER.MOVE_SPEED + (this.level - 1) * LEVELS.SPEED_BONUS_PER_LEVEL) * (1 + this.passiveBonusCache.speedPct);
     let vx = 0;
     let vy = 0;
     const left  = this.cursors.left.isDown  || this.wasd.A.isDown;
@@ -1834,7 +1841,8 @@ export class GameScene extends Phaser.Scene {
     if (this.chat?.active) return; // don't attack while chat is open
     if (this.playerEffects.stun) return; // stunned — can't attack
     if (!Phaser.Input.Keyboard.JustDown(this.attackKey)) return;
-    if (time - this.lastAttackTime < COMBAT.ATTACK_COOLDOWN_MS) return;
+    const attackCd = Math.round(COMBAT.ATTACK_COOLDOWN_MS * Math.max(0.2, 1 - this.passiveBonusCache.attackCdReductionPct));
+    if (time - this.lastAttackTime < attackCd) return;
 
     this.lastAttackTime = time;
     this.mana = Math.max(0, this.mana - MANA.ATTACK_COST);
@@ -1857,7 +1865,13 @@ export class GameScene extends Phaser.Scene {
 
     // In multiplayer: damage is resolved server-side, but we still do local VFX
     // for responsiveness by checking nearby enemies visually.
-    const dmg    = COMBAT.ATTACK_DAMAGE + (this.level - 1) * LEVELS.DAMAGE_BONUS_PER_LEVEL;
+    const berserk    = time < this.berserkUntil ? 1.5 : 1.0;
+    const surge      = time < this.arcaneSurgeUntil ? 2.0 : 1.0;
+    const dmg = Math.floor(
+      (COMBAT.ATTACK_DAMAGE + (this.level - 1) * LEVELS.DAMAGE_BONUS_PER_LEVEL)
+      * (1 + this.passiveBonusCache.damagePct) * berserk * surge,
+    );
+    const critChance = 0.05 + this.passiveBonusCache.critChancePct;
     let   hitAny = false;
 
     this.enemies.getChildren().forEach(obj => {
@@ -1906,7 +1920,7 @@ export class GameScene extends Phaser.Scene {
 
       hitAny = true;
 
-      const isCrit = Math.random() < 0.20;
+      const isCrit = Math.random() < critChance;
       const hitDmg = isCrit ? Math.floor(dmg * 1.5) : dmg;
       extra.hp -= hitDmg;
       e.setData('extra', extra);
@@ -2628,9 +2642,10 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  /** Recalculate passive stat bonuses and apply them to player stats. */
+  /** Recalculate passive stat bonuses, cache them, and apply HP/mana caps. */
   private applyPassiveBonuses(): void {
-    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
+    this.passiveBonusCache = computePassiveBonuses([...this.unlockedSkills]);
+    const bonuses = this.passiveBonusCache;
     // Apply max HP / mana bonuses (re-derive from level base)
     const baseHp   = PLAYER.BASE_HP + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL;
     const baseMana = PLAYER.BASE_MANA;
@@ -2643,26 +2658,22 @@ export class GameScene extends Phaser.Scene {
 
   /** Get effective max HP including passive bonuses. */
   private getMaxHp(): number {
-    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
-    return PLAYER.BASE_HP + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL + bonuses.maxHpFlat;
+    return PLAYER.BASE_HP + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL + this.passiveBonusCache.maxHpFlat;
   }
 
   /** Get effective max mana including passive bonuses. */
   private getMaxMana(): number {
-    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
-    return PLAYER.BASE_MANA + bonuses.maxManaFlat;
+    return PLAYER.BASE_MANA + this.passiveBonusCache.maxManaFlat;
   }
 
   /** Get effective mana regen per second including passive bonuses. */
   private getEffectiveManaRegen(): number {
-    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
-    return MANA.REGEN_PER_SEC + bonuses.manaRegenFlat;
+    return MANA.REGEN_PER_SEC + this.passiveBonusCache.manaRegenFlat;
   }
 
   /** Get damage reduction fraction (0–0.8 capped). */
   private getDamageReduction(): number {
-    const bonuses = computePassiveBonuses([...this.unlockedSkills]);
-    let dr = bonuses.damageReductionPct;
+    let dr = this.passiveBonusCache.damageReductionPct;
     // last_stand: extra 30% DR when below 25% HP
     if (this.unlockedSkills.has('last_stand') && this.hp < this.getMaxHp() * 0.25) {
       dr += 0.30;

@@ -259,6 +259,17 @@ export class InventoryPanel {
       this.container.add(hintTxt);
     }
 
+    // Overflow indicator: items beyond the visible grid cap
+    if (this.items.length > COLS * 4) {
+      const overflow = this.items.length - COLS * 4;
+      const overflowTxt = this.scene.add.text(
+        PANEL_X + PANEL_W - PAD, PANEL_Y + PANEL_H - 16,
+        `+${overflow} more`,
+        { fontSize: '3px', color: '#ff9944', fontFamily: 'monospace' },
+      ).setOrigin(1, 0).setScrollFactor(0);
+      this.container.add(overflowTxt);
+    }
+
     // Close hint
     const hint = this.scene.add.text(
       PANEL_X + PANEL_W - PAD, PANEL_Y + PANEL_H - 6,

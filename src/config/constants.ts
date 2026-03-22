@@ -76,7 +76,7 @@ export const COMBAT = {
 
 // ── Economy ───────────────────────────────────────────────────────────────────
 export const ECONOMY = {
-  MARKETPLACE_FEE_PCT: 0.025,
+  MARKETPLACE_FEE_PCT: 0.05,
   CRAFTING_FAIL_RATE_HIGH_TIER: 0.15,
   FAST_TRAVEL_COST_PER_ZONE: 10,
   LAND_AUCTION_FLOOR: 500,
