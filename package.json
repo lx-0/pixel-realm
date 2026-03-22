@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "deploy": "butler push dist ${ITCH_GAME:-pixelforgestudios/pixelrealm}:html5 --userversion $npm_package_version",
+    "deploy:fresh": "npm run build && npm run deploy"
   },
   "dependencies": {
     "colyseus.js": "^0.15.28",
