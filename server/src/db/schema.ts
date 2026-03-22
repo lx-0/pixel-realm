@@ -181,6 +181,36 @@ export const skillAllocations = pgTable("skill_allocations", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Guilds ────────────────────────────────────────────────────────────────────
+
+export const guilds = pgTable("guilds", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 40 }).notNull().unique(),
+  tag: varchar("tag", { length: 6 }).notNull().unique(), // e.g. "PFG"
+  description: text("description").notNull().default(""),
+  leaderId: uuid("leader_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const guildMemberships = pgTable(
+  "guild_memberships",
+  {
+    guildId: uuid("guild_id")
+      .notNull()
+      .references(() => guilds.id, { onDelete: "cascade" }),
+    playerId: uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    role: varchar("role", { length: 20 }).notNull().default("member"), // 'leader' | 'officer' | 'member'
+    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.guildId, table.playerId] }),
+  }),
+);
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -195,3 +225,5 @@ export type MarketplaceListing = typeof marketplaceListings.$inferSelect;
 export type TradeHistoryRow = typeof tradeHistory.$inferSelect;
 export type SkillAllocationsRow = typeof skillAllocations.$inferSelect;
 export type CraftingProgressRow = typeof craftingProgress.$inferSelect;
+export type Guild = typeof guilds.$inferSelect;
+export type GuildMembership = typeof guildMemberships.$inferSelect;

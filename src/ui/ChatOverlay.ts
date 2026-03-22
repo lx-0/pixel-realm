@@ -50,6 +50,8 @@ export class ChatOverlay {
 
   /** Called when the user presses Enter with a non-empty message. */
   onSend?: (text: string, whisperTo?: string) => void;
+  /** Called when the user sends a guild chat message (/g prefix). */
+  onGuildSend?: (text: string) => void;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -171,6 +173,12 @@ export class ChatOverlay {
   }
 
   private dispatchSend(raw: string): void {
+    // Guild chat: /g message
+    const guildMatch = raw.match(/^\/g\s+(.+)$/i);
+    if (guildMatch) {
+      this.onGuildSend?.(guildMatch[1].trim());
+      return;
+    }
     // Whisper syntax: /w PlayerName message
     const whisperMatch = raw.match(/^\/w\s+(\S+)\s+(.+)$/i);
     if (whisperMatch) {

@@ -19,6 +19,7 @@ import { TutorialOverlay }  from '../ui/TutorialOverlay';
 import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
+import { GuildPanel } from '../ui/GuildPanel';
 import {
   SKILL_BY_ID, computePassiveBonuses,
   type ClassId,
@@ -223,6 +224,9 @@ export class GameScene extends Phaser.Scene {
   /** Marketplace / auction-house panel (multiplayer only). */
   private marketplace?: MarketplacePanel;
 
+  /** Guild panel (multiplayer only). */
+  private guildPanel?: GuildPanel;
+
   // ── Skill tree ─────────────────────────────────────────────────────────────
 
   /** Skill tree panel (always present, K to open). */
@@ -361,6 +365,7 @@ export class GameScene extends Phaser.Scene {
         this.skillTree?.closeIfOpen()     ||
         this.tradeWindow?.closeIfOpen()   ||
         this.marketplace?.closeIfOpen()   ||
+        this.guildPanel?.closeIfOpen()    ||
         this.npcDialogue?.closeIfOpen()   ||
         this.craftingPanel?.closeIfOpen() ||
         this.questLog?.closeIfOpen()      ||
@@ -408,6 +413,7 @@ export class GameScene extends Phaser.Scene {
     // Chat overlay update (suppress game input while typing)
     this.chat?.update(delta);
     this.playerList?.update();
+    this.guildPanel?.update();
 
     // Panel updates with mutual exclusion — opening one closes the others
     const qlWas   = this.questLog?.isVisible     ?? false;
@@ -521,6 +527,9 @@ export class GameScene extends Phaser.Scene {
     this.chat = new ChatOverlay(this);
     this.chat.onSend = (text, whisperTo) => {
       this.mp?.sendChat(text, whisperTo);
+    };
+    this.chat.onGuildSend = (text) => {
+      this.mp?.sendGuildChat(text);
     };
 
     // Player list panel
@@ -667,9 +676,27 @@ export class GameScene extends Phaser.Scene {
       });
     };
 
+    // Guild panel
+    this.guildPanel = new GuildPanel(this);
+    this.guildPanel.userId   = localStorage.getItem('pr_userId')   ?? undefined;
+    this.guildPanel.username = localStorage.getItem('pr_username') ?? 'Hero';
+    this.guildPanel.onSendGuildChat = (text) => {
+      this.mp?.sendGuildChat(text);
+    };
+    // Load initial guild state
+    this.guildPanel.refresh().catch(() => {/* non-fatal */});
+
+    // Incoming guild chat
+    client.onGuildChatMessage = (sender, text) => {
+      const senderName = localStorage.getItem('pr_username') ?? 'Hero';
+      const isOwn = sender === senderName;
+      const label = isOwn ? `[G→] ${text}` : `[G] ${sender}: ${text}`;
+      this.chat?.addMessage(label, '#88ddff');
+    };
+
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [Tab] players  [Q] quests  [I] inventory  [E] NPC  [F] craft  [M] market  [K] skills  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [M] market  [K] skills  [G] guild  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -864,8 +891,9 @@ export class GameScene extends Phaser.Scene {
           }
         });
 
-        // Name label
-        const label = this.add.text(rp.x, rp.y - 12, rp.name, {
+        // Name label (include guild tag if present)
+        const displayName = rp.guildTag ? `${rp.guildTag} ${rp.name}` : rp.name;
+        const label = this.add.text(rp.x, rp.y - 12, displayName, {
           fontSize: '4px', color: '#aaddff', fontFamily: 'monospace',
           stroke: '#000', strokeThickness: 1,
         }).setOrigin(0.5).setDepth(11);
@@ -886,7 +914,11 @@ export class GameScene extends Phaser.Scene {
       const hpBar  = this.remotePlayerHpBars.get(rp.sessionId);
       const s      = this.remotePlayerSprites.get(rp.sessionId)!;
 
-      if (label)  { label.x  = s.x; label.y  = s.y - 12; }
+      if (label)  {
+        label.x = s.x; label.y = s.y - 12;
+        const newDisplayName = rp.guildTag ? `${rp.guildTag} ${rp.name}` : rp.name;
+        if (label.text !== newDisplayName) label.setText(newDisplayName);
+      }
       if (hpBar)  {
         hpBar.x = s.x; hpBar.y = s.y - 8;
         const pct = Math.max(0, rp.hp / rp.maxHp);

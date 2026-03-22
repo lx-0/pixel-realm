@@ -25,6 +25,7 @@ export interface RemotePlayer {
   maxHp: number;
   level: number;
   isAttacking: boolean;
+  guildTag: string; // e.g. "[PFG]" or empty string
 }
 
 export interface RemoteEnemy {
@@ -145,6 +146,9 @@ export class MultiplayerClient {
   onCraftEvent?: (playerName: string, itemName: string) => void;
   /** Called when the local player receives crafting material drops after a kill. */
   onLootDrop?: (items: string[]) => void;
+
+  // Guild callbacks
+  onGuildChatMessage?: (sender: string, text: string) => void;
 
   // Trade callbacks
   onTradeInvited?: (fromSessionId: string, fromName: string) => void;
@@ -294,6 +298,11 @@ export class MultiplayerClient {
       this.onTradeError?.(msg.message);
     });
 
+    // ── Guild messages ────────────────────────────────────────────────────
+    room.onMessage('guild_chat', (msg: { sender: string; text: string }) => {
+      this.onGuildChatMessage?.(msg.sender, msg.text);
+    });
+
     // ── Crafting messages ─────────────────────────────────────────────────
     room.onMessage('craft_event', (msg: { playerName: string; itemName: string }) => {
       this.onCraftEvent?.(msg.playerName, msg.itemName);
@@ -349,6 +358,7 @@ export class MultiplayerClient {
       maxHp: p.maxHp as number,
       level: p.level as number,
       isAttacking: p.isAttacking as boolean,
+      guildTag: (p.guildTag as string) ?? '',
     };
   }
 
@@ -450,6 +460,14 @@ export class MultiplayerClient {
 
   sendSkillRespec(): void {
     this.room?.send('skill_respec', { confirm: true });
+  }
+
+  // ── Guild messages ────────────────────────────────────────────────────────
+
+  /** Send a message to guild members in this zone. */
+  sendGuildChat(text: string): void {
+    if (!this.room || !text.trim()) return;
+    this.room.send('guild_chat', { text: text.trim() });
   }
 
   // ── Crafting messages ─────────────────────────────────────────────────────

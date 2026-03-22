@@ -7,6 +7,7 @@ import { executeP2PTrade, type TradeItem } from "../db/marketplace";
 import { initSkillState, loadSkillState, saveSkillState, type SkillState } from "../db/skills";
 import { ALL_SKILLS, SKILL_BY_ID, computePassiveBonuses, type ClassId } from "../skills";
 import { addItem } from "../db/inventory";
+import { getPlayerGuild } from "../db/guilds";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -123,6 +124,7 @@ interface MoveMessage {
 interface ChatMessage {
   text: string;
   whisperTo?: string; // name of target player for private messages
+  guild?: boolean;    // true = send to guild channel only
 }
 
 interface QuestNpcMessage {
@@ -243,6 +245,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
     // Crafting notify — broadcast to other players in the zone
     this.onMessage("craft_notify", (client: Client, msg: CraftNotifyMessage) => this.handleCraftNotify(client, msg));
 
+    // Guild chat (guild members only in this zone)
+    this.onMessage("guild_chat", (client: Client, msg: ChatMessage) => this.handleGuildChat(client, msg));
+
     // P2P trade messages
     this.onMessage("trade_request",  (client: Client, msg: TradeRequestMessage)  => this.handleTradeRequest(client, msg));
     this.onMessage("trade_respond",  (client: Client, msg: TradeRespondMessage)  => this.handleTradeRespond(client, msg));
@@ -295,6 +300,17 @@ export class ZoneRoom extends Room<ZoneGameState> {
         this.skillCooldowns.set(client.sessionId, {});
         this.applySkillPassives(player, skillState);
         this.syncSkillState(player, skillState);
+
+        // Load guild membership (best-effort — non-blocking)
+        try {
+          const guildInfo = await getPlayerGuild(userId);
+          if (guildInfo) {
+            player.guildId  = guildInfo.guildId;
+            player.guildTag = `[${guildInfo.guildTag}]`;
+          }
+        } catch (_guildErr) {
+          // Non-fatal: guild data unavailable, player continues without tag
+        }
       } catch (err) {
         console.warn(`[ZoneRoom] Failed to load state for ${userId}:`, (err as Error).message);
       }
@@ -432,6 +448,29 @@ export class ZoneRoom extends Room<ZoneGameState> {
       // Zone-wide broadcast
       this.broadcast("chat", { sender: senderName, text, whisper: false });
     }
+  }
+
+  // ── Guild Chat ────────────────────────────────────────────────────────────────
+
+  private handleGuildChat(client: Client, msg: ChatMessage) {
+    const sender = this.state.players.get(client.sessionId);
+    if (!sender) return;
+    if (!sender.guildId) {
+      client.send("chat", { sender: "System", text: "You are not in a guild.", whisper: false });
+      return;
+    }
+
+    const text = String(msg.text ?? "").replace(/[\x00-\x1f]/g, "").slice(0, 140);
+    if (!text) return;
+
+    const senderName = sender.name || "Hero";
+
+    // Deliver to all guild members currently in this zone
+    this.state.players.forEach((p: Player, sid: string) => {
+      if (p.guildId !== sender.guildId) return;
+      const target = this.clients.find((c: Client) => c.sessionId === sid);
+      target?.send("guild_chat", { sender: senderName, text });
+    });
   }
 
   // ── Quest NPC Handlers ────────────────────────────────────────────────────────

@@ -46,6 +46,11 @@ export class Player extends Schema {
   @type("int32")   buffExpiresAt: number = 0;
   /** Absorb shield HP remaining (from arcane_shield) */
   @type("int16")   shieldAbsorb: number = 0;
+
+  // Guild (empty string = no guild)
+  @type("string")  guildId: string = "";
+  /** Short tag displayed next to player name, e.g. "[PFG]" */
+  @type("string")  guildTag: string = "";
 }
 
 // ── Enemy ─────────────────────────────────────────────────────────────────────

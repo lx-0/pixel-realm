@@ -16,6 +16,16 @@ import {
   cancelListing,
   getTradeHistory,
 } from "./db/marketplace";
+import {
+  createGuild,
+  getGuildById,
+  getPlayerGuild,
+  invitePlayer,
+  kickPlayer,
+  leaveGuild,
+  promotePlayer,
+  demotePlayer,
+} from "./db/guilds";
 import { config } from "./config";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -225,6 +235,143 @@ app.get("/trade/history/:userId", async (req, res) => {
   } catch (err) {
     console.warn("[REST] trade/history failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to fetch trade history" });
+  }
+});
+
+// ── Guild REST endpoints ───────────────────────────────────────────────────────
+
+// POST /guild/create — create a new guild
+app.post("/guild/create", async (req, res) => {
+  const { userId, name, tag, description = "" } =
+    req.body as { userId?: string; name?: string; tag?: string; description?: string };
+  if (!userId || !name || !tag || userId.length > 100 || name.length > 40 || tag.length > 6) {
+    res.status(400).json({ error: "Invalid parameters" });
+    return;
+  }
+  try {
+    const result = await createGuild(userId, name, tag, description);
+    if (!result.success) res.status(422).json({ error: result.error });
+    else res.json({ success: true, guildId: result.guildId });
+  } catch (err) {
+    console.warn("[REST] guild/create failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to create guild" });
+  }
+});
+
+// GET /guild/:guildId — fetch guild info + roster
+app.get("/guild/:guildId", async (req, res) => {
+  const { guildId } = req.params as { guildId: string };
+  if (!guildId || guildId.length > 100) { res.status(400).json({ error: "Invalid guildId" }); return; }
+  try {
+    const guild = await getGuildById(guildId);
+    if (!guild) res.status(404).json({ error: "Guild not found" });
+    else res.json(guild);
+  } catch (err) {
+    console.warn("[REST] guild/:id failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch guild" });
+  }
+});
+
+// GET /guild/player/:userId — get this player's guild (or null)
+app.get("/guild/player/:userId", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) { res.status(400).json({ error: "Invalid userId" }); return; }
+  try {
+    const info = await getPlayerGuild(userId);
+    res.json(info ?? null);
+  } catch (err) {
+    console.warn("[REST] guild/player/:id failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch guild info" });
+  }
+});
+
+// POST /guild/invite — invite a player by username
+app.post("/guild/invite", async (req, res) => {
+  const { userId, targetUsername, guildId } =
+    req.body as { userId?: string; targetUsername?: string; guildId?: string };
+  if (!userId || !targetUsername || !guildId
+      || userId.length > 100 || targetUsername.length > 32 || guildId.length > 100) {
+    res.status(400).json({ error: "Invalid parameters" });
+    return;
+  }
+  try {
+    const result = await invitePlayer(userId, targetUsername, guildId);
+    if (!result.success) res.status(422).json({ error: result.error });
+    else res.json({ success: true });
+  } catch (err) {
+    console.warn("[REST] guild/invite failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to invite player" });
+  }
+});
+
+// POST /guild/kick — kick a member
+app.post("/guild/kick", async (req, res) => {
+  const { userId, targetPlayerId, guildId } =
+    req.body as { userId?: string; targetPlayerId?: string; guildId?: string };
+  if (!userId || !targetPlayerId || !guildId
+      || userId.length > 100 || targetPlayerId.length > 100 || guildId.length > 100) {
+    res.status(400).json({ error: "Invalid parameters" });
+    return;
+  }
+  try {
+    const result = await kickPlayer(userId, targetPlayerId, guildId);
+    if (!result.success) res.status(422).json({ error: result.error });
+    else res.json({ success: true });
+  } catch (err) {
+    console.warn("[REST] guild/kick failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to kick player" });
+  }
+});
+
+// POST /guild/leave — leave the guild
+app.post("/guild/leave", async (req, res) => {
+  const { userId } = req.body as { userId?: string };
+  if (!userId || userId.length > 100) { res.status(400).json({ error: "Invalid userId" }); return; }
+  try {
+    const result = await leaveGuild(userId);
+    if (!result.success) res.status(422).json({ error: result.error });
+    else res.json({ success: true });
+  } catch (err) {
+    console.warn("[REST] guild/leave failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to leave guild" });
+  }
+});
+
+// POST /guild/promote — promote a member
+app.post("/guild/promote", async (req, res) => {
+  const { userId, targetPlayerId, guildId } =
+    req.body as { userId?: string; targetPlayerId?: string; guildId?: string };
+  if (!userId || !targetPlayerId || !guildId
+      || userId.length > 100 || targetPlayerId.length > 100 || guildId.length > 100) {
+    res.status(400).json({ error: "Invalid parameters" });
+    return;
+  }
+  try {
+    const result = await promotePlayer(userId, targetPlayerId, guildId);
+    if (!result.success) res.status(422).json({ error: result.error });
+    else res.json({ success: true });
+  } catch (err) {
+    console.warn("[REST] guild/promote failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to promote player" });
+  }
+});
+
+// POST /guild/demote — demote an officer
+app.post("/guild/demote", async (req, res) => {
+  const { userId, targetPlayerId, guildId } =
+    req.body as { userId?: string; targetPlayerId?: string; guildId?: string };
+  if (!userId || !targetPlayerId || !guildId
+      || userId.length > 100 || targetPlayerId.length > 100 || guildId.length > 100) {
+    res.status(400).json({ error: "Invalid parameters" });
+    return;
+  }
+  try {
+    const result = await demotePlayer(userId, targetPlayerId, guildId);
+    if (!result.success) res.status(422).json({ error: result.error });
+    else res.json({ success: true });
+  } catch (err) {
+    console.warn("[REST] guild/demote failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to demote player" });
   }
 });
 
