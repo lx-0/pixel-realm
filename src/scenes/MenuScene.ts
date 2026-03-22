@@ -13,7 +13,8 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.sfx = new SoundManager();
+    this.sfx = SoundManager.getInstance();
+    this.sfx.startZoneMusic('menu');
     const cx = CANVAS.WIDTH / 2;
     const cy = CANVAS.HEIGHT / 2;
 
@@ -131,6 +132,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private startGame(): void {
+    this.sfx.unlock();
     this.sfx.playMenuClick();
     this.cameras.main.fadeOut(300, 0, 0, 0);
     this.time.delayedCall(300, () => this.scene.start(SCENES.LEVEL_SELECT));

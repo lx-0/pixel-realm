@@ -15,7 +15,8 @@ export class LevelSelectScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.sfx = new SoundManager();
+    this.sfx = SoundManager.getInstance();
+    this.sfx.startZoneMusic('menu');
     const save = SaveManager.load();
     const cx = CANVAS.WIDTH / 2;
     const cy = CANVAS.HEIGHT / 2;

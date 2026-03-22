@@ -14,7 +14,7 @@ export class CreditsScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.sfx = new SoundManager();
+    this.sfx = SoundManager.getInstance();
     const cx = CANVAS.WIDTH / 2;
     const cy = CANVAS.HEIGHT / 2;
 

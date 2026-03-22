@@ -16,7 +16,7 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   create(data: GameOverData): void {
-    this.sfx = new SoundManager();
+    this.sfx = SoundManager.getInstance();
     const {
       kills = 0, level = 1, timeSecs = 0,
       zoneName = '', victory = false, score = 0, zoneId = '',

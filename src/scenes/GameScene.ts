@@ -185,7 +185,13 @@ export class GameScene extends Phaser.Scene {
     this.bossHudVisible    = false;
     this.isMultiplayer     = false;
 
-    this.sfx = new SoundManager();
+    this.sfx = SoundManager.getInstance();
+
+    // Unlock audio + start zone music on first user interaction (autoplay policy)
+    const unlockAudio = (): void => { this.sfx.unlock(); };
+    this.input.once('pointerdown', unlockAudio);
+    this.input.keyboard!.once('keydown', unlockAudio);
+    this.sfx.startZoneMusic(this.zone.id);
 
     this.buildWorld();
     this.createPlayer();
@@ -1353,10 +1359,11 @@ export class GameScene extends Phaser.Scene {
 
     const timeSecs = Math.floor((this.time.now - this.gameStartTime) / 1000);
 
-    // Clean up multiplayer connection and UI before leaving scene
+    // Clean up multiplayer connection, UI, and audio before leaving scene
     this.mp?.disconnect().catch(() => {});
     this.chat?.destroy();
     this.playerList?.destroy();
+    this.sfx.stopMusic();
 
     this.cameras.main.fadeOut(600, 0, 0, 0);
     this.time.delayedCall(600, () => {
@@ -1389,6 +1396,7 @@ export class GameScene extends Phaser.Scene {
       this.mp?.disconnect().catch(() => {});
       this.chat?.destroy();
       this.playerList?.destroy();
+      this.sfx.stopMusic();
 
       this.cameras.main.fadeOut(500, 0, 0, 0);
       this.time.delayedCall(500, () => {
