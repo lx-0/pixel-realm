@@ -199,13 +199,13 @@ export class AchievementPanel {
     this.clearDyn();
 
     // Background
-    this.addRect(0, 0, PANEL_W, PANEL_H, 0x000000, 0.88, 0x334488);
+    this.addRect(0, 0, PANEL_W, PANEL_H, 0x000000, 0.88, 0x334466);
 
     // Header
     const pointsStr = `${this.totalPoints} pts`;
     this.addText(PAD, PAD, '🏆 Achievements', '#ffd700', '6px');
     this.addText(PANEL_W - PAD - 30, PAD, pointsStr, '#ffdd88', '5px');
-    this.addText(PANEL_W - PAD - 14, PAD, '[H/Esc]', '#555577', '4px');
+    this.addText(PANEL_W - PAD - 14, PAD, '[H/Esc]', '#445566', '4px');
 
     // Category tabs
     const tabY = 14;

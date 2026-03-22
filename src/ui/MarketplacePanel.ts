@@ -247,7 +247,7 @@ export class MarketplacePanel {
       .rectangle(PANEL_X, PANEL_Y, PANEL_W, PANEL_H, 0x000000, 0.88)
       .setOrigin(0, 0).setScrollFactor(0);
     const border = this.scene.add.graphics().setScrollFactor(0);
-    border.lineStyle(1, 0x554422, 0.9);
+    border.lineStyle(1, 0x664422, 0.9);
     border.strokeRect(PANEL_X, PANEL_Y, PANEL_W, PANEL_H);
 
     // Header
@@ -265,7 +265,7 @@ export class MarketplacePanel {
     this.renderTab('My Items', 'myitems', PANEL_X + 70, tabY);
 
     const divG = this.scene.add.graphics().setScrollFactor(0);
-    divG.lineStyle(1, 0x554422, 0.7);
+    divG.lineStyle(1, 0x664422, 0.7);
     divG.lineBetween(PANEL_X + 2, tabY + 10, PANEL_X + PANEL_W - 2, tabY + 10);
     this.container.add(divG);
 

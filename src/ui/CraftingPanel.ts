@@ -396,7 +396,7 @@ export class CraftingPanel {
     this.container.add(this.scene.add.text(
       PANEL_X + PANEL_W - PAD, PANEL_Y + PANEL_H - 6,
       '[↑↓] select  [C] craft  [F/Esc] close',
-      { fontSize: '3px', color: '#554433', fontFamily: 'monospace' },
+      { fontSize: '3px', color: '#445566', fontFamily: 'monospace' },
     ).setOrigin(1, 0).setScrollFactor(0));
 
     this.container.setVisible(this.visible).setDepth(DEPTH);

@@ -169,20 +169,20 @@ export class GuildPanel {
     this.detachKeyListener();
 
     // Background
-    const bg = this.scene.add.rectangle(0, 0, PANEL_W, PANEL_H, 0x000000, 0.82)
+    const bg = this.scene.add.rectangle(0, 0, PANEL_W, PANEL_H, 0x000000, 0.85)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH);
     this.dynObjects.push(bg);
     this.container.add(bg);
 
     // Border
-    const border = this.scene.add.rectangle(0, 0, PANEL_W, PANEL_H, 0x4455aa, 0)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH).setStrokeStyle(1, 0x4455aa, 0.8);
+    const border = this.scene.add.rectangle(0, 0, PANEL_W, PANEL_H, 0x334466, 0)
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(DEPTH).setStrokeStyle(1, 0x334466, 0.9);
     this.dynObjects.push(border);
     this.container.add(border);
 
     // Title
     this.addText(PAD, PAD, '⚔ Guild', '#aaddff', '6px');
-    this.addText(PANEL_W - PAD - 16, PAD, '[G/Esc]', '#555577', '4px');
+    this.addText(PANEL_W - PAD - 16, PAD, '[G/Esc]', '#445566', '4px');
 
     if (this.guildData) {
       this.buildRosterView();

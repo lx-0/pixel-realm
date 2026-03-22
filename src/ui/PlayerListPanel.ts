@@ -82,7 +82,7 @@ export class PlayerListPanel {
     const panelH = 10 + displayRows.length * ROW_H + 4;
 
     // Background
-    const bg = this.scene.add.rectangle(PANEL_X, PANEL_Y, PANEL_W, panelH, 0x000000, 0.7)
+    const bg = this.scene.add.rectangle(PANEL_X, PANEL_Y, PANEL_W, panelH, 0x000000, 0.82)
       .setOrigin(0, 0).setScrollFactor(0);
     const border = this.scene.add.graphics().setScrollFactor(0);
     border.lineStyle(1, 0x334466, 0.9);
