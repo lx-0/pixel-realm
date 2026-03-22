@@ -6,7 +6,7 @@ import {
   type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
 } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
-import { SaveManager }  from '../systems/SaveManager';
+import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData }  from '../systems/SaveManager';
 import { MultiplayerClient, type RemotePlayer, type RemoteEnemy } from '../systems/MultiplayerClient';
 import { ChatOverlay }        from '../ui/ChatOverlay';
 import { PlayerListPanel }    from '../ui/PlayerListPanel';
@@ -338,6 +338,13 @@ export class GameScene extends Phaser.Scene {
     // Load solo skill state from localStorage
     this.loadSoloSkillState();
     this.applyPassiveBonuses();
+
+    // Auto-save every 5 minutes in solo play (slot 0)
+    this.time.addEvent({
+      delay: 5 * 60 * 1000,
+      loop: true,
+      callback: () => this.triggerAutoSave(),
+    });
 
     this.sfx = SoundManager.getInstance();
 
@@ -2191,6 +2198,11 @@ export class GameScene extends Phaser.Scene {
       isLastZone,
     );
 
+    // Auto-save on zone clear (slot 0) — captures updated level/XP from recordZoneClear
+    if (!this.isMultiplayer) {
+      SaveManager.saveSlot(0, this.buildSlotSaveData());
+    }
+
     // Achievement tracking — zone complete and kill milestones now that save is updated
     const zoneCompleteUnlocks = AchievementTracker.recordEvent('zone_complete');
     zoneCompleteUnlocks.forEach(a => this.showAchievementUnlock(a));
@@ -2617,11 +2629,9 @@ export class GameScene extends Phaser.Scene {
 
   // ── Skill tree system ──────────────────────────────────────────────────────
 
-  private readonly SKILL_SAVE_KEY = 'pixelrealm_skills_v1';
-
   private loadSoloSkillState(): void {
     try {
-      const raw = localStorage.getItem(this.SKILL_SAVE_KEY);
+      const raw = localStorage.getItem(SKILL_SAVE_KEY);
       if (!raw) return;
       const data = JSON.parse(raw) as {
         classId?: string;
@@ -2645,7 +2655,7 @@ export class GameScene extends Phaser.Scene {
         skillPoints:    this.skillPoints,
         hotbar:         this.hotbar,
       };
-      localStorage.setItem(this.SKILL_SAVE_KEY, JSON.stringify(data));
+      localStorage.setItem(SKILL_SAVE_KEY, JSON.stringify(data));
     } catch { /* quota */ }
   }
 
@@ -2656,6 +2666,46 @@ export class GameScene extends Phaser.Scene {
       skillPoints:    this.skillPoints,
       hotbar:         [...this.hotbar],
     };
+  }
+
+  // ── Save-slot system ───────────────────────────────────────────────────────
+
+  /** Collect current skill state — used by PauseScene for manual slot saves. */
+  public getCurrentSkillState(): SkillSaveData {
+    return {
+      classId:        this.classId,
+      unlockedSkills: [...this.unlockedSkills],
+      skillPoints:    this.skillPoints,
+      hotbar:         [...this.hotbar],
+    };
+  }
+
+  /** Build a full slot snapshot from live game state. */
+  public buildSlotSaveData(): SlotSaveData {
+    return SaveManager.buildSlotSnapshot(
+      this.getCurrentSkillState(),
+      this.zone.id,
+      this.zone.name,
+    );
+  }
+
+  /**
+   * Write the current state to slot 0 (auto-save).
+   * No-op in multiplayer or if the player is dead.
+   */
+  private triggerAutoSave(): void {
+    if (this.isMultiplayer || this.isDead) return;
+    SaveManager.saveSlot(0, this.buildSlotSaveData());
+    this.showSaveToast('Auto-saved');
+  }
+
+  /** Show a small floating toast in the top-right corner. */
+  private showSaveToast(msg: string): void {
+    const t = this.add.text(CANVAS.WIDTH - 4, 6, msg, {
+      fontSize: '5px', color: '#88ffcc', fontFamily: 'monospace',
+      stroke: '#000', strokeThickness: 1,
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(50).setAlpha(1);
+    this.tweens.add({ targets: t, alpha: 0, y: 14, duration: 1800, delay: 900, ease: 'Power2', onComplete: () => t.destroy() });
   }
 
   /** Recalculate passive stat bonuses, cache them, and apply HP/mana caps. */
