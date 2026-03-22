@@ -23,7 +23,7 @@ export class PauseScene extends Phaser.Scene {
     this.add.rectangle(cx, cy, CANVAS.WIDTH, CANVAS.HEIGHT, 0x000000, 0.65).setDepth(0);
 
     // ── Panel (expanded for audio controls) ──────────────────────────────────
-    const panelH = 116;
+    const panelH = 130;
     const panelCy = cy + 8;
     this.add.rectangle(cx, panelCy, 112, panelH, 0x0a0a2e, 0.92).setDepth(1);
 
@@ -40,35 +40,39 @@ export class PauseScene extends Phaser.Scene {
       .setOrigin(0.5).setDepth(3);
 
     // ── Buttons ──────────────────────────────────────────────────────────────
-    const resumeBtn = this.makeButton(cx, panelCy - 26, 'Resume  (ESC)', '#ffe040');
-    const menuBtn   = this.makeButton(cx, panelCy - 10, 'Main Menu', '#90d0f8');
+    const resumeBtn  = this.makeButton(cx, panelCy - 26, 'Resume  (ESC)', '#ffe040');
+    const settingsBtn = this.makeButton(cx, panelCy - 10, '⚙ Settings', '#90d0f8');
+    const menuBtn    = this.makeButton(cx, panelCy + 6,  'Main Menu', '#cc8888');
 
     resumeBtn.on('pointerdown', () => this.resume());
+    settingsBtn.on('pointerdown', () => this.openSettings());
     menuBtn.on('pointerdown', () => this.goMenu());
 
     // ── Audio section separator ───────────────────────────────────────────────
     const sep = this.add.graphics().setDepth(2);
     sep.lineStyle(1, 0x50a8e8, 0.35);
-    sep.lineBetween(cx - 46, panelCy + 6, cx + 46, panelCy + 6);
+    sep.lineBetween(cx - 46, panelCy + 20, cx + 46, panelCy + 20);
 
     this.add
-      .text(cx, panelCy + 12, 'AUDIO', {
+      .text(cx, panelCy + 26, 'AUDIO', {
         fontSize: '5px', color: '#88bbdd', fontFamily: 'monospace',
       })
       .setOrigin(0.5).setDepth(3);
 
     // ── Volume rows ───────────────────────────────────────────────────────────
-    this.makeVolumeRow(cx, panelCy + 26, 'SFX',
+    this.makeVolumeRow(cx, panelCy + 40, 'SFX',
       () => this.sfx.sfxVolume,
       (v) => { this.sfx.sfxVolume = v; },
     );
-    this.makeVolumeRow(cx, panelCy + 40, 'BGM',
+    this.makeVolumeRow(cx, panelCy + 54, 'BGM',
       () => this.sfx.musicVolume,
       (v) => { this.sfx.musicVolume = v; },
     );
 
-    // ── ESC to resume ─────────────────────────────────────────────────────────
-    this.input.keyboard!.once('keydown-ESC', () => this.resume());
+    // ── ESC to resume (only when settings overlay is not open) ───────────────
+    this.input.keyboard!.on('keydown-ESC', () => {
+      if (!this.scene.isActive(SCENES.SETTINGS)) this.resume();
+    });
 
     // Fade in overlay
     this.cameras.main.fadeIn(120, 0, 0, 0);
@@ -142,6 +146,11 @@ export class PauseScene extends Phaser.Scene {
     decBtn.on('pointerout',  () => decBtn.setColor('#50a8e8'));
     incBtn.on('pointerover', () => incBtn.setColor('#ffffff'));
     incBtn.on('pointerout',  () => incBtn.setColor('#50a8e8'));
+  }
+
+  private openSettings(): void {
+    this.sfx.playMenuClick();
+    this.scene.launch(SCENES.SETTINGS, { origin: 'pause' });
   }
 
   private resume(): void {

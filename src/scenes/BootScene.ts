@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SCENES } from '../config/constants';
+import { SettingsManager } from '../systems/SettingsManager';
 
 /**
  * BootScene — loads PNG assets from public/assets/ then transitions to Menu.
@@ -122,6 +123,7 @@ export class BootScene extends Phaser.Scene {
       this.createVariantAnims('boss_glacial_wyrm', 'glacial_wyrm');
     }
 
+    SettingsManager.getInstance().applyAll();
     this.scene.start(SCENES.MENU);
   }
 

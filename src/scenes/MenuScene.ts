@@ -125,10 +125,36 @@ export class MenuScene extends Phaser.Scene {
       .setOrigin(1, 1)
       .setDepth(10);
 
+    // ── Settings button ───────────────────────────────────────────────────────
+    let settingsOpen = false;
+    const settingsBtn = this.add
+      .text(cx, cy + 36, '⚙  Settings', {
+        fontSize: '5px',
+        color: '#888899',
+        fontFamily: 'monospace',
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(10);
+
+    settingsBtn.on('pointerover', () => settingsBtn.setColor('#ccccdd'));
+    settingsBtn.on('pointerout',  () => settingsBtn.setColor('#888899'));
+    settingsBtn.on('pointerdown', () => {
+      if (settingsOpen) return;
+      settingsOpen = true;
+      this.sfx.unlock();
+      this.sfx.playMenuClick();
+      this.scene.launch(SCENES.SETTINGS, { origin: 'menu' });
+      // Re-enable once settings scene stops
+      this.scene.get(SCENES.SETTINGS).events.once('shutdown', () => { settingsOpen = false; });
+    });
+
     // ── Input ─────────────────────────────────────────────────────────────────
     this.cameras.main.fadeIn(400, 0, 0, 0);
-    this.input.keyboard?.once('keydown-SPACE', () => this.startGame());
-    this.input.once('pointerdown', () => this.startGame());
+    let gameStarted = false;
+    const tryStart = () => { if (!settingsOpen && !gameStarted) { gameStarted = true; this.startGame(); } };
+    this.input.keyboard?.on('keydown-SPACE', tryStart);
+    this.input.on('pointerdown', tryStart);
   }
 
   private startGame(): void {

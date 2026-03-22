@@ -92,6 +92,7 @@ export const SCENES = {
   LEVEL_SELECT: 'LevelSelectScene',
   GAME: 'GameScene',
   PAUSE: 'PauseScene',
+  SETTINGS: 'SettingsScene',
   GAME_OVER: 'GameOverScene',
   CREDITS: 'CreditsScene',
   UI: 'UIScene',
