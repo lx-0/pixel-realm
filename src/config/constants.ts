@@ -49,13 +49,14 @@ export const ENEMIES = {
 // ── Combat ────────────────────────────────────────────────────────────────────
 export const COMBAT = {
   ATTACK_DAMAGE: 25,             // damage per melee swing
-  ATTACK_RANGE_PX: 30,           // melee radius in pixels
+  ATTACK_RANGE_PX: 36,           // melee radius in pixels
   ATTACK_COOLDOWN_MS: 480,       // minimum ms between swings
   ATTACK_KNOCKBACK: 160,         // px/s applied to enemy on hit
   PLAYER_HIT_DAMAGE: 10,         // HP lost per enemy contact
   PLAYER_INVINCIBILITY_MS: 900,  // ms of iframes after taking a hit
   ENEMY_HP: 50,                  // base HP per enemy (scales by wave tier)
   WAVE_BASE_ENEMY_COUNT: 4,      // enemies in wave 1; +2 per additional wave
+  WAVE_HP_SCALE_PER_WAVE: 0.15,  // HP multiplier increase per wave (e.g. 0.15 = +15% per wave)
 } as const;
 
 // ── Economy ───────────────────────────────────────────────────────────────────

@@ -676,6 +676,12 @@ export class GameScene extends Phaser.Scene {
       if (left)  vx = -speed; else if (right) vx =  speed;
       if (up)    vy = -speed; else if (down)  vy =  speed;
     }
+    // Normalize diagonal movement to prevent ~41% speed boost
+    if (vx !== 0 && vy !== 0) {
+      const inv = 1 / Math.SQRT2;
+      vx *= inv;
+      vy *= inv;
+    }
     this.player.setVelocity(vx, vy);
 
     if (this.anims.exists('player-walk') && this.anims.exists('player-idle')) {
@@ -738,7 +744,7 @@ export class GameScene extends Phaser.Scene {
     for (let i = 0; i < count; i++) {
       const typeName = types[i % types.length];
       const def      = ENEMY_TYPES[typeName];
-      const hpScale  = 1 + (this.wave - 1) * 0.4 + (this.level - 1) * 0.15;
+      const hpScale  = 1 + (this.wave - 1) * COMBAT.WAVE_HP_SCALE_PER_WAVE + (this.level - 1) * 0.15;
       const hp       = Math.floor(def.baseHp * hpScale);
       const pos      = this.safeSpawnPos(WALL);
       const e        = this.spawnEnemyAt(pos.x, pos.y, typeName, hp);
