@@ -31,7 +31,7 @@ const PAD_Y        = 4;
 
 // ── Step definitions ──────────────────────────────────────────────────────────
 
-type TriggerKind = 'move' | 'attack' | 'dodge' | 'sprint' | 'minimap' | 'auto';
+type TriggerKind = 'move' | 'attack' | 'dodge' | 'sprint' | 'minimap' | 'inventory' | 'skill_tree' | 'auto';
 
 interface TutorialStep {
   title:       string;
@@ -62,6 +62,16 @@ const STEPS: TutorialStep[] = [
     trigger:     'sprint',
   },
   {
+    title:       'Inventory',
+    instruction: 'Press I to open your inventory. Equip gear and use items collected from enemies.',
+    trigger:     'inventory',
+  },
+  {
+    title:       'Skill Tree',
+    instruction: 'Press K to open the Skill Tree. Choose Warrior or Mage and unlock powerful abilities!',
+    trigger:     'skill_tree',
+  },
+  {
     title:       'HUD Overview',
     instruction: 'Red = HP  ·  Blue = Mana  ·  Yellow = XP  ·  Top-right = Wave info',
     trigger:     'auto',
@@ -71,6 +81,12 @@ const STEPS: TutorialStep[] = [
     title:       'Mini-Map',
     instruction: 'Press M to toggle the mini-map (top-right). Yellow = you, Red = enemies.',
     trigger:     'minimap',
+  },
+  {
+    title:       'Quests & NPCs',
+    instruction: 'Press E near an NPC to accept quests. Clear all waves and defeat the boss to unlock new zones!',
+    trigger:     'auto',
+    autoDelay:   5000,
   },
   {
     title:       'Ready for Adventure!',
@@ -92,12 +108,14 @@ export class TutorialOverlay {
   private dismissed   = false;
   private completing  = false;   // true during the final fade-out tween
 
-  // ── Action flags (set by GameScene, cleared on step advance) ──────────────
-  private didMove    = false;
-  private didAttack  = false;
-  private didDodge   = false;
-  private didSprint  = false;
-  private didMiniMap = false;
+  // ── Action flags (set by GameScene or detected inline, cleared on advance) ──
+  private didMove      = false;
+  private didAttack    = false;
+  private didDodge     = false;
+  private didSprint    = false;
+  private didMiniMap   = false;
+  private didInventory = false;
+  private didSkillTree = false;
 
   // ── UI objects ────────────────────────────────────────────────────────────
   private panel:       Phaser.GameObjects.Rectangle;
@@ -222,10 +240,12 @@ export class TutorialOverlay {
 
   // ── Notification API (called by GameScene) ─────────────────────────────────
 
-  notifyMoved():    void { this.didMove   = true; }
-  notifyAttacked(): void { this.didAttack = true; }
-  notifyDodged():   void { this.didDodge  = true; }
-  notifySprinted(): void { this.didSprint = true; }
+  notifyMoved():           void { this.didMove      = true; }
+  notifyAttacked():        void { this.didAttack    = true; }
+  notifyDodged():          void { this.didDodge     = true; }
+  notifySprinted():        void { this.didSprint    = true; }
+  notifyInventoryOpened(): void { this.didInventory = true; }
+  notifySkillTreeOpened(): void { this.didSkillTree = true; }
 
   // ── Update (called every frame) ───────────────────────────────────────────
 
@@ -238,20 +258,22 @@ export class TutorialOverlay {
       return;
     }
 
-    // Detect M key for the mini-map step
-    if (Phaser.Input.Keyboard.JustDown(this.mKey)) {
-      this.didMiniMap = true;
-    }
+    // Detect M key inline (minimap panel doesn't consume it before tutorial runs)
+    if (Phaser.Input.Keyboard.JustDown(this.mKey)) this.didMiniMap = true;
+    // didInventory and didSkillTree are set via notifyInventoryOpened / notifySkillTreeOpened
+    // called from GameScene after panel open detection, to avoid JustDown event consumption.
 
     const step = STEPS[this.stepIdx];
     let advance = false;
 
     switch (step.trigger) {
-      case 'move':    advance = this.didMove;    break;
-      case 'attack':  advance = this.didAttack;  break;
-      case 'dodge':   advance = this.didDodge;   break;
-      case 'sprint':  advance = this.didSprint;  break;
-      case 'minimap': advance = this.didMiniMap; break;
+      case 'move':       advance = this.didMove;      break;
+      case 'attack':     advance = this.didAttack;    break;
+      case 'dodge':      advance = this.didDodge;     break;
+      case 'sprint':     advance = this.didSprint;    break;
+      case 'minimap':    advance = this.didMiniMap;   break;
+      case 'inventory':  advance = this.didInventory; break;
+      case 'skill_tree': advance = this.didSkillTree; break;
       case 'auto': {
         this.autoTimer -= delta;
         const total = step.autoDelay ?? 3000;
@@ -300,11 +322,13 @@ export class TutorialOverlay {
 
   private advanceStep(): void {
     // Reset flags
-    this.didMove    = false;
-    this.didAttack  = false;
-    this.didDodge   = false;
-    this.didSprint  = false;
-    this.didMiniMap = false;
+    this.didMove      = false;
+    this.didAttack    = false;
+    this.didDodge     = false;
+    this.didSprint    = false;
+    this.didMiniMap   = false;
+    this.didInventory = false;
+    this.didSkillTree = false;
 
     // Show completion flash
     this.flashCheck();

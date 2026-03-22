@@ -368,7 +368,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Skill tree panel (K key is handled inside the panel)
+    const stWasBefore = this.skillTree?.isVisible ?? false;
     this.skillTree?.update();
+    if (!stWasBefore && (this.skillTree?.isVisible ?? false)) {
+      this.tutorial?.notifySkillTreeOpened();
+    }
 
     // Hotbar skill activation (keys 1–6)
     for (let i = 0; i < 6; i++) {
@@ -419,6 +423,7 @@ export class GameScene extends Phaser.Scene {
       this.craftingPanel?.hide();
       this.npcDialogue?.hide();
       this.marketplace?.hide();
+      this.tutorial?.notifyInventoryOpened();
     } else if (!crftWas && crftNow) {
       // Crafting panel just opened — close others
       this.questLog?.hide();
