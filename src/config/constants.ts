@@ -87,9 +87,10 @@ export type EnemyTypeName =
   | 'slime' | 'mushroom' | 'slime_mini'
   | 'beetle' | 'bandit' | 'sentry'
   | 'wraith' | 'golem' | 'archer'
-  | 'crab' | 'wisp' | 'raider';
+  | 'crab' | 'wisp' | 'raider'
+  | 'ice_elemental' | 'frost_wolf' | 'crystal_golem';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm';
 
 export interface EnemyTypeDef {
   color: number;
@@ -114,9 +115,13 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   wraith:     { color: 0x8888dd, size: 8,  baseHp: 90,  baseDmg: 20, speed: 65,  aggroRange: 100, xpValue: 22, knockbackMultiplier: 0.5, behaviour: 'phase' },
   golem:      { color: 0x888888, size: 12, baseHp: 200, baseDmg: 35, speed: 30,  aggroRange: 80,  xpValue: 30, knockbackMultiplier: 0.0, behaviour: 'tank' },
   archer:     { color: 0x884422, size: 8,  baseHp: 70,  baseDmg: 22, speed: 40,  aggroRange: 110, xpValue: 20, knockbackMultiplier: 1.0, behaviour: 'ranged_flee', projectileColor: 0xffcc44 },
-  crab:       { color: 0x22bbaa, size: 9,  baseHp: 60,  baseDmg: 12, speed: 65,  aggroRange: 80,  xpValue: 14, knockbackMultiplier: 1.1, behaviour: 'sidestep' },
-  wisp:       { color: 0x44ffee, size: 7,  baseHp: 110, baseDmg: 28, speed: 72,  aggroRange: 100, xpValue: 24, knockbackMultiplier: 0.8, behaviour: 'charm', projectileColor: 0x00ffff },
-  raider:     { color: 0x3355bb, size: 9,  baseHp: 140, baseDmg: 32, speed: 50,  aggroRange: 90,  xpValue: 26, knockbackMultiplier: 0.6, behaviour: 'block' },
+  crab:          { color: 0x22bbaa, size: 9,  baseHp: 60,  baseDmg: 12, speed: 65,  aggroRange: 80,  xpValue: 14, knockbackMultiplier: 1.1, behaviour: 'sidestep' },
+  wisp:          { color: 0x44ffee, size: 7,  baseHp: 110, baseDmg: 28, speed: 72,  aggroRange: 100, xpValue: 24, knockbackMultiplier: 0.8, behaviour: 'charm', projectileColor: 0x00ffff },
+  raider:        { color: 0x3355bb, size: 9,  baseHp: 140, baseDmg: 32, speed: 50,  aggroRange: 90,  xpValue: 26, knockbackMultiplier: 0.6, behaviour: 'block' },
+  // Ice Caverns enemies
+  ice_elemental: { color: 0x44aaff, size: 8,  baseHp: 90,  baseDmg: 22, speed: 55,  aggroRange: 110, xpValue: 26, knockbackMultiplier: 0.6, behaviour: 'ranged', projectileColor: 0x00eeff },
+  frost_wolf:    { color: 0xccddee, size: 9,  baseHp: 75,  baseDmg: 18, speed: 100, aggroRange: 120, xpValue: 22, knockbackMultiplier: 1.2, behaviour: 'chase' },
+  crystal_golem: { color: 0x5599bb, size: 12, baseHp: 250, baseDmg: 40, speed: 28,  aggroRange: 75,  xpValue: 35, knockbackMultiplier: 0.0, behaviour: 'tank' },
 };
 
 export interface BossTypeDef {
@@ -130,10 +135,11 @@ export interface BossTypeDef {
 }
 
 export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
-  slime_king:   { color: 0x22cc22, size: 20, baseHp: 300,  baseDmg: 15, speed: 50, xpValue: 150, name: 'Slime King' },
-  bandit_chief: { color: 0xff2200, size: 16, baseHp: 600,  baseDmg: 25, speed: 50, xpValue: 250, name: 'Bandit Chief Korran' },
-  archon:       { color: 0xaa44ff, size: 14, baseHp: 1200, baseDmg: 30, speed: 55, xpValue: 400, name: 'Archon Thessar' },
-  kraken:       { color: 0x114455, size: 22, baseHp: 2500, baseDmg: 40, speed: 0,  xpValue: 600, name: 'Maw of the Deep' },
+  slime_king:   { color: 0x22cc22, size: 20, baseHp: 300,  baseDmg: 15, speed: 50, xpValue: 150,  name: 'Slime King' },
+  bandit_chief: { color: 0xff2200, size: 16, baseHp: 600,  baseDmg: 25, speed: 50, xpValue: 250,  name: 'Bandit Chief Korran' },
+  archon:       { color: 0xaa44ff, size: 14, baseHp: 1200, baseDmg: 30, speed: 55, xpValue: 400,  name: 'Archon Thessar' },
+  kraken:       { color: 0x114455, size: 22, baseHp: 2500, baseDmg: 40, speed: 0,  xpValue: 600,  name: 'Maw of the Deep' },
+  glacial_wyrm: { color: 0x2266aa, size: 24, baseHp: 3500, baseDmg: 45, speed: 35, xpValue: 850,  name: 'Glacial Wyrm Vorthex' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -218,5 +224,21 @@ export const ZONES: ZoneConfig[] = [
     minPlayerLevel: 7,
     xpReward: 600,
     unlockRequirement: 'zone3',
+  },
+  {
+    id: 'zone5',
+    name: 'Ice Caverns',
+    biome: 'Ice / Cave',
+    description: 'Frozen depths beneath the world. Ice elementals, frost wolves, and crystal golems guard the lair of the Glacial Wyrm.',
+    bgColor: 0x040f1a,
+    groundColor: 0x0d2a42,
+    wallColor: 0x020a14,
+    accentColor: 0x44aaff,
+    waves: 3,
+    enemyTypes: ['ice_elemental', 'frost_wolf', 'crystal_golem'],
+    bossType: 'glacial_wyrm',
+    minPlayerLevel: 9,
+    xpReward: 850,
+    unlockRequirement: 'zone4',
   },
 ];

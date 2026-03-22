@@ -33,6 +33,10 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_hills_far',  'assets/bg_hills_far.png');
     this.load.image('bg_hills_near', 'assets/bg_hills_near.png');
 
+    // Ice Caverns parallax layers
+    this.load.image('bg_ice_far',  'assets/bg_ice_far.png');
+    this.load.image('bg_ice_near', 'assets/bg_ice_near.png');
+
     // Menu / screen backgrounds
     this.load.image('bg_menu_title', 'assets/bg_menu_title.png');
     this.load.image('bg_options',    'assets/bg_options.png');
@@ -53,12 +57,23 @@ export class BootScene extends Phaser.Scene {
     this.load.spritesheet('enemy_orc',      'assets/char_enemy_orc.png',      { frameWidth: 16, frameHeight: 24 });
     this.load.spritesheet('enemy_boss',     'assets/char_enemy_boss.png',     { frameWidth: 32, frameHeight: 32 });
 
+    // Ice Caverns enemies (12 frames × 16×24; boss: 12 frames × 32×32)
+    this.load.spritesheet('enemy_ice_elemental', 'assets/char_enemy_ice_elemental.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_frost_wolf',    'assets/char_enemy_frost_wolf.png',    { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_crystal_golem', 'assets/char_enemy_crystal_golem.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('boss_glacial_wyrm',   'assets/char_boss_glacial_wyrm.png',   { frameWidth: 32, frameHeight: 32 });
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');
     this.load.image('pickup_coin',   'assets/icon_pickup_coin.png');
     this.load.image('pickup_gem',    'assets/icon_pickup_gem.png');
     this.load.image('pickup_star',   'assets/icon_pickup_star.png');
+
+    // Ice Caverns loot
+    this.load.image('pickup_ice_shard',   'assets/icon_pickup_ice_shard.png');
+    this.load.image('pickup_frozen_gem',  'assets/icon_pickup_frozen_gem.png');
+    this.load.image('pickup_wyrm_scale',  'assets/icon_pickup_wyrm_scale.png');
 
     // Additional UI elements
     this.load.image('ui_btn',        'assets/ui_btn.png');
@@ -93,6 +108,18 @@ export class BootScene extends Phaser.Scene {
     }
     if (this.textures.get('enemy_boss').frameTotal > 1) {
       this.createVariantAnims('enemy_boss', 'boss');
+    }
+    if (this.textures.get('enemy_ice_elemental').frameTotal > 1) {
+      this.createVariantAnims('enemy_ice_elemental', 'ice_elemental');
+    }
+    if (this.textures.get('enemy_frost_wolf').frameTotal > 1) {
+      this.createVariantAnims('enemy_frost_wolf', 'frost_wolf');
+    }
+    if (this.textures.get('enemy_crystal_golem').frameTotal > 1) {
+      this.createVariantAnims('enemy_crystal_golem', 'crystal_golem');
+    }
+    if (this.textures.get('boss_glacial_wyrm').frameTotal > 1) {
+      this.createVariantAnims('boss_glacial_wyrm', 'glacial_wyrm');
     }
 
     this.scene.start(SCENES.MENU);
