@@ -12,6 +12,7 @@ import { PlayerListPanel }    from '../ui/PlayerListPanel';
 import { QuestLogPanel }      from '../ui/QuestLogPanel';
 import { InventoryPanel }     from '../ui/InventoryPanel';
 import { NpcDialogueOverlay } from '../ui/NpcDialogueOverlay';
+import { CraftingPanel }      from '../ui/CraftingPanel';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 interface EnemyExtra {
@@ -149,6 +150,22 @@ export class GameScene extends Phaser.Scene {
   /** E key for NPC interaction. */
   private npcKey?: Phaser.Input.Keyboard.Key;
 
+  /** Crafting panel (multiplayer only). */
+  private craftingPanel?: CraftingPanel;
+
+  /** Crafting station world sprite. */
+  private craftingStation?: Phaser.GameObjects.Container;
+
+  /** Up/Down keys for crafting panel navigation. */
+  private upKey?: Phaser.Input.Keyboard.Key;
+  private downKey?: Phaser.Input.Keyboard.Key;
+
+  /** C key for confirming a craft. */
+  private craftConfirmKey?: Phaser.Input.Keyboard.Key;
+
+  /** HUD prompt shown when player is near crafting station. */
+  private craftStationHint?: Phaser.GameObjects.Text;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -220,9 +237,10 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
       // Escape closes any open panel before pausing
       const panelClosed =
-        this.npcDialogue?.closeIfOpen() ||
-        this.questLog?.closeIfOpen()    ||
-        this.inventory?.closeIfOpen()   ||
+        this.npcDialogue?.closeIfOpen()  ||
+        this.craftingPanel?.closeIfOpen() ||
+        this.questLog?.closeIfOpen()     ||
+        this.inventory?.closeIfOpen()    ||
         this.chat?.active;
       if (!panelClosed) {
         this.scene.launch(SCENES.PAUSE, { zoneId: this.zone.id });
@@ -236,26 +254,46 @@ export class GameScene extends Phaser.Scene {
       this.handleNpcInteract();
     }
 
+    // Crafting panel key (F) — handled by CraftingPanel.update(); route nav/craft keys when open
+    if (this.craftingPanel?.isVisible) {
+      if (this.upKey   && Phaser.Input.Keyboard.JustDown(this.upKey))           this.craftingPanel.handleUp();
+      if (this.downKey && Phaser.Input.Keyboard.JustDown(this.downKey))         this.craftingPanel.handleDown();
+      if (this.craftConfirmKey && Phaser.Input.Keyboard.JustDown(this.craftConfirmKey)) this.craftingPanel.handleCraft();
+    }
+
     // Chat overlay update (suppress game input while typing)
     this.chat?.update(delta);
     this.playerList?.update();
 
     // Panel updates with mutual exclusion — opening one closes the others
-    const qlWas = this.questLog?.isVisible ?? false;
-    const invWas = this.inventory?.isVisible ?? false;
+    const qlWas   = this.questLog?.isVisible     ?? false;
+    const invWas  = this.inventory?.isVisible    ?? false;
+    const crftWas = this.craftingPanel?.isVisible ?? false;
     this.questLog?.update();
     this.inventory?.update();
-    const qlNow  = this.questLog?.isVisible ?? false;
-    const invNow = this.inventory?.isVisible ?? false;
+    this.craftingPanel?.update();
+    const qlNow   = this.questLog?.isVisible     ?? false;
+    const invNow  = this.inventory?.isVisible    ?? false;
+    const crftNow = this.craftingPanel?.isVisible ?? false;
     if (!qlWas && qlNow) {
       // Quest log just opened — close others
       this.inventory?.hide();
+      this.craftingPanel?.hide();
       this.npcDialogue?.hide();
     } else if (!invWas && invNow) {
       // Inventory just opened — close others
       this.questLog?.hide();
+      this.craftingPanel?.hide();
+      this.npcDialogue?.hide();
+    } else if (!crftWas && crftNow) {
+      // Crafting panel just opened — close others
+      this.questLog?.hide();
+      this.inventory?.hide();
       this.npcDialogue?.hide();
     }
+
+    // Crafting station proximity hint
+    this.updateCraftingStationHint();
 
     this.handlePlayerMovement();
     this.regenMana(delta);
@@ -316,6 +354,26 @@ export class GameScene extends Phaser.Scene {
     // Inventory panel
     this.inventory = new InventoryPanel(this);
 
+    // Crafting panel
+    this.craftingPanel = new CraftingPanel(this);
+    this.craftingPanel.onCraftSuccess = (_itemId) => {
+      this.floatingText(
+        CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20,
+        `✦ Crafted!`,
+        '#ffcc88',
+      );
+      // Glow the crafting station briefly
+      if (this.craftingStation) {
+        this.tweens.add({
+          targets: this.craftingStation,
+          alpha: 0.3,
+          duration: 120,
+          yoyo: true,
+          repeat: 3,
+        });
+      }
+    };
+
     // NPC dialogue overlay
     this.npcDialogue = new NpcDialogueOverlay(this);
     this.npcDialogue.onAccept = (quest) => {
@@ -362,7 +420,7 @@ export class GameScene extends Phaser.Scene {
 
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [Tab] players  [Q] quests  [I] inventory  [E] NPC', '#555577');
+      this.chat?.addMessage('[T] chat  [Tab] players  [Q] quests  [I] inventory  [E] NPC  [F] craft', '#555577');
     });
 
     // Wave state changes from server
@@ -397,6 +455,8 @@ export class GameScene extends Phaser.Scene {
       this.inventory = undefined;
       this.npcDialogue?.destroy();
       this.npcDialogue = undefined;
+      this.craftingPanel?.destroy();
+      this.craftingPanel = undefined;
       this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20, 'Disconnected — solo mode', '#ff8888');
       // Resume local simulation
       if (!this.isDead && !this.waveTransitioning) this.spawnWave();
@@ -423,6 +483,18 @@ export class GameScene extends Phaser.Scene {
     this.inventory?.hide();
     // Request quest from server
     this.mp?.sendQuestNpcInteract('npc_quest');
+  }
+
+  // ── Crafting station proximity ────────────────────────────────────────────
+
+  private updateCraftingStationHint(): void {
+    if (!this.craftingStation || !this.craftStationHint || !this.player) return;
+    const dist = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.craftingStation.x, this.craftingStation.y,
+    );
+    const near = dist < 40;
+    this.craftStationHint.setVisible(near && this.isMultiplayer && !this.craftingPanel?.isVisible);
   }
 
   // ── Server wave change ────────────────────────────────────────────────────
@@ -630,6 +702,9 @@ export class GameScene extends Phaser.Scene {
 
     this.addBiomeDecor(W, H, WALL);
 
+    // Crafting station — placed in top-left corner of the zone
+    this.addCraftingStation(WALL + 24, WALL + 24);
+
     // Zone name splash
     const zColor = `#${z.accentColor.toString(16).padStart(6, '0')}`;
     const banner = this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2, z.name, {
@@ -655,6 +730,47 @@ export class GameScene extends Phaser.Scene {
       g.fillStyle(this.zone.accentColor, 0.3);
       g.fillRect(x - 4, y - 5, 4, 4);
     }
+  }
+
+  // ── Crafting station ──────────────────────────────────────────────────────
+
+  private addCraftingStation(x: number, y: number): void {
+    const g = this.add.graphics().setDepth(4);
+
+    // Base: dark grey table
+    g.fillStyle(0x553322);
+    g.fillRect(-10, -6, 20, 12);
+    // Anvil silhouette
+    g.fillStyle(0x888888);
+    g.fillRect(-7, -8, 14, 5);
+    g.fillRect(-4, -13, 8, 5);
+    // Glow
+    g.lineStyle(1, 0xff9944, 0.7);
+    g.strokeRect(-10, -6, 20, 12);
+
+    const label = this.add.text(0, 9, 'CRAFT', {
+      fontSize: '4px', color: '#ffcc88', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0).setDepth(4);
+
+    const container = this.add.container(x, y, [g, label]).setDepth(4);
+    this.craftingStation = container;
+
+    // Ambient pulse tween on the label
+    this.tweens.add({
+      targets: label,
+      alpha: 0.4,
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    // HUD hint (fixed to camera, hidden by default)
+    this.craftStationHint = this.add.text(
+      CANVAS.WIDTH / 2, CANVAS.HEIGHT - 12,
+      '[F] Crafting Station',
+      { fontSize: '4px', color: '#ffcc88', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
   }
 
   // ── Player ────────────────────────────────────────────────────────────────
@@ -1500,11 +1616,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupInput(): void {
-    this.cursors   = this.input.keyboard!.createCursorKeys();
-    this.wasd      = this.input.keyboard!.addKeys('W,A,S,D') as typeof this.wasd;
-    this.attackKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.escKey    = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-    this.npcKey    = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    this.cursors         = this.input.keyboard!.createCursorKeys();
+    this.wasd            = this.input.keyboard!.addKeys('W,A,S,D') as typeof this.wasd;
+    this.attackKey       = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.escKey          = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    this.npcKey          = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    this.upKey           = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    this.downKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    this.craftConfirmKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
   }
 
   private setupCamera(): void {
@@ -1562,7 +1681,7 @@ export class GameScene extends Phaser.Scene {
     this.bossHpBar = this.add.rectangle(bossX, bossY + bossH / 2, bossW, bossH, 0xff2222)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z + 5).setVisible(false);
 
-    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD: Move  |  SPACE: Attack  |  ESC: Pause', {
+    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD: Move  |  SPACE: Attack  |  F: Craft  |  ESC: Pause', {
       fontSize: '4px', color: '#333344', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(Z);
 

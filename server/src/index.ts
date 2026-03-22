@@ -8,6 +8,7 @@ import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
 import { getInventory } from "./db/inventory";
+import { RECIPES, craftItem } from "./db/crafting";
 import { config } from "./config";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -76,6 +77,31 @@ app.get("/inventory/:userId", async (req, res) => {
   } catch (err) {
     console.warn("[REST] Failed to fetch inventory:", (err as Error).message);
     res.status(500).json({ error: "Failed to fetch inventory" });
+  }
+});
+
+// GET /crafting/recipes — returns all available crafting recipes
+app.get("/crafting/recipes", (_req, res) => {
+  res.json(RECIPES);
+});
+
+// POST /crafting/craft — craft an item, consuming ingredients from inventory
+app.post("/crafting/craft", async (req, res) => {
+  const { userId, recipeId } = req.body as { userId?: string; recipeId?: string };
+  if (!userId || !recipeId || userId.length > 100 || recipeId.length > 100) {
+    res.status(400).json({ error: "Missing or invalid userId / recipeId" });
+    return;
+  }
+  try {
+    const result = await craftItem(userId, recipeId);
+    if (!result.success) {
+      res.status(422).json({ error: result.message });
+    } else {
+      res.json(result);
+    }
+  } catch (err) {
+    console.warn("[REST] Crafting failed:", (err as Error).message);
+    res.status(500).json({ error: "Crafting failed" });
   }
 });
 

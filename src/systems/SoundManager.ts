@@ -189,6 +189,14 @@ export class SoundManager {
     [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.tone(f, 0.3, 'sine', 0.25, undefined, i * 0.12));
   }
 
+  /** Item successfully crafted at a crafting station. */
+  playCraft(): void {
+    // Metallic clang + rising magical shimmer
+    this.tone(220, 0.08, 'square', 0.28, 180);
+    this.tone(440, 0.12, 'triangle', 0.20, 660, 0.08);
+    this.tone(880, 0.18, 'sine', 0.15, 1320, 0.18);
+  }
+
   // ── Background music ───────────────────────────────────────────────────────
 
   /**

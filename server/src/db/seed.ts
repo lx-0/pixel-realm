@@ -124,6 +124,47 @@ const SEED_ITEMS = [
     description: "Viscous gel dropped by slimes. Useful for alchemy.",
     rarity: "common",
   },
+  {
+    id: "mat_leather_scraps",
+    name: "Leather Scraps",
+    type: "material",
+    stats: {},
+    description: "Scraps of cured hide. Used in leather crafting.",
+    rarity: "common",
+  },
+  {
+    id: "mat_bone_fragment",
+    name: "Bone Fragment",
+    type: "material",
+    stats: {},
+    description: "A shard of monster bone. Useful for dark recipes.",
+    rarity: "common",
+  },
+  // ── Crafted Gear ─────────────────────────────────────────────────────────────
+  {
+    id: "shield_iron",
+    name: "Iron Shield",
+    type: "armor",
+    stats: { defense: 10 },
+    description: "A sturdy round shield forged from iron.",
+    rarity: "common",
+  },
+  {
+    id: "sword_enchanted",
+    name: "Enchanted Sword",
+    type: "weapon",
+    stats: { attack: 28, magic: 8, speed: 1.1 },
+    description: "A steel blade imbued with crystalline magic. Pulses with energy.",
+    rarity: "epic",
+  },
+  {
+    id: "ring_magic",
+    name: "Magic Ring",
+    type: "armor",
+    stats: { magic: 10, defense: 3 },
+    description: "A small ring set with a glowing crystal. Enhances magical power.",
+    rarity: "rare",
+  },
 ];
 
 const SEED_ZONES = [
