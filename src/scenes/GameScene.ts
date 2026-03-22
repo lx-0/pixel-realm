@@ -280,7 +280,7 @@ export class GameScene extends Phaser.Scene {
   private passiveBonusCache: Required<PassiveBonus> = {
     maxHpFlat: 0, maxManaFlat: 0, damagePct: 0, speedPct: 0,
     manaRegenFlat: 0, critChancePct: 0, attackCdReductionPct: 0,
-    allCdReductionPct: 0, damageReductionPct: 0,
+    allCdReductionPct: 0, damageReductionPct: 0, healOnKill: 0,
   };
 
   /** HUD objects for hotbar display. */
@@ -2022,6 +2022,11 @@ export class GameScene extends Phaser.Scene {
     this.kills++;
     this.xp    += xpGain;
     this.score += xpGain * 10;
+
+    // Bloodthirst passive: restore HP on non-boss kills
+    if (!isBoss && this.passiveBonusCache.healOnKill > 0) {
+      this.hp = Math.min(this.getMaxHp(), this.hp + this.passiveBonusCache.healOnKill);
+    }
 
     // Achievement tracking — kills and boss kills
     const totalKillsSoFar = SaveManager.load().totalKills + this.kills;
