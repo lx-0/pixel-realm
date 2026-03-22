@@ -27,17 +27,15 @@ import {
   rotateSession,
 } from "./store";
 import { getRedis } from "./redis";
+import { config } from "../config";
 
 // ── Env / config ──────────────────────────────────────────────────────────────
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "pixelrealm-dev-secret-change-in-prod";
+const JWT_SECRET = config.jwtSecret;
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL = "7d";
-const AUTH_PORT = Number(process.env.AUTH_PORT ?? 3001);
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
+const AUTH_PORT = config.authPort;
+const ALLOWED_ORIGINS = config.allowedOrigins;
 
 // ── JWT payload types ─────────────────────────────────────────────────────────
 
@@ -57,7 +55,12 @@ export interface RefreshTokenPayload {
 // ── Build the Fastify app ─────────────────────────────────────────────────────
 
 export async function buildAuthApp(): Promise<FastifyInstance> {
-  const app = Fastify({ logger: false });
+  // In production: structured JSON via pino. In dev: pretty human-readable output.
+  const logger = config.isProduction
+    ? { level: "info" }
+    : { level: "debug", transport: { target: "pino-pretty", options: { colorize: true } } };
+
+  const app = Fastify({ logger });
 
   // ── Plugins ──────────────────────────────────────────────────────────────────
 
@@ -248,6 +251,6 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
 export async function startAuthServer(): Promise<FastifyInstance> {
   const app = await buildAuthApp();
   await app.listen({ port: AUTH_PORT, host: "0.0.0.0" });
-  console.log(`[Auth] Fastify auth server listening on http://0.0.0.0:${AUTH_PORT}`);
+  app.log.info({ port: AUTH_PORT }, "[Auth] Fastify auth server listening");
   return app;
 }

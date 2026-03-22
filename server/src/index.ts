@@ -1,5 +1,5 @@
 import http from "http";
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { Server } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
@@ -8,12 +8,7 @@ import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
 import { getInventory } from "./db/inventory";
-
-const PORT = Number(process.env.PORT ?? 2567);
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
+import { config } from "./config";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
 
@@ -22,7 +17,12 @@ async function initDb(): Promise<void> {
     await runMigrations();
     await seed();
   } catch (err) {
-    // Non-fatal: log and continue so the game runs without a DB in dev
+    if (config.isProduction) {
+      // Fatal in production — we never run without persistence
+      console.error("[DB] Init failed in production:", (err as Error).message);
+      process.exit(1);
+    }
+    // Non-fatal in dev: log and continue so the game runs without a DB
     console.warn("[DB] Init failed (running without persistence):", (err as Error).message);
   }
 }
@@ -32,8 +32,33 @@ initDb();
 // ── Express app ───────────────────────────────────────────────────────────────
 
 const app = express();
-app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
+app.use(cors({ origin: config.allowedOrigins, credentials: true }));
 app.use(express.json());
+
+// Request logging middleware — captures method, path, status, and duration
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const durationMs = Date.now() - start;
+    if (config.isProduction) {
+      // Structured JSON for log aggregators (e.g. Datadog, CloudWatch)
+      process.stdout.write(
+        JSON.stringify({
+          level: "info",
+          time: new Date().toISOString(),
+          msg: "request",
+          method: req.method,
+          path: req.path,
+          status: res.statusCode,
+          durationMs,
+        }) + "\n",
+      );
+    } else {
+      console.log(`[HTTP] ${req.method} ${req.path} ${res.statusCode} ${durationMs}ms`);
+    }
+  });
+  next();
+});
 
 // Health check
 app.get("/health", (_req, res) => res.json({ status: "ok", ts: Date.now() }));
@@ -73,9 +98,9 @@ gameServer.define("zone", ZoneRoom).filterBy(["zoneId"]);
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 
-gameServer.listen(PORT).then(() => {
-  console.log(`[PixelRealm] Colyseus server listening on ws://localhost:${PORT}`);
-  console.log(`[PixelRealm] HTTP health at http://localhost:${PORT}/health`);
+gameServer.listen(config.port).then(() => {
+  console.log(`[PixelRealm] Colyseus server listening on ws://0.0.0.0:${config.port}`);
+  console.log(`[PixelRealm] HTTP health at http://0.0.0.0:${config.port}/health`);
 }).catch((err) => {
   console.error("[PixelRealm] Failed to start server:", err);
   process.exit(1);
@@ -85,5 +110,9 @@ gameServer.listen(PORT).then(() => {
 
 startAuthServer().catch((err) => {
   console.error("[Auth] Failed to start auth server:", err);
-  // Non-fatal: game server keeps running even if auth fails to start
+  if (config.isProduction) {
+    // Auth is required in production — exit if it fails to start
+    process.exit(1);
+  }
+  // Non-fatal in dev: game server keeps running even if auth fails to start
 });

@@ -1,10 +1,9 @@
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
+import { config } from "../config";
 
-const DATABASE_URL =
-  process.env.DATABASE_URL ??
-  "postgresql://pixelrealm:pixelrealm_dev@localhost:5432/pixelrealm";
+const DATABASE_URL = config.databaseUrl;
 
 let _pool: Pool | null = null;
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
