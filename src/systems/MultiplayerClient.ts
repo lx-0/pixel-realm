@@ -44,6 +44,38 @@ export interface ChatIncomingMessage {
   whisperTo?: string;
 }
 
+// ── Quest data shapes (mirrors server quests/types.ts) ────────────────────────
+
+export interface ClientQuestObjective {
+  type: string;
+  target: string;
+  count?: number;
+  description: string;
+}
+
+export interface ClientQuestReward {
+  gold: number;
+  xp: number;
+  items?: Array<{ itemId: string; quantity: number }>;
+}
+
+export interface ClientQuestDialogue {
+  greeting: string;
+  acceptance: string;
+  completion: string;
+}
+
+export interface ClientQuest {
+  id: string;
+  zoneId: string;
+  questType: string;
+  title: string;
+  description: string;
+  objectives: ClientQuestObjective[];
+  rewards: ClientQuestReward;
+  dialogue: ClientQuestDialogue;
+}
+
 export interface ZoneRoomState {
   zoneId: string;
   currentWave: number;
@@ -82,6 +114,9 @@ export class MultiplayerClient {
   onEnemyRemoved?: (id: string) => void;
   onDisconnected?: () => void;
   onChatMessage?: (msg: ChatIncomingMessage) => void;
+  onQuestData?: (quest: ClientQuest, isNew: boolean) => void;
+  onQuestError?: (message: string) => void;
+  onQuestCompleted?: (questId: string) => void;
 
   constructor() {
     this.client = new Client(SERVER_URL);
@@ -174,6 +209,19 @@ export class MultiplayerClient {
       this.onChatMessage?.(msg);
     });
 
+    // ── Quest messages ────────────────────────────────────────────────────
+    room.onMessage('quest_data', (msg: { quest: ClientQuest; isNew: boolean }) => {
+      this.onQuestData?.(msg.quest, msg.isNew);
+    });
+
+    room.onMessage('quest_error', (msg: { message: string }) => {
+      this.onQuestError?.(msg.message);
+    });
+
+    room.onMessage('quest_completed', (msg: { questId: string }) => {
+      this.onQuestCompleted?.(msg.questId);
+    });
+
     // ── Connection events ────────────────────────────────────────────────
     room.onLeave(() => {
       console.warn('[MP] Left room');
@@ -229,6 +277,16 @@ export class MultiplayerClient {
   /** Notify server of a melee attack. */
   sendAttack(): void {
     this.room?.send('attack');
+  }
+
+  /** Trigger quest generation by interacting with an NPC. */
+  sendQuestNpcInteract(npcId: string): void {
+    this.room?.send('quest_npc_interact', { npcId });
+  }
+
+  /** Mark a quest as completed on the server. */
+  sendQuestComplete(questId: string): void {
+    this.room?.send('quest_complete', { questId });
   }
 
   /**

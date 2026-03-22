@@ -7,6 +7,7 @@ import { ZoneRoom } from "./rooms/ZoneRoom";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
+import { getInventory } from "./db/inventory";
 
 const PORT = Number(process.env.PORT ?? 2567);
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
@@ -36,6 +37,22 @@ app.use(express.json());
 
 // Health check
 app.get("/health", (_req, res) => res.json({ status: "ok", ts: Date.now() }));
+
+// GET /inventory/:userId — returns the player's inventory items
+app.get("/inventory/:userId", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+  try {
+    const items = await getInventory(userId);
+    res.json(items);
+  } catch (err) {
+    console.warn("[REST] Failed to fetch inventory:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch inventory" });
+  }
+});
 
 // ── HTTP + Colyseus server ────────────────────────────────────────────────────
 

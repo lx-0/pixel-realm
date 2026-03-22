@@ -7,8 +7,11 @@ import {
 import { SoundManager } from '../systems/SoundManager';
 import { SaveManager }  from '../systems/SaveManager';
 import { MultiplayerClient, type RemotePlayer, type RemoteEnemy } from '../systems/MultiplayerClient';
-import { ChatOverlay }     from '../ui/ChatOverlay';
-import { PlayerListPanel } from '../ui/PlayerListPanel';
+import { ChatOverlay }        from '../ui/ChatOverlay';
+import { PlayerListPanel }    from '../ui/PlayerListPanel';
+import { QuestLogPanel }      from '../ui/QuestLogPanel';
+import { InventoryPanel }     from '../ui/InventoryPanel';
+import { NpcDialogueOverlay } from '../ui/NpcDialogueOverlay';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 interface EnemyExtra {
@@ -134,6 +137,18 @@ export class GameScene extends Phaser.Scene {
   /** Player list panel (multiplayer only). */
   private playerList?: PlayerListPanel;
 
+  /** Quest log panel (multiplayer only). */
+  private questLog?: QuestLogPanel;
+
+  /** Inventory panel (multiplayer only). */
+  private inventory?: InventoryPanel;
+
+  /** NPC dialogue overlay (multiplayer only). */
+  private npcDialogue?: NpcDialogueOverlay;
+
+  /** E key for NPC interaction. */
+  private npcKey?: Phaser.Input.Keyboard.Key;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -197,14 +212,44 @@ export class GameScene extends Phaser.Scene {
     if (this.isDead) return;
 
     if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
-      this.scene.launch(SCENES.PAUSE, { zoneId: this.zone.id });
-      this.scene.pause();
-      return;
+      // Escape closes any open panel before pausing
+      const panelClosed =
+        this.npcDialogue?.closeIfOpen() ||
+        this.questLog?.closeIfOpen()    ||
+        this.inventory?.closeIfOpen()   ||
+        this.chat?.active;
+      if (!panelClosed) {
+        this.scene.launch(SCENES.PAUSE, { zoneId: this.zone.id });
+        this.scene.pause();
+        return;
+      }
+    }
+
+    // NPC interact key (E) — triggers quest dialogue in multiplayer
+    if (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) && this.isMultiplayer) {
+      this.handleNpcInteract();
     }
 
     // Chat overlay update (suppress game input while typing)
     this.chat?.update(delta);
     this.playerList?.update();
+
+    // Panel updates with mutual exclusion — opening one closes the others
+    const qlWas = this.questLog?.isVisible ?? false;
+    const invWas = this.inventory?.isVisible ?? false;
+    this.questLog?.update();
+    this.inventory?.update();
+    const qlNow  = this.questLog?.isVisible ?? false;
+    const invNow = this.inventory?.isVisible ?? false;
+    if (!qlWas && qlNow) {
+      // Quest log just opened — close others
+      this.inventory?.hide();
+      this.npcDialogue?.hide();
+    } else if (!invWas && invNow) {
+      // Inventory just opened — close others
+      this.questLog?.hide();
+      this.npcDialogue?.hide();
+    }
 
     this.handlePlayerMovement();
     this.regenMana(delta);
@@ -259,6 +304,44 @@ export class GameScene extends Phaser.Scene {
     // Player list panel
     this.playerList = new PlayerListPanel(this);
 
+    // Quest log panel
+    this.questLog = new QuestLogPanel(this);
+
+    // Inventory panel
+    this.inventory = new InventoryPanel(this);
+
+    // NPC dialogue overlay
+    this.npcDialogue = new NpcDialogueOverlay(this);
+    this.npcDialogue.onAccept = (quest) => {
+      // Quest is already assigned server-side on interact; just acknowledge.
+      this.questLog?.setActiveQuest(quest);
+      this.chat?.addMessage(`Quest accepted: ${quest.title}`, '#ffd700');
+    };
+    this.npcDialogue.onDecline = () => {
+      this.chat?.addMessage('Quest declined.', '#888899');
+    };
+
+    // Quest data from server (NPC interact response)
+    client.onQuestData = (quest, isNew) => {
+      if (isNew) {
+        this.npcDialogue?.show(quest);
+      } else {
+        // Already have this quest — just show the log
+        this.questLog?.setActiveQuest(quest);
+        this.questLog?.show();
+        this.chat?.addMessage(`Quest in progress: ${quest.title}`, '#aaddff');
+      }
+    };
+
+    client.onQuestError = (msg) => {
+      this.chat?.addMessage(`Quest: ${msg}`, '#ff8888');
+    };
+
+    client.onQuestCompleted = (questId) => {
+      this.questLog?.markCompleted(questId, questId);
+      this.chat?.addMessage('Quest completed! Rewards granted.', '#88ee88');
+    };
+
     // Incoming chat messages
     client.onChatMessage = (msg) => {
       const senderName = localStorage.getItem('pr_username') ?? 'Hero';
@@ -271,9 +354,9 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
-    // Show T-to-chat hint once
+    // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [Tab] players', '#555577');
+      this.chat?.addMessage('[T] chat  [Tab] players  [Q] quests  [I] inventory  [E] NPC', '#555577');
     });
 
     // Wave state changes from server
@@ -302,6 +385,12 @@ export class GameScene extends Phaser.Scene {
       this.chat = undefined;
       this.playerList?.destroy();
       this.playerList = undefined;
+      this.questLog?.destroy();
+      this.questLog = undefined;
+      this.inventory?.destroy();
+      this.inventory = undefined;
+      this.npcDialogue?.destroy();
+      this.npcDialogue = undefined;
       this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20, 'Disconnected — solo mode', '#ff8888');
       // Resume local simulation
       if (!this.isDead && !this.waveTransitioning) this.spawnWave();
@@ -313,6 +402,21 @@ export class GameScene extends Phaser.Scene {
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(12);
 
     this.updateHUD();
+  }
+
+  // ── NPC interaction ───────────────────────────────────────────────────────
+
+  private handleNpcInteract(): void {
+    // If a dialogue is already open, accept the quest on E
+    if (this.npcDialogue?.isVisible) {
+      this.npcDialogue.accept();
+      return;
+    }
+    // Close other panels first
+    this.questLog?.hide();
+    this.inventory?.hide();
+    // Request quest from server
+    this.mp?.sendQuestNpcInteract('npc_quest');
   }
 
   // ── Server wave change ────────────────────────────────────────────────────
@@ -1368,6 +1472,7 @@ export class GameScene extends Phaser.Scene {
     this.wasd      = this.input.keyboard!.addKeys('W,A,S,D') as typeof this.wasd;
     this.attackKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.escKey    = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    this.npcKey    = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   }
 
   private setupCamera(): void {
