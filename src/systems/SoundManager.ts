@@ -42,6 +42,21 @@ const ZONE_MELODIES: Record<string, Note[]> = {
     [246.94, 0.30], [220.00, 0.30], [196.00, 0.30], [164.81, 0.80],
     [0, 0.30],
   ],
+  zone5: [ // Ice Caverns — B flat minor, sparse & crystalline
+    [233.08, 0.60], [0, 0.20], [277.18, 0.40], [0, 0.15],
+    [311.13, 0.50], [293.66, 0.30], [261.63, 0.30], [233.08, 0.70],
+    [0, 0.30], [174.61, 0.50], [0, 0.20],
+    [220.00, 0.40], [233.08, 0.30], [277.18, 0.60], [0, 0.20],
+    [233.08, 1.00], [0, 0.50],
+  ],
+  combat: [ // Combat — D minor, driving & urgent
+    [146.83, 0.15], [174.61, 0.15], [196.00, 0.15], [220.00, 0.20],
+    [196.00, 0.15], [174.61, 0.15], [146.83, 0.25], [0, 0.10],
+    [130.81, 0.15], [146.83, 0.15], [174.61, 0.15], [196.00, 0.20],
+    [220.00, 0.15], [246.94, 0.15], [261.63, 0.30], [0, 0.10],
+    [220.00, 0.15], [196.00, 0.15], [174.61, 0.15], [146.83, 0.20],
+    [130.81, 0.15], [116.54, 0.15], [130.81, 0.40], [0, 0.15],
+  ],
 };
 
 export class SoundManager {
@@ -59,9 +74,11 @@ export class SoundManager {
   private _sfxVolume    = 0.8;
   private _musicVolume  = 0.5;
   private _unlocked     = false;
+  private _muted        = false;
   private _musicGen     = 0;
   private _pendingZone: string | null = null;
   private _currentZone: string | null = null;
+  private _preCombatZone: string | null = null;
 
   private getCtx(): AudioContext | null {
     try {
@@ -87,13 +104,13 @@ export class SoundManager {
   get sfxVolume(): number { return this._sfxVolume; }
   set sfxVolume(v: number) {
     this._sfxVolume = Math.max(0, Math.min(1, v));
-    if (this.sfxGain) this.sfxGain.gain.value = this._sfxVolume;
+    if (this.sfxGain && !this._muted) this.sfxGain.gain.value = this._sfxVolume;
   }
 
   get musicVolume(): number { return this._musicVolume; }
   set musicVolume(v: number) {
     this._musicVolume = Math.max(0, Math.min(1, v));
-    if (this.musicGain) this.musicGain.gain.value = this._musicVolume;
+    if (this.musicGain && !this._muted) this.musicGain.gain.value = this._musicVolume;
   }
 
   // ── Autoplay unlock ────────────────────────────────────────────────────────
@@ -238,6 +255,43 @@ export class SoundManager {
     this._musicGen++;
     this._currentZone = null;
     this._pendingZone = null;
+  }
+
+  // ── Mute ───────────────────────────────────────────────────────────────────
+
+  get isMuted(): boolean { return this._muted; }
+
+  /** Toggle master mute. Preserves volume settings for when unmuted. */
+  toggleMute(): boolean {
+    this._muted = !this._muted;
+    const ctx = this.getCtx();
+    if (ctx) {
+      if (this._muted) {
+        if (this.sfxGain)   this.sfxGain.gain.value   = 0;
+        if (this.musicGain) this.musicGain.gain.value  = 0;
+      } else {
+        if (this.sfxGain)   this.sfxGain.gain.value   = this._sfxVolume;
+        if (this.musicGain) this.musicGain.gain.value  = this._musicVolume;
+      }
+    }
+    return this._muted;
+  }
+
+  // ── Combat music ───────────────────────────────────────────────────────────
+
+  /** Switch to combat music, saving the current zone to resume afterward. */
+  startCombatMusic(): void {
+    if (this._currentZone === 'combat') return;
+    this._preCombatZone = this._currentZone;
+    this.startZoneMusic('combat');
+  }
+
+  /** Return to the zone music that was playing before combat started. */
+  stopCombatMusic(): void {
+    if (this._currentZone !== 'combat') return;
+    const zone = this._preCombatZone;
+    this._preCombatZone = null;
+    if (zone) this.startZoneMusic(zone);
   }
 
   private _scheduleLoop(zoneId: string, gen: number, startDelay: number): void {

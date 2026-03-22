@@ -208,6 +208,12 @@ export class GameScene extends Phaser.Scene {
   /** Mini-map HUD overlay (always present, M key toggles). */
   private miniMap?: MiniMapOverlay;
 
+  /** N key — mute/unmute toggle. */
+  private muteKey?: Phaser.Input.Keyboard.Key;
+
+  /** HUD indicator shown when audio is muted. */
+  private muteIndicator?: Phaser.GameObjects.Text;
+
   /** Tutorial overlay — shown only for first-time players on zone1. */
   private tutorial?: TutorialOverlay;
 
@@ -365,6 +371,12 @@ export class GameScene extends Phaser.Scene {
         this.scene.pause();
         return;
       }
+    }
+
+    // Mute toggle (N key)
+    if (this.muteKey && Phaser.Input.Keyboard.JustDown(this.muteKey)) {
+      const muted = this.sfx.toggleMute();
+      this.muteIndicator?.setVisible(muted);
     }
 
     // Skill tree panel (K key is handled inside the panel)
@@ -1382,6 +1394,7 @@ export class GameScene extends Phaser.Scene {
       this.spawnNormalWave();
     }
 
+    this.sfx.startCombatMusic();
     this.physics.add.collider(this.enemies, this.enemies);
     this.updateHUD();
   }
@@ -2030,6 +2043,7 @@ export class GameScene extends Phaser.Scene {
     const cleared = this.wave;
     this.wave++;
     this.sfx.playWaveClear();
+    this.sfx.stopCombatMusic();
     this.screenFlash(0xffe040, 0.12);
 
     const cx    = CANVAS.WIDTH / 2;
@@ -2220,6 +2234,7 @@ export class GameScene extends Phaser.Scene {
     this.upKey           = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.downKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
     this.craftConfirmKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+    this.muteKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.N);
     // Hotbar skill keys 1–6
     const hotbarKeyCodes = [
       Phaser.Input.Keyboard.KeyCodes.ONE,
@@ -2293,6 +2308,10 @@ export class GameScene extends Phaser.Scene {
       fontSize: '5px', color: '#00ffcc', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1,
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(40).setVisible(false);
 
+    this.muteIndicator = this.add.text(CANVAS.WIDTH - 4, 25, '🔇 MUTED [N]', {
+      fontSize: '4px', color: '#ff4444', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1,
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(Z).setVisible(false);
+
     // Boss HP bar (bottom center, hidden initially)
     const bossW = 160;
     const bossH = 8;
@@ -2305,7 +2324,7 @@ export class GameScene extends Phaser.Scene {
     this.bossHpBar = this.add.rectangle(bossX, bossY + bossH / 2, bossW, bossH, 0xff2222)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z + 5).setVisible(false);
 
-    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD:Move  SHIFT:Sprint  Q:Dodge  SPACE:Attack  1-6:Skills  K:SkillTree  M:Map  F:Craft  ESC:Pause', {
+    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD:Move  SHIFT:Sprint  Q:Dodge  SPACE:Attack  1-6:Skills  K:SkillTree  M:Map  F:Craft  N:Mute  ESC:Pause', {
       fontSize: '4px', color: '#333344', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(Z);
 
