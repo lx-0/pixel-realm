@@ -55,4 +55,12 @@ export const config = {
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean),
+
+  // Admin usernames — comma-separated list of usernames that receive role:"admin" in JWT
+  adminUsernames: new Set(
+    (optional("ADMIN_USERNAMES", ""))
+      .split(",")
+      .map((u) => u.trim().toLowerCase())
+      .filter(Boolean),
+  ),
 } as const;

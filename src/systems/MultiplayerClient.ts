@@ -581,6 +581,14 @@ export class MultiplayerClient {
     this.room.send('party_chat', { text: text.trim() });
   }
 
+  // ── Moderation messages ───────────────────────────────────────────────────
+
+  /** Submit a player abuse report for the named player in this zone. */
+  sendReport(reportedName: string, reason?: string): void {
+    if (!this.room || !reportedName.trim()) return;
+    this.room.send('report_player', { reportedName: reportedName.trim(), reason: reason ?? '' });
+  }
+
   // ── Crafting messages ─────────────────────────────────────────────────────
 
   /** Notify other zone players that this player just crafted an item. */

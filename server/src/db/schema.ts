@@ -303,6 +303,61 @@ export const playerDungeonCooldowns = pgTable(
   }),
 );
 
+// ── Player Bans ───────────────────────────────────────────────────────────────
+
+export const playerBans = pgTable("player_bans", {
+  id:        uuid("id").defaultRandom().primaryKey(),
+  playerId:  uuid("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  reason:    text("reason").notNull().default(""),
+  bannedBy:  uuid("banned_by"),
+  bannedAt:  timestamp("banned_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }), // null = permanent
+});
+
+// ── Player Mutes ──────────────────────────────────────────────────────────────
+
+export const playerMutes = pgTable("player_mutes", {
+  id:        uuid("id").defaultRandom().primaryKey(),
+  playerId:  uuid("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  reason:    text("reason").notNull().default(""),
+  mutedBy:   uuid("muted_by"), // null = auto-muted by spam filter
+  mutedAt:   timestamp("muted_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
+// ── Chat Log (rolling recent history) ────────────────────────────────────────
+
+export const chatLog = pgTable("chat_log", {
+  id:         uuid("id").defaultRandom().primaryKey(),
+  playerId:   uuid("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  playerName: varchar("player_name", { length: 20 }).notNull(),
+  zoneId:     varchar("zone_id", { length: 50 }).notNull(),
+  message:    text("message").notNull(),
+  filtered:   boolean("filtered").notNull().default(false),
+  sentAt:     timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ── Player Reports ────────────────────────────────────────────────────────────
+
+export const playerReports = pgTable("player_reports", {
+  id:         uuid("id").defaultRandom().primaryKey(),
+  reporterId: uuid("reporter_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  reportedId: uuid("reported_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  reason:     text("reason").notNull().default(""),
+  zoneId:     varchar("zone_id", { length: 50 }).notNull(),
+  reportedAt: timestamp("reported_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -324,3 +379,7 @@ export type PlayerFactionReputation = typeof playerFactionReputation.$inferSelec
 export type LandPlot = typeof landPlots.$inferSelect;
 export type PlayerHousing = typeof playerHousing.$inferSelect;
 export type PlayerDungeonCooldown = typeof playerDungeonCooldowns.$inferSelect;
+export type PlayerBan = typeof playerBans.$inferSelect;
+export type PlayerMute = typeof playerMutes.$inferSelect;
+export type ChatLogRow = typeof chatLog.$inferSelect;
+export type PlayerReport = typeof playerReports.$inferSelect;

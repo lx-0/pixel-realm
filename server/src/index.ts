@@ -9,6 +9,10 @@ import { getDungeonCooldownRemainingDb } from "./db/cooldowns";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
+import { createVerifier } from "fast-jwt";
+import type { AccessTokenPayload } from "./auth/fastify";
+import { config } from "./config";
+import { banPlayer, mutePlayer, getRecentChatLog } from "./db/moderation";
 import { getInventory } from "./db/inventory";
 import { RECIPES, craftItem, getCraftingProgress } from "./db/crafting";
 import {
@@ -688,6 +692,133 @@ app.post("/housing/:userId/upgrade", async (req, res) => {
     }
     console.warn("[REST] housing/upgrade failed:", msg);
     res.status(500).json({ error: "Failed to upgrade house" });
+  }
+});
+
+// ── Admin endpoints ───────────────────────────────────────────────────────────
+
+const verifyAdminJwt = createVerifier({ key: config.jwtSecret });
+
+/** Middleware: verifies the Bearer JWT and requires role === "admin". */
+function adminAuth(req: Request, res: Response, next: NextFunction): void {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith("Bearer ")) {
+    res.status(401).json({ error: "Missing authorization header" });
+    return;
+  }
+  try {
+    const payload = verifyAdminJwt(auth.slice(7)) as AccessTokenPayload;
+    if (payload.role !== "admin") {
+      res.status(403).json({ error: "Admin role required" });
+      return;
+    }
+    (req as Request & { adminPayload: AccessTokenPayload }).adminPayload = payload;
+    next();
+  } catch {
+    res.status(401).json({ error: "Invalid or expired token" });
+  }
+}
+
+// POST /admin/kick/:playerId — disconnect player from current zone room(s)
+app.post("/admin/kick/:playerId", adminAuth, async (req: Request, res: Response) => {
+  const { playerId } = req.params as { playerId: string };
+  if (!playerId || playerId.length > 100) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+  try {
+    const rooms = await matchMaker.query({ name: "zone" });
+    let kicked = false;
+    for (const roomData of rooms) {
+      const room = matchMaker.getRoomById(roomData.roomId);
+      if (!room) continue;
+      // Access the Colyseus room's clients and disconnect the matching player
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const zoneRoom = room as any;
+      if (!zoneRoom.clients) continue;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const client of zoneRoom.clients as any[]) {
+        const auth = client.auth as { userId?: string } | undefined;
+        if (auth?.userId === playerId) {
+          client.leave(4003); // 4003 = kicked by admin
+          kicked = true;
+        }
+      }
+    }
+    res.json({ success: true, kicked });
+  } catch (err) {
+    console.warn("[Admin] kick failed:", (err as Error).message);
+    res.status(500).json({ error: "Kick failed" });
+  }
+});
+
+// POST /admin/ban/:playerId — add to ban list, prevent future login/join
+app.post("/admin/ban/:playerId", adminAuth, async (req: Request, res: Response) => {
+  const { playerId } = req.params as { playerId: string };
+  const { reason = "", durationDays } = req.body as { reason?: string; durationDays?: number };
+  if (!playerId || playerId.length > 100) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+  try {
+    const adminId = ((req as Request & { adminPayload: AccessTokenPayload }).adminPayload).sub;
+    const expiresAt = durationDays ? new Date(Date.now() + durationDays * 86_400_000) : undefined;
+    await banPlayer(playerId, reason, adminId, expiresAt);
+
+    // Also kick them from active rooms
+    const rooms = await matchMaker.query({ name: "zone" }).catch(() => []);
+    for (const roomData of rooms) {
+      const room = matchMaker.getRoomById(roomData.roomId);
+      if (!room) continue;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const zoneRoom = room as any;
+      if (!zoneRoom.clients) continue;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const client of zoneRoom.clients as any[]) {
+        const auth = client.auth as { userId?: string } | undefined;
+        if (auth?.userId === playerId) client.leave(4004); // 4004 = banned
+      }
+    }
+
+    res.json({ success: true, permanent: !expiresAt, expiresAt: expiresAt ?? null });
+  } catch (err) {
+    console.warn("[Admin] ban failed:", (err as Error).message);
+    res.status(500).json({ error: "Ban failed" });
+  }
+});
+
+// GET /admin/chat-log — recent chat history with player IDs
+app.get("/admin/chat-log", adminAuth, async (req: Request, res: Response) => {
+  const limit = Math.min(Number(req.query.limit ?? 100), 500);
+  try {
+    const rows = await getRecentChatLog(isNaN(limit) ? 100 : limit);
+    res.json(rows);
+  } catch (err) {
+    console.warn("[Admin] chat-log failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch chat log" });
+  }
+});
+
+// POST /admin/mute/:playerId — temporary chat mute (duration in minutes)
+app.post("/admin/mute/:playerId", adminAuth, async (req: Request, res: Response) => {
+  const { playerId } = req.params as { playerId: string };
+  const { durationMinutes = 10, reason = "" } = req.body as { durationMinutes?: number; reason?: string };
+  if (!playerId || playerId.length > 100) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+  const minutes = Math.max(1, Math.min(Number(durationMinutes), 10_080)); // 1 min – 7 days
+  if (isNaN(minutes)) {
+    res.status(400).json({ error: "Invalid durationMinutes" });
+    return;
+  }
+  try {
+    const adminId = ((req as Request & { adminPayload: AccessTokenPayload }).adminPayload).sub;
+    await mutePlayer(playerId, reason, adminId, minutes);
+    res.json({ success: true, durationMinutes: minutes });
+  } catch (err) {
+    console.warn("[Admin] mute failed:", (err as Error).message);
+    res.status(500).json({ error: "Mute failed" });
   }
 });
 

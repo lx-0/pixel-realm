@@ -679,6 +679,9 @@ export class GameScene extends Phaser.Scene {
 
     // Player list panel
     this.playerList = new PlayerListPanel(this);
+    this.playerList.onReport = (playerName) => {
+      this.mp?.sendReport(playerName);
+    };
 
     // Quest log panel
     this.questLog = new QuestLogPanel(this);

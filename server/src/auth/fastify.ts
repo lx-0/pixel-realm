@@ -41,6 +41,7 @@ import {
 } from "./store";
 import { getRedis } from "./redis";
 import { config } from "../config";
+import { isPlayerBanned } from "../db/moderation";
 
 // ── Env / config ──────────────────────────────────────────────────────────────
 
@@ -53,9 +54,10 @@ const ALLOWED_ORIGINS = config.allowedOrigins;
 // ── JWT payload types ─────────────────────────────────────────────────────────
 
 export interface AccessTokenPayload {
-  sub: string;   // userId
+  sub: string;       // userId
   username: string;
-  jti: string;   // session id
+  jti: string;       // session id
+  role?: string;     // "admin" for admin users, absent otherwise
 }
 
 export interface RefreshTokenPayload {
@@ -129,7 +131,7 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
   // ── Helpers ───────────────────────────────────────────────────────────────────
 
   // Sign access token (short-lived, stateless)
-  function signAccess(payload: Omit<AccessTokenPayload, "type">): string {
+  function signAccess(payload: AccessTokenPayload): string {
     return app.jwt.sign(payload, { expiresIn: ACCESS_TOKEN_TTL });
   }
 
@@ -178,10 +180,12 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
 
       try {
         const user = await createUser(username, password, email);
+        const isAdmin = config.adminUsernames.has(user.username.toLowerCase());
         const session = await createSession(user.id, user.username);
+        const tokenPayload = { sub: user.id, username: user.username, jti: session.jti, ...(isAdmin ? { role: "admin" } : {}) };
         return reply.code(201).send({
-          accessToken: signAccess({ sub: user.id, username: user.username, jti: session.jti }),
-          refreshToken: signRefresh({ sub: user.id, username: user.username, jti: session.jti }),
+          accessToken: signAccess(tokenPayload),
+          refreshToken: signRefresh(tokenPayload),
           user: { id: user.id, username: user.username },
         });
       } catch (err: unknown) {
@@ -219,11 +223,20 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
         // Constant-time-ish: always return same error to prevent user enumeration
         return reply.code(401).send({ error: "Invalid credentials" });
       }
+
+      // Reject banned players at login
+      const banned = await isPlayerBanned(user.id).catch(() => false);
+      if (banned) {
+        return reply.code(403).send({ error: "Account banned" });
+      }
+
+      const isAdmin = config.adminUsernames.has(user.username.toLowerCase());
       const session = await createSession(user.id, user.username);
+      const tokenPayload = { sub: user.id, username: user.username, jti: session.jti, ...(isAdmin ? { role: "admin" } : {}) };
       return reply.send({
-        accessToken: signAccess({ sub: user.id, username: user.username, jti: session.jti }),
-        refreshToken: signRefresh({ sub: user.id, username: user.username, jti: session.jti }),
-        user: { id: user.id, username: user.username },
+        accessToken: signAccess(tokenPayload),
+        refreshToken: signRefresh(tokenPayload),
+        user: { id: user.id, username: user.username, role: isAdmin ? "admin" : undefined },
       });
     },
   );

@@ -23,6 +23,9 @@ export class PlayerListPanel {
   // Container rebuilt on each refresh() call
   private container: Phaser.GameObjects.Container;
 
+  /** Called when the local player clicks Report on another player. */
+  onReport?: (playerName: string) => void;
+
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.container = scene.add.container(0, 0).setScrollFactor(0).setDepth(60).setVisible(false);
@@ -113,14 +116,35 @@ export class PlayerListPanel {
       }).setScrollFactor(0);
 
       // HP bar (mini)
-      const barW = 20;
-      const barBg = this.scene.add.rectangle(PANEL_X + PANEL_W - barW - 3, y + 2, barW, 3, 0x440000, 0.8)
+      const barW = 18;
+      const barX = row.isLocal ? PANEL_X + PANEL_W - barW - 3 : PANEL_X + PANEL_W - barW - 12;
+      const barBg = this.scene.add.rectangle(barX, y + 2, barW, 3, 0x440000, 0.8)
         .setOrigin(0, 0).setScrollFactor(0);
       const hpColor = row.hpPct > 0.5 ? 0x00ee44 : row.hpPct > 0.25 ? 0xffaa00 : 0xff2222;
-      const barFill = this.scene.add.rectangle(PANEL_X + PANEL_W - barW - 3, y + 2, barW * row.hpPct, 3, hpColor)
+      const barFill = this.scene.add.rectangle(barX, y + 2, barW * row.hpPct, 3, hpColor)
         .setOrigin(0, 0).setScrollFactor(0);
 
       this.container.add([bullet, nameText, barBg, barFill]);
+
+      // Report button — only for remote players
+      if (!row.isLocal && this.onReport) {
+        const reportBtn = this.scene.add.text(PANEL_X + PANEL_W - 9, y, '!', {
+          fontSize: '5px',
+          color: '#ff6644',
+          fontFamily: 'monospace',
+          backgroundColor: '#331111',
+        })
+          .setScrollFactor(0)
+          .setInteractive({ useHandCursor: true });
+
+        reportBtn.on('pointerdown', () => {
+          this.onReport?.(row.name);
+        });
+        reportBtn.on('pointerover', () => reportBtn.setColor('#ff9977'));
+        reportBtn.on('pointerout',  () => reportBtn.setColor('#ff6644'));
+
+        this.container.add(reportBtn);
+      }
     });
 
     if (rows.length > MAX_ROWS) {
