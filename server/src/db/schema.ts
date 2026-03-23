@@ -250,6 +250,37 @@ export const playerFactionReputation = pgTable(
   }),
 );
 
+// ── Land Plots (town plot ownership) ─────────────────────────────────────────
+
+export const landPlots = pgTable(
+  "land_plots",
+  {
+    id:          uuid("id").defaultRandom().primaryKey(),
+    zoneId:      varchar("zone_id", { length: 50 }).notNull(),
+    plotIndex:   integer("plot_index").notNull(),
+    ownerId:     uuid("owner_id").references(() => players.id, { onDelete: "set null" }),
+    purchasedAt: timestamp("purchased_at", { withTimezone: true }),
+    priceGold:   integer("price_gold").notNull().default(500),
+  },
+);
+
+// ── Player Housing (house state + furniture layout per player) ────────────────
+
+export const playerHousing = pgTable("player_housing", {
+  playerId:        uuid("player_id")
+    .primaryKey()
+    .references(() => players.id, { onDelete: "cascade" }),
+  plotId:          uuid("plot_id")
+    .notNull()
+    .references(() => landPlots.id, { onDelete: "cascade" }),
+  houseTier:       integer("house_tier").notNull().default(1),
+  /** JSON array of { furnitureId, x, y, rotation } objects */
+  furnitureLayout: jsonb("furniture_layout").notNull().default([]),
+  /** 'public' | 'friends' | 'locked' */
+  permission:      varchar("permission", { length: 20 }).notNull().default("public"),
+  updatedAt:       timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -268,3 +299,5 @@ export type Guild = typeof guilds.$inferSelect;
 export type GuildMembership = typeof guildMemberships.$inferSelect;
 export type PlayerAchievement = typeof playerAchievements.$inferSelect;
 export type PlayerFactionReputation = typeof playerFactionReputation.$inferSelect;
+export type LandPlot = typeof landPlots.$inferSelect;
+export type PlayerHousing = typeof playerHousing.$inferSelect;

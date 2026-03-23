@@ -97,6 +97,44 @@ export const SCENES = {
   CREDITS: 'CreditsScene',
   UI: 'UIScene',
   ARENA: 'ArenaScene',
+  HOUSING: 'HousingScene',
+} as const;
+
+// ── Housing ───────────────────────────────────────────────────────────────────
+export const HOUSING = {
+  /** Grid cell size in pixels (interior coordinate space) */
+  GRID_SIZE: 16,
+  /** Interior scene dimensions in pixels */
+  INTERIOR_WIDTH: 160,
+  INTERIOR_HEIGHT: 128,
+  /** Maximum furniture pieces per house */
+  MAX_FURNITURE: 20,
+  /** House tier tileset keys */
+  TILESETS: {
+    1: 'tileset_house_cottage',
+    2: 'tileset_house_manor',
+  } as Record<number, string>,
+  /** Available furniture definitions */
+  FURNITURE: [
+    { id: 'furn_bed',       name: 'Bed',         key: 'furn_bed',       restBonus: 10 },
+    { id: 'furn_table',     name: 'Table',        key: 'furn_table',     restBonus: 0  },
+    { id: 'furn_chair',     name: 'Chair',        key: 'furn_chair',     restBonus: 5  },
+    { id: 'furn_bookshelf', name: 'Bookshelf',    key: 'furn_bookshelf', restBonus: 0  },
+    { id: 'furn_chest',     name: 'Chest',        key: 'furn_chest',     restBonus: 0  },
+    { id: 'furn_fireplace', name: 'Fireplace',    key: 'furn_fireplace', restBonus: 8  },
+    { id: 'furn_rug',       name: 'Rug',          key: 'furn_rug',       restBonus: 3  },
+    { id: 'furn_lamp',      name: 'Lamp',         key: 'furn_lamp',      restBonus: 0  },
+    { id: 'furn_wardrobe',  name: 'Wardrobe',     key: 'furn_wardrobe',  restBonus: 0  },
+    { id: 'furn_anvil',     name: 'Anvil',        key: 'furn_anvil',     restBonus: 0  },
+  ] as const,
+  DECORATIONS: [
+    { id: 'decor_painting',  name: 'Painting',     key: 'decor_painting'  },
+    { id: 'decor_trophy',    name: 'Trophy',       key: 'decor_trophy'    },
+    { id: 'decor_banner',    name: 'Banner',       key: 'decor_banner'    },
+    { id: 'decor_plant',     name: 'Plant',        key: 'decor_plant'     },
+    { id: 'decor_candle',    name: 'Candle',       key: 'decor_candle'    },
+    { id: 'decor_clock',     name: 'Clock',        key: 'decor_clock'     },
+  ] as const,
 } as const;
 
 // ── Arena ─────────────────────────────────────────────────────────────────────

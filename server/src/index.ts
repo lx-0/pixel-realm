@@ -39,6 +39,17 @@ import {
   type LeaderboardCategory,
   type LeaderboardPeriod,
 } from "./db/leaderboard";
+import {
+  getLandPlots,
+  getPlayerHousing,
+  getHousingByPlot,
+  claimPlot,
+  saveLayout,
+  setPermission,
+  upgradeHouse,
+  type FurnitureItem,
+  type HousingPermission,
+} from "./db/housing";
 import { config } from "./config";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -501,6 +512,141 @@ app.get("/leaderboard/:category", async (req, res) => {
   } catch (err) {
     console.warn("[REST] leaderboard failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
+});
+
+// ── Housing REST endpoints ────────────────────────────────────────────────────
+
+// GET /housing/plots/:zoneId — list all plots for a zone
+app.get("/housing/plots/:zoneId", async (req, res) => {
+  const { zoneId } = req.params as { zoneId: string };
+  if (!zoneId || zoneId.length > 50) {
+    res.status(400).json({ error: "Invalid zoneId" });
+    return;
+  }
+  try {
+    const plots = await getLandPlots(zoneId);
+    res.json(plots);
+  } catch (err) {
+    console.warn("[REST] housing/plots failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch plots" });
+  }
+});
+
+// GET /housing/:userId — get a player's housing state
+app.get("/housing/:userId", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+  try {
+    const housing = await getPlayerHousing(userId);
+    if (!housing) {
+      res.status(404).json({ error: "No house found" });
+      return;
+    }
+    res.json(housing);
+  } catch (err) {
+    console.warn("[REST] housing/:userId failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch housing" });
+  }
+});
+
+// GET /housing/visit/:plotId — get housing data for visiting another player's house
+app.get("/housing/visit/:plotId", async (req, res) => {
+  const { plotId } = req.params as { plotId: string };
+  if (!plotId || plotId.length > 100) {
+    res.status(400).json({ error: "Invalid plotId" });
+    return;
+  }
+  try {
+    const housing = await getHousingByPlot(plotId);
+    if (!housing) {
+      res.status(404).json({ error: "No house at this plot" });
+      return;
+    }
+    res.json(housing);
+  } catch (err) {
+    console.warn("[REST] housing/visit failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch plot housing" });
+  }
+});
+
+// POST /housing/claim — purchase a land plot
+app.post("/housing/claim", async (req, res) => {
+  const { userId, plotId } = req.body as { userId?: string; plotId?: string };
+  if (!userId || !plotId || userId.length > 100 || plotId.length > 100) {
+    res.status(400).json({ error: "Missing or invalid userId / plotId" });
+    return;
+  }
+  try {
+    const housing = await claimPlot(userId, plotId);
+    res.json(housing);
+  } catch (err) {
+    const msg = (err as Error).message;
+    if (msg === "Plot already owned" || msg === "Player already owns a plot" || msg === "Insufficient gold" || msg === "Plot not found") {
+      res.status(409).json({ error: msg });
+      return;
+    }
+    console.warn("[REST] housing/claim failed:", msg);
+    res.status(500).json({ error: "Failed to claim plot" });
+  }
+});
+
+// PATCH /housing/:userId/layout — save furniture layout
+app.patch("/housing/:userId/layout", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  const { layout } = req.body as { layout?: FurnitureItem[] };
+  if (!userId || userId.length > 100 || !Array.isArray(layout)) {
+    res.status(400).json({ error: "Invalid userId or layout" });
+    return;
+  }
+  try {
+    await saveLayout(userId, layout);
+    res.json({ ok: true });
+  } catch (err) {
+    console.warn("[REST] housing/layout failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to save layout" });
+  }
+});
+
+// PATCH /housing/:userId/permission — update visit permission
+app.patch("/housing/:userId/permission", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  const { permission } = req.body as { permission?: string };
+  const valid: HousingPermission[] = ["public", "friends", "locked"];
+  if (!userId || userId.length > 100 || !permission || !valid.includes(permission as HousingPermission)) {
+    res.status(400).json({ error: "Invalid userId or permission" });
+    return;
+  }
+  try {
+    await setPermission(userId, permission as HousingPermission);
+    res.json({ ok: true });
+  } catch (err) {
+    console.warn("[REST] housing/permission failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to update permission" });
+  }
+});
+
+// POST /housing/:userId/upgrade — upgrade house tier
+app.post("/housing/:userId/upgrade", async (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+  try {
+    const tier = await upgradeHouse(userId);
+    res.json({ houseTier: tier });
+  } catch (err) {
+    const msg = (err as Error).message;
+    if (msg === "Insufficient gold" || msg === "Already at max tier" || msg === "Player has no house") {
+      res.status(409).json({ error: msg });
+      return;
+    }
+    console.warn("[REST] housing/upgrade failed:", msg);
+    res.status(500).json({ error: "Failed to upgrade house" });
   }
 });
 
