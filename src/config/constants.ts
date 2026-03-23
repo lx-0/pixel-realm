@@ -96,7 +96,34 @@ export const SCENES = {
   GAME_OVER: 'GameOverScene',
   CREDITS: 'CreditsScene',
   UI: 'UIScene',
+  ARENA: 'ArenaScene',
 } as const;
+
+// ── Arena ─────────────────────────────────────────────────────────────────────
+export const ARENA = {
+  MATCH_DURATION_MS: 180_000,  // 3-minute timed matches
+  ROUND_HP: 100,               // each combatant's HP per round
+  ROUND_MANA: 50,
+  ATTACK_DAMAGE: 20,
+  ATTACK_RANGE_PX: 36,
+  ATTACK_COOLDOWN_MS: 500,
+  ATTACK_KNOCKBACK: 140,
+  PLAYER_INVINCIBILITY_MS: 800,
+  MOVE_SPEED: 110,
+  ELO_K: 32,                   // K-factor for ELO updates
+  ELO_DEFAULT: 1000,
+  TIERS: {
+    BRONZE:   { min: 0,    max: 1199, label: 'Bronze',   icon: 'icon_rank_arena_bronze' },
+    SILVER:   { min: 1200, max: 1399, label: 'Silver',   icon: 'icon_rank_arena_silver' },
+    GOLD:     { min: 1400, max: 1599, label: 'Gold',     icon: 'icon_rank_arena_gold' },
+    PLATINUM: { min: 1600, max: 1799, label: 'Platinum', icon: 'icon_rank_arena_platinum' },
+    DIAMOND:  { min: 1800, max: Infinity, label: 'Diamond', icon: 'icon_rank_arena_diamond' },
+  },
+} as const;
+
+export type ArenaMode = '1v1' | '2v2';
+export type ArenaTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
+export type ArenaMap  = 'gladiator_pit' | 'shadow_sanctum';
 
 // ── Enemy Type Definitions ────────────────────────────────────────────────────
 export type EnemyTypeName =
