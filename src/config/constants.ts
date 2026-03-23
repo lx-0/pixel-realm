@@ -82,6 +82,38 @@ export const ECONOMY = {
   LAND_AUCTION_FLOOR: 500,
   GUILD_TREASURY_TAX_PCT: 0.05,
   LLM_QUEST_REWARD_MULTIPLIER: 1.2,
+  /** Gold fee charged per craft at a crafting station. */
+  CRAFTING_STATION_FEE: 5,
+  /** Flat gold cost deducted on death (equipment repair). */
+  ITEM_REPAIR_COST_ON_DEATH: 25,
+  /** Fraction of equipment durability lost on death (0–1). */
+  EQUIPMENT_DURABILITY_LOSS_ON_DEATH: 0.10,
+  /** Starting durability for all equipment pieces (0–100). */
+  EQUIPMENT_MAX_DURABILITY: 100,
+} as const;
+
+// ── PvP Balance ───────────────────────────────────────────────────────────────
+/** Modifiers applied only inside the arena (PvP context). */
+export const PVP_BALANCE = {
+  /** Multiplier on heal-on-kill passive in PvP (e.g. 0.5 = 50% reduction). */
+  HEAL_ON_KILL_MULT: 0.5,
+  /** Multiplier applied to all skill cooldowns in PvP (>1 = longer CDs). */
+  COOLDOWN_MULT: 1.25,
+  /** Maximum damage dealt in a single hit in PvP (prevents one-shots). */
+  MAX_HIT_DAMAGE: 30,
+} as const;
+
+// ── Loot Tables ───────────────────────────────────────────────────────────────
+/** Drop-rate tiers used when rolling item drops. */
+export const LOOT = {
+  /** Drop chance for a common item from a normal enemy. */
+  COMMON_DROP_RATE: 0.30,
+  /** Drop chance for a rare item from a normal enemy (< 2%). */
+  RARE_DROP_RATE_NORMAL: 0.018,
+  /** Drop chance for a rare item from a boss (5–10%). */
+  RARE_DROP_RATE_BOSS: 0.075,
+  /** Drop chance for an epic item from a boss. */
+  EPIC_DROP_RATE_BOSS: 0.025,
 } as const;
 
 // ── Scene Keys ────────────────────────────────────────────────────────────────
@@ -239,6 +271,8 @@ export interface ZoneConfig {
   minPlayerLevel: number;
   xpReward: number;
   unlockRequirement: string | null;
+  /** Multiplier applied to enemy HP, damage, and XP for this zone tier. */
+  difficultyMult: number;
 }
 
 // ── Status Effects ────────────────────────────────────────────────────────────
@@ -292,6 +326,7 @@ export const ZONES: ZoneConfig[] = [
     minPlayerLevel: 1,
     xpReward: 150,
     unlockRequirement: null,
+    difficultyMult: 1.0,
   },
   {
     id: 'zone2',
@@ -308,6 +343,7 @@ export const ZONES: ZoneConfig[] = [
     minPlayerLevel: 3,
     xpReward: 250,
     unlockRequirement: 'zone1',
+    difficultyMult: 1.5,
   },
   {
     id: 'zone3',
@@ -324,6 +360,7 @@ export const ZONES: ZoneConfig[] = [
     minPlayerLevel: 5,
     xpReward: 400,
     unlockRequirement: 'zone2',
+    difficultyMult: 2.0,
   },
   {
     id: 'zone4',
@@ -340,6 +377,7 @@ export const ZONES: ZoneConfig[] = [
     minPlayerLevel: 7,
     xpReward: 600,
     unlockRequirement: 'zone3',
+    difficultyMult: 2.5,
   },
   {
     id: 'zone5',
@@ -356,5 +394,6 @@ export const ZONES: ZoneConfig[] = [
     minPlayerLevel: 9,
     xpReward: 850,
     unlockRequirement: 'zone4',
+    difficultyMult: 3.0,
   },
 ];

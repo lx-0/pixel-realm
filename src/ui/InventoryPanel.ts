@@ -32,6 +32,8 @@ export interface InventoryItem {
     type: string;
     rarity: string;
     description: string;
+    /** Minimum player level required to equip this item. */
+    requiredLevel?: number;
   };
 }
 
@@ -61,6 +63,9 @@ export class InventoryPanel {
   private items:       InventoryItem[] = [];
   private loading      = false;
   private selectedIdx  = -1;
+
+  /** Set by GameScene so the panel can enforce level requirements. */
+  playerLevel = 1;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -250,6 +255,19 @@ export class InventoryPanel {
         fontSize: '4px', color: '#aabbcc', fontFamily: 'monospace',
       }).setScrollFactor(0);
       this.container.add([nameTxt, typeTxt]);
+
+      // Level requirement display
+      const reqLvl = entry.item.requiredLevel ?? 0;
+      if (reqLvl > 0) {
+        const canEquip = this.playerLevel >= reqLvl;
+        const lvlStr   = `Requires Lv.${reqLvl}${canEquip ? '' : '  (too low)'}`;
+        const lvlTxt   = this.scene.add.text(PANEL_X + PAD, detailY + 13, lvlStr, {
+          fontSize: '4px',
+          color: canEquip ? '#88cc88' : '#ff4444',
+          fontFamily: 'monospace',
+        }).setScrollFactor(0);
+        this.container.add(lvlTxt);
+      }
     } else if (this.items.length > 0) {
       const hintTxt = this.scene.add.text(
         PANEL_X + PAD, Math.min(detailY, PANEL_Y + PANEL_H - 18),

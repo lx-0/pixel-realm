@@ -17,7 +17,7 @@
 
 import Phaser from 'phaser';
 import {
-  CANVAS, SCENES, ARENA,
+  CANVAS, SCENES, ARENA, PVP_BALANCE,
 } from '../config/constants';
 import {
   ArenaManager,
@@ -400,7 +400,8 @@ export class ArenaScene extends Phaser.Scene {
 
   private tryAttack(attacker: Combatant): void {
     const now = this.time.now;
-    if (now - attacker.lastAttackAt < ARENA.ATTACK_COOLDOWN_MS) return;
+    const pvpCooldown = ARENA.ATTACK_COOLDOWN_MS * PVP_BALANCE.COOLDOWN_MULT;
+    if (now - attacker.lastAttackAt < pvpCooldown) return;
     attacker.lastAttackAt = now;
     attacker.sprite.anims.play('player-attack', true);
 
@@ -421,7 +422,8 @@ export class ArenaScene extends Phaser.Scene {
     if (now - target.lastHitAt < ARENA.PLAYER_INVINCIBILITY_MS) return;
     target.lastHitAt = now;
 
-    target.hp = Math.max(0, target.hp - ARENA.ATTACK_DAMAGE);
+    const dmg = Math.min(ARENA.ATTACK_DAMAGE, PVP_BALANCE.MAX_HIT_DAMAGE);
+    target.hp = Math.max(0, target.hp - dmg);
 
     // Knockback
     const angle = Phaser.Math.Angle.Between(
@@ -450,6 +452,10 @@ export class ArenaScene extends Phaser.Scene {
     killer.kills++;
     victim.deaths++;
     this.roundKills[killer.player.id] = (this.roundKills[killer.player.id] ?? 0) + 1;
+
+    // PvP: heal-on-kill is reduced by PVP_BALANCE.HEAL_ON_KILL_MULT (currently 50%).
+    // If a skill grants heal-on-kill, apply: healAmount * PVP_BALANCE.HEAL_ON_KILL_MULT
+    // killerCombatant.hp = Math.min(ARENA.ROUND_HP, killer.hp + healAmount * PVP_BALANCE.HEAL_ON_KILL_MULT);
 
     victim.sprite.anims.play('player-death', true);
     victim.sprite.setActive(false);

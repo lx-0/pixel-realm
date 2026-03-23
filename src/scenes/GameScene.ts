@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import {
   CANVAS, PLAYER, COMBAT, MANA, LEVELS, SCENES, SPRINT, DODGE,
-  ZONES, ENEMY_TYPES, BOSS_TYPES,
+  ZONES, ENEMY_TYPES, BOSS_TYPES, ECONOMY, LOOT,
   STATUS_EFFECTS, MELEE_STATUS_ON_HIT, PROJECTILE_STATUS_ON_HIT,
   type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
 } from '../config/constants';
@@ -538,6 +538,7 @@ export class GameScene extends Phaser.Scene {
     const crftWas = this.craftingPanel?.isVisible ?? false;
     const mkWas   = this.marketplace?.isVisible  ?? false;
     this.questLog?.update();
+    if (this.inventory) this.inventory.playerLevel = this.level;
     this.inventory?.update();
     this.craftingPanel?.update();
     this.marketplace?.update();
@@ -691,6 +692,13 @@ export class GameScene extends Phaser.Scene {
     // Crafting panel
     this.craftingPanel = new CraftingPanel(this);
     this.craftingPanel.onCraftSuccess = (itemId, itemName) => {
+      // Deduct crafting station usage fee (economy sink)
+      const fee = ECONOMY.CRAFTING_STATION_FEE;
+      if (fee > 0) {
+        this.gold = Math.max(0, this.gold - fee);
+        this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 28, `-${fee}g (station fee)`, '#ff9933');
+        this.updateHUD();
+      }
       this.floatingText(
         CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20,
         `✦ Crafted!`,
@@ -1690,7 +1698,8 @@ export class GameScene extends Phaser.Scene {
     for (let i = 0; i < count; i++) {
       const typeName = types[i % types.length];
       const def      = ENEMY_TYPES[typeName];
-      const hpScale  = 1 + (this.wave - 1) * COMBAT.WAVE_HP_SCALE_PER_WAVE + (this.level - 1) * 0.15;
+      const hpScale  = (1 + (this.wave - 1) * COMBAT.WAVE_HP_SCALE_PER_WAVE + (this.level - 1) * 0.15)
+                       * this.zone.difficultyMult;
       const hp       = Math.floor(def.baseHp * hpScale);
       const pos      = this.safeSpawnPos(WALL);
       const e        = this.spawnEnemyAt(pos.x, pos.y, typeName, hp);
@@ -1703,7 +1712,7 @@ export class GameScene extends Phaser.Scene {
 
   private spawnBossWave(): void {
     const bossDef = BOSS_TYPES[this.zone.bossType];
-    const hpScale = 1 + (this.level - 1) * 0.25;
+    const hpScale = (1 + (this.level - 1) * 0.25) * this.zone.difficultyMult;
     const hp      = Math.floor(bossDef.baseHp * hpScale);
 
     const boss = this.spawnEnemyAt(this.worldW / 2, this.worldH / 2 - 40, 'boss' as EnemyTypeName, hp);
@@ -2193,9 +2202,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     const isBoss  = extra.typeName === 'boss';
-    const xpGain  = isBoss
+    const baseXp  = isBoss
       ? BOSS_TYPES[extra.bossType!].xpValue
       : (ENEMY_TYPES[extra.typeName as EnemyTypeName]?.xpValue ?? 10);
+    const xpGain  = Math.floor(baseXp * this.zone.difficultyMult);
 
     this.kills++;
     this.xp    += xpGain;
@@ -2222,6 +2232,17 @@ export class GameScene extends Phaser.Scene {
     this.hitStop(isBoss ? 100 : 55);
     this.spawnXpOrb(e.x, e.y, xpGain);
     this.floatingText(e.x, e.y - 14, `+${xpGain} XP`, '#44ff88');
+
+    // Loot table roll — tier-appropriate drop rates
+    const rareRoll  = Math.random();
+    const epicRoll  = Math.random();
+    const rareRate  = isBoss ? LOOT.RARE_DROP_RATE_BOSS  : LOOT.RARE_DROP_RATE_NORMAL;
+    const epicRate  = isBoss ? LOOT.EPIC_DROP_RATE_BOSS  : 0;
+    if (epicRate > 0 && epicRoll < epicRate) {
+      this.floatingText(e.x, e.y - 22, '✦ EPIC DROP!', '#aa44ff');
+    } else if (rareRoll < rareRate) {
+      this.floatingText(e.x, e.y - 22, '✦ RARE DROP!', '#4488ff');
+    }
 
     if (isBoss) {
       this.bossAlive    = false;
@@ -2256,7 +2277,7 @@ export class GameScene extends Phaser.Scene {
     });
     if (!hit) return;
     this.lastHitTime = time;
-    this.applyDamageToPlayer(COMBAT.PLAYER_HIT_DAMAGE + Math.floor((this.wave - 1) * 1.5), time, 0xff4444);
+    this.applyDamageToPlayer(Math.floor((COMBAT.PLAYER_HIT_DAMAGE + (this.wave - 1) * 1.5) * this.zone.difficultyMult), time, 0xff4444);
     // Apply melee status effect from this enemy type
     const he = hitExtra as EnemyExtra | null;
     if (he && he.typeName !== 'boss') {
@@ -2436,6 +2457,17 @@ export class GameScene extends Phaser.Scene {
     if (dropped > 0) {
       this.gold -= dropped;
       this.spawnDeathDrops(this.player.x, this.player.y, dropped);
+    }
+
+    // Equipment repair cost — deduct flat gold sink on death
+    const repairCost = ECONOMY.ITEM_REPAIR_COST_ON_DEATH;
+    if (repairCost > 0 && this.gold >= repairCost) {
+      this.gold -= repairCost;
+      this.floatingText(this.player.x, this.player.y - 24, `-${repairCost}g (repair)`, '#ff9933');
+    } else if (repairCost > 0 && this.gold > 0) {
+      // Can't afford full repair — drain all remaining gold
+      this.floatingText(this.player.x, this.player.y - 24, `-${this.gold}g (repair)`, '#ff9933');
+      this.gold = 0;
     }
 
     // Fade player out
