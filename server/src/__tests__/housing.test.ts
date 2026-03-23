@@ -31,8 +31,7 @@ const { mockDb } = vi.hoisted(() => {
 });
 
 vi.mock("../db/client", () => ({
-  db:      mockDb,
-  getDb:   vi.fn(),
+  getDb:   vi.fn().mockReturnValue(mockDb),
   getPool: vi.fn(),
   closeDb: vi.fn(),
 }));
@@ -143,7 +142,7 @@ const PLAYER_STATE_ROW = {
 // ── getLandPlots() ─────────────────────────────────────────────────────────────
 
 describe("getLandPlots()", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("returns all plots for a zone", async () => {
     mockDb.select.mockReturnValue(
@@ -164,7 +163,7 @@ describe("getLandPlots()", () => {
 // ── getPlotById() ─────────────────────────────────────────────────────────────
 
 describe("getPlotById()", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("returns the plot when found", async () => {
     mockDb.select.mockReturnValue(makeSelectChain([PLOT_ROW]));
@@ -182,7 +181,7 @@ describe("getPlotById()", () => {
 // ── getPlayerHousing() ────────────────────────────────────────────────────────
 
 describe("getPlayerHousing()", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("returns null when player has no plot", async () => {
     mockDb.select.mockReturnValue(makeSelectChain([]));
@@ -212,7 +211,7 @@ describe("getPlayerHousing()", () => {
 // ── getHousingByPlot() ────────────────────────────────────────────────────────
 
 describe("getHousingByPlot()", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("returns housing state for the given plot", async () => {
     mockDb.select.mockReturnValue(makeSelectChain([HOUSING_JOIN_ROW]));
@@ -239,7 +238,7 @@ describe("getHousingByPlot()", () => {
 // ── claimPlot() ───────────────────────────────────────────────────────────────
 
 describe("claimPlot()", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("claims an available plot and returns housing state", async () => {
     // 4 sequential selects: getPlotById, getPlayerHousing (existing check),
@@ -328,7 +327,7 @@ describe("claimPlot()", () => {
 // ── saveLayout() ──────────────────────────────────────────────────────────────
 
 describe("saveLayout()", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("persists the furniture layout for a player", async () => {
     const updateChain = makeUpdateChain();
@@ -405,7 +404,7 @@ describe("saveLayout()", () => {
 // ── setPermission() ───────────────────────────────────────────────────────────
 
 describe("setPermission()", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("sets permission to 'public'", async () => {
     const updateChain = makeUpdateChain();
@@ -441,7 +440,7 @@ describe("setPermission()", () => {
 // ── upgradeHouse() ────────────────────────────────────────────────────────────
 
 describe("upgradeHouse()", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   const HOUSING_TIER1 = { ...HOUSING_JOIN_ROW, houseTier: 1 };
   const HOUSING_TIER2 = { ...HOUSING_JOIN_ROW, houseTier: 2 };
@@ -495,7 +494,7 @@ describe("upgradeHouse()", () => {
 // ── Visiting system — permission model ────────────────────────────────────────
 
 describe("Visiting system — permission model", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("getHousingByPlot() exposes 'public' permission (anyone can enter)", async () => {
     mockDb.select.mockReturnValue(

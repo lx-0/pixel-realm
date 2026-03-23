@@ -47,13 +47,6 @@ const ROWS  = IH / GS;  // 8
 const OX = (CANVAS.WIDTH  - IW) / 2;
 const OY = (CANVAS.HEIGHT - IH) / 2;
 
-// Tile indices for interior floor/walls (single-row tileset, 16 tiles)
-const TILE_FLOOR      = 0;
-const TILE_WALL_TOP   = 1;
-const TILE_WALL_SIDE  = 2;
-const TILE_CORNER_TL  = 3;
-const TILE_CORNER_TR  = 4;
-const TILE_DOOR_SOUTH = 5;
 
 // ── Rest-bonus overlay ─────────────────────────────────────────────────────────
 
@@ -69,7 +62,6 @@ export class HousingScene extends Phaser.Scene {
   private data_!: HousingSceneData;
 
   // Rendering
-  private floorGraphics!:     Phaser.GameObjects.Graphics;
   private furnitureGroup!:    Phaser.GameObjects.Group;
   private furnitureSprites:   Map<string, Phaser.GameObjects.Image> = new Map();
 
@@ -84,7 +76,6 @@ export class HousingScene extends Phaser.Scene {
   // UI
   private housingPanel!:  HousingPanel;
   private exitZone!:      Phaser.GameObjects.Rectangle;
-  private exitLabel!:     Phaser.GameObjects.Text;
   private hintText!:      Phaser.GameObjects.Text;
   private restOverlay:    RestOverlay | null = null;
 
@@ -149,7 +140,6 @@ export class HousingScene extends Phaser.Scene {
 
   private _drawInterior(): void {
     const g = this.add.graphics().setDepth(0);
-    this.floorGraphics = g;
 
     const floorColor = this.data_.houseTier === 2 ? 0x3a2a14 : 0x2a1e0f;
     const wallColor  = this.data_.houseTier === 2 ? 0x5a4020 : 0x3e2a10;
@@ -348,13 +338,13 @@ export class HousingScene extends Phaser.Scene {
     this.exitZone = this.add.rectangle(doorX + GS / 2, doorY + GS / 2, GS, GS, 0x886644)
       .setDepth(1).setScrollFactor(0).setInteractive({ useHandCursor: true });
 
-    this.exitLabel = this.add.text(doorX + GS / 2, doorY + GS / 2, '🚪', {
+    this.add.text(doorX + GS / 2, doorY + GS / 2, '🚪', {
       fontSize: '8px',
     }).setDepth(3).setScrollFactor(0).setOrigin(0.5, 0.5);
 
     this.exitZone.on('pointerdown', () => this._exitToGame());
-    this.exitZone.on('pointerover',  () => this.exitZone.setFillColor(0xbbaa66));
-    this.exitZone.on('pointerout',   () => this.exitZone.setFillColor(0x886644));
+    this.exitZone.on('pointerover',  () => this.exitZone.setFillStyle(0xbbaa66));
+    this.exitZone.on('pointerout',   () => this.exitZone.setFillStyle(0x886644));
   }
 
   // ── Save layout ───────────────────────────────────────────────────────────────
@@ -447,7 +437,7 @@ export class HousingScene extends Phaser.Scene {
 
   private _serverHttp(): string {
     const wsUrl: string =
-      ((import.meta as Record<string, unknown>).env?.VITE_COLYSEUS_URL as string | undefined)
+      ((import.meta.env as Record<string, string | undefined>)['VITE_COLYSEUS_URL'])
       ?? 'ws://localhost:2567';
     return wsUrl.replace('ws://', 'http://').replace('wss://', 'https://');
   }

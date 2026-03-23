@@ -179,7 +179,7 @@ describe("Player data access layer", () => {
     it("creates and returns a new player when username is not taken", async () => {
       // select → [] (no duplicate), insert → [PLAYER_ROW]
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [], insertRows: [PLAYER_ROW] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [], insertRows: [PLAYER_ROW] }) as unknown as ReturnType<typeof getDb>,
       );
 
       const result = await createPlayerRecord("alice", "password123");
@@ -190,7 +190,7 @@ describe("Player data access layer", () => {
     it("throws USERNAME_TAKEN when username already exists", async () => {
       // select → [PLAYER_ROW] (duplicate found)
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [PLAYER_ROW] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [PLAYER_ROW] }) as unknown as ReturnType<typeof getDb>,
       );
 
       await expect(createPlayerRecord("alice", "password123")).rejects.toThrow("USERNAME_TAKEN");
@@ -200,7 +200,7 @@ describe("Player data access layer", () => {
   describe("findPlayerByUsername()", () => {
     it("returns the player when found", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [PLAYER_ROW] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [PLAYER_ROW] }) as unknown as ReturnType<typeof getDb>,
       );
 
       const result = await findPlayerByUsername("alice");
@@ -209,7 +209,7 @@ describe("Player data access layer", () => {
 
     it("returns null when player does not exist", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [] }) as unknown as ReturnType<typeof getDb>,
       );
 
       const result = await findPlayerByUsername("nobody");
@@ -220,7 +220,7 @@ describe("Player data access layer", () => {
   describe("findPlayerById()", () => {
     it("returns the player by id", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [PLAYER_ROW] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [PLAYER_ROW] }) as unknown as ReturnType<typeof getDb>,
       );
 
       const result = await findPlayerById(PLAYER_ID);
@@ -229,7 +229,7 @@ describe("Player data access layer", () => {
 
     it("returns null when id not found", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [] }) as unknown as ReturnType<typeof getDb>,
       );
 
       expect(await findPlayerById("nonexistent")).toBeNull();
@@ -242,7 +242,7 @@ describe("Player data access layer", () => {
       // The outer initPlayerState also calls getDb() once, but since it returns early
       // after finding existing state we need both getDb() calls to see the state row.
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [PLAYER_STATE_ROW] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [PLAYER_STATE_ROW] }) as unknown as ReturnType<typeof getDb>,
       );
 
       const mockDb = buildMockDb({ selectRows: [PLAYER_STATE_ROW] });
@@ -285,7 +285,7 @@ describe("Player data access layer", () => {
   describe("loadPlayerState()", () => {
     it("returns state row when found", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [PLAYER_STATE_ROW] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [PLAYER_STATE_ROW] }) as unknown as ReturnType<typeof getDb>,
       );
 
       const result = await loadPlayerState(PLAYER_ID);
@@ -294,7 +294,7 @@ describe("Player data access layer", () => {
 
     it("returns null when no state exists", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [] }) as unknown as ReturnType<typeof getDb>,
       );
 
       expect(await loadPlayerState(PLAYER_ID)).toBeNull();
@@ -384,7 +384,7 @@ describe("Inventory data access layer", () => {
       const joinedRow = { ...INV_ROW, item: itemDef };
 
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [joinedRow] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [joinedRow] }) as unknown as ReturnType<typeof getDb>,
       );
 
       const result = await getInventory(PLAYER_ID);
@@ -399,7 +399,7 @@ describe("Inventory data access layer", () => {
 
     it("returns an empty array when inventory is empty", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [] }) as unknown as ReturnType<typeof getDb>,
       );
 
       expect(await getInventory(PLAYER_ID)).toEqual([]);
@@ -472,7 +472,7 @@ describe("Quest progression data access layer", () => {
   describe("getProgression()", () => {
     it("returns all progression rows for a player", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [PROG_ROW] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [PROG_ROW] }) as unknown as ReturnType<typeof getDb>,
       );
 
       const result = await getProgression(PLAYER_ID);
@@ -482,7 +482,7 @@ describe("Quest progression data access layer", () => {
 
     it("returns empty array when no quests are started", async () => {
       vi.mocked(getDb).mockReturnValue(
-        buildMockDb({ selectRows: [] }) as ReturnType<typeof getDb>,
+        buildMockDb({ selectRows: [] }) as unknown as ReturnType<typeof getDb>,
       );
 
       expect(await getProgression(PLAYER_ID)).toEqual([]);

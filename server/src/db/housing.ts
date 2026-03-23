@@ -7,7 +7,7 @@
  */
 
 import { eq, and } from "drizzle-orm";
-import { db } from "./client";
+import { getDb } from "./client";
 import { landPlots, playerHousing, playerState } from "./schema";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ export interface HousingState {
 
 /** Returns all plots for a zone, including owner info. */
 export async function getLandPlots(zoneId: string) {
-  return db
+  return getDb()
     .select()
     .from(landPlots)
     .where(eq(landPlots.zoneId, zoneId));
@@ -43,7 +43,7 @@ export async function getLandPlots(zoneId: string) {
 
 /** Returns a single plot by id. */
 export async function getPlotById(plotId: string) {
-  const rows = await db
+  const rows = await getDb()
     .select()
     .from(landPlots)
     .where(eq(landPlots.id, plotId));
@@ -52,7 +52,7 @@ export async function getPlotById(plotId: string) {
 
 /** Returns the player's housing state (null if no plot owned). */
 export async function getPlayerHousing(playerId: string): Promise<HousingState | null> {
-  const rows = await db
+  const rows = await getDb()
     .select({
       plotId:          playerHousing.plotId,
       zoneId:          landPlots.zoneId,
@@ -81,7 +81,7 @@ export async function getPlayerHousing(playerId: string): Promise<HousingState |
 
 /** Returns the housing state for a given plot (for visiting). */
 export async function getHousingByPlot(plotId: string): Promise<HousingState | null> {
-  const rows = await db
+  const rows = await getDb()
     .select({
       plotId:          playerHousing.plotId,
       zoneId:          landPlots.zoneId,
@@ -131,27 +131,27 @@ export async function claimPlot(playerId: string, plotId: string): Promise<Housi
   if (existing) throw new Error("Player already owns a plot");
 
   // Deduct gold
-  const stateRows = await db
+  const stateRows = await getDb()
     .select({ gold: playerState.gold })
     .from(playerState)
     .where(eq(playerState.playerId, playerId));
   const currentGold = stateRows[0]?.gold ?? 0;
   if (currentGold < plot.priceGold) throw new Error("Insufficient gold");
 
-  await db
+  await getDb()
     .update(playerState)
     .set({ gold: currentGold - plot.priceGold })
     .where(eq(playerState.playerId, playerId));
 
   // Assign plot
   const now = new Date();
-  await db
+  await getDb()
     .update(landPlots)
     .set({ ownerId: playerId, purchasedAt: now })
     .where(eq(landPlots.id, plotId));
 
   // Create housing row
-  await db.insert(playerHousing).values({
+  await getDb().insert(playerHousing).values({
     playerId,
     plotId,
     houseTier: 1,
@@ -169,7 +169,7 @@ export async function claimPlot(playerId: string, plotId: string): Promise<Housi
  */
 export async function saveLayout(playerId: string, layout: FurnitureItem[]): Promise<void> {
   const clamped = layout.slice(0, 20);
-  await db
+  await getDb()
     .update(playerHousing)
     .set({ furnitureLayout: clamped, updatedAt: new Date() })
     .where(eq(playerHousing.playerId, playerId));
@@ -180,7 +180,7 @@ export async function setPermission(
   playerId: string,
   permission: HousingPermission,
 ): Promise<void> {
-  await db
+  await getDb()
     .update(playerHousing)
     .set({ permission, updatedAt: new Date() })
     .where(eq(playerHousing.playerId, playerId));
@@ -193,19 +193,19 @@ export async function upgradeHouse(playerId: string): Promise<number> {
   if (housing.houseTier >= 2) throw new Error("Already at max tier");
 
   const UPGRADE_COST = 1500;
-  const stateRows = await db
+  const stateRows = await getDb()
     .select({ gold: playerState.gold })
     .from(playerState)
     .where(eq(playerState.playerId, playerId));
   const gold = stateRows[0]?.gold ?? 0;
   if (gold < UPGRADE_COST) throw new Error("Insufficient gold");
 
-  await db
+  await getDb()
     .update(playerState)
     .set({ gold: gold - UPGRADE_COST })
     .where(eq(playerState.playerId, playerId));
 
-  await db
+  await getDb()
     .update(playerHousing)
     .set({ houseTier: 2, updatedAt: new Date() })
     .where(eq(playerHousing.playerId, playerId));

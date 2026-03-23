@@ -340,7 +340,6 @@ export class DungeonEntrancePanel {
 
     const totalMs = 3_600_000; // 1 hour default — matches DUNGEON_COOLDOWN_MS
     const fillFraction = Math.max(0, this.cooldownRemaining / totalMs);
-    const barW = (CANVAS.WIDTH - (PANEL_X + 4) * 2) / CANVAS.WIDTH * (PANEL_W - 8);
     this.cooldownFill.setSize(Math.round(fillFraction * (PANEL_W - 8)), 3);
 
     const mins = Math.floor(this.cooldownRemaining / 60_000);

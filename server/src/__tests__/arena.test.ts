@@ -44,7 +44,7 @@ function resetArena(): ArenaManager {
 }
 
 /** Create a player with a given rating shorthand. */
-function makePlayer(id: string, name: string, rating = ARENA.ELO_DEFAULT): ArenaPlayer {
+function makePlayer(id: string, name: string, rating: number = ARENA.ELO_DEFAULT): ArenaPlayer {
   return { id, name, rating, wins: 0, losses: 0, kills: 0, deaths: 0 };
 }
 
