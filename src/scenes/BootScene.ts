@@ -169,6 +169,32 @@ export class BootScene extends Phaser.Scene {
     // Crafting UI panel
     this.load.image('ui_panel_crafting', 'assets/ui_panel_crafting.png');
 
+    // PvP Arena tilesets (16 tiles × 16×16 = 256×16)
+    this.load.image('tileset_arena_gladiator', 'assets/tileset_arena_gladiator.png');
+    this.load.image('tileset_arena_shadow',    'assets/tileset_arena_shadow.png');
+
+    // Arena UI panels
+    this.load.image('ui_panel_arena_queue',   'assets/ui_panel_arena_queue.png');
+    this.load.image('ui_arena_hud',           'assets/ui_arena_hud.png');
+    this.load.image('ui_panel_arena_results', 'assets/ui_panel_arena_results.png');
+
+    // Arena rank tier icons (16×16)
+    this.load.image('icon_rank_arena_bronze',   'assets/icon_rank_arena_bronze.png');
+    this.load.image('icon_rank_arena_silver',   'assets/icon_rank_arena_silver.png');
+    this.load.image('icon_rank_arena_gold',     'assets/icon_rank_arena_gold.png');
+    this.load.image('icon_rank_arena_platinum', 'assets/icon_rank_arena_platinum.png');
+    this.load.image('icon_rank_arena_diamond',  'assets/icon_rank_arena_diamond.png');
+
+    // Arena leaderboard panel
+    this.load.image('ui_panel_arena_leaderboard', 'assets/ui_panel_arena_leaderboard.png');
+
+    // Arena spectator overlay
+    this.load.image('ui_arena_spectator', 'assets/ui_arena_spectator.png');
+
+    // Arena victory/defeat splash screens (320×180)
+    this.load.image('bg_arena_victory', 'assets/bg_arena_victory.png');
+    this.load.image('bg_arena_defeat',  'assets/bg_arena_defeat.png');
+
     // Crafting progress bar (8 frames × 80×10 = 640×10)
     this.load.spritesheet('ui_craft_progress', 'assets/ui_craft_progress.png', { frameWidth: 80, frameHeight: 10 });
 
