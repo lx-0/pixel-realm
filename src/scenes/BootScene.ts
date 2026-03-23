@@ -202,6 +202,41 @@ export class BootScene extends Phaser.Scene {
     this.load.spritesheet('vfx_craft_success', 'assets/vfx_craft_success.png', { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet('vfx_craft_failure', 'assets/vfx_craft_failure.png', { frameWidth: 32, frameHeight: 32 });
 
+    // Player housing tilesets (16 tiles × 16×16 = 256×16)
+    this.load.image('tileset_house_cottage',  'assets/tileset_house_cottage.png');
+    this.load.image('tileset_house_manor',    'assets/tileset_house_manor.png');
+    this.load.image('tileset_house_interior', 'assets/tileset_house_interior.png');
+
+    // Housing furniture sprites (16×16)
+    this.load.image('furn_bed',            'assets/sprite_furn_bed.png');
+    this.load.image('furn_table',          'assets/sprite_furn_table.png');
+    this.load.image('furn_chair',          'assets/sprite_furn_chair.png');
+    this.load.image('furn_chest',          'assets/sprite_furn_chest.png');
+    this.load.image('furn_shelf',          'assets/sprite_furn_shelf.png');
+    this.load.image('furn_rug',            'assets/sprite_furn_rug.png');
+    this.load.image('furn_lamp',           'assets/sprite_furn_lamp.png');
+    this.load.image('furn_fireplace',      'assets/sprite_furn_fireplace.png');
+    this.load.image('furn_crafting_bench', 'assets/sprite_furn_crafting_bench.png');
+    this.load.image('furn_cooking_pot',    'assets/sprite_furn_cooking_pot.png');
+
+    // Housing decoration sprites (16×16)
+    this.load.image('decor_painting', 'assets/sprite_decor_painting.png');
+    this.load.image('decor_plant',    'assets/sprite_decor_plant.png');
+    this.load.image('decor_trophy',   'assets/sprite_decor_trophy.png');
+    this.load.image('decor_pet_bed',  'assets/sprite_decor_pet_bed.png');
+    this.load.image('decor_banner',   'assets/sprite_decor_banner.png');
+    this.load.image('decor_candles',  'assets/sprite_decor_candles.png');
+
+    // Housing UI
+    this.load.image('ui_panel_housing',       'assets/ui/housing/ui_panel_housing.png');
+    this.load.image('icon_land_deed',         'assets/ui/housing/icon_land_deed.png');
+    this.load.image('ui_house_preview_frame', 'assets/ui/housing/ui_house_preview_frame.png');
+
+    // Land plot markers (16×16)
+    this.load.image('plot_boundary', 'assets/sprite_plot_boundary.png');
+    this.load.image('plot_for_sale', 'assets/sprite_plot_for_sale.png');
+    this.load.image('plot_flag',     'assets/sprite_plot_flag.png');
+
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();
     });
