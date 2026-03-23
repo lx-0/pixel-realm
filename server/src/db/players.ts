@@ -8,7 +8,7 @@
 
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { getDb } from "./client";
 import { players, playerState, type Player, type PlayerState, type NewPlayer } from "./schema";
 
@@ -51,13 +51,18 @@ export async function findPlayerByUsername(username: string): Promise<Player | n
     .from(players)
     .where(eq(players.usernameLower, username.toLowerCase()))
     .limit(1);
-  return rows[0] ?? null;
+  const row = rows[0] ?? null;
+  // Treat soft-deleted accounts as not found (prevents login after deletion)
+  if (row?.deletedAt) return null;
+  return row;
 }
 
 export async function findPlayerById(id: string): Promise<Player | null> {
   const db = getDb();
   const rows = await db.select().from(players).where(eq(players.id, id)).limit(1);
-  return rows[0] ?? null;
+  const row = rows[0] ?? null;
+  if (row?.deletedAt) return null;
+  return row;
 }
 
 export async function findPlayerByEmail(email: string): Promise<Player | null> {
@@ -67,7 +72,18 @@ export async function findPlayerByEmail(email: string): Promise<Player | null> {
     .from(players)
     .where(eq(players.email, email.toLowerCase()))
     .limit(1);
-  return rows[0] ?? null;
+  const row = rows[0] ?? null;
+  if (row?.deletedAt) return null;
+  return row;
+}
+
+/**
+ * Soft-deletes a player by setting deletedAt to now.
+ * The row is retained for audit purposes; all active queries filter it out.
+ */
+export async function softDeletePlayer(id: string): Promise<void> {
+  const db = getDb();
+  await db.update(players).set({ deletedAt: new Date() }).where(eq(players.id, id));
 }
 
 export async function updatePlayerPassword(id: string, newPassword: string): Promise<void> {

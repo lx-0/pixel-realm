@@ -19,6 +19,7 @@ export const players = pgTable("players", {
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 // ── Player State (game progress per player) ───────────────────────────────────
@@ -65,6 +66,7 @@ export const inventory = pgTable("inventory", {
   slot: integer("slot"), // null = bag, 0-9 = hotbar slot
   equipped: boolean("equipped").notNull().default(false),
   acquiredAt: timestamp("acquired_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 // ── Progression (quest tracking) ──────────────────────────────────────────────
@@ -131,6 +133,7 @@ export const marketplaceListings = pgTable("marketplace_listings", {
   listedAt: timestamp("listed_at", { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   completedAt: timestamp("completed_at", { withTimezone: true }),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 // ── Trade History (P2P and marketplace) ───────────────────────────────────────
@@ -195,6 +198,7 @@ export const guilds = pgTable("guilds", {
     .notNull()
     .references(() => players.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 export const guildMemberships = pgTable(
@@ -282,6 +286,23 @@ export const playerHousing = pgTable("player_housing", {
   updatedAt:       timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Dungeon Cooldowns (persisted per-player cooldown after dungeon completion) ─
+
+export const playerDungeonCooldowns = pgTable(
+  "player_dungeon_cooldowns",
+  {
+    playerId: uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    dungeonId: varchar("dungeon_id", { length: 50 }).notNull().default("default"),
+    completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.dungeonId] }),
+  }),
+);
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -302,3 +323,4 @@ export type PlayerAchievement = typeof playerAchievements.$inferSelect;
 export type PlayerFactionReputation = typeof playerFactionReputation.$inferSelect;
 export type LandPlot = typeof landPlots.$inferSelect;
 export type PlayerHousing = typeof playerHousing.$inferSelect;
+export type PlayerDungeonCooldown = typeof playerDungeonCooldowns.$inferSelect;

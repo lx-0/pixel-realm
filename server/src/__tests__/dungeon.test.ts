@@ -2,76 +2,20 @@
  * Dungeon system tests.
  *
  * Covers:
- *   - getDungeonCooldownRemaining() — cooldown calculation
- *   - dungeonCooldowns registry — set/get/expiry semantics
  *   - DUNGEON_COOLDOWN_MS — default and env override
  *   - PARTY_SCALE multipliers — HP and loot scaling per party size
  *   - Boss phase threshold logic
  *   - Seeded RNG determinism (hashString / makeSeededRng)
+ *
+ * Note: dungeon cooldown persistence is now handled by the DB layer
+ * (db/cooldowns.ts → player_dungeon_cooldowns table). Integration tests
+ * for cooldown read/write require a real database connection.
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import {
-  getDungeonCooldownRemaining,
-  dungeonCooldowns,
   DUNGEON_COOLDOWN_MS,
 } from "../rooms/DungeonRoom";
-
-// ── getDungeonCooldownRemaining ───────────────────────────────────────────────
-
-describe("getDungeonCooldownRemaining()", () => {
-  beforeEach(() => {
-    dungeonCooldowns.clear();
-  });
-
-  it("returns 0 for a user who has never completed a dungeon", () => {
-    expect(getDungeonCooldownRemaining("user-never")).toBe(0);
-  });
-
-  it("returns a positive value immediately after dungeon completion", () => {
-    dungeonCooldowns.set("user-1", Date.now());
-    const remaining = getDungeonCooldownRemaining("user-1");
-    expect(remaining).toBeGreaterThan(0);
-    expect(remaining).toBeLessThanOrEqual(DUNGEON_COOLDOWN_MS);
-  });
-
-  it("returns 0 once the cooldown has elapsed", () => {
-    // Set the completion time far in the past (cooldown + 1 second ago)
-    dungeonCooldowns.set("user-2", Date.now() - DUNGEON_COOLDOWN_MS - 1000);
-    expect(getDungeonCooldownRemaining("user-2")).toBe(0);
-  });
-
-  it("returns approximately DUNGEON_COOLDOWN_MS immediately after recording", () => {
-    const now = Date.now();
-    dungeonCooldowns.set("user-3", now);
-
-    const remaining = getDungeonCooldownRemaining("user-3");
-    // Allow ±100ms tolerance for timing
-    expect(remaining).toBeGreaterThan(DUNGEON_COOLDOWN_MS - 100);
-    expect(remaining).toBeLessThanOrEqual(DUNGEON_COOLDOWN_MS);
-  });
-
-  it("returns a smaller value after some time has elapsed", () => {
-    // Simulate half the cooldown having passed
-    const halfElapsed = DUNGEON_COOLDOWN_MS / 2;
-    dungeonCooldowns.set("user-4", Date.now() - halfElapsed);
-
-    const remaining = getDungeonCooldownRemaining("user-4");
-    expect(remaining).toBeGreaterThan(0);
-    expect(remaining).toBeLessThan(DUNGEON_COOLDOWN_MS);
-    // Should be approximately half the cooldown
-    expect(remaining).toBeCloseTo(halfElapsed, -4); // within 1000ms
-  });
-
-  it("handles multiple distinct users independently", () => {
-    dungeonCooldowns.set("alice", Date.now());
-    dungeonCooldowns.set("bob", Date.now() - DUNGEON_COOLDOWN_MS - 1000); // expired
-
-    expect(getDungeonCooldownRemaining("alice")).toBeGreaterThan(0);
-    expect(getDungeonCooldownRemaining("bob")).toBe(0);
-    expect(getDungeonCooldownRemaining("carol")).toBe(0); // never completed
-  });
-});
 
 // ── DUNGEON_COOLDOWN_MS ───────────────────────────────────────────────────────
 

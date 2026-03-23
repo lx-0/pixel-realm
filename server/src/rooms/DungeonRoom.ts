@@ -27,6 +27,7 @@ import { initSkillState, loadSkillState, saveSkillState, type SkillState } from 
 import { computePassiveBonuses } from "../skills";
 import { addItem } from "../db/inventory";
 import { getPlayerGuild } from "../db/guilds";
+import { recordDungeonCooldown, getDungeonCooldownRemainingDb } from "../db/cooldowns";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -48,19 +49,6 @@ const PERSIST_INTERVAL_MS = 30_000;
 
 /** Per-player dungeon cooldown (default 1 hour). Configurable via env. */
 export const DUNGEON_COOLDOWN_MS = Number(process.env.DUNGEON_COOLDOWN_MS ?? 3_600_000);
-
-// ── Server-wide cooldown registry ─────────────────────────────────────────────
-// Maps userId → timestamp when dungeon was completed (epoch ms).
-// Lives for the server process lifetime — resets on restart (acceptable for MVP).
-export const dungeonCooldowns = new Map<string, number>();
-
-/** Returns ms remaining on cooldown, or 0 if not on cooldown. */
-export function getDungeonCooldownRemaining(userId: string): number {
-  const completedAt = dungeonCooldowns.get(userId);
-  if (!completedAt) return 0;
-  const remaining = DUNGEON_COOLDOWN_MS - (Date.now() - completedAt);
-  return remaining > 0 ? remaining : 0;
-}
 
 // ── Seeded RNG (mulberry32) ────────────────────────────────────────────────────
 
@@ -444,7 +432,7 @@ export class DungeonRoom extends Room<DungeonGameState> {
         } catch { /* non-fatal */ }
 
         // Inform client of cooldown status so UI can track it
-        const remaining = getDungeonCooldownRemaining(userId);
+        const remaining = await getDungeonCooldownRemainingDb(userId).catch(() => 0);
         client.send("dungeon_cooldown", { remainingMs: remaining, totalMs: DUNGEON_COOLDOWN_MS });
       } catch (err) {
         console.warn(`[DungeonRoom] Failed to load state for ${userId}:`, (err as Error).message);
@@ -685,10 +673,12 @@ export class DungeonRoom extends Room<DungeonGameState> {
         await this.grantLootToSession(client.sessionId, grants).catch(() => {/* best-effort */});
       }
 
-      // Apply cooldown per player
+      // Apply cooldown per player (persisted to DB so it survives restarts)
       const userId = dungeonSessionUserMap.get(client.sessionId);
       if (userId) {
-        dungeonCooldowns.set(userId, Date.now());
+        await recordDungeonCooldown(userId, DUNGEON_COOLDOWN_MS).catch((err) =>
+          console.warn("[DungeonRoom] Failed to persist cooldown:", err),
+        );
         client.send("dungeon_cooldown", {
           remainingMs: DUNGEON_COOLDOWN_MS,
           totalMs: DUNGEON_COOLDOWN_MS,

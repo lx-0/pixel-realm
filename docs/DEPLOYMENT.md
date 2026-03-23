@@ -176,7 +176,62 @@ ws.yourdomain.com {
 
 ---
 
-## 9. Troubleshooting
+## 9. Database backup and restore
+
+### Backup
+
+The `scripts/db-backup.sh` script creates a timestamped, gzip-compressed pg_dump of the entire database.
+
+```bash
+# Run a manual backup (writes to ./backups/ by default)
+./scripts/db-backup.sh
+
+# Write to a custom directory
+./scripts/db-backup.sh /mnt/backup/pixelrealm
+```
+
+The script reads `DATABASE_URL` from the environment (or your `.env` file). It also prunes backups older than 30 days (configurable via `RETENTION_DAYS`).
+
+**Recommended schedule — daily at 2 AM:**
+
+```cron
+0 2 * * * cd /opt/pixelrealm && ./scripts/db-backup.sh >> /var/log/pixelrealm-backup.log 2>&1
+```
+
+**From inside Docker Compose:**
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm game-server \
+  bash scripts/db-backup.sh /backups
+```
+
+Mount a host volume for `/backups` so the files are accessible outside the container.
+
+### Restore
+
+```bash
+# 1. Stop the game server to prevent writes during restore
+docker compose -f docker-compose.prod.yml stop game-server
+
+# 2. Drop and re-create the database (adjust DB name / connection as needed)
+psql "$DATABASE_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# 3. Restore from a backup file
+gunzip -c backups/pixelrealm_20260323_020000.sql.gz | psql "$DATABASE_URL"
+
+# 4. Run migrations to ensure the schema is fully up to date
+docker compose -f docker-compose.prod.yml run --rm game-server \
+  node -e "require('./dist/db/migrate').runMigrations().then(() => process.exit(0))"
+
+# 5. Restart the game server
+docker compose -f docker-compose.prod.yml start game-server
+```
+
+> **Recommendation:** Back up daily, retain 30 days of backups, and test a restore to a staging environment at least once a month.
+
+---
+
+## 10. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---|---|---|

@@ -4,7 +4,8 @@ import cors from "cors";
 import { Server, matchMaker } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ZoneRoom } from "./rooms/ZoneRoom";
-import { DungeonRoom, getDungeonCooldownRemaining, DUNGEON_COOLDOWN_MS } from "./rooms/DungeonRoom";
+import { DungeonRoom, DUNGEON_COOLDOWN_MS } from "./rooms/DungeonRoom";
+import { getDungeonCooldownRemainingDb } from "./db/cooldowns";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
@@ -507,18 +508,23 @@ app.post("/achievements/event", async (req, res) => {
 // ── Dungeon REST endpoints ────────────────────────────────────────────────────
 
 // GET /dungeon/cooldown/:userId — check per-player dungeon cooldown status
-app.get("/dungeon/cooldown/:userId", (req, res) => {
+app.get("/dungeon/cooldown/:userId", async (req, res) => {
   const { userId } = req.params as { userId: string };
   if (!userId || userId.length > 100) {
     res.status(400).json({ error: "Invalid userId" });
     return;
   }
-  const remainingMs = getDungeonCooldownRemaining(userId);
-  res.json({
-    onCooldown: remainingMs > 0,
-    remainingMs,
-    totalMs: DUNGEON_COOLDOWN_MS,
-  });
+  try {
+    const remainingMs = await getDungeonCooldownRemainingDb(userId);
+    res.json({
+      onCooldown: remainingMs > 0,
+      remainingMs,
+      totalMs: DUNGEON_COOLDOWN_MS,
+    });
+  } catch (err) {
+    console.error("[dungeon cooldown] DB error:", err);
+    res.status(500).json({ error: "Internal error" });
+  }
 });
 
 // ── Leaderboard REST endpoints ────────────────────────────────────────────────
