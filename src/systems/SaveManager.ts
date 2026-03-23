@@ -18,6 +18,7 @@ export interface SaveData {
   playerLevel: number;
   playerXP: number;
   totalKills: number;
+  totalDeaths: number;
   highScores: Record<string, number>;
   completedGame: boolean;
   tutorialCompleted: boolean;
@@ -53,6 +54,7 @@ const DEFAULT_SAVE: SaveData = {
   playerLevel: 1,
   playerXP: 0,
   totalKills: 0,
+  totalDeaths: 0,
   highScores: {},
   completedGame: false,
   tutorialCompleted: false,
@@ -71,6 +73,7 @@ export class SaveManager {
         playerLevel:       p.playerLevel       ?? 1,
         playerXP:          p.playerXP          ?? 0,
         totalKills:        p.totalKills        ?? 0,
+        totalDeaths:       p.totalDeaths       ?? 0,
         highScores:        p.highScores        ?? {},
         completedGame:     p.completedGame     ?? false,
         tutorialCompleted: p.tutorialCompleted ?? false,
@@ -82,6 +85,12 @@ export class SaveManager {
 
   static save(data: SaveData): void {
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* quota / SSR */ }
+  }
+
+  static recordDeath(): void {
+    const data = SaveManager.load();
+    data.totalDeaths = (data.totalDeaths ?? 0) + 1;
+    SaveManager.save(data);
   }
 
   static unlockZone(zoneId: string): void {
@@ -166,6 +175,7 @@ export class SaveManager {
         playerLevel:       p.playerLevel       ?? 1,
         playerXP:          p.playerXP          ?? 0,
         totalKills:        p.totalKills        ?? 0,
+        totalDeaths:       p.totalDeaths       ?? 0,
         highScores:        p.highScores        ?? {},
         completedGame:     p.completedGame     ?? false,
         tutorialCompleted: p.tutorialCompleted ?? false,
@@ -222,6 +232,7 @@ export class SaveManager {
       playerLevel:       slot.playerLevel,
       playerXP:          slot.playerXP,
       totalKills:        slot.totalKills,
+      totalDeaths:       slot.totalDeaths ?? 0,
       highScores:        slot.highScores,
       completedGame:     slot.completedGame,
       tutorialCompleted: slot.tutorialCompleted,

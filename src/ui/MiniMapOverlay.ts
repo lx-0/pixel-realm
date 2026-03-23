@@ -64,6 +64,7 @@ export class MiniMapOverlay {
     remotePlayers:      Map<string, RemotePlayer>,
     remoteEnemySprites: Map<string, Phaser.Physics.Arcade.Sprite>,
     npcMarkers:         NpcMarker[] = [],
+    deathMarker:        { x: number; y: number } | null = null,
   ): void {
     this.gfx.clear();
 
@@ -128,6 +129,16 @@ export class MiniMapOverlay {
       const my = MAP_Y + rp.y * SCALE_Y;
       this.gfx.fillRect(mx - 1, my - 1, 2, 2);
     });
+
+    // ── Death marker — white skull cross ─────────────────────────────────
+    if (deathMarker) {
+      const dx = MAP_X + deathMarker.x * SCALE_X;
+      const dy = MAP_Y + deathMarker.y * SCALE_Y;
+      // Draw an X cross in white
+      this.gfx.lineStyle(1, 0xffffff, 0.9);
+      this.gfx.lineBetween(dx - 2, dy - 2, dx + 2, dy + 2);
+      this.gfx.lineBetween(dx + 2, dy - 2, dx - 2, dy + 2);
+    }
 
     // ── Local player — directional arrow (bright yellow) ─────────────────
     if (player.active) {

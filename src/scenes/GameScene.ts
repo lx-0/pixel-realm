@@ -108,6 +108,16 @@ export class GameScene extends Phaser.Scene {
   private charmed        = false;
   private charmedUntil   = 0;
 
+  // ── Death / respawn ───────────────────────────────────────────────────────
+  private gold            = 0;        // carried gold (5% lost on death)
+  private deathCount      = 0;        // deaths this session
+  private respawnImmune   = false;    // true during 30 s post-respawn immunity
+  private immunityEndAt   = 0;        // this.time.now timestamp
+  private immunityFlashMs = 0;        // flash accumulator
+  private escapeScrolls   = 1;        // Escape Scrolls (start with 1 per run)
+  private deathMarkerPos: { x: number; y: number } | null = null;
+  private escScrollKey!:  Phaser.Input.Keyboard.Key;
+
   // ── Status effects ────────────────────────────────────────────────────────
   private playerEffects:        Partial<Record<EffectKey, StatusEffectState>> = {};
   private playerEffectImmunity: Partial<Record<EffectKey, number>>            = {};
@@ -254,6 +264,10 @@ export class GameScene extends Phaser.Scene {
   /** Weather system — precipitation particles, fog overlay, speed modifiers. */
   private weather?: WeatherSystem;
 
+  // ── Death/respawn HUD ─────────────────────────────────────────────────────
+  private goldText?:   Phaser.GameObjects.Text;
+  private scrollText?: Phaser.GameObjects.Text;
+
   /** HUD text showing total achievement points. */
   private achievePtsText?: Phaser.GameObjects.Text;
 
@@ -334,6 +348,13 @@ export class GameScene extends Phaser.Scene {
     this.isBossWave        = false;
     this.kills             = 0;
     this.score             = 0;
+    this.gold              = 0;
+    this.deathCount        = 0;
+    this.respawnImmune     = false;
+    this.immunityEndAt     = 0;
+    this.immunityFlashMs   = 0;
+    this.escapeScrolls     = 1;
+    this.deathMarkerPos    = null;
     this.waveTransitioning = false;
     this.gameStartTime     = this.time.now;
     this.bossAlive         = false;
@@ -434,6 +455,30 @@ export class GameScene extends Phaser.Scene {
     if (this.muteKey && Phaser.Input.Keyboard.JustDown(this.muteKey)) {
       const muted = this.sfx.toggleMute();
       this.muteIndicator?.setVisible(muted);
+    }
+
+    // Escape Scroll (T key) — teleport to zone spawn / nearest waystone
+    if (this.escScrollKey && Phaser.Input.Keyboard.JustDown(this.escScrollKey) && this.escapeScrolls > 0) {
+      this.escapeScrolls--;
+      this.screenFlash(0x88ffcc, 0.5);
+      this.spawnBurst(this.player.x, this.player.y, [0x88ffcc, 0xaaffdd, 0xffffff], 10, 100);
+      this.player.setPosition(this.worldW / 2, this.worldH / 2);
+      this.cameras.main.fadeIn(400, 0, 0, 0);
+      this.respawnImmune   = true;
+      this.immunityEndAt   = time + 5_000;  // 5 s immunity after scroll use
+      this.immunityFlashMs = 0;
+      this.floatingText(this.player.x, this.player.y - 20, 'Escape Scroll used!', '#88ffcc');
+      this.updateHUD();
+    }
+
+    // Respawn immunity — flash player sprite every 200 ms
+    if (this.respawnImmune) {
+      this.immunityFlashMs += delta;
+      this.player.setAlpha(Math.floor(this.immunityFlashMs / 200) % 2 === 0 ? 1 : 0.3);
+      if (time >= this.immunityEndAt) {
+        this.respawnImmune = false;
+        this.player.setAlpha(1);
+      }
     }
 
     // Skill tree panel (K key is handled inside the panel)
@@ -548,6 +593,7 @@ export class GameScene extends Phaser.Scene {
       this.mp?.players ?? new Map(),
       this.remoteEnemySprites,
       this.npcMarkers,
+      this.deathMarkerPos,
     );
 
     const save = SaveManager.load();
@@ -2034,6 +2080,7 @@ export class GameScene extends Phaser.Scene {
     this.kills++;
     this.xp    += xpGain;
     this.score += xpGain * 10;
+    this.gold  += isBoss ? Phaser.Math.Between(40, 80) : Phaser.Math.Between(5, 20);
 
     // Bloodthirst passive: restore HP on non-boss kills
     if (!isBoss && this.passiveBonusCache.healOnKill > 0) {
@@ -2072,6 +2119,7 @@ export class GameScene extends Phaser.Scene {
 
   private handleEnemyContact(time: number): void {
     if (this.isDodging || time < this.dodgeEndTime + (DODGE.INVULN_MS - DODGE.DURATION_MS)) return;
+    if (this.respawnImmune) return;
     if (time - this.lastHitTime < COMBAT.PLAYER_INVINCIBILITY_MS) return;
     const pb = this.player.getBounds();
     let   hit      = false;
@@ -2119,6 +2167,7 @@ export class GameScene extends Phaser.Scene {
     } else {
       const now = this.time.now;
       if (this.isDodging || now < this.dodgeEndTime + (DODGE.INVULN_MS - DODGE.DURATION_MS)) return;
+      if (this.respawnImmune) return;
       if (now - this.lastHitTime >= COMBAT.PLAYER_INVINCIBILITY_MS) {
         this.lastHitTime = now;
         this.applyDamageToPlayer(dmg, now, 0xff4444);
@@ -2251,36 +2300,121 @@ export class GameScene extends Phaser.Scene {
 
   private playerDead(): void {
     this.isDead = true;
+    this.deathCount++;
+    SaveManager.recordDeath();
+
     this.sfx.playDeath();
     this.cameras.main.shake(350, 0.02);
     this.screenFlash(0xff0000, 0.55);
     this.spawnBurst(this.player.x, this.player.y, [0x888888, 0x444444, 0x0d0d0d], 16, 110);
 
+    // Remember death location for minimap marker
+    this.deathMarkerPos = { x: this.player.x, y: this.player.y };
+
+    // Drop 5% of carried gold as ground loot
+    const dropped = Math.floor(this.gold * 0.05);
+    if (dropped > 0) {
+      this.gold -= dropped;
+      this.spawnDeathDrops(this.player.x, this.player.y, dropped);
+    }
+
+    // Fade player out
     if (this.anims.exists('player-death')) this.player.play('player-death');
     this.tweens.add({ targets: this.player, alpha: 0, scaleX: 0.15, scaleY: 0.15, duration: 850, ease: 'Power3' });
 
-    this.time.delayedCall(1700, () => {
-      const timeSecs = Math.floor((this.time.now - this.gameStartTime) / 1000);
+    // Show death screen overlay with 3-second respawn countdown
+    this.showDeathScreen();
+  }
 
-      this.mp?.disconnect().catch(() => {});
-      this.chat?.destroy();
-      this.playerList?.destroy();
-      this.sfx.stopMusic();
+  /** Spawn dropped gold coins at the death location (despawn after 2 minutes). */
+  private spawnDeathDrops(deathX: number, deathY: number, totalGold: number): void {
+    const count = Math.min(totalGold, 5);  // max 5 coins
+    const perCoin = Math.floor(totalGold / count);
 
-      this.cameras.main.fadeOut(500, 0, 0, 0);
-      this.time.delayedCall(500, () => {
-        this.scene.start(SCENES.GAME_OVER, {
-          wave:     this.wave,
-          kills:    this.kills,
-          level:    this.level,
-          timeSecs,
-          zoneId:   this.zone.id,
-          zoneName: this.zone.name,
-          victory:  false,
-          score:    this.score,
-        } satisfies GameOverData);
+    for (let i = 0; i < count; i++) {
+      const ox = Phaser.Math.Between(-18, 18);
+      const oy = Phaser.Math.Between(-18, 18);
+      const coin = this.pickups.create(deathX + ox, deathY + oy, 'pickup_coin') as Phaser.Physics.Arcade.Sprite;
+      coin.setDepth(8);
+      coin.setData('type', 'gold');
+      coin.setData('value', perCoin);
+
+      // Gentle bob animation
+      this.tweens.add({
+        targets: coin, y: coin.y - 4,
+        duration: 700 + Phaser.Math.Between(0, 200),
+        yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
       });
+
+      // Despawn after 2 minutes
+      this.time.delayedCall(120_000, () => {
+        if (coin?.active) coin.destroy();
+      });
+    }
+  }
+
+  /** Full-screen death overlay with countdown, then triggers respawn. */
+  private showDeathScreen(): void {
+    const W = CANVAS.WIDTH;
+    const H = CANVAS.HEIGHT;
+    const Z = 100;
+
+    const overlay = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.78)
+      .setScrollFactor(0).setDepth(Z);
+
+    const titleText = this.add.text(W / 2, H / 2 - 30, '💀 YOU DIED', {
+      fontSize: '14px', color: '#ff3333', fontFamily: 'monospace',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(Z + 1);
+
+    const hintText = this.add.text(W / 2, H / 2 - 14, 'Death location marked on map', {
+      fontSize: '5px', color: '#888888', fontFamily: 'monospace',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(Z + 1);
+
+    const countText = this.add.text(W / 2, H / 2, 'Respawning at waystone in 3...', {
+      fontSize: '6px', color: '#cccccc', fontFamily: 'monospace',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(Z + 1);
+
+    let remaining = 3;
+    const tick = this.time.addEvent({
+      delay: 1000,
+      repeat: 2,
+      callback: () => {
+        remaining--;
+        if (remaining > 0) countText.setText(`Respawning at waystone in ${remaining}...`);
+        else {
+          tick.destroy();
+          overlay.destroy();
+          titleText.destroy();
+          hintText.destroy();
+          countText.destroy();
+          this.respawnPlayer();
+        }
+      },
     });
+  }
+
+  /** Reset the player at the zone spawn (nearest waystone) with 30-second immunity. */
+  private respawnPlayer(): void {
+    const maxHp = this.getMaxHp();
+    this.hp   = maxHp;
+    this.isDead = false;
+
+    // Teleport to zone centre (spawn point / waystone)
+    this.player.setPosition(this.worldW / 2, this.worldH / 2);
+    this.player.setAlpha(1);
+    this.player.setScale(1);
+    this.player.setVelocity(0, 0);
+    if (this.anims.exists('player-idle')) this.player.play('player-idle');
+
+    // 30-second immunity window
+    this.respawnImmune   = true;
+    this.immunityEndAt   = this.time.now + 30_000;
+    this.immunityFlashMs = 0;
+
+    this.cameras.main.fadeIn(500, 0, 0, 0);
+    this.updateHUD();
+    this.floatingText(this.player.x, this.player.y - 20, 'RESPAWNED — 30s immunity!', '#88ffcc');
   }
 
   // ── Pickups ───────────────────────────────────────────────────────────────
@@ -2316,14 +2450,22 @@ export class GameScene extends Phaser.Scene {
     const orb = pickup as Phaser.Physics.Arcade.Sprite;
     if (!orb.active) return;
     const value = orb.getData('value') as number;
-    this.xp    += value;
-    this.score += value;
+    const type  = orb.getData('type') as string | undefined;
     this.sfx.playPickup();
-    this.spawnBurst(orb.x, orb.y, [0xe8b800, 0xffe040, 0xffffff], 5, 80);
-    this.floatingText(orb.x, orb.y - 8, `+${value} XP`, '#ffe040');
     (orb.getData('sparkleTimer') as Phaser.Time.TimerEvent)?.destroy();
     orb.destroy();
-    this.checkLevelUp();
+
+    if (type === 'gold') {
+      this.gold += value;
+      this.spawnBurst(orb.x, orb.y, [0xffdd44, 0xffaa00, 0xffffff], 5, 80);
+      this.floatingText(orb.x, orb.y - 8, `+${value}g`, '#ffdd44');
+    } else {
+      this.xp    += value;
+      this.score += value;
+      this.spawnBurst(orb.x, orb.y, [0xe8b800, 0xffe040, 0xffffff], 5, 80);
+      this.floatingText(orb.x, orb.y - 8, `+${value} XP`, '#ffe040');
+      this.checkLevelUp();
+    }
     this.updateHUD();
   }
 
@@ -2393,6 +2535,7 @@ export class GameScene extends Phaser.Scene {
     this.downKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
     this.craftConfirmKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
     this.muteKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.N);
+    this.escScrollKey    = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.T);
     // Hotbar skill keys 1–6
     const hotbarKeyCodes = [
       Phaser.Input.Keyboard.KeyCodes.ONE,
@@ -2441,6 +2584,9 @@ export class GameScene extends Phaser.Scene {
 
     this.dodgeCooldownText = this.add.text(lx, 46, 'Q DODGE', { fontSize: '5px', color: '#44ffaa', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
 
+    this.goldText   = this.add.text(lx, 64, 'Gold: 0', { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.scrollText = this.add.text(lx, 71, 'T:Scroll x1', { fontSize: '4px', color: '#88ffcc', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+
     this.enemyCountText = this.add.text(CANVAS.WIDTH - 4, 4, '', { fontSize: '5px', color: '#ff8888', fontFamily: 'monospace' })
       .setOrigin(1, 0).setScrollFactor(0).setDepth(Z);
 
@@ -2484,7 +2630,7 @@ export class GameScene extends Phaser.Scene {
     this.bossHpBar = this.add.rectangle(bossX, bossY + bossH / 2, bossW, bossH, 0xff2222)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z + 5).setVisible(false);
 
-    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD:Move  SHIFT:Sprint  Q:Dodge  SPACE:Attack  1-6:Skills  K:SkillTree  M:Map  F:Craft  N:Mute  ESC:Pause', {
+    this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT - 3, 'WASD:Move  SHIFT:Sprint  Q:Dodge  SPACE:Attack  1-6:Skills  K:SkillTree  M:Map  F:Craft  T:Scroll  N:Mute  ESC:Pause', {
       fontSize: '4px', color: '#333344', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(Z);
 
@@ -2598,6 +2744,9 @@ export class GameScene extends Phaser.Scene {
       ? (this.mp?.zoneState.enemiesAlive ?? 0)
       : (this.enemies?.countActive(true) ?? 0);
     this.enemyCountText?.setText(alive > 0 ? `Enemies: ${alive}` : '');
+    this.goldText?.setText(`Gold: ${this.gold}`);
+    this.scrollText?.setText(`T:Scroll x${this.escapeScrolls}`);
+    this.scrollText?.setColor(this.escapeScrolls > 0 ? '#88ffcc' : '#555555');
   }
 
   // ── VFX ───────────────────────────────────────────────────────────────────
