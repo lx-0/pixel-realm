@@ -32,6 +32,7 @@ import { FastTravelPanel } from '../ui/FastTravelPanel';
 import { ConnectionOverlay } from '../ui/ConnectionOverlay';
 import { DayNightSystem } from '../systems/DayNightSystem';
 import { WeatherSystem }   from '../systems/WeatherSystem';
+import { MobileTouchControls } from '../systems/MobileTouchControls';
 import {
   SKILL_BY_ID, computePassiveBonuses,
   type ClassId, type PassiveBonus,
@@ -270,8 +271,8 @@ export class GameScene extends Phaser.Scene {
   /** Proximity hint shown when player is near the Transport NPC. */
   private transportHint?: Phaser.GameObjects.Text;
 
-  /** T key — opens fast travel dialog. */
-  private fastTravelKey?: Phaser.Input.Keyboard.Key;
+  /** T key — opens fast travel dialog (handled inline in update). */
+  // fastTravelKey handled via escScrollKey below
 
   /** P2P trade window (multiplayer only). */
   private tradeWindow?: TradeWindow;
@@ -366,6 +367,9 @@ export class GameScene extends Phaser.Scene {
   /** Hotbar key objects (1–6). */
   private hotbarKeys: Phaser.Input.Keyboard.Key[] = [];
 
+  /** Mobile virtual joystick + action buttons (no-op on desktop). */
+  private touch!: MobileTouchControls;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -444,6 +448,7 @@ export class GameScene extends Phaser.Scene {
 
     this.setupCollisions();
     this.setupInput();
+    this.touch = new MobileTouchControls(this);
     this.setupCamera();
     this.createHUD();
     this.dayNight = new DayNightSystem(this);
@@ -485,7 +490,10 @@ export class GameScene extends Phaser.Scene {
   update(time: number, delta: number): void {
     if (this.isDead) return;
 
-    if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
+    // Tick mobile touch controls so justPressed flags are fresh this frame
+    this.touch?.update();
+
+    if (Phaser.Input.Keyboard.JustDown(this.escKey) || this.touch?.menu.justPressed) {
       // Escape closes any open panel before pausing
       const panelClosed =
         this.worldMap?.closeIfOpen()          ||
@@ -1669,7 +1677,13 @@ export class GameScene extends Phaser.Scene {
     const up    = this.cursors.up.isDown    || this.wasd.W.isDown;
     const down  = this.cursors.down.isDown  || this.wasd.S.isDown;
 
-    if (this.charmed) {
+    // Touch joystick overrides keyboard when active
+    const tj = this.touch?.joystick;
+    if (tj && (tj.dx !== 0 || tj.dy !== 0)) {
+      const charm = this.charmed ? -1 : 1;
+      vx = tj.dx * speed * charm;
+      vy = tj.dy * speed * charm;
+    } else if (this.charmed) {
       if (left)  vx =  speed; else if (right) vx = -speed;
       if (up)    vy =  speed; else if (down)  vy = -speed;
     } else {
@@ -1696,8 +1710,8 @@ export class GameScene extends Phaser.Scene {
     // Tutorial: notify movement
     if (this.tutorial && (vx !== 0 || vy !== 0)) this.tutorial.notifyMoved();
 
-    // Sprint: hold Shift while moving, mana must be available
-    const wantsToSprint = this.sprintKey.isDown && (vx !== 0 || vy !== 0) && this.mana > 0;
+    // Sprint: hold Shift (or touch sprint button) while moving, mana must be available
+    const wantsToSprint = (this.sprintKey.isDown || (this.touch?.sprint.isDown ?? false)) && (vx !== 0 || vy !== 0) && this.mana > 0;
     if (wantsToSprint) {
       speed *= SPRINT.SPEED_MULT;
       vx    *= SPRINT.SPEED_MULT;
@@ -1932,8 +1946,8 @@ export class GameScene extends Phaser.Scene {
       else if (!this.charmed) this.player.clearTint();
     }
 
-    // Trigger new dodge on Q press
-    if (!Phaser.Input.Keyboard.JustDown(this.dodgeKey)) return;
+    // Trigger new dodge on Q press or touch dodge button
+    if (!Phaser.Input.Keyboard.JustDown(this.dodgeKey) && !(this.touch?.dodge.justPressed)) return;
     if (this.isDodging) return;
     if (time < this.dodgeCooldownEndTime) return;
     if (this.mana < DODGE.MANA_COST) return;
@@ -1943,8 +1957,16 @@ export class GameScene extends Phaser.Scene {
     const right = this.cursors.right.isDown || this.wasd.D.isDown;
     const up    = this.cursors.up.isDown    || this.wasd.W.isDown;
     const down  = this.cursors.down.isDown  || this.wasd.S.isDown;
-    let dx = (right ? 1 : 0) - (left ? 1 : 0);
-    let dy = (down  ? 1 : 0) - (up   ? 1 : 0);
+    const tj = this.touch?.joystick;
+    let dx: number;
+    let dy: number;
+    if (tj && (tj.dx !== 0 || tj.dy !== 0)) {
+      dx = tj.dx;
+      dy = tj.dy;
+    } else {
+      dx = (right ? 1 : 0) - (left ? 1 : 0);
+      dy = (down  ? 1 : 0) - (up   ? 1 : 0);
+    }
     if (dx === 0 && dy === 0) dx = 1; // default dash right
     if (dx !== 0 && dy !== 0) {
       const inv = 1 / Math.SQRT2;
@@ -2368,7 +2390,7 @@ export class GameScene extends Phaser.Scene {
   private handleAttack(time: number): void {
     if (this.chat?.active || this.socialPanel?.active) return; // don't attack while chat/social input is open
     if (this.playerEffects.stun) return; // stunned — can't attack
-    if (!Phaser.Input.Keyboard.JustDown(this.attackKey)) return;
+    if (!Phaser.Input.Keyboard.JustDown(this.attackKey) && !(this.touch?.attack.justPressed)) return;
     const attackCd = Math.round(COMBAT.ATTACK_COOLDOWN_MS * Math.max(0.2, 1 - this.passiveBonusCache.attackCdReductionPct));
     if (time - this.lastAttackTime < attackCd) return;
 

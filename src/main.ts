@@ -15,10 +15,15 @@ const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: CANVAS.WIDTH,
   height: CANVAS.HEIGHT,
-  zoom: CANVAS.SCALE,
   backgroundColor: '#0a0a0a',
   parent: 'game-container',
   pixelArt: true,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: CANVAS.WIDTH,
+    height: CANVAS.HEIGHT,
+  },
   physics: {
     default: 'arcade',
     arcade: {
