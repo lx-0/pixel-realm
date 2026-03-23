@@ -12,7 +12,7 @@
 #                 e.g. postgresql://user:pass@localhost:5432/pixelrealm
 #
 # The script creates a timestamped .sql.gz dump and removes backups older
-# than RETENTION_DAYS (default: 30) from the backup directory.
+# than RETENTION_DAYS (default: 7) from the backup directory.
 #
 # Recommended cron (daily at 2 AM):
 #   0 2 * * * /path/to/pixelrealm/scripts/db-backup.sh >> /var/log/pixelrealm-backup.log 2>&1
@@ -22,7 +22,7 @@ set -euo pipefail
 # ── Configuration ─────────────────────────────────────────────────────────────
 
 BACKUP_DIR="${1:-./backups}"
-RETENTION_DAYS="${RETENTION_DAYS:-30}"
+RETENTION_DAYS="${RETENTION_DAYS:-7}"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_FILE="${BACKUP_DIR}/pixelrealm_${TIMESTAMP}.sql.gz"
 

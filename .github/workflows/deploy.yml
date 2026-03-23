@@ -53,6 +53,26 @@ jobs:
         run: npm run build
         working-directory: server
 
+      - name: Notify deployment started
+        if: ${{ secrets.DEPLOY_WEBHOOK_URL != '' }}
+        env:
+          WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \":rocket: *PixelRealm deploy started* — \`${{ github.event.inputs.environment }}\`\",
+              \"attachments\": [{
+                \"color\": \"#FFA500\",
+                \"fields\": [
+                  {\"title\": \"Environment\", \"value\": \"${{ github.event.inputs.environment }}\", \"short\": true},
+                  {\"title\": \"Triggered by\", \"value\": \"${{ github.actor }}\", \"short\": true},
+                  {\"title\": \"Commit\", \"value\": \"\`${{ github.sha }}\`\", \"short\": true},
+                  {\"title\": \"Branch\", \"value\": \"\`${{ github.ref_name }}\`\", \"short\": true}
+                ]
+              }]
+            }"
+
       - name: Deploy via Docker Compose
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -65,3 +85,43 @@ jobs:
             "$DEPLOY_USER@$DEPLOY_HOST" \
             "cd /opt/pixelrealm && git pull && docker compose -f docker-compose.prod.yml up -d --build"
           rm -f /tmp/deploy_key
+
+      - name: Notify deployment succeeded
+        if: success() && ${{ secrets.DEPLOY_WEBHOOK_URL != '' }}
+        env:
+          WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \":white_check_mark: *PixelRealm deploy succeeded* — \`${{ github.event.inputs.environment }}\`\",
+              \"attachments\": [{
+                \"color\": \"#36a64f\",
+                \"fields\": [
+                  {\"title\": \"Environment\", \"value\": \"${{ github.event.inputs.environment }}\", \"short\": true},
+                  {\"title\": \"Triggered by\", \"value\": \"${{ github.actor }}\", \"short\": true},
+                  {\"title\": \"Commit\", \"value\": \"\`${{ github.sha }}\`\", \"short\": true},
+                  {\"title\": \"Run\", \"value\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"short\": false}
+                ]
+              }]
+            }"
+
+      - name: Notify deployment failed
+        if: failure() && ${{ secrets.DEPLOY_WEBHOOK_URL != '' }}
+        env:
+          WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \":x: *PixelRealm deploy FAILED* — \`${{ github.event.inputs.environment }}\`\",
+              \"attachments\": [{
+                \"color\": \"#FF0000\",
+                \"fields\": [
+                  {\"title\": \"Environment\", \"value\": \"${{ github.event.inputs.environment }}\", \"short\": true},
+                  {\"title\": \"Triggered by\", \"value\": \"${{ github.actor }}\", \"short\": true},
+                  {\"title\": \"Commit\", \"value\": \"\`${{ github.sha }}\`\", \"short\": true},
+                  {\"title\": \"Run (inspect)\", \"value\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"short\": false}
+                ]
+              }]
+            }"

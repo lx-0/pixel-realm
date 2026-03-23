@@ -56,7 +56,7 @@ import {
   type HousingPermission,
 } from "./db/housing";
 import { config } from "./config";
-import { getMetricsSnapshot, getUptimeSeconds } from "./metrics";
+import { getUptimeSeconds, recordHttpRequest, renderPrometheusMetrics } from "./metrics";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
 
@@ -88,6 +88,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   res.on("finish", () => {
     const durationMs = Date.now() - start;
+    recordHttpRequest(durationMs, res.statusCode);
     if (config.isProduction) {
       // Structured JSON for log aggregators (e.g. Datadog, CloudWatch)
       process.stdout.write(
@@ -126,22 +127,16 @@ app.get("/health", async (_req: Request, res: Response) => {
   }
 });
 
-// Metrics — runtime stats for monitoring dashboards
+// Metrics — Prometheus text format for monitoring dashboards / Grafana scrape
 app.get("/metrics", async (_req: Request, res: Response) => {
   try {
     const rooms = await matchMaker.query({});
     const connectedPlayers = rooms.reduce((sum, r) => sum + (r.clients ?? 0), 0);
-    const snapshot = getMetricsSnapshot();
-    res.json({
-      ...snapshot,
-      rooms: {
-        active: rooms.length,
-        connectedPlayers,
-        list: rooms.map((r) => ({ roomId: r.roomId, name: r.name, clients: r.clients, locked: r.locked })),
-      },
-    });
+    res.setHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+    res.send(renderPrometheusMetrics({ activeRooms: rooms.length, connectedPlayers }));
   } catch {
-    res.json({ ...getMetricsSnapshot(), rooms: { active: 0, connectedPlayers: 0, list: [] } });
+    res.setHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+    res.send(renderPrometheusMetrics({ activeRooms: 0, connectedPlayers: 0 }));
   }
 });
 
