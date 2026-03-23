@@ -118,6 +118,7 @@ Each biome has a dominant tile color scheme. All biome tiles use palette colors 
 | Ocean / Coral | `#1a4a8a`, `#2a7ac0` | `#50a8e8` (coral) | `#0a1a3a` |
 | Dungeon | `#2b2b2b`, `#4a4a4a` | `#9050e0` (torchlight) | `#0d0d0d` |
 | Town / Plains | `#78c878`, `#8b5c2a` | `#c8c8c8` (stone road) | `#2a7ac0` |
+| Swamp / Marsh | `#1a3a1a`, `#3b2010` | `#2d6e2d` (moss) | `#0a1a3a` (murk) |
 
 ---
 
