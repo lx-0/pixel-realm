@@ -332,15 +332,6 @@ export class ZoneRoom extends Room<ZoneGameState> {
   /** Speed-hack violation count per session (resets on clean movement). */
   private speedViolations = new Map<string, number>();
 
-  // ── Area of Interest (AoI) ─────────────────────────────────────────────────
-  /** Tracks which entity IDs each client currently considers "visible". sessionId → Set<entityId> */
-  private clientVisibleEntities = new Map<string, Set<string>>();
-  /** AoI tick counter — run AoI update every N game ticks. */
-  private aoiTickCounter = 0;
-  /** Visible radius in world units. At 320×180 the full canvas fits within 360 px diagonal,
-   *  so 200 px gives a practical near-field cull for denser servers in larger future worlds. */
-  private static readonly AOI_RADIUS = 200;
-
   // ── Need/greed loot rolls ─────────────────────────────────────────────────
   /** Active loot rolls keyed by a rollId (uid). */
   private lootRolls = new Map<string, LootRoll>();

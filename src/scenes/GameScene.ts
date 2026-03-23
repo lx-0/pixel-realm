@@ -30,6 +30,7 @@ import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
 import { FastTravelPanel } from '../ui/FastTravelPanel';
 import { ConnectionOverlay } from '../ui/ConnectionOverlay';
+import { LootRollPanel } from '../ui/LootRollPanel';
 import { DayNightSystem } from '../systems/DayNightSystem';
 import { WeatherSystem }   from '../systems/WeatherSystem';
 import { MobileTouchControls } from '../systems/MobileTouchControls';
@@ -288,6 +289,9 @@ export class GameScene extends Phaser.Scene {
 
   /** Social / friend list panel (multiplayer only). */
   private socialPanel?: SocialPanel;
+
+  /** Party loot roll panel (multiplayer only). */
+  private lootRollPanel?: LootRollPanel;
 
   /** Active emote animations: sessionId → { label, expiry } */
   private emoteLabels = new Map<string, Phaser.GameObjects.Text>();
@@ -960,6 +964,18 @@ export class GameScene extends Phaser.Scene {
       const isOwn = sender === senderName;
       const label = isOwn ? `[G→] ${text}` : `[G] ${sender}: ${text}`;
       this.chat?.addMessage(label, '#88ddff');
+    };
+
+    // Loot roll panel (party need/greed/pass)
+    this.lootRollPanel = new LootRollPanel(this);
+    this.lootRollPanel.onVote = (rollId, choice) => {
+      client.sendLootRollChoice(rollId, choice);
+    };
+    client.onLootRollStart = (rollId, items, timeoutMs) => {
+      this.lootRollPanel?.show(rollId, items, timeoutMs);
+    };
+    client.onLootRollResult = (_rollId, items, winnerName, rolls) => {
+      this.lootRollPanel?.showResult(items, winnerName, rolls);
     };
 
     // Party panel setup

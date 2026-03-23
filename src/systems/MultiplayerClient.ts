@@ -236,6 +236,10 @@ export class MultiplayerClient {
   onCraftEvent?: (playerName: string, itemName: string) => void;
   /** Called when the local player receives crafting material drops after a kill. */
   onLootDrop?: (items: string[]) => void;
+  /** Called when a party need/greed/pass loot roll starts. */
+  onLootRollStart?: (rollId: string, items: string[], timeoutMs: number) => void;
+  /** Called when a party loot roll resolves with results. */
+  onLootRollResult?: (rollId: string, items: string[], winnerName: string | null, rolls: Record<string, { choice: string; roll: number }>) => void;
 
   // Faction callbacks
   onFactionReputations?: (reputations: FactionRepEntry[]) => void;
@@ -466,6 +470,12 @@ export class MultiplayerClient {
     });
     room.onMessage('loot_drop', (msg: { items: string[] }) => {
       this.onLootDrop?.(msg.items);
+    });
+    room.onMessage('loot_roll_start', (msg: { rollId: string; items: string[]; timeoutMs: number }) => {
+      this.onLootRollStart?.(msg.rollId, msg.items, msg.timeoutMs);
+    });
+    room.onMessage('loot_roll_result', (msg: { rollId: string; items: string[]; winnerName: string | null; rolls: Record<string, { choice: string; roll: number }> }) => {
+      this.onLootRollResult?.(msg.rollId, msg.items, msg.winnerName, msg.rolls);
     });
 
     // ── Skill messages ────────────────────────────────────────────────────
@@ -707,6 +717,10 @@ export class MultiplayerClient {
   sendPartyChat(text: string): void {
     if (!this.room || !text.trim()) return;
     this.room.send('party_chat', { text: text.trim() });
+  }
+
+  sendLootRollChoice(rollId: string, choice: 'need' | 'greed' | 'pass'): void {
+    this.room?.send('loot_roll_response', { rollId, choice });
   }
 
   // ── Moderation messages ───────────────────────────────────────────────────

@@ -1,4 +1,7 @@
-import { Schema, type, MapSchema } from "@colyseus/schema";
+import { Schema, type, MapSchema, filterChildren } from "@colyseus/schema";
+
+/** AoI filter radius in server coordinate units (world is 320×180). */
+const AOI_FILTER_RADIUS = 200;
 
 // ── Player ────────────────────────────────────────────────────────────────────
 
@@ -104,9 +107,23 @@ export class ZoneGameState extends Schema {
   @type({ map: Player })
   players = new MapSchema<Player>();
 
+  @filterChildren(function(this: ZoneGameState, client: { sessionId: string }, _key: string, value: Enemy) {
+    const player = this.players.get(client.sessionId);
+    if (!player) return true;
+    const dx = player.x - value.x;
+    const dy = player.y - value.y;
+    return dx * dx + dy * dy <= AOI_FILTER_RADIUS * AOI_FILTER_RADIUS;
+  })
   @type({ map: Enemy })
   enemies = new MapSchema<Enemy>();
 
+  @filterChildren(function(this: ZoneGameState, client: { sessionId: string }, _key: string, value: Projectile) {
+    const player = this.players.get(client.sessionId);
+    if (!player) return true;
+    const dx = player.x - value.x;
+    const dy = player.y - value.y;
+    return dx * dx + dy * dy <= AOI_FILTER_RADIUS * AOI_FILTER_RADIUS;
+  })
   @type({ map: Projectile })
   projectiles = new MapSchema<Projectile>();
 
