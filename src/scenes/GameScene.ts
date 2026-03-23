@@ -8,7 +8,7 @@ import {
 import { SoundManager } from '../systems/SoundManager';
 import { SettingsManager } from '../systems/SettingsManager';
 import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData }  from '../systems/SaveManager';
-import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged } from '../systems/MultiplayerClient';
+import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FriendEntry } from '../systems/MultiplayerClient';
 import { FactionReputationPanel } from '../ui/FactionReputationPanel';
 import { ChatOverlay }        from '../ui/ChatOverlay';
 import { PlayerListPanel }    from '../ui/PlayerListPanel';
@@ -24,6 +24,7 @@ import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { GuildPanel } from '../ui/GuildPanel';
 import { PartyPanel } from '../ui/PartyPanel';
+import { SocialPanel } from '../ui/SocialPanel';
 import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
@@ -271,6 +272,9 @@ export class GameScene extends Phaser.Scene {
   /** Party panel (multiplayer only). */
   private partyPanel?: PartyPanel;
 
+  /** Social / friend list panel (multiplayer only). */
+  private socialPanel?: SocialPanel;
+
   /** Session IDs of current party members (for mini-map highlight). */
   private partySessionIds = new Set<string>();
 
@@ -471,6 +475,7 @@ export class GameScene extends Phaser.Scene {
         this.marketplace?.closeIfOpen()       ||
         this.guildPanel?.closeIfOpen()        ||
         this.partyPanel?.closeIfOpen()        ||
+        this.socialPanel?.closeIfOpen()       ||
         this.achievementPanel?.closeIfOpen()  ||
         this.leaderboardPanel?.closeIfOpen()  ||
         this.factionPanel?.closeIfOpen()      ||
@@ -558,6 +563,7 @@ export class GameScene extends Phaser.Scene {
     this.playerList?.update();
     this.guildPanel?.update();
     this.partyPanel?.update();
+    this.socialPanel?.update();
     this.achievementPanel?.update();
     this.leaderboardPanel?.update();
     this.factionPanel?.update();
@@ -983,9 +989,66 @@ export class GameScene extends Phaser.Scene {
       this.chat.onPartySend = (text) => client.sendPartyChat(text);
     }
 
+    // Social panel (friend list, whisper, block)
+    this.socialPanel = new SocialPanel(this);
+    this.socialPanel.onFriendRequest = (name) => {
+      client.sendFriendRequest(name);
+    };
+    this.socialPanel.onFriendAccept = (name) => {
+      client.sendFriendRespond(name, true);
+    };
+    this.socialPanel.onFriendDecline = (name) => {
+      client.sendFriendRespond(name, false);
+    };
+    this.socialPanel.onFriendRemove = (name) => {
+      client.sendFriendRemove(name);
+    };
+    this.socialPanel.onBlockPlayer = (name) => {
+      client.sendBlockPlayer(name);
+      this.chat?.addMessage(`Blocked ${name}.`, '#ff9977');
+    };
+    this.socialPanel.onWhisper = (name) => {
+      // Pre-fill the chat input with the whisper prefix
+      this.chat?.openInput();
+      // We set a one-shot hook so next send goes as a whisper
+      const origOnSend = this.chat?.onSend;
+      if (this.chat) {
+        this.chat.onSend = (text, whisperTo) => {
+          client.sendChat(text, whisperTo ?? name);
+          if (this.chat) this.chat.onSend = origOnSend;
+        };
+      }
+    };
+
+    // Social server callbacks
+    client.onFriendsList = (friends: FriendEntry[]) => {
+      this.socialPanel?.applyFriends(friends);
+    };
+    client.onFriendRequestReceived = (fromName: string) => {
+      this.chat?.addMessage(`[Friend] ${fromName} sent you a friend request! (O to manage)`, '#ffcc44');
+      this.sfx.playMenuClick();
+    };
+    client.onFriendRequestAccepted = (byName: string) => {
+      this.chat?.addMessage(`[Friend] ${byName} accepted your friend request!`, '#44ee88');
+    };
+    client.onFriendOnline = (username: string) => {
+      this.socialPanel?.setFriendOnline(username, true);
+      this.chat?.addMessage(`[Friend] ${username} is now online.`, '#44ee88');
+    };
+    client.onFriendOffline = (username: string) => {
+      this.socialPanel?.setFriendOnline(username, false);
+      this.chat?.addMessage(`[Friend] ${username} went offline.`, '#556677');
+    };
+    client.onSocialInfo = (msg: string) => {
+      this.chat?.addMessage(`[Social] ${msg}`, '#aaddff');
+    };
+    client.onSocialError = (msg: string) => {
+      this.chat?.addMessage(`[Social] ${msg}`, '#ff8888');
+    };
+
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [H] achievements  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -1028,6 +1091,8 @@ export class GameScene extends Phaser.Scene {
       this.tradeWindow = undefined;
       this.marketplace?.destroy();
       this.marketplace = undefined;
+      this.socialPanel?.destroy();
+      this.socialPanel = undefined;
       this.achievementPanel?.destroy();
       this.achievementPanel = new AchievementPanel(this); // re-create without userId for solo fallback
       this.leaderboardPanel?.destroy();
@@ -2166,7 +2231,7 @@ export class GameScene extends Phaser.Scene {
   // ── Attack ────────────────────────────────────────────────────────────────
 
   private handleAttack(time: number): void {
-    if (this.chat?.active) return; // don't attack while chat is open
+    if (this.chat?.active || this.socialPanel?.active) return; // don't attack while chat/social input is open
     if (this.playerEffects.stun) return; // stunned — can't attack
     if (!Phaser.Input.Keyboard.JustDown(this.attackKey)) return;
     const attackCd = Math.round(COMBAT.ATTACK_COOLDOWN_MS * Math.max(0.2, 1 - this.passiveBonusCache.attackCdReductionPct));

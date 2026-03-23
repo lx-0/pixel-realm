@@ -136,6 +136,16 @@ export interface TradeOffer {
   gold: number;
 }
 
+// ── Social data shapes ────────────────────────────────────────────────────────
+
+export interface FriendEntry {
+  playerId:   string;
+  username:   string;
+  status:     "pending" | "accepted";
+  iRequested: boolean;
+  online:     boolean;
+}
+
 // ── Client ────────────────────────────────────────────────────────────────────
 
 export class MultiplayerClient {
@@ -200,6 +210,15 @@ export class MultiplayerClient {
   onPartyXp?: (amount: number) => void;
   onPartyError?: (message: string) => void;
   onPartyInfo?: (message: string) => void;
+
+  // Social callbacks
+  onFriendsList?: (friends: FriendEntry[]) => void;
+  onFriendRequestReceived?: (fromName: string) => void;
+  onFriendRequestAccepted?: (byName: string) => void;
+  onFriendOnline?: (username: string) => void;
+  onFriendOffline?: (username: string) => void;
+  onSocialInfo?: (message: string) => void;
+  onSocialError?: (message: string) => void;
 
   // Trade callbacks
   onTradeInvited?: (fromSessionId: string, fromName: string) => void;
@@ -417,6 +436,29 @@ export class MultiplayerClient {
       this.onSkillError?.(msg.message);
     });
 
+    // ── Social messages ───────────────────────────────────────────────────
+    room.onMessage('friends_list', (msg: { friends: FriendEntry[] }) => {
+      this.onFriendsList?.(msg.friends);
+    });
+    room.onMessage('friend_request_received', (msg: { fromName: string }) => {
+      this.onFriendRequestReceived?.(msg.fromName);
+    });
+    room.onMessage('friend_request_accepted', (msg: { byName: string }) => {
+      this.onFriendRequestAccepted?.(msg.byName);
+    });
+    room.onMessage('friend_online', (msg: { username: string }) => {
+      this.onFriendOnline?.(msg.username);
+    });
+    room.onMessage('friend_offline', (msg: { username: string }) => {
+      this.onFriendOffline?.(msg.username);
+    });
+    room.onMessage('social_info', (msg: { message: string }) => {
+      this.onSocialInfo?.(msg.message);
+    });
+    room.onMessage('social_error', (msg: { message: string }) => {
+      this.onSocialError?.(msg.message);
+    });
+
     // ── Connection events ────────────────────────────────────────────────
     room.onLeave(() => {
       console.warn('[MP] Left room');
@@ -594,6 +636,32 @@ export class MultiplayerClient {
   /** Notify other zone players that this player just crafted an item. */
   sendCraftNotify(itemId: string, itemName: string): void {
     this.room?.send('craft_notify', { itemId, itemName });
+  }
+
+  // ── Social messages ───────────────────────────────────────────────────────
+
+  sendFriendRequest(targetName: string): void {
+    this.room?.send('friend_request', { targetName });
+  }
+
+  sendFriendRespond(requesterName: string, accept: boolean): void {
+    this.room?.send('friend_respond', { requesterName, accept });
+  }
+
+  sendFriendRemove(targetName: string): void {
+    this.room?.send('friend_remove', { targetName });
+  }
+
+  sendBlockPlayer(targetName: string): void {
+    this.room?.send('block_player', { targetName });
+  }
+
+  sendUnblockPlayer(targetName: string): void {
+    this.room?.send('unblock_player', { targetName });
+  }
+
+  sendRequestFriendsList(): void {
+    this.room?.send('friends_list', {});
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

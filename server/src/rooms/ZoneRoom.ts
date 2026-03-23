@@ -26,11 +26,30 @@ import { addItem } from "../db/inventory";
 import { getPlayerGuild } from "../db/guilds";
 import { filterProfanity } from "../chat/filter";
 import { isPlayerBanned, isPlayerMuted, logChat, createReport } from "../db/moderation";
+import {
+  sendFriendRequest,
+  acceptFriendRequest,
+  removeFriend,
+  getFriendList,
+  blockPlayer,
+  unblockPlayer,
+  getAcceptedFriendIds,
+  isBlocked,
+} from "../db/social";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
 const ATTACK_COOLDOWN_MS = 480;
 const ATTACK_RANGE_PX = 30;
+
+// Movement speed validation
+/** Client base move speed px/s (120) × sprint (1.5) + generous 40% tolerance for lag. */
+const MAX_PLAYER_SPEED_PX_S = 260;
+/** Max distance a player can move between server ticks (50 ms). */
+const MAX_MOVE_PX_PER_TICK = (MAX_PLAYER_SPEED_PX_S / 1000) * TICK_RATE_MS * 4; // ×4 for jitter
+
+// Reconnection window
+const RECONNECT_GRACE_MS = 60_000; // 60 s to reconnect after unintentional disconnect
 const ATTACK_DAMAGE = 25;
 const PLAYER_HIT_DAMAGE = 10;
 const PLAYER_INVINCIBILITY_MS = 900;
@@ -215,11 +234,32 @@ interface PendingTrade {
   counterpartConfirmed: boolean;
 }
 
+// Need/greed loot roll state
+interface LootRoll {
+  items: string[];
+  partySessionIds: string[];
+  rolls: Map<string, "need" | "greed" | "pass">;
+  timer: Delayed;
+}
+
+// Loot roll response from client
+interface LootRollResponseMessage {
+  rollId: string;
+  choice: "need" | "greed" | "pass";
+}
+
 // Player report message
 interface ReportPlayerMessage {
   reportedName: string;  // in-zone display name of the reported player
   reason?: string;       // optional short reason from reporter
 }
+
+// Social messages
+interface FriendRequestMessage  { targetName: string }
+interface FriendRespondMessage  { requesterName: string; accept: boolean }
+interface FriendRemoveMessage   { targetName: string }
+interface BlockPlayerMessage    { targetName: string }
+interface UnblockPlayerMessage  { targetName: string }
 
 // ── Chat spam constants ───────────────────────────────────────────────────────
 
@@ -277,6 +317,25 @@ export class ZoneRoom extends Room<ZoneGameState> {
   private chatWindows  = new Map<string, { count: number; windowStart: number }>();
   /** Spam mutes: sessionId → expiry timestamp (ms) */
   private spamMutes    = new Map<string, number>();
+
+  // ── Movement validation ────────────────────────────────────────────────────
+  /** Last validated server position per session for speed-hack detection. */
+  private lastPosition = new Map<string, { x: number; y: number; t: number }>();
+  /** Speed-hack violation count per session (resets on clean movement). */
+  private speedViolations = new Map<string, number>();
+
+  // ── Area of Interest (AoI) ─────────────────────────────────────────────────
+  /** Tracks which entity IDs each client currently considers "visible". sessionId → Set<entityId> */
+  private clientVisibleEntities = new Map<string, Set<string>>();
+  /** AoI tick counter — run AoI update every N game ticks. */
+  private aoiTickCounter = 0;
+  /** Visible radius in world units. At 320×180 the full canvas fits within 360 px diagonal,
+   *  so 200 px gives a practical near-field cull for denser servers in larger future worlds. */
+  private static readonly AOI_RADIUS = 200;
+
+  // ── Need/greed loot rolls ─────────────────────────────────────────────────
+  /** Active loot rolls keyed by a rollId (uid). */
+  private lootRolls = new Map<string, LootRoll>();
 
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -337,6 +396,17 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("trade_confirm",  (client: Client, msg: TradeConfirmMessage)  => this.handleTradeConfirm(client, msg));
     this.onMessage("trade_cancel",   (client: Client)                            => this.handleTradeCancel(client));
 
+    // Need/greed loot rolls
+    this.onMessage("loot_roll_response", (client: Client, msg: LootRollResponseMessage) => this.handleLootRollResponse(client, msg));
+
+    // Social — friend list and block system
+    this.onMessage("friend_request",  (client: Client, msg: FriendRequestMessage)  => this.handleFriendRequest(client, msg));
+    this.onMessage("friend_respond",  (client: Client, msg: FriendRespondMessage)   => this.handleFriendRespond(client, msg));
+    this.onMessage("friend_remove",   (client: Client, msg: FriendRemoveMessage)    => this.handleFriendRemove(client, msg));
+    this.onMessage("block_player",    (client: Client, msg: BlockPlayerMessage)     => this.handleBlockPlayer(client, msg));
+    this.onMessage("unblock_player",  (client: Client, msg: UnblockPlayerMessage)   => this.handleUnblockPlayer(client, msg));
+    this.onMessage("friends_list",    (client: Client)                              => this.handleFriendsList(client));
+
     // Count every incoming WS message for /metrics
     this.onMessage("*", () => { incrementMessageCount(); });
 
@@ -363,6 +433,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
     player.y = 50  + Math.random() * 80;
 
     this.state.players.set(client.sessionId, player);
+    // Seed last-known position for speed validation
+    this.lastPosition.set(client.sessionId, { x: player.x, y: player.y, t: Date.now() });
 
     // Load persisted state using the verified userId from the JWT
     const userId = auth?.userId;
@@ -405,6 +477,25 @@ export class ZoneRoom extends Room<ZoneGameState> {
         } catch (_factionErr) {
           // Non-fatal: faction data unavailable
         }
+
+        // Friend list — send to joining player and notify friends they're online
+        try {
+          const friends = await getFriendList(userId);
+          client.send("friends_list", { friends });
+
+          // Notify accepted friends who are currently in this room
+          const playerName = player.name;
+          const friendIds = new Set(friends.filter(f => f.status === "accepted").map(f => f.playerId));
+          this.clients.forEach((other) => {
+            if (other.sessionId === client.sessionId) return;
+            const otherId = sessionUserMap.get(other.sessionId);
+            if (otherId && friendIds.has(otherId)) {
+              other.send("friend_online", { username: playerName });
+            }
+          });
+        } catch (_socialErr) {
+          // Non-fatal
+        }
       } catch (err) {
         console.warn(`[ZoneRoom] Failed to load state for ${userId}:`, (err as Error).message);
       }
@@ -415,10 +506,49 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
   async onLeave(client: Client, consented: boolean) {
     this.cancelTradesForClient(client.sessionId);
+
+    if (!consented) {
+      // Give the client RECONNECT_GRACE_MS to reconnect before cleaning up state
+      console.log(`[ZoneRoom] ${client.sessionId} disconnected unexpectedly — holding state for ${RECONNECT_GRACE_MS / 1000}s`);
+      const player = this.state.players.get(client.sessionId);
+      if (player) player.isAttacking = false; // freeze player visually
+
+      try {
+        await this.allowReconnection(client, RECONNECT_GRACE_MS / 1000);
+        // Reconnected successfully — restore tracking and continue
+        this.lastPosition.set(client.sessionId, { x: player?.x ?? 160, y: player?.y ?? 90, t: Date.now() });
+        console.log(`[ZoneRoom] ${client.sessionId} reconnected successfully`);
+        return;
+      } catch {
+        // Grace period expired — fall through to normal cleanup
+        console.log(`[ZoneRoom] ${client.sessionId} did not reconnect within grace period`);
+      }
+    }
+
     this.removeFromParty(client.sessionId);
     await this.persistPlayer(client.sessionId);
+
+    // Notify friends this player went offline
+    const leavingUserId = sessionUserMap.get(client.sessionId);
+    const leavingPlayer = this.state.players.get(client.sessionId);
+    if (leavingUserId && leavingPlayer) {
+      const leavingName = leavingPlayer.name;
+      try {
+        const friendIds = await getAcceptedFriendIds(leavingUserId);
+        this.clients.forEach((other) => {
+          if (other.sessionId === client.sessionId) return;
+          const otherId = sessionUserMap.get(other.sessionId);
+          if (otherId && friendIds.has(otherId)) {
+            other.send("friend_offline", { username: leavingName });
+          }
+        });
+      } catch (_e) { /* non-fatal */ }
+    }
+
     this.skillStateMap.delete(client.sessionId);
     this.skillCooldowns.delete(client.sessionId);
+    this.lastPosition.delete(client.sessionId);
+    this.speedViolations.delete(client.sessionId);
     sessionUserMap.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
     console.log(`[ZoneRoom] ${client.sessionId} left (consented=${consented})`);
@@ -470,11 +600,35 @@ export class ZoneRoom extends Room<ZoneGameState> {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
 
-    // Basic sanity-clamp to canvas bounds (320×180)
-    player.x = Math.max(0, Math.min(320, msg.x));
-    player.y = Math.max(0, Math.min(180, msg.y));
+    // Clamp to world bounds
+    const newX = Math.max(0, Math.min(320, msg.x));
+    const newY = Math.max(0, Math.min(180, msg.y));
+
+    // Speed-hack detection: reject moves that exceed the maximum possible distance per tick
+    const last = this.lastPosition.get(client.sessionId);
+    if (last) {
+      const elapsed = Date.now() - last.t;
+      const maxDist = (MAX_PLAYER_SPEED_PX_S / 1000) * elapsed * 1.4; // 40% lag tolerance
+      const moved   = dist(last.x, last.y, newX, newY);
+      if (moved > maxDist + MAX_MOVE_PX_PER_TICK) {
+        const violations = (this.speedViolations.get(client.sessionId) ?? 0) + 1;
+        this.speedViolations.set(client.sessionId, violations);
+        console.warn(`[ZoneRoom] Speed violation #${violations} from ${client.sessionId}: moved ${moved.toFixed(1)}px in ${elapsed}ms (max ${maxDist.toFixed(1)}px)`);
+        // After 5 violations, reject the move entirely (keep player at last valid pos)
+        if (violations >= 5) return;
+      } else {
+        // Reset violation count on clean movement
+        if (this.speedViolations.get(client.sessionId)) {
+          this.speedViolations.set(client.sessionId, 0);
+        }
+      }
+    }
+
+    player.x      = newX;
+    player.y      = newY;
     player.facingX = msg.facingX;
     player.facingY = msg.facingY;
+    this.lastPosition.set(client.sessionId, { x: newX, y: newY, t: Date.now() });
   }
 
   private handleAttack(client: Client) {
@@ -588,9 +742,26 @@ export class ZoneRoom extends Room<ZoneGameState> {
       });
 
       if (targetClient) {
-        // Send to both sender and recipient
-        client.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
-        targetClient.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+        // Block check (fire-and-forget async guard)
+        const senderUserId = sessionUserMap.get(client.sessionId);
+        const targetUserId = sessionUserMap.get(targetClient.sessionId);
+        if (senderUserId && targetUserId) {
+          isBlocked(senderUserId, targetUserId).then((blocked) => {
+            if (blocked) {
+              client.send("chat", { sender: "System", text: `Cannot whisper "${targetName}".`, whisper: false });
+            } else {
+              client.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+              targetClient!.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+            }
+          }).catch(() => {
+            // Fallthrough on DB error — deliver normally
+            client.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+            targetClient!.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+          });
+        } else {
+          client.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+          targetClient.send("chat", { sender: senderName, text, whisper: true, whisperTo: targetName });
+        }
       } else {
         // Target not found in this zone
         client.send("chat", {
@@ -660,6 +831,147 @@ export class ZoneRoom extends Room<ZoneGameState> {
     createReport(reporterUserId, reportedUserId, reason, this.state.zoneId).catch(() => {});
 
     client.send("chat", { sender: "System", text: `Report submitted against "${reportedName}". Thank you.`, whisper: false });
+  }
+
+  // ── Social Handlers ───────────────────────────────────────────────────────────
+
+  private async handleFriendRequest(client: Client, msg: FriendRequestMessage) {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) {
+      client.send("social_error", { message: "Must be logged in to add friends." });
+      return;
+    }
+    const targetName = String(msg.targetName ?? "").slice(0, 32).trim();
+    if (!targetName) return;
+
+    const result = await sendFriendRequest(userId, targetName).catch(() => "error" as const);
+    switch (result) {
+      case "sent":
+        client.send("social_info", { message: `Friend request sent to ${targetName}.` });
+        // Notify the target if they are in this room
+        this.state.players.forEach((p: Player, sid: string) => {
+          if (p.name === targetName) {
+            const tc = this.clients.find((c: Client) => c.sessionId === sid);
+            tc?.send("friend_request_received", {
+              fromName: this.state.players.get(client.sessionId)?.name ?? "Someone",
+            });
+          }
+        });
+        break;
+      case "already_friends":
+        client.send("social_info", { message: `${targetName} is already your friend.` });
+        break;
+      case "already_pending":
+        client.send("social_info", { message: `Friend request to ${targetName} already pending.` });
+        break;
+      case "blocked":
+        client.send("social_error", { message: `Cannot send friend request to ${targetName}.` });
+        break;
+      case "not_found":
+        client.send("social_error", { message: `Player "${targetName}" not found.` });
+        break;
+      default:
+        client.send("social_error", { message: "Friend request failed. Try again." });
+    }
+  }
+
+  private async handleFriendRespond(client: Client, msg: FriendRespondMessage) {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    const requesterName = String(msg.requesterName ?? "").slice(0, 32).trim();
+    if (!requesterName) return;
+
+    if (msg.accept) {
+      const ok = await acceptFriendRequest(userId, requesterName).catch(() => false);
+      if (ok) {
+        client.send("social_info", { message: `You are now friends with ${requesterName}.` });
+        // Notify the requester if online in this room
+        this.state.players.forEach((p: Player, sid: string) => {
+          if (p.name === requesterName) {
+            const tc = this.clients.find((c: Client) => c.sessionId === sid);
+            tc?.send("friend_request_accepted", {
+              byName: this.state.players.get(client.sessionId)?.name ?? "",
+            });
+          }
+        });
+        // Refresh both players' friend lists
+        await this.sendFriendsList(client);
+      } else {
+        client.send("social_error", { message: "Could not accept friend request." });
+      }
+    } else {
+      await removeFriend(userId, requesterName).catch(() => {});
+      client.send("social_info", { message: `Declined friend request from ${requesterName}.` });
+    }
+  }
+
+  private async handleFriendRemove(client: Client, msg: FriendRemoveMessage) {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    const targetName = String(msg.targetName ?? "").slice(0, 32).trim();
+    if (!targetName) return;
+
+    await removeFriend(userId, targetName).catch(() => {});
+    client.send("social_info", { message: `Removed ${targetName} from friends.` });
+    await this.sendFriendsList(client);
+  }
+
+  private async handleBlockPlayer(client: Client, msg: BlockPlayerMessage) {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    const targetName = String(msg.targetName ?? "").slice(0, 32).trim();
+    if (!targetName) return;
+
+    const result = await blockPlayer(userId, targetName).catch(() => "error" as const);
+    switch (result) {
+      case "ok":
+        client.send("social_info", { message: `${targetName} has been blocked.` });
+        await this.sendFriendsList(client);
+        break;
+      case "already_blocked":
+        client.send("social_info", { message: `${targetName} is already blocked.` });
+        break;
+      case "not_found":
+        client.send("social_error", { message: `Player "${targetName}" not found.` });
+        break;
+      default:
+        client.send("social_error", { message: "Block failed." });
+    }
+  }
+
+  private async handleUnblockPlayer(client: Client, msg: UnblockPlayerMessage) {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    const targetName = String(msg.targetName ?? "").slice(0, 32).trim();
+    if (!targetName) return;
+
+    await unblockPlayer(userId, targetName).catch(() => {});
+    client.send("social_info", { message: `${targetName} has been unblocked.` });
+  }
+
+  private async handleFriendsList(client: Client) {
+    await this.sendFriendsList(client);
+  }
+
+  /** Build and send the friend list with live online status. */
+  private async sendFriendsList(client: Client) {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+    try {
+      const friends = await getFriendList(userId);
+      // Annotate with online status (in this zone)
+      const onlineNames = new Set<string>();
+      this.state.players.forEach((p: Player) => { onlineNames.add(p.name); });
+      const annotated = friends.map((f) => ({
+        ...f,
+        online: onlineNames.has(f.username),
+      }));
+      client.send("friends_list", { friends: annotated });
+    } catch (_e) { /* non-fatal */ }
   }
 
   // ── Quest NPC Handlers ────────────────────────────────────────────────────────
@@ -879,10 +1191,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
       return;
     }
 
-    const killer = this.state.players.get(killerSessionId);
-    if (!killer) return;
-
-    // Only consider online party members who are in this room
+    // Only consider online party members in this room
     const onlineMembers = party.memberSessionIds.filter(sid => this.state.players.has(sid));
     if (onlineMembers.length === 0) {
       await this.grantLootToSession(killerSessionId, droppedItems);
@@ -890,14 +1199,105 @@ export class ZoneRoom extends Room<ZoneGameState> {
     }
 
     if (party.lootMode === "round_robin") {
-      // Advance round-robin index and give all drops to the next player in rotation
+      // Advance round-robin index; one player gets all drops this turn
       party.roundRobinIndex = (party.roundRobinIndex + 1) % onlineMembers.length;
-      const recipientSid = onlineMembers[party.roundRobinIndex];
+      const recipientSid = onlineMembers[party.roundRobinIndex]!;
       await this.grantLootToSession(recipientSid, droppedItems);
     } else {
-      // Need/greed: killer gets all drops (default — full need/greed UI would need client-side rolls)
-      await this.grantLootToSession(killerSessionId, droppedItems);
+      // Need/greed/pass — start a timed roll
+      this.startNeedGreedRoll(droppedItems, onlineMembers);
     }
+  }
+
+  /** Initiates a need/greed/pass roll for party loot. Auto-resolves after 15 s. */
+  private startNeedGreedRoll(items: string[], partySessionIds: string[]): void {
+    const rollId = uid();
+    const timer = this.clock.setTimeout(() => this.resolveNeedGreedRoll(rollId), 15_000);
+    const roll: LootRoll = {
+      items,
+      partySessionIds,
+      rolls: new Map(),
+      timer,
+    };
+    this.lootRolls.set(rollId, roll);
+
+    // Notify all party members
+    for (const sid of partySessionIds) {
+      const c = this.clients.find((cl: Client) => cl.sessionId === sid);
+      c?.send("loot_roll_start", { rollId, items, timeoutMs: 15_000 });
+    }
+  }
+
+  /** Handles a player's need/greed/pass choice. */
+  private handleLootRollResponse(client: Client, msg: LootRollResponseMessage): void {
+    const roll = this.lootRolls.get(msg.rollId);
+    if (!roll) return;
+    if (!roll.partySessionIds.includes(client.sessionId)) return;
+    if (roll.rolls.has(client.sessionId)) return; // already voted
+
+    const choice = msg.choice;
+    if (choice !== "need" && choice !== "greed" && choice !== "pass") return;
+    roll.rolls.set(client.sessionId, choice);
+
+    // If everyone has voted, resolve immediately
+    if (roll.rolls.size >= roll.partySessionIds.length) {
+      roll.timer.clear();
+      this.resolveNeedGreedRoll(msg.rollId);
+    }
+  }
+
+  /** Resolves a need/greed/pass roll: picks winner and grants loot. */
+  private resolveNeedGreedRoll(rollId: string): void {
+    const roll = this.lootRolls.get(rollId);
+    if (!roll) return;
+    this.lootRolls.delete(rollId);
+
+    // Auto-pass for anyone who didn't respond
+    for (const sid of roll.partySessionIds) {
+      if (!roll.rolls.has(sid)) roll.rolls.set(sid, "pass");
+    }
+
+    // Priority: need > greed > pass. Within same tier, pick random winner.
+    const needers  = roll.partySessionIds.filter(sid => roll.rolls.get(sid) === "need");
+    const greeders = roll.partySessionIds.filter(sid => roll.rolls.get(sid) === "greed");
+
+    const candidates = needers.length > 0 ? needers : greeders;
+
+    const rollResults: Record<string, { choice: string; roll: number }> = {};
+    let winnerSid: string | null = null;
+
+    if (candidates.length > 0) {
+      // Each candidate rolls 1-100; highest wins
+      let bestRoll = -1;
+      for (const sid of candidates) {
+        const r = Math.floor(Math.random() * 100) + 1;
+        rollResults[sid] = { choice: roll.rolls.get(sid) ?? "pass", roll: r };
+        if (r > bestRoll) { bestRoll = r; winnerSid = sid; }
+      }
+      // Fill pass votes in results too
+      for (const sid of roll.partySessionIds) {
+        if (!rollResults[sid]) rollResults[sid] = { choice: "pass", roll: 0 };
+      }
+    }
+
+    // Notify all party members of the outcome
+    for (const sid of roll.partySessionIds) {
+      const c = this.clients.find((cl: Client) => cl.sessionId === sid);
+      c?.send("loot_roll_result", {
+        rollId,
+        items: roll.items,
+        winnerSessionId: winnerSid,
+        winnerName: winnerSid ? (this.state.players.get(winnerSid)?.name ?? "Unknown") : null,
+        rolls: rollResults,
+      });
+    }
+
+    if (winnerSid) {
+      this.grantLootToSession(winnerSid, roll.items).catch(err =>
+        console.warn("[ZoneRoom] grantLootToSession failed:", (err as Error).message),
+      );
+    }
+    // If all passed, loot is lost (by design)
   }
 
   /** Adds items to a player's inventory and notifies their client. */

@@ -358,6 +358,45 @@ export const playerReports = pgTable("player_reports", {
   reportedAt: timestamp("reported_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Friendships ───────────────────────────────────────────────────────────────
+
+export const friendships = pgTable(
+  "friendships",
+  {
+    requesterId: uuid("requester_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    addresseeId: uuid("addressee_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    /** 'pending' | 'accepted' */
+    status: varchar("status", { length: 20 }).notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.requesterId, table.addresseeId] }),
+  }),
+);
+
+// ── Player Blocks ─────────────────────────────────────────────────────────────
+
+export const playerBlocks = pgTable(
+  "player_blocks",
+  {
+    blockerId: uuid("blocker_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    blockedId: uuid("blocked_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.blockerId, table.blockedId] }),
+  }),
+);
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -383,3 +422,5 @@ export type PlayerBan = typeof playerBans.$inferSelect;
 export type PlayerMute = typeof playerMutes.$inferSelect;
 export type ChatLogRow = typeof chatLog.$inferSelect;
 export type PlayerReport = typeof playerReports.$inferSelect;
+export type Friendship = typeof friendships.$inferSelect;
+export type PlayerBlock = typeof playerBlocks.$inferSelect;
