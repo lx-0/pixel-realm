@@ -55,10 +55,13 @@ export interface RefreshTokenPayload {
 // ── Build the Fastify app ─────────────────────────────────────────────────────
 
 export async function buildAuthApp(): Promise<FastifyInstance> {
-  // In production: structured JSON via pino. In dev: pretty human-readable output.
+  // In production: structured JSON. In test: silent. In dev: pretty human-readable output.
+  const isTest = config.nodeEnv === "test";
   const logger = config.isProduction
     ? { level: "info" }
-    : { level: "debug", transport: { target: "pino-pretty", options: { colorize: true } } };
+    : isTest
+      ? false
+      : { level: "debug", transport: { target: "pino-pretty", options: { colorize: true } } };
 
   const app = Fastify({ logger });
 
