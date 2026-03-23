@@ -56,37 +56,43 @@ Production infrastructure, testing, security, and deployment pipeline. The game 
 - [x] PIX-35 — Production deployment config (env management, secrets, TLS)
 - [x] PIX-36 — Client UI polish (quest log, inventory panel, NPC dialogue UI)
 
-### M8: Comprehensive Enhancement — IN PROGRESS
+### M8: Comprehensive Enhancement — COMPLETE
 Full-stack enhancement pass based on codebase audit. 14 issues across 4 waves.
 
 **Wave 1: Security & Safety (Critical)**
-- [ ] PIX-117 — Auth hardening (password policy, reset flow, token expiry, CSRF)
-- [ ] PIX-118 — LLM safety (prompt injection defense, output validation, content moderation)
-- [ ] PIX-119 — Database resilience (soft deletes, backup strategy, cooldown persistence)
+- [x] PIX-117 — Auth hardening (password policy, reset flow, token expiry, CSRF)
+- [x] PIX-118 — LLM safety (prompt injection defense, output validation, content moderation)
+- [x] PIX-119 — Database resilience (soft deletes, backup strategy, cooldown persistence)
 
 **Wave 2: Core Quality (High)**
-- [ ] PIX-120 — Game balance (zone difficulty scaling, economy sinks, PvP tuning)
-- [ ] PIX-121 — Tutorial expansion (system tutorials for crafting, skills, marketplace)
-- [ ] PIX-122 — Chat moderation & admin tools (spam filter, kick/ban)
-- [ ] PIX-123 — DevOps hardening (staging env, TLS, observability, DB backups)
+- [x] PIX-120 — Game balance (zone difficulty scaling, economy sinks, PvP tuning)
+- [x] PIX-121 — Tutorial expansion (system tutorials for crafting, skills, marketplace)
+- [x] PIX-122 — Chat moderation & admin tools (spam filter, kick/ban)
+- [x] PIX-123 — DevOps hardening (staging env, TLS, observability, DB backups)
 
 **Wave 3: Player Experience (Medium)**
-- [ ] PIX-124 — UI polish (achievement toasts, cooldown bars, marketplace fees)
-- [ ] PIX-125 — Audio enhancement (ambient sounds, boss themes, crossfade)
-- [ ] PIX-126 — Multiplayer hardening (server authority, cheat detection, bandwidth)
-- [ ] PIX-127 — Content depth (NPC memory, seasonal stories, emotes, quest chains)
+- [x] PIX-124 — UI polish (achievement toasts, cooldown bars, marketplace fees)
+- [x] PIX-125 — Audio enhancement (ambient sounds, boss themes, crossfade)
+- [x] PIX-126 — Multiplayer hardening (server authority, cheat detection, bandwidth)
+- [x] PIX-127 — Content depth (NPC memory, seasonal stories, emotes, quest chains)
 
 **Wave 4: Art & Content (Medium)**
-- [ ] PIX-128 — Character customization art (skin variants, equipment sprites, emotes)
-- [ ] PIX-129 — Environment art (animated tiles, parallax, boss phase sprites)
-- [ ] PIX-130 — NPC variety (zone-specific quest givers, merchants, faction reps)
+- [x] PIX-128 — Character customization art (skin variants, equipment sprites, emotes)
+- [x] PIX-129 — Environment art (animated tiles, parallax, boss phase sprites)
+- [x] PIX-130 — NPC variety (zone-specific quest givers, merchants, faction reps)
 
 ### M9: Polish & Ship — BLOCKED
 - [x] PIX-17 — Final balancing and bug fixing
 - [x] PIX-18 — Performance optimization and platform build
 - [ ] PIX-19 — Distribution and launch (blocked: needs board for platform accounts)
 
-### M10: NFT Integration — DEFERRED (post-launch)
+### M10: Endgame Content — IN PROGRESS
+Post-v1 content to deepen endgame retention while awaiting distribution.
+
+- [ ] PIX-150 — Prestige/New Game+ system (level 50 reset, permanent bonuses, prestige tiers)
+- [ ] PIX-151 — Prestige system art (tier icons, rank borders, reset UI, nameplate decorations)
+
+### M11: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
 - Wallet connection (MetaMask / WalletConnect)
 - ERC-721/1155 item minting on EVM L2 (Polygon/Base)
@@ -101,12 +107,14 @@ Scope confirmed deferred from v1. Will revisit after successful launch.
 M0 → M1 → M2 → M3 → M4 ─┐
                            ├→ M7 → M8 → M9 (launch)
 M5 → M6 ──────────────────┘
-                                  M10 (post-launch, independent)
+                M10 (endgame content, parallel to M9)
+                      M11 (post-launch, independent)
 ```
 
 ## Key Decisions
 
 - **NFTs deferred to post-launch** — Ship the core MMORPG first, add blockchain later. Reduces scope and risk.
 - **Comprehensive enhancement before launch** — M8 closes security, balance, UX, and content gaps found in codebase audit.
-- **Single engineer** — One engineer has shipped M0-M7 solo. Strong velocity; monitoring for burnout.
-- **Game Artist** — Active on character customization and environment art for M8.
+- **Endgame content while waiting** — M10 adds prestige system to deepen retention; safe to develop in parallel with distribution.
+- **Single engineer** — One engineer has shipped M0-M8 solo. Strong velocity.
+- **Game Artist** — Completed all M8 art. Now on prestige system art for M10.
