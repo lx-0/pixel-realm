@@ -126,6 +126,44 @@ export function validateQuestOutput(parsed: unknown, questType: QuestType): stri
     }
   }
 
+  // ── dialogue.choices (optional, but validated when present)
+  if (d.choices !== undefined) {
+    if (!Array.isArray(d.choices) || d.choices.length < 2 || d.choices.length > 3) {
+      return "dialogue.choices must be an array of 2-3 entries";
+    }
+    const VALID_OUTCOMES = new Set(["accept", "decline", "neutral", "rep_bonus"]);
+    for (let i = 0; i < d.choices.length; i++) {
+      const c = d.choices[i];
+      if (!c || typeof c !== "object" || Array.isArray(c)) {
+        return `dialogue.choices[${i}] is not an object`;
+      }
+      const ch = c as Record<string, unknown>;
+      if (typeof ch.id !== "string" || ch.id.trim().length === 0) {
+        return `dialogue.choices[${i}].id is missing`;
+      }
+      if (typeof ch.label !== "string" || ch.label.trim().length === 0) {
+        return `dialogue.choices[${i}].label is missing`;
+      }
+      if ((ch.label as string).length > 60) {
+        return `dialogue.choices[${i}].label too long`;
+      }
+      if (typeof ch.response !== "string" || ch.response.trim().length === 0) {
+        return `dialogue.choices[${i}].response is missing`;
+      }
+      if ((ch.response as string).length > 120) {
+        return `dialogue.choices[${i}].response too long`;
+      }
+      if (!VALID_OUTCOMES.has(String(ch.outcome))) {
+        return `dialogue.choices[${i}].outcome is invalid: ${String(ch.outcome)}`;
+      }
+      if (ch.repDelta !== undefined && ch.repDelta !== null) {
+        if (typeof ch.repDelta !== "number" || !Number.isFinite(ch.repDelta)) {
+          return `dialogue.choices[${i}].repDelta must be a number`;
+        }
+      }
+    }
+  }
+
   // ── completionConditions
   if (
     !q.completionConditions ||
@@ -182,6 +220,7 @@ const BLOCKED_PATTERNS: RegExp[] = [
 export function moderateQuestContent(
   quest: Pick<RawQuestData, "title" | "description" | "objectives" | "dialogue">,
 ): { safe: boolean; reason?: string } {
+  const choiceTexts = (quest.dialogue.choices ?? []).flatMap((c) => [c.label, c.response]);
   const texts: string[] = [
     quest.title,
     quest.description,
@@ -189,6 +228,7 @@ export function moderateQuestContent(
     quest.dialogue.acceptance,
     quest.dialogue.completion,
     ...quest.objectives.map((o) => `${o.target} ${o.description}`),
+    ...choiceTexts,
   ];
 
   for (const text of texts) {

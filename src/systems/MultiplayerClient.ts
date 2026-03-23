@@ -80,16 +80,26 @@ export interface ClientQuestReward {
   items?: Array<{ itemId: string; quantity: number }>;
 }
 
+export interface ClientDialogueChoice {
+  id: string;
+  label: string;
+  response: string;
+  outcome: "accept" | "decline" | "neutral" | "rep_bonus";
+  repDelta?: number;
+}
+
 export interface ClientQuestDialogue {
   greeting: string;
   acceptance: string;
   completion: string;
+  choices?: ClientDialogueChoice[];
 }
 
 export interface ClientQuest {
   id: string;
   zoneId: string;
   questType: string;
+  factionId: string | null;
   title: string;
   description: string;
   objectives: ClientQuestObjective[];
@@ -617,6 +627,11 @@ export class MultiplayerClient {
   /** Trigger quest generation by interacting with an NPC. */
   sendQuestNpcInteract(npcId: string): void {
     this.room?.send('quest_npc_interact', { npcId });
+  }
+
+  /** Send the player's dialogue choice to the server (for rep delta processing). */
+  sendDialogueChoice(questId: string, choiceId: string, repDelta?: number, factionId?: string): void {
+    this.room?.send('dialogue_choice', { questId, choiceId, repDelta, factionId });
   }
 
   /** Mark a quest as completed on the server. */

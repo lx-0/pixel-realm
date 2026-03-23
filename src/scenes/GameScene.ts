@@ -567,10 +567,14 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Hotbar skill activation (keys 1–6), or emote when Z is held
+    // Keys 1-3 are intercepted for dialogue choices when the overlay is open.
     const emoteHeld = this.emoteKey?.isDown;
     for (let i = 0; i < 6; i++) {
       if (this.hotbarKeys[i] && Phaser.Input.Keyboard.JustDown(this.hotbarKeys[i])) {
-        if (emoteHeld && this.isMultiplayer) {
+        if (this.npcDialogue?.isVisible && i < 3) {
+          // Route 1/2/3 to dialogue choice selection
+          this.npcDialogue.selectChoiceByIndex(i);
+        } else if (emoteHeld && this.isMultiplayer) {
           const emoteIds: EmoteId[] = ['wave', 'dance', 'sit', 'cheer', 'bow', 'angry'];
           this.mp?.sendEmote(emoteIds[i]);
         } else if (!this.skillTree?.isVisible) {
@@ -828,6 +832,10 @@ export class GameScene extends Phaser.Scene {
     };
     this.npcDialogue.onDecline = () => {
       this.chat?.addMessage('Quest declined.', '#888899');
+    };
+    this.npcDialogue.onChoiceSelected = (quest, choice) => {
+      // Notify server so it can apply any faction rep delta from this choice
+      this.mp?.sendDialogueChoice(quest.id, choice.id, choice.repDelta, quest.factionId ?? undefined);
     };
 
     // Quest data from server (NPC interact response)

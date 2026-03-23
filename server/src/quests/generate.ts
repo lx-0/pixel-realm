@@ -48,7 +48,7 @@ export const QUEST_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
  */
 const TOKEN_BUDGET = Number(process.env.QUEST_TOKEN_BUDGET ?? "1200");
 /** Max tokens allocated for the model's completion. */
-const MAX_COMPLETION_TOKENS = 800;
+const MAX_COMPLETION_TOKENS = 1000;
 
 // ── Anthropic client (lazy) ───────────────────────────────────────────────────
 
@@ -189,7 +189,30 @@ Generate ONE quest in valid JSON. Use this exact schema — no extra keys, no ma
   "dialogue": {
     "greeting": "string (NPC opening line, max 120 chars${safeFactionName ? ` — the NPC belongs to the ${safeFactionName}` : ""}${memoryLines.length ? " — reference prior interactions naturally if appropriate" : ""})",
     "acceptance": "string (NPC encouragement after player accepts, max 120 chars)",
-    "completion": "string (NPC thank-you when quest is turned in, max 120 chars)"
+    "completion": "string (NPC thank-you when quest is turned in, max 120 chars)",
+    "choices": [
+      {
+        "id": "accept",
+        "label": "string (player's eager/positive reply, max 50 chars)",
+        "response": "string (NPC's warm response to acceptance, max 100 chars)",
+        "outcome": "accept",
+        "repDelta": 0
+      },
+      {
+        "id": "ask_more",
+        "label": "string (player asks a follow-up question, max 50 chars)",
+        "response": "string (NPC gives a brief helpful answer, max 100 chars)",
+        "outcome": "neutral",
+        "repDelta": 0
+      },
+      {
+        "id": "decline",
+        "label": "string (player politely declines, max 50 chars)",
+        "response": "string (NPC's understanding farewell, max 100 chars)",
+        "outcome": "decline",
+        "repDelta": 0
+      }
+    ]
   },
   "completionConditions": {
     "type": "${ctx.questType}",
@@ -204,6 +227,8 @@ Rules:
 - For kill quests, use an enemy type from the zone list.
 - For fetch quests, invent a zone-flavoured item name.
 - For escort/puzzle quests, name the NPC or puzzle element clearly.
+- The choices array must have exactly 3 entries in order: accept, ask_more, decline.
+- Each choice label is the player's words (first person), each response is the NPC's reply.
 - Output ONLY the JSON object — no prose before or after.
 </task>`;
 }

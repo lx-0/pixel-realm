@@ -178,6 +178,13 @@ interface QuestCompleteMessage {
   questId: string;
 }
 
+interface DialogueChoiceMessage {
+  choiceId: string;   // 'accept' | 'decline' | 'ask_more' | 'negotiate' | etc.
+  questId: string;    // which quest this choice belongs to
+  repDelta?: number;  // faction rep change from the choice (client-validated, clamped server-side)
+  factionId?: string; // which faction to apply the rep delta to
+}
+
 // P2P trade messages
 interface TradeRequestMessage {
   targetSessionId: string; // who the initiator wants to trade with
@@ -366,6 +373,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("chat",             (client: Client, msg: ChatMessage)        => this.handleChat(client, msg));
     this.onMessage("quest_npc_interact", (client: Client, msg: QuestNpcMessage) => this.handleQuestNpcInteract(client, msg));
     this.onMessage("quest_complete",   (client: Client, msg: QuestCompleteMessage) => this.handleQuestComplete(client, msg));
+    this.onMessage("dialogue_choice",  (client: Client, msg: DialogueChoiceMessage) => this.handleDialogueChoice(client, msg));
 
     // Skill tree messages
     this.onMessage("level_up",     (client: Client)                           => this.handleLevelUp(client));
@@ -1078,6 +1086,35 @@ export class ZoneRoom extends Room<ZoneGameState> {
       const msg = (err as Error).message ?? "Quest generation failed.";
       console.warn(`[ZoneRoom] Quest generation error for ${userId}:`, msg);
       client.send("quest_error", { message: msg });
+    }
+  }
+
+  /** Handles a player's dialogue choice selection — applies optional faction rep delta. */
+  private async handleDialogueChoice(client: Client, msg: DialogueChoiceMessage) {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    // Only apply a rep delta if the choice provides one and it's within safe bounds
+    const rawDelta = typeof msg.repDelta === "number" ? msg.repDelta : 0;
+    const delta = Math.max(-5, Math.min(5, Math.round(rawDelta))); // clamp: ±5 max
+
+    if (delta !== 0 && msg.factionId && typeof msg.factionId === "string") {
+      const factionId = String(msg.factionId).slice(0, 64);
+      try {
+        const newRep = await adjustFactionReputation(userId, factionId, delta);
+        const standing = getStanding(newRep);
+        const reps = await getPlayerFactionReputations(userId);
+        client.send("faction_reputations", { reputations: reps });
+        client.send("faction_rep_changed", {
+          factionId,
+          factionName: FACTION_BY_ID.get(factionId)?.name ?? factionId,
+          delta,
+          newRep,
+          standing,
+        });
+      } catch {
+        // Non-fatal: rep change is best-effort
+      }
     }
   }
 

@@ -14,10 +14,26 @@ export interface QuestReward {
   items?: Array<{ itemId: string; quantity: number }>;
 }
 
+/** A single branching response option shown to the player during NPC dialogue. */
+export interface DialogueChoice {
+  /** Stable identifier: 'accept' | 'decline' | 'ask_more' | 'negotiate' */
+  id: string;
+  /** Player-facing label shown on the choice button (max 60 chars). */
+  label: string;
+  /** NPC's follow-up response after the player selects this choice (max 120 chars). */
+  response: string;
+  /** What happens when this choice is selected. */
+  outcome: "accept" | "decline" | "neutral" | "rep_bonus";
+  /** Optional faction reputation delta applied on selection (positive or negative). */
+  repDelta?: number;
+}
+
 export interface QuestDialogue {
   greeting: string;    // NPC opening line when player approaches
   acceptance: string;  // NPC response after player accepts
   completion: string;  // NPC response when player returns having finished
+  /** 2-3 branching player response options. Present when contextually appropriate. */
+  choices?: DialogueChoice[];
 }
 
 export interface QuestCompletionConditions {
