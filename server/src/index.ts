@@ -4,6 +4,7 @@ import cors from "cors";
 import { Server } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ZoneRoom } from "./rooms/ZoneRoom";
+import { DungeonRoom, getDungeonCooldownRemaining, DUNGEON_COOLDOWN_MS } from "./rooms/DungeonRoom";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
@@ -457,6 +458,23 @@ app.post("/achievements/event", async (req, res) => {
   }
 });
 
+// ── Dungeon REST endpoints ────────────────────────────────────────────────────
+
+// GET /dungeon/cooldown/:userId — check per-player dungeon cooldown status
+app.get("/dungeon/cooldown/:userId", (req, res) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+  const remainingMs = getDungeonCooldownRemaining(userId);
+  res.json({
+    onCooldown: remainingMs > 0,
+    remainingMs,
+    totalMs: DUNGEON_COOLDOWN_MS,
+  });
+});
+
 // ── Leaderboard REST endpoints ────────────────────────────────────────────────
 
 const VALID_CATEGORIES = new Set<LeaderboardCategory>(["xp", "kills", "quests", "achievements", "crafting"]);
@@ -502,6 +520,11 @@ const gameServer = new Server({
 // calling joinOrCreate("zone", { zoneId: "zone1" }) always land in the
 // same room for that zone.
 gameServer.define("zone", ZoneRoom).filterBy(["zoneId"]);
+
+// Register the DungeonRoom. Each tier creates a fresh instance (not shared across tiers).
+// Clients join via: client.joinOrCreate("dungeon", { tier: 1, token })
+// Max 4 players per dungeon instance. Instances clean up when all players leave.
+gameServer.define("dungeon", DungeonRoom).filterBy(["tier"]);
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 
