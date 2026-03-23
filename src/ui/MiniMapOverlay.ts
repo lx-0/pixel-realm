@@ -65,6 +65,7 @@ export class MiniMapOverlay {
     remoteEnemySprites: Map<string, Phaser.Physics.Arcade.Sprite>,
     npcMarkers:         NpcMarker[] = [],
     deathMarker:        { x: number; y: number } | null = null,
+    partySessionIds:    Set<string> = new Set(),
   ): void {
     this.gfx.clear();
 
@@ -122,12 +123,18 @@ export class MiniMapOverlay {
       this.gfx.fillRect(mx - 1, my - 1, 2, 2);
     });
 
-    // ── Remote players (blue) ─────────────────────────────────────────────
-    this.gfx.fillStyle(0x88aaff, 0.9);
+    // ── Remote players: party members (green) vs others (blue) ───────────
     remotePlayers.forEach((rp) => {
       const mx = MAP_X + rp.x * SCALE_X;
       const my = MAP_Y + rp.y * SCALE_Y;
-      this.gfx.fillRect(mx - 1, my - 1, 2, 2);
+      if (partySessionIds.has(rp.sessionId)) {
+        this.gfx.fillStyle(0x44ff88, 1.0);
+        // Slightly larger dot for party members
+        this.gfx.fillRect(mx - 1.5, my - 1.5, 3, 3);
+      } else {
+        this.gfx.fillStyle(0x88aaff, 0.9);
+        this.gfx.fillRect(mx - 1, my - 1, 2, 2);
+      }
     });
 
     // ── Death marker — white skull cross ─────────────────────────────────

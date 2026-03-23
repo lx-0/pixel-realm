@@ -51,6 +51,10 @@ export class Player extends Schema {
   @type("string")  guildId: string = "";
   /** Short tag displayed next to player name, e.g. "[PFG]" */
   @type("string")  guildTag: string = "";
+
+  // Party (empty string = no party)
+  @type("string")  partyId: string = "";
+  @type("boolean") isPartyLeader: boolean = false;
 }
 
 // ── Enemy ─────────────────────────────────────────────────────────────────────

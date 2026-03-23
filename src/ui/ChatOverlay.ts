@@ -52,6 +52,8 @@ export class ChatOverlay {
   onSend?: (text: string, whisperTo?: string) => void;
   /** Called when the user sends a guild chat message (/g prefix). */
   onGuildSend?: (text: string) => void;
+  /** Called when the user sends a party chat message (/p prefix). */
+  onPartySend?: (text: string) => void;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -173,6 +175,12 @@ export class ChatOverlay {
   }
 
   private dispatchSend(raw: string): void {
+    // Party chat: /p message
+    const partyMatch = raw.match(/^\/p\s+(.+)$/i);
+    if (partyMatch) {
+      this.onPartySend?.(partyMatch[1].trim());
+      return;
+    }
     // Guild chat: /g message
     const guildMatch = raw.match(/^\/g\s+(.+)$/i);
     if (guildMatch) {

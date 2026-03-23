@@ -22,6 +22,7 @@ import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { GuildPanel } from '../ui/GuildPanel';
+import { PartyPanel } from '../ui/PartyPanel';
 import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
@@ -253,6 +254,15 @@ export class GameScene extends Phaser.Scene {
   /** Guild panel (multiplayer only). */
   private guildPanel?: GuildPanel;
 
+  /** Party panel (multiplayer only). */
+  private partyPanel?: PartyPanel;
+
+  /** Session IDs of current party members (for mini-map highlight). */
+  private partySessionIds = new Set<string>();
+
+  /** Pending party invite — session ID of the inviter, cleared on accept/decline. */
+  private pendingPartyInvite: string | null = null;
+
   /** Achievement panel (always present, H to open). */
   private achievementPanel?: AchievementPanel;
 
@@ -441,6 +451,7 @@ export class GameScene extends Phaser.Scene {
         this.tradeWindow?.closeIfOpen()       ||
         this.marketplace?.closeIfOpen()       ||
         this.guildPanel?.closeIfOpen()        ||
+        this.partyPanel?.closeIfOpen()        ||
         this.achievementPanel?.closeIfOpen()  ||
         this.leaderboardPanel?.closeIfOpen()  ||
         this.factionPanel?.closeIfOpen()      ||
@@ -516,6 +527,7 @@ export class GameScene extends Phaser.Scene {
     this.chat?.update(delta);
     this.playerList?.update();
     this.guildPanel?.update();
+    this.partyPanel?.update();
     this.achievementPanel?.update();
     this.leaderboardPanel?.update();
     this.factionPanel?.update();
@@ -600,6 +612,7 @@ export class GameScene extends Phaser.Scene {
       this.remoteEnemySprites,
       this.npcMarkers,
       this.deathMarkerPos,
+      this.partySessionIds,
     );
 
     const save = SaveManager.load();
@@ -642,6 +655,21 @@ export class GameScene extends Phaser.Scene {
     // Chat overlay
     this.chat = new ChatOverlay(this);
     this.chat.onSend = (text, whisperTo) => {
+      // Handle /accept and /decline for party invites
+      if (text.toLowerCase() === '/accept' || text.toLowerCase() === 'accept') {
+        if (this.pendingPartyInvite) {
+          this.mp?.sendPartyRespond(true);
+          this.pendingPartyInvite = null;
+        }
+        return;
+      }
+      if (text.toLowerCase() === '/decline' || text.toLowerCase() === 'decline') {
+        if (this.pendingPartyInvite) {
+          this.mp?.sendPartyRespond(false);
+          this.pendingPartyInvite = null;
+        }
+        return;
+      }
       this.mp?.sendChat(text, whisperTo);
     };
     this.chat.onGuildSend = (text) => {
@@ -844,9 +872,69 @@ export class GameScene extends Phaser.Scene {
       this.chat?.addMessage(label, '#88ddff');
     };
 
+    // Party panel setup
+    this.partyPanel = new PartyPanel(this);
+    this.partyPanel.setMySessionId(client.mySessionId);
+
+    // Party invite received
+    client.onPartyInvited = (fromSessionId, fromName) => {
+      this.chat?.addMessage(`[Party] ${fromName} invited you to a party! Type /accept or press P.`, '#aaffaa');
+      // Auto-show a simple accept prompt via chat hint
+      this.pendingPartyInvite = fromSessionId;
+    };
+
+    // Party state updated (member joined/left/kicked, loot mode changed)
+    client.onPartyUpdate = (state) => {
+      this.partyPanel?.applyPartyState(state);
+      this.partySessionIds = new Set(state.members.map(m => m.sessionId).filter(sid => sid !== client.mySessionId));
+    };
+
+    // Party disbanded or we left
+    client.onPartyDisbanded = (reason) => {
+      this.partyPanel?.clearParty();
+      this.partySessionIds.clear();
+      this.chat?.addMessage(`[Party] ${reason}`, '#ffbbbb');
+    };
+
+    // Incoming party chat
+    client.onPartyChat = (sender, text) => {
+      this.chat?.addMessage(`[P] ${sender}: ${text}`, '#aaffaa');
+    };
+
+    // Incoming party XP (from a party member's kill)
+    client.onPartyXp = (amount) => {
+      this.xp += amount;
+      this.floatingText(
+        this.player.x + (Math.random() - 0.5) * 20,
+        this.player.y - 22,
+        `+${amount} XP (party)`,
+        '#44ff88',
+      );
+      this.checkLevelUp();
+      this.updateHUD();
+    };
+
+    // Party error messages
+    client.onPartyError = (msg) => {
+      this.chat?.addMessage(`[Party] ${msg}`, '#ff8888');
+    };
+    client.onPartyInfo = (msg) => {
+      this.chat?.addMessage(`[Party] ${msg}`, '#aaffaa');
+    };
+
+    // Wire up party panel callbacks
+    this.partyPanel.onLeave = () => client.sendPartyLeave();
+    this.partyPanel.onKick  = (sid) => client.sendPartyKick(sid);
+    this.partyPanel.onToggleLootMode = (mode) => client.sendPartyLootMode(mode);
+
+    // Wire up party chat dispatch from ChatOverlay
+    if (this.chat) {
+      this.chat.onPartySend = (text) => client.sendPartyChat(text);
+    }
+
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [H] achievements  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [H] achievements  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -1042,8 +1130,15 @@ export class GameScene extends Phaser.Scene {
         const capturedSessionId = rp.sessionId;
         const capturedName      = rp.name;
         sprite.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
-          if (ptr.rightButtonDown() && this.tradeWindow && !this.tradeWindow.isVisible) {
-            this.tradeWindow.requestTrade(capturedSessionId, capturedName);
+          if (ptr.rightButtonDown()) {
+            if (ptr.event.shiftKey) {
+              // Shift+Right-click → party invite
+              this.mp?.sendPartyInvite(capturedSessionId);
+              this.chat?.addMessage(`[Party] Inviting ${capturedName}…`, '#aaffaa');
+            } else if (this.tradeWindow && !this.tradeWindow.isVisible) {
+              // Right-click → trade
+              this.tradeWindow.requestTrade(capturedSessionId, capturedName);
+            }
           }
         });
 

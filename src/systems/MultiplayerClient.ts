@@ -26,6 +26,26 @@ export interface RemotePlayer {
   level: number;
   isAttacking: boolean;
   guildTag: string; // e.g. "[PFG]" or empty string
+  partyId: string;  // empty string = no party
+}
+
+// ── Party data shapes ─────────────────────────────────────────────────────────
+
+export interface PartyMember {
+  sessionId:  string;
+  name:       string;
+  hp:         number;
+  maxHp:      number;
+  mana:       number;
+  maxMana:    number;
+  level:      number;
+  isLeader:   boolean;
+}
+
+export interface PartyState {
+  partyId:   string;
+  lootMode:  "round_robin" | "need_greed";
+  members:   PartyMember[];
 }
 
 export interface RemoteEnemy {
@@ -171,6 +191,15 @@ export class MultiplayerClient {
 
   // Guild callbacks
   onGuildChatMessage?: (sender: string, text: string) => void;
+
+  // Party callbacks
+  onPartyInvited?: (fromSessionId: string, fromName: string) => void;
+  onPartyUpdate?: (state: PartyState) => void;
+  onPartyDisbanded?: (reason: string) => void;
+  onPartyChat?: (sender: string, text: string) => void;
+  onPartyXp?: (amount: number) => void;
+  onPartyError?: (message: string) => void;
+  onPartyInfo?: (message: string) => void;
 
   // Trade callbacks
   onTradeInvited?: (fromSessionId: string, fromName: string) => void;
@@ -334,6 +363,29 @@ export class MultiplayerClient {
       this.onGuildChatMessage?.(msg.sender, msg.text);
     });
 
+    // ── Party messages ────────────────────────────────────────────────────
+    room.onMessage('party_invited', (msg: { fromSessionId: string; fromName: string }) => {
+      this.onPartyInvited?.(msg.fromSessionId, msg.fromName);
+    });
+    room.onMessage('party_update', (msg: PartyState) => {
+      this.onPartyUpdate?.(msg);
+    });
+    room.onMessage('party_disbanded', (msg: { reason: string }) => {
+      this.onPartyDisbanded?.(msg.reason);
+    });
+    room.onMessage('party_chat', (msg: { sender: string; text: string }) => {
+      this.onPartyChat?.(msg.sender, msg.text);
+    });
+    room.onMessage('party_xp', (msg: { amount: number }) => {
+      this.onPartyXp?.(msg.amount);
+    });
+    room.onMessage('party_error', (msg: { message: string }) => {
+      this.onPartyError?.(msg.message);
+    });
+    room.onMessage('party_info', (msg: { message: string }) => {
+      this.onPartyInfo?.(msg.message);
+    });
+
     // ── Crafting messages ─────────────────────────────────────────────────
     room.onMessage('craft_event', (msg: { playerName: string; itemName: string }) => {
       this.onCraftEvent?.(msg.playerName, msg.itemName);
@@ -390,6 +442,7 @@ export class MultiplayerClient {
       level: p.level as number,
       isAttacking: p.isAttacking as boolean,
       guildTag: (p.guildTag as string) ?? '',
+      partyId: (p.partyId as string) ?? '',
     };
   }
 
@@ -499,6 +552,33 @@ export class MultiplayerClient {
   sendGuildChat(text: string): void {
     if (!this.room || !text.trim()) return;
     this.room.send('guild_chat', { text: text.trim() });
+  }
+
+  // ── Party messages ─────────────────────────────────────────────────────────
+
+  sendPartyInvite(targetSessionId: string): void {
+    this.room?.send('party_invite', { targetSessionId });
+  }
+
+  sendPartyRespond(accept: boolean): void {
+    this.room?.send('party_respond', { accept });
+  }
+
+  sendPartyLeave(): void {
+    this.room?.send('party_leave');
+  }
+
+  sendPartyKick(targetSessionId: string): void {
+    this.room?.send('party_kick', { targetSessionId });
+  }
+
+  sendPartyLootMode(mode: 'round_robin' | 'need_greed'): void {
+    this.room?.send('party_loot_mode', { mode });
+  }
+
+  sendPartyChat(text: string): void {
+    if (!this.room || !text.trim()) return;
+    this.room.send('party_chat', { text: text.trim() });
   }
 
   // ── Crafting messages ─────────────────────────────────────────────────────

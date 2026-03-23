@@ -92,32 +92,33 @@ interface EnemyDef {
   speed: number;
   aggroRange: number;
   ranged?: boolean;
+  xp?: number;
 }
 
 const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
   zone1: [
-    { type: "slime",    hp: 30,  dmg: 5,  speed: 45, aggroRange: 80  },
-    { type: "mushroom", hp: 50,  dmg: 8,  speed: 70, aggroRange: 70  },
+    { type: "slime",    hp: 30,  dmg: 5,  speed: 45, aggroRange: 80,  xp: 10 },
+    { type: "mushroom", hp: 50,  dmg: 8,  speed: 70, aggroRange: 70,  xp: 15 },
   ],
   zone2: [
-    { type: "beetle",  hp: 45,  dmg: 10, speed: 85, aggroRange: 120 },
-    { type: "bandit",  hp: 80,  dmg: 18, speed: 55, aggroRange: 100, ranged: true },
-    { type: "sentry",  hp: 120, dmg: 0,  speed: 0,  aggroRange: 0   },
+    { type: "beetle",  hp: 45,  dmg: 10, speed: 85, aggroRange: 120, xp: 18 },
+    { type: "bandit",  hp: 80,  dmg: 18, speed: 55, aggroRange: 100, xp: 25, ranged: true },
+    { type: "sentry",  hp: 120, dmg: 0,  speed: 0,  aggroRange: 0,   xp: 30 },
   ],
   zone3: [
-    { type: "wraith",  hp: 90,  dmg: 20, speed: 65, aggroRange: 100 },
-    { type: "golem",   hp: 200, dmg: 35, speed: 30, aggroRange: 80  },
-    { type: "archer",  hp: 70,  dmg: 22, speed: 40, aggroRange: 110, ranged: true },
+    { type: "wraith",  hp: 90,  dmg: 20, speed: 65, aggroRange: 100, xp: 35 },
+    { type: "golem",   hp: 200, dmg: 35, speed: 30, aggroRange: 80,  xp: 55 },
+    { type: "archer",  hp: 70,  dmg: 22, speed: 40, aggroRange: 110, xp: 32, ranged: true },
   ],
   zone4: [
-    { type: "crab",    hp: 60,  dmg: 12, speed: 65, aggroRange: 80  },
-    { type: "wisp",    hp: 110, dmg: 28, speed: 72, aggroRange: 100, ranged: true },
-    { type: "raider",  hp: 140, dmg: 32, speed: 50, aggroRange: 90  },
+    { type: "crab",    hp: 60,  dmg: 12, speed: 65, aggroRange: 80,  xp: 28 },
+    { type: "wisp",    hp: 110, dmg: 28, speed: 72, aggroRange: 100, xp: 45, ranged: true },
+    { type: "raider",  hp: 140, dmg: 32, speed: 50, aggroRange: 90,  xp: 50 },
   ],
   zone5: [
-    { type: "ice_elemental", hp: 90,  dmg: 22, speed: 55,  aggroRange: 110, ranged: true },
-    { type: "frost_wolf",    hp: 75,  dmg: 18, speed: 100, aggroRange: 120 },
-    { type: "crystal_golem", hp: 250, dmg: 40, speed: 28,  aggroRange: 75  },
+    { type: "ice_elemental", hp: 90,  dmg: 22, speed: 55,  aggroRange: 110, xp: 48, ranged: true },
+    { type: "frost_wolf",    hp: 75,  dmg: 18, speed: 100, aggroRange: 120, xp: 40 },
+    { type: "crystal_golem", hp: 250, dmg: 40, speed: 28,  aggroRange: 75,  xp: 75 },
   ],
 };
 
@@ -175,6 +176,25 @@ interface CraftNotifyMessage {
   itemName: string;
 }
 
+// Party messages
+interface PartyInviteMessage  { targetSessionId: string }
+interface PartyRespondMessage { accept: boolean }
+interface PartyKickMessage    { targetSessionId: string }
+interface PartyLootModeMessage { mode: "round_robin" | "need_greed" }
+interface PartyChatMessage    { text: string }
+
+// In-memory party state per room
+interface PartyData {
+  id: string;
+  leaderSessionId: string;
+  memberSessionIds: string[];  // includes leader
+  lootMode: "round_robin" | "need_greed";
+  roundRobinIndex: number;     // whose turn it is for round-robin loot
+}
+
+/** Proximity radius (server coords) for shared XP distribution. */
+const PARTY_XP_RANGE = 80;
+
 // Skill messages
 interface SkillUseMessage   { skillId: string }
 interface SkillAllocMessage { skillId: string }
@@ -226,6 +246,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
   /** Per-player skill cooldowns: sessionId → skillId → expiresAtMs */
   private skillCooldowns = new Map<string, Record<string, number>>();
 
+  // ── Party state (in-memory per room) ──────────────────────────────────────
+  /** Parties keyed by partyId. */
+  private parties = new Map<string, PartyData>();
+  /** Maps sessionId → partyId. */
+  private playerParty = new Map<string, string>();
+  /** Pending invites: inviteeSessionId → inviterSessionId. */
+  private partyInvites = new Map<string, string>();
+
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -262,6 +290,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
     // Guild chat (guild members only in this zone)
     this.onMessage("guild_chat", (client: Client, msg: ChatMessage) => this.handleGuildChat(client, msg));
+
+    // Party messages
+    this.onMessage("party_invite",    (client: Client, msg: PartyInviteMessage)   => this.handlePartyInvite(client, msg));
+    this.onMessage("party_respond",   (client: Client, msg: PartyRespondMessage)  => this.handlePartyRespond(client, msg));
+    this.onMessage("party_leave",     (client: Client)                             => this.handlePartyLeave(client));
+    this.onMessage("party_kick",      (client: Client, msg: PartyKickMessage)     => this.handlePartyKick(client, msg));
+    this.onMessage("party_loot_mode", (client: Client, msg: PartyLootModeMessage) => this.handlePartyLootMode(client, msg));
+    this.onMessage("party_chat",      (client: Client, msg: PartyChatMessage)     => this.handlePartyChat(client, msg));
 
     // P2P trade messages
     this.onMessage("trade_request",  (client: Client, msg: TradeRequestMessage)  => this.handleTradeRequest(client, msg));
@@ -345,6 +381,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
   async onLeave(client: Client, consented: boolean) {
     this.cancelTradesForClient(client.sessionId);
+    this.removeFromParty(client.sessionId);
     await this.persistPlayer(client.sessionId);
     this.skillStateMap.delete(client.sessionId);
     this.skillCooldowns.delete(client.sessionId);
@@ -648,7 +685,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
     enemy.aiState = "dead";
     // Drop crafting materials for the killer and increment kill counter
     if (killerSessionId) {
-      this.dropLootForPlayer(killerSessionId).catch(() => {/* best-effort */});
+      this.dropLootForParty(killerSessionId, enemy).catch(() => {/* best-effort */});
+      this.shareXpWithParty(killerSessionId, enemy);
       this.incrementPveKills(killerSessionId).catch(() => {/* best-effort */});
       this.awardKillFactionRep(killerSessionId, enemy.type).catch(() => {/* best-effort */});
     }
@@ -660,27 +698,90 @@ export class ZoneRoom extends Room<ZoneGameState> {
     }, 500);
   }
 
-  /** Rolls loot table for the current zone and adds dropped materials to the killer's inventory. */
-  private async dropLootForPlayer(sessionId: string): Promise<void> {
-    const userId = sessionUserMap.get(sessionId);
-    if (!userId) return;
+  /** Broadcast XP to nearby party members (not the killer — they gain XP locally). */
+  private shareXpWithParty(killerSessionId: string, enemy: Enemy): void {
+    const partyId = this.playerParty.get(killerSessionId);
+    if (!partyId) return;
+    const party = this.parties.get(partyId);
+    if (!party || party.memberSessionIds.length < 2) return;
 
+    const killer = this.state.players.get(killerSessionId);
+    if (!killer) return;
+
+    // Lookup XP value from zone enemy table
+    const zoneDefs = ZONE_ENEMIES[this.state.zoneId] ?? [];
+    const def = zoneDefs.find(d => d.type === enemy.type);
+    const baseXp = def?.xp ?? 10;
+
+    // Split evenly among all members in proximity (including killer)
+    const nearby = party.memberSessionIds.filter(sid => {
+      const p = this.state.players.get(sid);
+      return p && dist(p.x, p.y, killer.x, killer.y) <= PARTY_XP_RANGE;
+    });
+    if (nearby.length === 0) return;
+
+    const sharedXp = Math.max(1, Math.floor(baseXp / nearby.length));
+
+    // Notify non-killer party members in range
+    for (const sid of nearby) {
+      if (sid === killerSessionId) continue;
+      const target = this.clients.find((c: Client) => c.sessionId === sid);
+      target?.send("party_xp", { amount: sharedXp });
+    }
+  }
+
+  /** Rolls loot table for the current zone and distributes drops per party loot rules. */
+  private async dropLootForParty(killerSessionId: string, _enemy: Enemy): Promise<void> {
     const lootTable = ZONE_LOOT[this.state.zoneId] ?? [];
     const droppedItems: string[] = [];
 
     for (const entry of lootTable) {
       if (Math.random() < entry.chance) {
-        await addItem(userId, entry.itemId, 1);
         droppedItems.push(entry.itemId);
       }
     }
+    if (droppedItems.length === 0) return;
 
-    if (droppedItems.length > 0) {
-      // Notify the killer's client so it can show floating pickup text
-      const killerClient = this.clients.find((c: Client) => c.sessionId === sessionId);
-      if (killerClient) {
-        killerClient.send("loot_drop", { items: droppedItems });
-      }
+    const partyId = this.playerParty.get(killerSessionId);
+    const party = partyId ? this.parties.get(partyId) : null;
+
+    if (!party || party.memberSessionIds.length < 2) {
+      // Solo or no party — killer gets everything
+      await this.grantLootToSession(killerSessionId, droppedItems);
+      return;
+    }
+
+    const killer = this.state.players.get(killerSessionId);
+    if (!killer) return;
+
+    // Only consider online party members who are in this room
+    const onlineMembers = party.memberSessionIds.filter(sid => this.state.players.has(sid));
+    if (onlineMembers.length === 0) {
+      await this.grantLootToSession(killerSessionId, droppedItems);
+      return;
+    }
+
+    if (party.lootMode === "round_robin") {
+      // Advance round-robin index and give all drops to the next player in rotation
+      party.roundRobinIndex = (party.roundRobinIndex + 1) % onlineMembers.length;
+      const recipientSid = onlineMembers[party.roundRobinIndex];
+      await this.grantLootToSession(recipientSid, droppedItems);
+    } else {
+      // Need/greed: killer gets all drops (default — full need/greed UI would need client-side rolls)
+      await this.grantLootToSession(killerSessionId, droppedItems);
+    }
+  }
+
+  /** Adds items to a player's inventory and notifies their client. */
+  private async grantLootToSession(sessionId: string, itemIds: string[]): Promise<void> {
+    const userId = sessionUserMap.get(sessionId);
+    if (!userId) return;
+    for (const itemId of itemIds) {
+      await addItem(userId, itemId, 1);
+    }
+    const recipientClient = this.clients.find((c: Client) => c.sessionId === sessionId);
+    if (recipientClient) {
+      recipientClient.send("loot_drop", { items: itemIds });
     }
   }
 
@@ -1485,5 +1586,234 @@ export class ZoneRoom extends Room<ZoneGameState> {
         player.buffFlags = 0;
       }
     });
+  }
+
+  // ── Party Handlers ────────────────────────────────────────────────────────────
+
+  /** Broadcasts current party state to all party members. */
+  private broadcastPartyUpdate(partyId: string): void {
+    const party = this.parties.get(partyId);
+    if (!party) return;
+
+    const members = party.memberSessionIds.map(sid => {
+      const p = this.state.players.get(sid);
+      return p
+        ? { sessionId: sid, name: p.name, hp: p.hp, maxHp: p.maxHp, mana: p.mana, maxMana: p.maxMana, level: p.level, isLeader: sid === party.leaderSessionId }
+        : null;
+    }).filter(Boolean);
+
+    for (const sid of party.memberSessionIds) {
+      const target = this.clients.find((c: Client) => c.sessionId === sid);
+      target?.send("party_update", {
+        partyId,
+        lootMode: party.lootMode,
+        members,
+      });
+    }
+  }
+
+  private handlePartyInvite(client: Client, msg: PartyInviteMessage): void {
+    const inviter = this.state.players.get(client.sessionId);
+    if (!inviter) return;
+
+    // Only leaders (or players without a party) can invite
+    const inviterPartyId = this.playerParty.get(client.sessionId);
+    if (inviterPartyId) {
+      const party = this.parties.get(inviterPartyId);
+      if (party && party.leaderSessionId !== client.sessionId) {
+        client.send("party_error", { message: "Only the party leader can invite players." });
+        return;
+      }
+      if (party && party.memberSessionIds.length >= 4) {
+        client.send("party_error", { message: "Party is full (max 4 players)." });
+        return;
+      }
+    }
+
+    const target = this.clients.find((c: Client) => c.sessionId === msg.targetSessionId);
+    if (!target) {
+      client.send("party_error", { message: "Player not found in this zone." });
+      return;
+    }
+    if (msg.targetSessionId === client.sessionId) {
+      client.send("party_error", { message: "You cannot invite yourself." });
+      return;
+    }
+    if (this.playerParty.has(msg.targetSessionId)) {
+      client.send("party_error", { message: "That player is already in a party." });
+      return;
+    }
+
+    this.partyInvites.set(msg.targetSessionId, client.sessionId);
+    target.send("party_invited", { fromSessionId: client.sessionId, fromName: inviter.name });
+    client.send("party_info", { message: `Invite sent to ${this.state.players.get(msg.targetSessionId)?.name ?? "player"}.` });
+  }
+
+  private handlePartyRespond(client: Client, msg: PartyRespondMessage): void {
+    const inviterSessionId = this.partyInvites.get(client.sessionId);
+    this.partyInvites.delete(client.sessionId);
+
+    if (!inviterSessionId) {
+      client.send("party_error", { message: "No pending party invite." });
+      return;
+    }
+
+    if (!msg.accept) {
+      const inviter = this.clients.find((c: Client) => c.sessionId === inviterSessionId);
+      inviter?.send("party_info", { message: `${this.state.players.get(client.sessionId)?.name ?? "Player"} declined your party invite.` });
+      return;
+    }
+
+    // Accept: create new party or add to existing
+    let partyId = this.playerParty.get(inviterSessionId);
+    let party: PartyData;
+
+    if (!partyId) {
+      // Create a new party with inviter as leader
+      partyId = uid();
+      party = {
+        id: partyId,
+        leaderSessionId: inviterSessionId,
+        memberSessionIds: [inviterSessionId],
+        lootMode: "need_greed",
+        roundRobinIndex: 0,
+      };
+      this.parties.set(partyId, party);
+      this.playerParty.set(inviterSessionId, partyId);
+      const inviterPlayer = this.state.players.get(inviterSessionId);
+      if (inviterPlayer) {
+        inviterPlayer.partyId = partyId;
+        inviterPlayer.isPartyLeader = true;
+      }
+    } else {
+      party = this.parties.get(partyId)!;
+      if (party.memberSessionIds.length >= 4) {
+        client.send("party_error", { message: "Party is full (max 4 players)." });
+        return;
+      }
+    }
+
+    party.memberSessionIds.push(client.sessionId);
+    this.playerParty.set(client.sessionId, partyId);
+
+    const joiner = this.state.players.get(client.sessionId);
+    if (joiner) {
+      joiner.partyId = partyId;
+      joiner.isPartyLeader = false;
+    }
+
+    this.broadcastPartyUpdate(partyId);
+  }
+
+  private handlePartyLeave(client: Client): void {
+    this.removeFromParty(client.sessionId);
+  }
+
+  private handlePartyKick(client: Client, msg: PartyKickMessage): void {
+    const partyId = this.playerParty.get(client.sessionId);
+    if (!partyId) return;
+    const party = this.parties.get(partyId);
+    if (!party) return;
+    if (party.leaderSessionId !== client.sessionId) {
+      client.send("party_error", { message: "Only the party leader can kick members." });
+      return;
+    }
+    if (msg.targetSessionId === client.sessionId) {
+      client.send("party_error", { message: "You cannot kick yourself. Use leave instead." });
+      return;
+    }
+    if (!party.memberSessionIds.includes(msg.targetSessionId)) {
+      client.send("party_error", { message: "That player is not in your party." });
+      return;
+    }
+    this.removeFromParty(msg.targetSessionId, true);
+  }
+
+  private handlePartyLootMode(client: Client, msg: PartyLootModeMessage): void {
+    const partyId = this.playerParty.get(client.sessionId);
+    if (!partyId) return;
+    const party = this.parties.get(partyId);
+    if (!party) return;
+    if (party.leaderSessionId !== client.sessionId) {
+      client.send("party_error", { message: "Only the party leader can change loot mode." });
+      return;
+    }
+    party.lootMode = msg.mode;
+    this.broadcastPartyUpdate(partyId);
+  }
+
+  private handlePartyChat(client: Client, msg: PartyChatMessage): void {
+    const sender = this.state.players.get(client.sessionId);
+    if (!sender) return;
+    const partyId = this.playerParty.get(client.sessionId);
+    if (!partyId) {
+      client.send("chat", { sender: "System", text: "You are not in a party.", whisper: false });
+      return;
+    }
+    const party = this.parties.get(partyId);
+    if (!party) return;
+
+    const text = String(msg.text ?? "").replace(/[\x00-\x1f]/g, "").slice(0, 140);
+    if (!text) return;
+
+    for (const sid of party.memberSessionIds) {
+      const target = this.clients.find((c: Client) => c.sessionId === sid);
+      target?.send("party_chat", { sender: sender.name, text });
+    }
+  }
+
+  /**
+   * Remove a session from its party. If the player is the leader, either
+   * promotes the next member or disbands if they were the last member.
+   */
+  private removeFromParty(sessionId: string, wasKicked = false): void {
+    const partyId = this.playerParty.get(sessionId);
+    if (!partyId) return;
+    const party = this.parties.get(partyId);
+    if (!party) return;
+
+    party.memberSessionIds = party.memberSessionIds.filter(sid => sid !== sessionId);
+    this.playerParty.delete(sessionId);
+
+    const leavingPlayer = this.state.players.get(sessionId);
+    if (leavingPlayer) {
+      leavingPlayer.partyId = "";
+      leavingPlayer.isPartyLeader = false;
+    }
+
+    // Notify the leaving player
+    const leavingClient = this.clients.find((c: Client) => c.sessionId === sessionId);
+    if (wasKicked) {
+      leavingClient?.send("party_disbanded", { reason: "You were kicked from the party." });
+    } else {
+      leavingClient?.send("party_disbanded", { reason: "You left the party." });
+    }
+
+    if (party.memberSessionIds.length === 0) {
+      // Disband empty party
+      this.parties.delete(partyId);
+      return;
+    }
+
+    if (party.memberSessionIds.length === 1) {
+      // Only one member left — disband
+      const lastSid = party.memberSessionIds[0];
+      this.playerParty.delete(lastSid);
+      const lastPlayer = this.state.players.get(lastSid);
+      if (lastPlayer) { lastPlayer.partyId = ""; lastPlayer.isPartyLeader = false; }
+      const lastClient = this.clients.find((c: Client) => c.sessionId === lastSid);
+      lastClient?.send("party_disbanded", { reason: "Party disbanded (not enough members)." });
+      this.parties.delete(partyId);
+      return;
+    }
+
+    // If leader left, promote the next member
+    if (party.leaderSessionId === sessionId) {
+      party.leaderSessionId = party.memberSessionIds[0];
+      const newLeader = this.state.players.get(party.leaderSessionId);
+      if (newLeader) newLeader.isPartyLeader = true;
+    }
+
+    this.broadcastPartyUpdate(partyId);
   }
 }
