@@ -474,6 +474,7 @@ export class GameScene extends Phaser.Scene {
         this.achievementPanel?.closeIfOpen()  ||
         this.leaderboardPanel?.closeIfOpen()  ||
         this.factionPanel?.closeIfOpen()      ||
+        this.fastTravelPanel?.closeIfOpen()   ||
         this.npcDialogue?.closeIfOpen()       ||
         this.craftingPanel?.closeIfOpen()     ||
         this.questLog?.closeIfOpen()          ||
@@ -537,7 +538,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     // NPC interact key (E) — triggers quest dialogue in multiplayer
-    if (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) && this.isMultiplayer) {
+    // Skipped when the player is near the Transport NPC (handled in updateTransportNpcHint)
+    const nearTransport = this.transportNpc && this.player
+      ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.transportNpc.x, this.transportNpc.y) < 40
+      : false;
+    if (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) && this.isMultiplayer && !nearTransport) {
       this.handleNpcInteract();
     }
 
@@ -610,6 +615,7 @@ export class GameScene extends Phaser.Scene {
 
     // Crafting station proximity hint
     this.updateCraftingStationHint();
+    this.updateTransportNpcHint();
 
     this.handleDodgeRoll(time);
     this.handlePlayerMovement(delta);
@@ -1366,6 +1372,77 @@ export class GameScene extends Phaser.Scene {
       '[F] Crafting Station',
       { fontSize: '4px', color: '#ffcc88', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
     ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
+  }
+
+  // ── Transport NPC ─────────────────────────────────────────────────────────
+
+  private addTransportNpc(x: number, y: number): void {
+    const g = this.add.graphics().setDepth(4);
+
+    // Body: teal-robed figure
+    g.fillStyle(0x226688);
+    g.fillRect(-8, -10, 16, 18);
+    // Head
+    g.fillStyle(0xddbb99);
+    g.fillRect(-5, -18, 10, 10);
+    // Hat
+    g.fillStyle(0x114455);
+    g.fillRect(-6, -22, 12, 5);
+
+    const label = this.add.text(0, 9, 'TRANSPORT', {
+      fontSize: '3px', color: '#88ddff', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0).setDepth(4);
+
+    this.transportNpc = this.add.container(x, y, [g, label]).setDepth(4);
+
+    // Bobbing animation
+    this.tweens.add({
+      targets: label,
+      alpha: 0.5,
+      duration: 1100,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    // HUD proximity hint (scroll-fixed)
+    this.transportHint = this.add.text(
+      CANVAS.WIDTH / 2, CANVAS.HEIGHT - 20,
+      '[E] Fast Travel',
+      { fontSize: '4px', color: '#88ddff', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
+
+    // Fast travel panel (created once, reused)
+    this.fastTravelPanel = new FastTravelPanel(this);
+    this.fastTravelPanel.currentZoneId = this.zone.id;
+    this.fastTravelPanel.onTravel = (zoneId, cost) => {
+      this.gold = Math.max(0, this.gold - cost);
+      this.updateHUD();
+      this.cameras.main.fadeOut(400, 0, 0, 0, () => {
+        this.scene.start(SCENES.GAME, { zoneId });
+      });
+    };
+  }
+
+  private updateTransportNpcHint(): void {
+    if (!this.transportNpc || !this.transportHint || !this.player) return;
+    const dist = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.transportNpc.x, this.transportNpc.y,
+    );
+    const near = dist < 40;
+    this.transportHint.setVisible(near && !this.fastTravelPanel?.isVisible);
+
+    // E key near Transport NPC opens fast travel
+    if (near && this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey)) {
+      if (this.fastTravelPanel) {
+        const save = SaveManager.load();
+        this.fastTravelPanel.currentZoneId  = this.zone.id;
+        this.fastTravelPanel.unlockedZoneIds = save.unlockedZones;
+        this.fastTravelPanel.playerGold     = this.gold;
+        this.fastTravelPanel.open();
+      }
+    }
   }
 
   // ── Player ────────────────────────────────────────────────────────────────

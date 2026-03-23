@@ -54,6 +54,7 @@ const DEFS: LocalAchievementDef[] = [
   { id: 'veteran',       title: 'Veteran',            description: 'Reach player level 5.',       icon: '🎖', category: 'social',      points: 3, goal: 5   },
   { id: 'legend',        title: 'Legend',             description: 'Reach player level 10.',      icon: '⭐', category: 'social',      points: 7, goal: 10  },
   // Questing
+  { id: 'first_steps',   title: 'First Steps',        description: 'Complete the tutorial.',      icon: '🎓', category: 'questing',    points: 2, goal: 1   },
   { id: 'quest_seeker',  title: 'Quest Seeker',       description: 'Complete your first quest.',  icon: '📋', category: 'questing',    points: 1, goal: 1   },
   { id: 'hero_realm',    title: 'Hero of the Realm',  description: 'Complete 5 quests.',          icon: '📋', category: 'questing',    points: 3, goal: 5   },
   { id: 'legendary_quester', title: 'Legendary Quester', description: 'Complete 15 quests.',     icon: '📜', category: 'questing',    points: 5, goal: 15  },
@@ -101,6 +102,9 @@ export class AchievementTracker {
 
       // Derive progress from save data where applicable
       switch (def.id) {
+        case 'first_steps':
+          progress = Math.max(progress, save.tutorialCompleted ? 1 : 0);
+          break;
         case 'first_blood':
         case 'warrior_path':
         case 'centurion':
@@ -139,7 +143,7 @@ export class AchievementTracker {
    * Called by GameScene for solo-mode events (kills, zone visits, level ups, boss kills).
    */
   static recordEvent(
-    type: 'kill' | 'boss_kill' | 'zone_visit' | 'zone_complete' | 'level_up',
+    type: 'kill' | 'boss_kill' | 'zone_visit' | 'zone_complete' | 'level_up' | 'tutorial_complete',
     data: { count?: number; level?: number } = {},
   ): LocalAchievementState[] {
     const stored = AchievementTracker.loadStored();
@@ -165,6 +169,10 @@ export class AchievementTracker {
     };
 
     switch (type) {
+      case 'tutorial_complete': {
+        tryUnlock('first_steps', 1);
+        break;
+      }
       case 'kill': {
         const kills = save.totalKills + (data.count ?? 1);
         tryUnlock('first_blood',  kills);

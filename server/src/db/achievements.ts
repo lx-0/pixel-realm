@@ -217,6 +217,15 @@ export const ACHIEVEMENTS: AchievementDef[] = [
 
   // ── Questing ──────────────────────────────────────────────────────────────────
   {
+    id: "first_steps",
+    title: "First Steps",
+    description: "Complete the tutorial.",
+    icon: "🎓",
+    category: "questing",
+    points: 2,
+    goal: 1,
+  },
+  {
     id: "quest_seeker",
     title: "Quest Seeker",
     description: "Complete your first quest.",
@@ -262,15 +271,16 @@ export const ACHIEVEMENT_MAP = new Map<string, AchievementDef>(
 // ── Event types ───────────────────────────────────────────────────────────────
 
 export type AchievementEventType =
-  | "enemy_killed"    // data: { isBoss?: boolean }
-  | "zone_visited"    // data: { distinctZones: number }
-  | "zone_completed"  // data: { distinctZones: number }
-  | "item_crafted"    // data: { totalCrafts: number; distinctRecipes: number }
+  | "enemy_killed"      // data: { isBoss?: boolean }
+  | "zone_visited"      // data: { distinctZones: number }
+  | "zone_completed"    // data: { distinctZones: number }
+  | "item_crafted"      // data: { totalCrafts: number; distinctRecipes: number }
   | "guild_created"
   | "guild_joined"
-  | "player_invited"  // data: { totalInvited: number }
-  | "quest_completed" // data: { totalQuests: number; distinctTypes: number }
-  | "level_up";       // data: { level: number }
+  | "player_invited"    // data: { totalInvited: number }
+  | "quest_completed"   // data: { totalQuests: number; distinctTypes: number }
+  | "tutorial_complete" // no extra data — just completion
+  | "level_up";         // data: { level: number }
 
 // ── Public result types ────────────────────────────────────────────────────────
 
@@ -411,6 +421,10 @@ export async function processAchievementEvent(
         updates.push({ id: "hero_realm", progress: total });
         updates.push({ id: "legendary_quester", progress: total });
         updates.push({ id: "type_specialist", progress: distinct });
+        break;
+      }
+      case "tutorial_complete": {
+        updates.push({ id: "first_steps", progress: 1 });
         break;
       }
       case "level_up": {

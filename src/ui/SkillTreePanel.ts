@@ -345,13 +345,29 @@ export class SkillTreePanel {
   }
 
   private showTooltip(skill: SkillDef, x: number, y: number): void {
-    const lines: string[] = [
-      `${skill.name}`,
-      skill.type === 'active'
-        ? `CD: ${((skill.cooldownMs ?? 0) / 1000).toFixed(1)}s  Mana: ${skill.manaCost ?? 0}`
-        : 'Passive',
-      skill.description,
-    ];
+    const lines: string[] = [`${skill.name}`];
+
+    if (skill.type === 'active') {
+      lines.push(`CD: ${((skill.cooldownMs ?? 0) / 1000).toFixed(1)}s  Mana: ${skill.manaCost ?? 0}`);
+    } else {
+      lines.push('Passive');
+      // Show passive stat bonuses
+      const pb = skill.passiveBonus;
+      if (pb) {
+        if (pb.damagePct)           lines.push(`+${Math.round(pb.damagePct * 100)}% damage`);
+        if (pb.maxHpFlat)           lines.push(`+${pb.maxHpFlat} max HP`);
+        if (pb.maxManaFlat)         lines.push(`+${pb.maxManaFlat} max mana`);
+        if (pb.speedPct)            lines.push(`+${Math.round(pb.speedPct * 100)}% move speed`);
+        if (pb.critChancePct)       lines.push(`+${Math.round(pb.critChancePct * 100)}% crit chance`);
+        if (pb.attackCdReductionPct)lines.push(`-${Math.round(pb.attackCdReductionPct * 100)}% attack CD`);
+        if (pb.allCdReductionPct)   lines.push(`-${Math.round(pb.allCdReductionPct * 100)}% all CDs`);
+        if (pb.damageReductionPct)  lines.push(`-${Math.round(pb.damageReductionPct * 100)}% dmg taken`);
+        if (pb.manaRegenFlat)       lines.push(`+${pb.manaRegenFlat} mana/s`);
+        if (pb.healOnKill)          lines.push(`+${pb.healOnKill} HP on kill`);
+      }
+    }
+
+    lines.push(skill.description);
     const tipText = lines.join('\n');
     this.tooltipText.setText(tipText);
 

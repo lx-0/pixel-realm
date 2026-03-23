@@ -453,13 +453,14 @@ export class MarketplacePanel {
 
     // List selected item form
     if (this.selectedInvIdx >= 0 && this.selectedInvIdx < this.inventory.length) {
-      const inv     = this.inventory[this.selectedInvIdx];
-      const formY   = y + maxRows * rowH + 2;
-      const fee     = Math.max(1, Math.round((this.listPrice || 0) * LISTING_FEE_RATE));
+      const inv       = this.inventory[this.selectedInvIdx];
+      const formY     = y + maxRows * rowH + 2;
+      const fee       = this.listPrice > 0 ? Math.max(1, Math.round(this.listPrice * LISTING_FEE_RATE)) : 0;
+      const youReceive = Math.max(0, this.listPrice - fee);
 
       this.container.add(
         this.scene.add.text(PANEL_X + PAD, formY,
-          `Price for ${inv.item.name}: ${this.listPrice || '?'}g  (fee: ${fee}g)`,
+          `List ${inv.item.name} — set price:`,
           { fontSize: '3px', color: '#aabbcc', fontFamily: 'monospace' },
         ).setScrollFactor(0),
       );
@@ -467,10 +468,13 @@ export class MarketplacePanel {
       // Price buttons (quick set)
       const priceOptions = [10, 50, 100, 500];
       priceOptions.forEach((p, i) => {
-        const btn = this.scene.add.rectangle(PANEL_X + PAD + i * 30, formY + 8, 28, 8, 0x222233, 0.9)
+        const isActive = this.listPrice === p;
+        const btn = this.scene.add.rectangle(PANEL_X + PAD + i * 30, formY + 7, 28, 8,
+          isActive ? 0x334433 : 0x222233, 0.9)
           .setOrigin(0, 0).setScrollFactor(0).setInteractive();
-        const btnTxt = this.scene.add.text(PANEL_X + PAD + i * 30 + 14, formY + 12, `${p}g`, {
-          fontSize: '3px', color: '#aaddff', fontFamily: 'monospace',
+        if (isActive) btn.setStrokeStyle(1, 0x88cc88, 0.8);
+        const btnTxt = this.scene.add.text(PANEL_X + PAD + i * 30 + 14, formY + 11, `${p}g`, {
+          fontSize: '3px', color: isActive ? '#88ff88' : '#aaddff', fontFamily: 'monospace',
         }).setOrigin(0.5).setScrollFactor(0);
         btn.on('pointerup', () => {
           this.listPrice = p;
@@ -479,11 +483,18 @@ export class MarketplacePanel {
         this.container.add([btn, btnTxt]);
       });
 
-      // List button
+      // Fee breakdown — only show when a price is selected
       if (this.listPrice > 0) {
-        const listBtn = this.scene.add.rectangle(PANEL_X + PANEL_W - PAD - 55, formY + 8, 55, 8, 0x224422, 0.9)
+        this.container.add(
+          this.scene.add.text(PANEL_X + PAD, formY + 17,
+            `Fee: ${fee}g (5%)   You receive: ${youReceive}g`,
+            { fontSize: '3px', color: '#ffdd88', fontFamily: 'monospace' },
+          ).setScrollFactor(0),
+        );
+
+        const listBtn = this.scene.add.rectangle(PANEL_X + PANEL_W - PAD - 55, formY + 17, 55, 8, 0x224422, 0.9)
           .setOrigin(0, 0).setScrollFactor(0).setInteractive();
-        const listTxt = this.scene.add.text(PANEL_X + PANEL_W - PAD - 27, formY + 12, 'List for sale', {
+        const listTxt = this.scene.add.text(PANEL_X + PANEL_W - PAD - 27, formY + 21, 'List for sale', {
           fontSize: '3px', color: '#88ff88', fontFamily: 'monospace',
         }).setOrigin(0.5).setScrollFactor(0);
         listBtn.on('pointerup', () => this.createListing(inv, 1, this.listPrice));
