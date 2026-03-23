@@ -29,6 +29,7 @@ import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
 import { FastTravelPanel } from '../ui/FastTravelPanel';
+import { ConnectionOverlay } from '../ui/ConnectionOverlay';
 import { DayNightSystem } from '../systems/DayNightSystem';
 import { WeatherSystem }   from '../systems/WeatherSystem';
 import {
@@ -193,6 +194,17 @@ export class GameScene extends Phaser.Scene {
 
   /** HUD text showing online player count. */
   private onlineCountText?: Phaser.GameObjects.Text;
+
+  /** Connection quality indicator dot (green/yellow/red). */
+  private pingDot?: Phaser.GameObjects.Arc;
+  /** Ping value label next to the dot. */
+  private pingValueText?: Phaser.GameObjects.Text;
+  /** "High Latency" warning shown when ping > 300 ms. */
+  private latencyWarning?: Phaser.GameObjects.Text;
+  /** Dismissible banner for planned server maintenance. */
+  private maintenanceBanner?: Phaser.GameObjects.Text;
+  /** Full-screen disconnect/reconnect overlay. */
+  private connectionOverlay?: ConnectionOverlay;
 
   /** Chat overlay (multiplayer only). */
   private chat?: ChatOverlay;
@@ -1106,9 +1118,30 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
+    // Show overlay immediately when connection drops; reconnect attempts begin automatically.
+    client.onConnectionLost = () => {
+      this.connectionOverlay?.show(60);
+    };
+
+    // Successful reconnect — server state sync resumes via existing listeners.
+    client.onReconnected = () => {
+      this.connectionOverlay?.showReconnected();
+      this.isMultiplayer = true;
+      this.mp = client;
+      this.chat?.addMessage('Reconnected to server!', '#44ee88');
+    };
+
+    // All reconnect attempts exhausted — fall back to solo play.
     client.onDisconnected = () => {
+      this.connectionOverlay?.showFailed();
       this.isMultiplayer = false;
       this.mp = null;
+      // Clean up ping HUD
+      this.pingDot?.destroy();
+      this.pingDot = undefined;
+      this.pingValueText?.destroy();
+      this.pingValueText = undefined;
+      this.latencyWarning?.setVisible(false);
       this.clearRemoteSprites();
       this.chat?.destroy();
       this.chat = undefined;
@@ -1134,9 +1167,10 @@ export class GameScene extends Phaser.Scene {
       this.achievementPanel = new AchievementPanel(this); // re-create without userId for solo fallback
       this.leaderboardPanel?.destroy();
       this.leaderboardPanel = new LeaderboardPanel(this);
-      this.floatingText(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2 - 20, 'Disconnected — solo mode', '#ff8888');
-      // Resume local simulation
-      if (!this.isDead && !this.waveTransitioning) this.spawnWave();
+      // Resume local simulation after overlay hides (~2.5 s)
+      this.time.delayedCall(2600, () => {
+        if (!this.isDead && !this.waveTransitioning) this.spawnWave();
+      });
     };
 
     // Create the online player count HUD item
@@ -1144,7 +1178,71 @@ export class GameScene extends Phaser.Scene {
       fontSize: '4px', color: '#88ffcc', fontFamily: 'monospace',
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(12);
 
+    // ── Connection quality indicator (top-right, below mute indicator) ────
+    const HUD_Z = 12;
+    const dotX  = CANVAS.WIDTH - 6;
+    const dotY  = 35;
+    this.pingDot = this.add.circle(dotX, dotY, 3, 0x44ee44)
+      .setScrollFactor(0).setDepth(HUD_Z);
+    this.pingValueText = this.add.text(dotX - 5, dotY + 5, '--', {
+      fontSize: '4px', color: '#888899', fontFamily: 'monospace',
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(HUD_Z);
+
+    // Make the dot interactive — show ping value tooltip on hover
+    this.pingDot.setInteractive();
+    this.pingDot.on('pointerover', () => this.pingValueText?.setVisible(true));
+    this.pingDot.on('pointerout',  () => this.pingValueText?.setVisible(false));
+    this.pingValueText.setVisible(false);
+
+    // ── High-latency warning (top-center, below wave/online text) ────────
+    this.latencyWarning = this.add.text(CANVAS.WIDTH / 2, 12, '⚠ High Latency', {
+      fontSize: '5px', color: '#ffaa00', fontFamily: 'monospace',
+      stroke: '#000', strokeThickness: 1,
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(HUD_Z + 1).setVisible(false);
+
+    // ── Latency callback ──────────────────────────────────────────────────
+    client.onLatencyUpdate = (ms: number) => {
+      if (!this.pingDot || !this.pingValueText) return;
+      const color = ms < 100 ? 0x44ee44 : ms < 300 ? 0xffaa00 : 0xff4444;
+      this.pingDot.setFillStyle(color);
+      this.pingValueText.setText(`${ms}ms`);
+      this.latencyWarning?.setVisible(ms >= 300);
+    };
+
+    // ── Maintenance notice ────────────────────────────────────────────────
+    client.onMaintenanceNotice = (minutesLeft: number) => {
+      this.showMaintenanceBanner(minutesLeft);
+    };
+
+    // ── Connection overlay ────────────────────────────────────────────────
+    this.connectionOverlay = new ConnectionOverlay(this);
+
     this.updateHUD();
+  }
+
+  /** Show a dismissible maintenance banner at the top of the screen. */
+  private showMaintenanceBanner(minutesLeft: number): void {
+    if (!this.maintenanceBanner) {
+      this.maintenanceBanner = this.add.text(CANVAS.WIDTH / 2, 22, '', {
+        fontSize: '5px', color: '#ffcc44', fontFamily: 'monospace',
+        stroke: '#220000', strokeThickness: 2,
+        backgroundColor: '#331100',
+        padding: { x: 4, y: 2 },
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(15).setInteractive();
+
+      // Click to dismiss
+      this.maintenanceBanner.on('pointerdown', () => {
+        this.maintenanceBanner?.setVisible(false);
+      });
+    }
+    this.maintenanceBanner.setText(
+      `⚠  Server restart in ${minutesLeft} min — save your progress!  [click to dismiss]`,
+    ).setVisible(true);
+
+    // Auto-dismiss after 30 s if not dismissed manually
+    this.time.delayedCall(30000, () => {
+      this.maintenanceBanner?.setVisible(false);
+    });
   }
 
   // ── NPC interaction ───────────────────────────────────────────────────────

@@ -189,11 +189,34 @@ export class MultiplayerClient {
   /** This client's Colyseus session id. */
   mySessionId = '';
 
+  /** Current round-trip latency in ms. -1 = not yet measured. */
+  latencyMs = -1;
+
+  // ── Reconnect state ───────────────────────────────────────────────────────
+  private storedZoneId     = '';
+  private storedPlayerName = '';
+  private storedUserId?: string;
+  private isReconnecting   = false;
+  private reconnectLeft    = 0;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // ── Ping interval ─────────────────────────────────────────────────────────
+  private pingIntervalId: ReturnType<typeof setInterval> | null = null;
+
   // ── Callbacks set by GameScene ────────────────────────────────────────────
 
   onWaveStateChange?: (wave: number, waveState: string) => void;
   onEnemyRemoved?: (id: string) => void;
+  /** Fired when the WebSocket drops and auto-reconnect attempts begin. */
+  onConnectionLost?: () => void;
+  /** Fired on successful reconnect within the retry window. */
+  onReconnected?: () => void;
+  /** Fired when all reconnect attempts are exhausted (fall back to solo). */
   onDisconnected?: () => void;
+  /** Fired whenever a latency measurement completes. */
+  onLatencyUpdate?: (ms: number) => void;
+  /** Fired when the server pushes a planned maintenance warning. */
+  onMaintenanceNotice?: (minutesLeft: number) => void;
   onChatMessage?: (msg: ChatIncomingMessage) => void;
   onQuestData?: (quest: ClientQuest, isNew: boolean) => void;
   onQuestError?: (message: string) => void;
@@ -273,6 +296,11 @@ export class MultiplayerClient {
     playerName: string,
     userId?: string,
   ): Promise<boolean> {
+    // Store for reconnect attempts
+    this.storedZoneId     = zoneId;
+    this.storedPlayerName = playerName;
+    this.storedUserId     = userId;
+
     try {
       const opts: Record<string, string> = { zoneId, playerName };
       if (userId) opts.userId = userId;
@@ -281,6 +309,7 @@ export class MultiplayerClient {
       this.mySessionId = this.room.sessionId;
 
       this.setupStateListeners();
+      this.startPingLoop();
       console.log(`[MP] Joined zone ${zoneId} as session ${this.mySessionId}`);
       return true;
     } catch (err) {
@@ -498,11 +527,29 @@ export class MultiplayerClient {
       this.onSocialError?.(msg.message);
     });
 
+    // ── Ping / latency measurement ────────────────────────────────────────
+    room.onMessage('pong', (msg: { t: number }) => {
+      const rtt = Date.now() - (msg.t as number);
+      this.latencyMs = rtt;
+      this.onLatencyUpdate?.(rtt);
+    });
+
+    // ── Server maintenance notice ─────────────────────────────────────────
+    room.onMessage('server_maintenance', (msg: { minutesLeft: number }) => {
+      this.onMaintenanceNotice?.(msg.minutesLeft as number);
+    });
+
     // ── Connection events ────────────────────────────────────────────────
     room.onLeave(() => {
       console.warn('[MP] Left room');
+      this.stopPingLoop();
       this.room = null;
-      this.onDisconnected?.();
+      if (this.isReconnecting) return; // already in reconnect loop
+      this.isReconnecting = true;
+      // 20 attempts × 3 s each = 60 s total window
+      this.reconnectLeft = 20;
+      this.onConnectionLost?.();
+      this.scheduleReconnect();
     });
 
     room.onError((code: number, msg?: string) => {
@@ -716,7 +763,70 @@ export class MultiplayerClient {
   }
 
   async disconnect(): Promise<void> {
+    // Cancel any in-flight reconnect attempts before leaving intentionally
+    this.isReconnecting = false;
+    this.stopPingLoop();
+    this.stopReconnect();
     await this.room?.leave();
     this.room = null;
+  }
+
+  // ── Ping helpers ──────────────────────────────────────────────────────────
+
+  private startPingLoop(): void {
+    this.stopPingLoop();
+    this.pingIntervalId = setInterval(() => {
+      if (this.room) {
+        this.room.send('ping', { t: Date.now() });
+      }
+    }, 2000);
+  }
+
+  private stopPingLoop(): void {
+    if (this.pingIntervalId !== null) {
+      clearInterval(this.pingIntervalId);
+      this.pingIntervalId = null;
+    }
+  }
+
+  // ── Reconnect helpers ─────────────────────────────────────────────────────
+
+  private stopReconnect(): void {
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+  }
+
+  private scheduleReconnect(): void {
+    if (this.reconnectLeft <= 0 || !this.isReconnecting) {
+      this.isReconnecting = false;
+      this.onDisconnected?.();
+      return;
+    }
+
+    this.reconnectLeft--;
+
+    this.reconnectTimer = setTimeout(async () => {
+      if (!this.isReconnecting) return;
+      try {
+        const opts: Record<string, string> = {
+          zoneId:     this.storedZoneId,
+          playerName: this.storedPlayerName,
+        };
+        if (this.storedUserId) opts.userId = this.storedUserId;
+
+        this.room = await this.client.joinOrCreate<any>('zone', opts);
+        this.mySessionId = this.room.sessionId;
+        this.setupStateListeners();
+        this.startPingLoop();
+        this.isReconnecting = false;
+        console.log('[MP] Reconnected successfully');
+        this.onReconnected?.();
+      } catch {
+        console.warn(`[MP] Reconnect attempt failed (${this.reconnectLeft} left)`);
+        this.scheduleReconnect();
+      }
+    }, 3000);
   }
 }
