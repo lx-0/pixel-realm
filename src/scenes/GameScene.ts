@@ -25,6 +25,7 @@ import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
 import { DayNightSystem } from '../systems/DayNightSystem';
+import { WeatherSystem }   from '../systems/WeatherSystem';
 import {
   SKILL_BY_ID, computePassiveBonuses,
   type ClassId, type PassiveBonus,
@@ -250,6 +251,9 @@ export class GameScene extends Phaser.Scene {
   /** Day-night cycle — tint overlay + in-game clock HUD. */
   private dayNight?: DayNightSystem;
 
+  /** Weather system — precipitation particles, fog overlay, speed modifiers. */
+  private weather?: WeatherSystem;
+
   /** HUD text showing total achievement points. */
   private achievePtsText?: Phaser.GameObjects.Text;
 
@@ -370,6 +374,7 @@ export class GameScene extends Phaser.Scene {
     this.setupCamera();
     this.createHUD();
     this.dayNight = new DayNightSystem(this);
+    this.weather  = new WeatherSystem(this, this.zone.biome);
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
 
@@ -554,6 +559,7 @@ export class GameScene extends Phaser.Scene {
 
     this.tutorial?.update(time, delta);
     this.dayNight?.update(delta);
+    this.weather?.update(delta);
   }
 
   // ── Multiplayer init ──────────────────────────────────────────────────────
@@ -1164,7 +1170,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    let speed = (PLAYER.MOVE_SPEED + (this.level - 1) * LEVELS.SPEED_BONUS_PER_LEVEL) * (1 + this.passiveBonusCache.speedPct);
+    let speed = (PLAYER.MOVE_SPEED + (this.level - 1) * LEVELS.SPEED_BONUS_PER_LEVEL) * (1 + this.passiveBonusCache.speedPct) * (this.weather?.speedMultiplier ?? 1);
     let vx = 0;
     let vy = 0;
     const left  = this.cursors.left.isDown  || this.wasd.A.isDown;
