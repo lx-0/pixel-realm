@@ -77,6 +77,24 @@ export interface ClientQuest {
   dialogue: ClientQuestDialogue;
 }
 
+// ── Faction data shapes ───────────────────────────────────────────────────────
+
+export type FactionStanding = "hostile" | "unfriendly" | "neutral" | "friendly" | "exalted";
+
+export interface FactionRepEntry {
+  factionId: string;
+  reputation: number;  // -100 to +100
+  standing: FactionStanding;
+}
+
+export interface FactionRepChanged {
+  factionId: string;
+  factionName: string;
+  delta: number;
+  newRep: number;
+  standing: FactionStanding;
+}
+
 export interface ZoneRoomState {
   zoneId: string;
   currentWave: number;
@@ -146,6 +164,10 @@ export class MultiplayerClient {
   onCraftEvent?: (playerName: string, itemName: string) => void;
   /** Called when the local player receives crafting material drops after a kill. */
   onLootDrop?: (items: string[]) => void;
+
+  // Faction callbacks
+  onFactionReputations?: (reputations: FactionRepEntry[]) => void;
+  onFactionRepChanged?: (change: FactionRepChanged) => void;
 
   // Guild callbacks
   onGuildChatMessage?: (sender: string, text: string) => void;
@@ -296,6 +318,15 @@ export class MultiplayerClient {
     });
     room.onMessage('trade_error', (msg: { message: string }) => {
       this.onTradeError?.(msg.message);
+    });
+
+    // ── Faction messages ──────────────────────────────────────────────────
+    room.onMessage('faction_reputations', (msg: { reputations: FactionRepEntry[] }) => {
+      this.onFactionReputations?.(msg.reputations);
+    });
+
+    room.onMessage('faction_rep_changed', (msg: FactionRepChanged) => {
+      this.onFactionRepChanged?.(msg);
     });
 
     // ── Guild messages ────────────────────────────────────────────────────

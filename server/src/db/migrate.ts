@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { getPool } from "./client";
 
-const MIGRATIONS = ["0001_initial.sql", "0002_quests.sql", "0003_trading.sql", "0004_skill_trees.sql", "0005_crafting.sql", "0006_achievements.sql", "0007_leaderboard.sql"];
+const MIGRATIONS = ["0001_initial.sql", "0002_quests.sql", "0003_trading.sql", "0004_skill_trees.sql", "0005_crafting.sql", "0006_achievements.sql", "0007_leaderboard.sql", "0008_factions.sql"];
 
 /**
  * Applies pending SQL migrations in order.

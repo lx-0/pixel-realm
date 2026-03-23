@@ -7,7 +7,8 @@ import {
 } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
 import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData }  from '../systems/SaveManager';
-import { MultiplayerClient, type RemotePlayer, type RemoteEnemy } from '../systems/MultiplayerClient';
+import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged } from '../systems/MultiplayerClient';
+import { FactionReputationPanel } from '../ui/FactionReputationPanel';
 import { ChatOverlay }        from '../ui/ChatOverlay';
 import { PlayerListPanel }    from '../ui/PlayerListPanel';
 import { QuestLogPanel }      from '../ui/QuestLogPanel';
@@ -258,6 +259,9 @@ export class GameScene extends Phaser.Scene {
   /** Leaderboard panel (always present, L to open). */
   private leaderboardPanel?: LeaderboardPanel;
 
+  /** Faction reputation panel (multiplayer only, R to open). */
+  private factionPanel?: FactionReputationPanel;
+
   /** Day-night cycle — tint overlay + in-game clock HUD. */
   private dayNight?: DayNightSystem;
 
@@ -439,6 +443,7 @@ export class GameScene extends Phaser.Scene {
         this.guildPanel?.closeIfOpen()        ||
         this.achievementPanel?.closeIfOpen()  ||
         this.leaderboardPanel?.closeIfOpen()  ||
+        this.factionPanel?.closeIfOpen()      ||
         this.npcDialogue?.closeIfOpen()       ||
         this.craftingPanel?.closeIfOpen()     ||
         this.questLog?.closeIfOpen()          ||
@@ -513,6 +518,7 @@ export class GameScene extends Phaser.Scene {
     this.guildPanel?.update();
     this.achievementPanel?.update();
     this.leaderboardPanel?.update();
+    this.factionPanel?.update();
 
     // Panel updates with mutual exclusion — opening one closes the others
     const qlWas   = this.questLog?.isVisible     ?? false;
@@ -648,6 +654,9 @@ export class GameScene extends Phaser.Scene {
     // Quest log panel
     this.questLog = new QuestLogPanel(this);
 
+    // Faction reputation panel (R key)
+    this.factionPanel = new FactionReputationPanel(this);
+
     // Inventory panel
     this.inventory = new InventoryPanel(this);
 
@@ -720,6 +729,20 @@ export class GameScene extends Phaser.Scene {
       this.hasActiveQuest = false;
       this.npcMarkers = this.npcMarkers.map(m => ({ ...m, hasQuest: false }));
       this.chat?.addMessage('Quest completed! Rewards granted.', '#88ee88');
+    };
+
+    // Faction reputation callbacks
+    client.onFactionReputations = (reps: FactionRepEntry[]) => {
+      this.factionPanel?.setReputations(reps);
+    };
+
+    client.onFactionRepChanged = (change: FactionRepChanged) => {
+      this.factionPanel?.updateEntry(change.factionId, change.newRep, change.standing);
+      const sign = change.delta >= 0 ? '+' : '';
+      this.chat?.addMessage(
+        `${change.factionName}: ${sign}${change.delta} rep (${change.standing})`,
+        change.delta >= 0 ? '#88ee88' : '#ff8888',
+      );
     };
 
     // Incoming chat messages
@@ -823,7 +846,7 @@ export class GameScene extends Phaser.Scene {
 
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [G] guild  [H] achievements  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [H] achievements  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -854,6 +877,8 @@ export class GameScene extends Phaser.Scene {
       this.playerList = undefined;
       this.questLog?.destroy();
       this.questLog = undefined;
+      this.factionPanel?.destroy();
+      this.factionPanel = undefined;
       this.inventory?.destroy();
       this.inventory = undefined;
       this.npcDialogue?.destroy();

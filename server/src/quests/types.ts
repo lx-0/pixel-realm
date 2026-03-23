@@ -32,6 +32,8 @@ export interface GeneratedQuest {
   zoneId: string;
   playerLevelBucket: number;
   questType: QuestType;
+  /** Faction that issued this quest — used for reputation awards on completion. */
+  factionId: string | null;
   title: string;
   description: string;
   objectives: QuestObjective[];
@@ -53,4 +55,8 @@ export interface QuestGenerationContext {
   levelBucket: number;
   questType: QuestType;
   enemyTypes: string[];
+  factionId: string | null;
+  factionName: string | null;
+  /** Player's current standing with this faction ("neutral", "friendly", etc.) */
+  playerStanding: string | null;
 }

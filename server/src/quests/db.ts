@@ -15,6 +15,8 @@ import {
   QUEST_CACHE_TTL_MS,
 } from "./generate";
 import type { GeneratedQuest, QuestGenerationContext, QuestType } from "./types";
+import { factionForZone, getStanding } from "../factions";
+import { getPlayerFactionReputation } from "../db/factions";
 
 // ── Zone metadata (mirrors client constants.ts ZONES) ─────────────────────────
 
@@ -70,6 +72,7 @@ async function getCachedQuest(cacheKey: string): Promise<GeneratedQuest | null> 
     zoneId: row.zoneId,
     playerLevelBucket: row.playerLevelBucket,
     questType: row.questType as QuestType,
+    factionId: row.factionId ?? null,
     title: row.title,
     description: row.description,
     objectives: row.objectives as GeneratedQuest["objectives"],
@@ -97,6 +100,7 @@ async function generateAndStore(ctx: QuestGenerationContext): Promise<GeneratedQ
       zoneId: ctx.zoneId,
       playerLevelBucket: ctx.levelBucket,
       questType: ctx.questType,
+      factionId: ctx.factionId,
       title: data.title,
       description: data.description,
       objectives: data.objectives,
@@ -115,6 +119,7 @@ async function generateAndStore(ctx: QuestGenerationContext): Promise<GeneratedQ
         rewards: data.rewards,
         dialogue: data.dialogue,
         completionConditions: data.completionConditions,
+        factionId: ctx.factionId,
         generatedAt: new Date(),
         expiresAt,
       },
@@ -126,6 +131,7 @@ async function generateAndStore(ctx: QuestGenerationContext): Promise<GeneratedQ
     zoneId: row.zoneId,
     playerLevelBucket: row.playerLevelBucket,
     questType: row.questType as QuestType,
+    factionId: row.factionId ?? null,
     title: row.title,
     description: row.description,
     objectives: row.objectives as GeneratedQuest["objectives"],
@@ -180,6 +186,7 @@ export async function getOrGenerateQuest(
         zoneId: row.zoneId,
         playerLevelBucket: row.playerLevelBucket,
         questType: row.questType as QuestType,
+        factionId: row.factionId ?? null,
         title: row.title,
         description: row.description,
         objectives: row.objectives as GeneratedQuest["objectives"],
@@ -203,6 +210,15 @@ export async function getOrGenerateQuest(
 
   if (!quest) {
     const meta = ZONE_META[zoneId] ?? ZONE_META["zone1"];
+    const faction = factionForZone(zoneId);
+
+    // Look up player's standing with this zone's faction (if any)
+    let playerStanding: string | null = null;
+    if (faction) {
+      const rep = await getPlayerFactionReputation(playerId, faction.id);
+      playerStanding = rep.standing;
+    }
+
     const ctx: QuestGenerationContext = {
       zoneId,
       zoneName: meta.name,
@@ -212,6 +228,9 @@ export async function getOrGenerateQuest(
       levelBucket: bucket,
       questType,
       enemyTypes: meta.enemyTypes,
+      factionId: faction?.id ?? null,
+      factionName: faction?.name ?? null,
+      playerStanding,
     };
     quest = await generateAndStore(ctx);
   }
@@ -228,17 +247,26 @@ export async function getOrGenerateQuest(
 
 /**
  * Marks a player's LLM quest in a zone as completed.
- * Validates that the completion conditions are satisfied before marking done.
+ * Returns the factionId of the completed quest (for rep awards), or null.
  */
 export async function completeQuestForPlayer(
   playerId: string,
   zoneId: string,
   questId: string,
-): Promise<void> {
+): Promise<{ factionId: string | null }> {
   const db = getDb();
   const progressId = `llm:${zoneId}:${questId}`;
   await db
     .update(progression)
     .set({ status: "completed", completedAt: new Date() })
     .where(and(eq(progression.playerId, playerId), eq(progression.questId, progressId)));
+
+  // Look up the factionId from the quest record
+  const rows = await db
+    .select({ factionId: generatedQuests.factionId })
+    .from(generatedQuests)
+    .where(eq(generatedQuests.id, questId))
+    .limit(1);
+
+  return { factionId: rows[0]?.factionId ?? null };
 }

@@ -134,6 +134,9 @@ describe("Quest rate limiter", () => {
       levelBucket: 1,
       questType: "kill",
       enemyTypes: ["goblin", "slime"],
+      factionId: null,
+      factionName: null,
+      playerStanding: null,
     });
 
     expect(result.title).toBe("Test Quest");
@@ -158,6 +161,9 @@ describe("Quest rate limiter", () => {
         levelBucket: 1,
         questType: "kill",
         enemyTypes: ["goblin"],
+        factionId: null,
+        factionName: null,
+        playerStanding: null,
       }),
     ).rejects.toThrow(/rate limit/i);
   });

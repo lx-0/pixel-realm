@@ -5,6 +5,19 @@ import { invalidateLeaderboardCache } from "../db/leaderboard";
 import { getPool } from "../db/client";
 import { getOrGenerateQuest, completeQuestForPlayer } from "../quests/db";
 import { verifyRoomToken, AuthPayload } from "../auth/middleware";
+import {
+  getPlayerFactionReputations,
+  adjustFactionReputation,
+  initPlayerFactionReputations,
+} from "../db/factions";
+import {
+  factionForZone,
+  factionForEnemy,
+  getStanding,
+  REP_PER_KILL,
+  RIVAL_REP_LOSS,
+  FACTION_BY_ID,
+} from "../factions";
 import { executeP2PTrade, type TradeItem } from "../db/marketplace";
 import { initSkillState, loadSkillState, saveSkillState, type SkillState } from "../db/skills";
 import { ALL_SKILLS, SKILL_BY_ID, computePassiveBonuses, type ClassId } from "../skills";
@@ -313,6 +326,15 @@ export class ZoneRoom extends Room<ZoneGameState> {
         } catch (_guildErr) {
           // Non-fatal: guild data unavailable, player continues without tag
         }
+
+        // Load faction reputations and send to client (best-effort)
+        try {
+          await initPlayerFactionReputations(userId);
+          const reps = await getPlayerFactionReputations(userId);
+          client.send("faction_reputations", { reputations: reps });
+        } catch (_factionErr) {
+          // Non-fatal: faction data unavailable
+        }
       } catch (err) {
         console.warn(`[ZoneRoom] Failed to load state for ${userId}:`, (err as Error).message);
       }
@@ -487,6 +509,29 @@ export class ZoneRoom extends Room<ZoneGameState> {
       return;
     }
 
+    // Check faction standing — hostile NPCs won't offer quests
+    const zoneFaction = factionForZone(this.state.zoneId);
+    if (zoneFaction) {
+      try {
+        const reps = await getPlayerFactionReputations(userId);
+        const entry = reps.find((r) => r.factionId === zoneFaction.id);
+        if (entry && entry.standing === "hostile") {
+          client.send("quest_error", {
+            message: `The ${zoneFaction.name} won't speak with you — you are hostile to them!`,
+          });
+          return;
+        }
+        if (entry && entry.standing === "unfriendly") {
+          client.send("quest_error", {
+            message: `The ${zoneFaction.name} are wary of you. Improve your standing to receive quests.`,
+          });
+          return;
+        }
+      } catch {
+        // Non-fatal: allow quest if rep check fails
+      }
+    }
+
     try {
       const { quest, isNew } = await getOrGenerateQuest(
         userId,
@@ -512,9 +557,35 @@ export class ZoneRoom extends Room<ZoneGameState> {
     if (!questId) return;
 
     try {
-      await completeQuestForPlayer(userId, this.state.zoneId, questId);
+      const { factionId } = await completeQuestForPlayer(userId, this.state.zoneId, questId);
       client.send("quest_completed", { questId });
       console.log(`[ZoneRoom] Quest ${questId} completed by ${userId}`);
+
+      // Award faction reputation
+      if (factionId) {
+        const faction = FACTION_BY_ID.get(factionId);
+        if (faction) {
+          const gain = faction.questRepGain;
+          const newRep = await adjustFactionReputation(userId, factionId, gain);
+          const standing = getStanding(newRep);
+
+          // Apply rival rep loss
+          if (faction.rivalFactionId) {
+            await adjustFactionReputation(userId, faction.rivalFactionId, -RIVAL_REP_LOSS);
+          }
+
+          // Send updated standings
+          const reps = await getPlayerFactionReputations(userId);
+          client.send("faction_reputations", { reputations: reps });
+          client.send("faction_rep_changed", {
+            factionId,
+            factionName: faction.name,
+            delta: gain,
+            newRep,
+            standing,
+          });
+        }
+      }
     } catch (err) {
       console.warn(`[ZoneRoom] Quest completion error for ${userId}:`, (err as Error).message);
     }
@@ -579,6 +650,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
     if (killerSessionId) {
       this.dropLootForPlayer(killerSessionId).catch(() => {/* best-effort */});
       this.incrementPveKills(killerSessionId).catch(() => {/* best-effort */});
+      this.awardKillFactionRep(killerSessionId, enemy.type).catch(() => {/* best-effort */});
     }
     // Remove from state after a short delay (so clients can play death animation)
     this.clock.setTimeout(() => {
@@ -625,6 +697,32 @@ export class ZoneRoom extends Room<ZoneGameState> {
       invalidateLeaderboardCache("kills").catch(() => {/* non-fatal */});
     } catch (err) {
       console.warn("[ZoneRoom] Failed to increment pve_kills:", (err as Error).message);
+    }
+  }
+
+  /**
+   * Awards +REP_PER_KILL reputation to the faction whose enemies include this enemy type.
+   * Sends updated standings to the killer's client.
+   */
+  private async awardKillFactionRep(sessionId: string, enemyType: string): Promise<void> {
+    const userId = sessionUserMap.get(sessionId);
+    if (!userId) return;
+
+    const faction = factionForEnemy(enemyType);
+    if (!faction) return;
+
+    const newRep = await adjustFactionReputation(userId, faction.id, REP_PER_KILL);
+    const standing = getStanding(newRep);
+
+    const killerClient = this.clients.find((c: Client) => c.sessionId === sessionId);
+    if (killerClient) {
+      killerClient.send("faction_rep_changed", {
+        factionId: faction.id,
+        factionName: faction.name,
+        delta: REP_PER_KILL,
+        newRep,
+        standing,
+      });
     }
   }
 

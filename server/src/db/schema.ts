@@ -100,6 +100,7 @@ export const generatedQuests = pgTable("generated_quests", {
   zoneId: varchar("zone_id", { length: 50 }).notNull(),
   playerLevelBucket: integer("player_level_bucket").notNull(),
   questType: varchar("quest_type", { length: 30 }).notNull(),
+  factionId: varchar("faction_id", { length: 50 }),
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description").notNull(),
   objectives: jsonb("objectives").notNull().default([]),
@@ -231,6 +232,24 @@ export const playerAchievements = pgTable(
   }),
 );
 
+// ── Faction Reputation (standings per player per faction) ─────────────────────
+
+export const playerFactionReputation = pgTable(
+  "player_faction_reputation",
+  {
+    playerId: uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    factionId: varchar("faction_id", { length: 50 }).notNull(),
+    /** -100 (hostile) to +100 (exalted), starts at 0 (neutral) */
+    reputation: integer("reputation").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.factionId] }),
+  }),
+);
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -248,3 +267,4 @@ export type CraftingProgressRow = typeof craftingProgress.$inferSelect;
 export type Guild = typeof guilds.$inferSelect;
 export type GuildMembership = typeof guildMemberships.$inferSelect;
 export type PlayerAchievement = typeof playerAchievements.$inferSelect;
+export type PlayerFactionReputation = typeof playerFactionReputation.$inferSelect;

@@ -100,13 +100,17 @@ function buildPrompt(ctx: QuestGenerationContext): string {
     puzzle:  "Solve an environmental or riddle-based challenge in the zone.",
   };
 
+  const factionLine = ctx.factionId && ctx.factionName
+    ? `Quest giver faction: ${ctx.factionName} (player's standing: ${ctx.playerStanding ?? "neutral"})`
+    : "";
+
   return `You are a quest writer for a pixel-art MMORPG called PixelRealm. Your output must be appropriate for all ages (child-friendly, no violence gore or adult content).
 
 Zone: ${ctx.zoneName} (${ctx.zoneBiome})
 Zone description: ${ctx.zoneDescription}
 Player level: ${ctx.playerLevel} (difficulty tier ${ctx.levelBucket}/4)
 Quest type: ${ctx.questType} — ${questTypeGuide[ctx.questType]}
-Enemy types present in this zone: ${ctx.enemyTypes.join(", ")}
+Enemy types present in this zone: ${ctx.enemyTypes.join(", ")}${factionLine ? `\n${factionLine}` : ""}
 
 Generate ONE quest in valid JSON. Use this exact schema — no extra keys, no markdown fences:
 {
@@ -121,7 +125,7 @@ Generate ONE quest in valid JSON. Use this exact schema — no extra keys, no ma
     }
   ],
   "dialogue": {
-    "greeting": "string (NPC opening line, max 120 chars)",
+    "greeting": "string (NPC opening line, max 120 chars${ctx.factionName ? ` — the NPC belongs to the ${ctx.factionName}` : ""})",
     "acceptance": "string (NPC encouragement after player accepts, max 120 chars)",
     "completion": "string (NPC thank-you when quest is turned in, max 120 chars)"
   },
@@ -134,7 +138,7 @@ Generate ONE quest in valid JSON. Use this exact schema — no extra keys, no ma
 
 Rules:
 - Keep all text age-appropriate and positive in tone.
-- Quest must feel thematically tied to the zone's biome and enemies.
+- Quest must feel thematically tied to the zone's biome and enemies.${ctx.factionName ? `\n- The NPC is a member of the ${ctx.factionName} — weave their identity naturally into the dialogue.` : ""}
 - For kill quests, use an enemy type from the zone list.
 - For fetch quests, invent a zone-flavoured item name.
 - For escort/puzzle quests, name the NPC or puzzle element clearly.
