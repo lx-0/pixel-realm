@@ -19,6 +19,7 @@ const BCRYPT_ROUNDS = 12;
 export async function createPlayerRecord(
   username: string,
   password: string,
+  email?: string,
 ): Promise<Player> {
   const db = getDb();
 
@@ -36,6 +37,7 @@ export async function createPlayerRecord(
     username,
     usernameLower: username.toLowerCase(),
     passwordHash,
+    email: email ?? null,
   };
 
   const [row] = await db.insert(players).values(newPlayer).returning();
@@ -56,6 +58,22 @@ export async function findPlayerById(id: string): Promise<Player | null> {
   const db = getDb();
   const rows = await db.select().from(players).where(eq(players.id, id)).limit(1);
   return rows[0] ?? null;
+}
+
+export async function findPlayerByEmail(email: string): Promise<Player | null> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(players)
+    .where(eq(players.email, email.toLowerCase()))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function updatePlayerPassword(id: string, newPassword: string): Promise<void> {
+  const db = getDb();
+  const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+  await db.update(players).set({ passwordHash }).where(eq(players.id, id));
 }
 
 export async function verifyPlayerPassword(player: Player, password: string): Promise<boolean> {

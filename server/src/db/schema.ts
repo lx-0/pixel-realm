@@ -17,6 +17,7 @@ export const players = pgTable("players", {
   username: varchar("username", { length: 20 }).notNull().unique(),
   usernameLower: varchar("username_lower", { length: 20 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

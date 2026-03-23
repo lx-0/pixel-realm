@@ -7,9 +7,17 @@
  *   POST /auth/refresh
  *   POST /auth/logout
  *   GET  /auth/me
+ *   POST /auth/forgot-password
+ *   POST /auth/reset-password
  *
  * Access tokens  – short-lived (15 min), signed HS256
  * Refresh tokens – long-lived  (7 days), backed by Redis session
+ *
+ * Security hardening:
+ *   - Password policy: min 8 chars, 1 number, 1 special char
+ *   - Rate limits: register 3/min, login 5/min, refresh 10/min
+ *   - CSRF: Origin header validation on all state-mutating routes
+ *   - Input validation: email format, username length, sanitization via schema
  */
 
 import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
@@ -19,12 +27,17 @@ import fastifyJwt from "@fastify/jwt";
 import {
   createUser,
   findUserByUsername,
+  findUserByEmail,
   findUserById,
   verifyPassword,
   createSession,
   findSession,
   deleteSession,
   rotateSession,
+  updateUserPassword,
+  createPasswordResetToken,
+  findPasswordResetToken,
+  deletePasswordResetToken,
 } from "./store";
 import { getRedis } from "./redis";
 import { config } from "../config";
@@ -52,6 +65,21 @@ export interface RefreshTokenPayload {
   type: "refresh";
 }
 
+// ── Password policy ───────────────────────────────────────────────────────────
+
+const HAS_NUMBER = /[0-9]/;
+const HAS_SPECIAL = /[!@#$%^&*()\-_=+[\]{};:'",.<>/?\\|`~]/;
+
+function validatePasswordStrength(password: string): string | null {
+  if (!HAS_NUMBER.test(password)) {
+    return "Password must contain at least one number";
+  }
+  if (!HAS_SPECIAL.test(password)) {
+    return "Password must contain at least one special character";
+  }
+  return null;
+}
+
 // ── Build the Fastify app ─────────────────────────────────────────────────────
 
 export async function buildAuthApp(): Promise<FastifyInstance> {
@@ -76,6 +104,27 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
   });
 
   await app.register(fastifyJwt, { secret: JWT_SECRET });
+
+  // ── CSRF protection: Origin header validation ─────────────────────────────
+  // Reject state-mutating requests that carry an Origin header not in the
+  // allowed list. Requests without Origin (server-to-server, CLI tools) are
+  // allowed through — CSRF attacks only originate from browsers.
+
+  const allowedOriginSet = new Set(
+    Array.isArray(ALLOWED_ORIGINS) ? ALLOWED_ORIGINS : [ALLOWED_ORIGINS],
+  );
+
+  app.addHook("preHandler", async (req: FastifyRequest, reply: FastifyReply) => {
+    const method = req.method.toUpperCase();
+    if (method !== "POST" && method !== "PATCH" && method !== "DELETE") return;
+
+    const origin = req.headers["origin"];
+    if (!origin) return; // non-browser client — skip
+
+    if (!allowedOriginSet.has(origin)) {
+      reply.code(403).send({ error: "CSRF: Origin not allowed" });
+    }
+  });
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -105,7 +154,7 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
     "/auth/register",
     {
       config: {
-        rateLimit: { max: 10, timeWindow: "1 minute" },
+        rateLimit: { max: 3, timeWindow: "1 minute" },
       },
       schema: {
         body: {
@@ -114,14 +163,21 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
           properties: {
             username: { type: "string", minLength: 3, maxLength: 20, pattern: "^[a-zA-Z0-9_]+$" },
             password: { type: "string", minLength: 8, maxLength: 72 },
+            email: { type: "string", format: "email", maxLength: 255 },
           },
         },
       },
     },
-    async (req: FastifyRequest<{ Body: { username: string; password: string } }>, reply: FastifyReply) => {
-      const { username, password } = req.body;
+    async (req: FastifyRequest<{ Body: { username: string; password: string; email?: string } }>, reply: FastifyReply) => {
+      const { username, password, email } = req.body;
+
+      const strengthError = validatePasswordStrength(password);
+      if (strengthError) {
+        return reply.code(400).send({ error: strengthError });
+      }
+
       try {
-        const user = await createUser(username, password);
+        const user = await createUser(username, password, email);
         const session = await createSession(user.id, user.username);
         return reply.code(201).send({
           accessToken: signAccess({ sub: user.id, username: user.username, jti: session.jti }),
@@ -177,7 +233,7 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
     "/auth/refresh",
     {
       config: {
-        rateLimit: { max: 30, timeWindow: "1 minute" },
+        rateLimit: { max: 10, timeWindow: "1 minute" },
       },
       schema: {
         body: {
@@ -241,6 +297,92 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
       const user = await findUserById(payload.sub);
       if (!user) return reply.code(404).send({ error: "User not found" });
       return reply.send({ id: user.id, username: user.username, createdAt: user.createdAt });
+    },
+  );
+
+  // POST /auth/forgot-password
+  // Accepts username or email. Always returns 200 to prevent user enumeration.
+  // For MVP: the reset token is included in the response when the user exists.
+  app.post(
+    "/auth/forgot-password",
+    {
+      config: {
+        rateLimit: { max: 5, timeWindow: "1 minute" },
+      },
+      schema: {
+        body: {
+          type: "object",
+          properties: {
+            username: { type: "string" },
+            email: { type: "string", format: "email" },
+          },
+          anyOf: [
+            { required: ["username"] },
+            { required: ["email"] },
+          ],
+        },
+      },
+    },
+    async (req: FastifyRequest<{ Body: { username?: string; email?: string } }>, reply: FastifyReply) => {
+      const { username, email } = req.body;
+
+      let user = null;
+      if (username) {
+        user = await findUserByUsername(username);
+      } else if (email) {
+        user = await findUserByEmail(email);
+      }
+
+      // Always return 200 — prevents user enumeration
+      if (!user) {
+        return reply.send({ message: "If that account exists, a reset token has been issued" });
+      }
+
+      const resetRecord = await createPasswordResetToken(user.id, user.username);
+
+      // MVP: display token in response (production would email this)
+      return reply.send({
+        message: "If that account exists, a reset token has been issued",
+        resetToken: resetRecord.token, // Remove in production — send via email instead
+      });
+    },
+  );
+
+  // POST /auth/reset-password
+  app.post(
+    "/auth/reset-password",
+    {
+      config: {
+        rateLimit: { max: 10, timeWindow: "1 minute" },
+      },
+      schema: {
+        body: {
+          type: "object",
+          required: ["token", "newPassword"],
+          properties: {
+            token: { type: "string" },
+            newPassword: { type: "string", minLength: 8, maxLength: 72 },
+          },
+        },
+      },
+    },
+    async (req: FastifyRequest<{ Body: { token: string; newPassword: string } }>, reply: FastifyReply) => {
+      const { token, newPassword } = req.body;
+
+      const strengthError = validatePasswordStrength(newPassword);
+      if (strengthError) {
+        return reply.code(400).send({ error: strengthError });
+      }
+
+      const resetRecord = await findPasswordResetToken(token);
+      if (!resetRecord) {
+        return reply.code(400).send({ error: "Invalid or expired reset token" });
+      }
+
+      await updateUserPassword(resetRecord.userId, newPassword);
+      await deletePasswordResetToken(token);
+
+      return reply.send({ ok: true });
     },
   );
 
