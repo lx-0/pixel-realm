@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "cd server && vitest run",
     "lint": "eslint src/",
     "deploy": "butler push dist ${ITCH_GAME:-pixelforgestudios/pixelrealm}:html5 --userversion $npm_package_version",
     "deploy:fresh": "npm run build && npm run deploy"
