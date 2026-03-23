@@ -17,6 +17,7 @@
  */
 
 import { Room, Client } from "@colyseus/core";
+import { incrementMessageCount } from "../metrics";
 import { DungeonGameState, Player, Enemy, Projectile } from "./schema/DungeonState";
 import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
 import { invalidateLeaderboardCache } from "../db/leaderboard";
@@ -385,6 +386,9 @@ export class DungeonRoom extends Room<DungeonGameState> {
     this.onMessage("party_kick",      (c, m: PartyKickMessage)     => this.handlePartyKick(c, m));
     this.onMessage("party_loot_mode", (c, m: PartyLootModeMessage) => this.handlePartyLootMode(c, m));
     this.onMessage("party_chat",      (c, m: PartyChatMessage)     => this.handlePartyChat(c, m));
+
+    // Count every incoming WS message for /metrics
+    this.onMessage("*", () => { incrementMessageCount(); });
 
     // Game loop
     this.lastTick = Date.now();

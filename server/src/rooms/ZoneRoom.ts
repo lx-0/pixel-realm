@@ -1,4 +1,5 @@
 import { Room, Client, Delayed } from "@colyseus/core";
+import { incrementMessageCount } from "../metrics";
 import { ZoneGameState, Player, Enemy, Projectile } from "./schema/GameState";
 import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
 import { invalidateLeaderboardCache } from "../db/leaderboard";
@@ -305,6 +306,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("trade_offer",    (client: Client, msg: TradeOfferMessage)    => this.handleTradeOffer(client, msg));
     this.onMessage("trade_confirm",  (client: Client, msg: TradeConfirmMessage)  => this.handleTradeConfirm(client, msg));
     this.onMessage("trade_cancel",   (client: Client)                            => this.handleTradeCancel(client));
+
+    // Count every incoming WS message for /metrics
+    this.onMessage("*", () => { incrementMessageCount(); });
 
     // Start game loop
     this.lastTick = Date.now();

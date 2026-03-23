@@ -1,7 +1,7 @@
 import http from "http";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { Server } from "@colyseus/core";
+import { Server, matchMaker } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ZoneRoom } from "./rooms/ZoneRoom";
 import { DungeonRoom, getDungeonCooldownRemaining, DUNGEON_COOLDOWN_MS } from "./rooms/DungeonRoom";
@@ -51,6 +51,7 @@ import {
   type HousingPermission,
 } from "./db/housing";
 import { config } from "./config";
+import { getMetricsSnapshot, getUptimeSeconds } from "./metrics";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
 
@@ -102,8 +103,42 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Health check
-app.get("/health", (_req, res) => res.json({ status: "ok", ts: Date.now() }));
+// Health check — returns server status, uptime, and live Colyseus room stats
+app.get("/health", async (_req: Request, res: Response) => {
+  try {
+    const rooms = await matchMaker.query({});
+    const connectedPlayers = rooms.reduce((sum, r) => sum + (r.clients ?? 0), 0);
+    res.json({
+      status:           "ok",
+      ts:               Date.now(),
+      uptimeSeconds:    getUptimeSeconds(),
+      activeRooms:      rooms.length,
+      connectedPlayers,
+    });
+  } catch {
+    // matchMaker not yet ready — still healthy, just no room stats
+    res.json({ status: "ok", ts: Date.now(), uptimeSeconds: getUptimeSeconds(), activeRooms: 0, connectedPlayers: 0 });
+  }
+});
+
+// Metrics — runtime stats for monitoring dashboards
+app.get("/metrics", async (_req: Request, res: Response) => {
+  try {
+    const rooms = await matchMaker.query({});
+    const connectedPlayers = rooms.reduce((sum, r) => sum + (r.clients ?? 0), 0);
+    const snapshot = getMetricsSnapshot();
+    res.json({
+      ...snapshot,
+      rooms: {
+        active: rooms.length,
+        connectedPlayers,
+        list: rooms.map((r) => ({ roomId: r.roomId, name: r.name, clients: r.clients, locked: r.locked })),
+      },
+    });
+  } catch {
+    res.json({ ...getMetricsSnapshot(), rooms: { active: 0, connectedPlayers: 0, list: [] } });
+  }
+});
 
 // GET /inventory/:userId — returns the player's inventory items
 app.get("/inventory/:userId", async (req, res) => {
@@ -692,3 +727,29 @@ startAuthServer().catch((err) => {
   }
   // Non-fatal in dev: game server keeps running even if auth fails to start
 });
+
+// ── Graceful shutdown ─────────────────────────────────────────────────────────
+
+let shuttingDown = false;
+
+async function shutdown(signal: string): Promise<void> {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`[PixelRealm] ${signal} received — starting graceful shutdown`);
+
+  // Stop accepting new connections
+  httpServer.close();
+
+  try {
+    // Drain all Colyseus rooms (saves state, disconnects clients cleanly)
+    await gameServer.gracefullyShutdown(false);
+    console.log("[PixelRealm] Graceful shutdown complete");
+    process.exit(0);
+  } catch (err) {
+    console.error("[PixelRealm] Error during shutdown:", (err as Error).message);
+    process.exit(1);
+  }
+}
+
+process.on("SIGTERM", () => { shutdown("SIGTERM").catch(() => process.exit(1)); });
+process.on("SIGINT",  () => { shutdown("SIGINT").catch(() => process.exit(1)); });
