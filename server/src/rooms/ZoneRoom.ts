@@ -36,6 +36,11 @@ import {
   getAcceptedFriendIds,
   isBlocked,
 } from "../db/social";
+import {
+  getActiveWorldEvents,
+  getActiveSeason,
+  type WorldEventRecord,
+} from "../db/content";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -254,6 +259,9 @@ interface ReportPlayerMessage {
   reason?: string;       // optional short reason from reporter
 }
 
+// Emote message
+interface EmoteMessage { emoteId: string }
+
 // Social messages
 interface FriendRequestMessage  { targetName: string }
 interface FriendRespondMessage  { requesterName: string; accept: boolean }
@@ -337,6 +345,10 @@ export class ZoneRoom extends Room<ZoneGameState> {
   /** Active loot rolls keyed by a rollId (uid). */
   private lootRolls = new Map<string, LootRoll>();
 
+  // ── World events + season (loaded on room creation) ───────────────────────
+  private activeWorldEvents: WorldEventRecord[] = [];
+  private activeSeason: { name: string; storyPromptTemplate: string } | null = null;
+
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -399,6 +411,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
     // Need/greed loot rolls
     this.onMessage("loot_roll_response", (client: Client, msg: LootRollResponseMessage) => this.handleLootRollResponse(client, msg));
 
+    // Emote
+    this.onMessage("emote", (client: Client, msg: EmoteMessage) => this.handleEmote(client, msg));
+
     // Social — friend list and block system
     this.onMessage("friend_request",  (client: Client, msg: FriendRequestMessage)  => this.handleFriendRequest(client, msg));
     this.onMessage("friend_respond",  (client: Client, msg: FriendRespondMessage)   => this.handleFriendRespond(client, msg));
@@ -419,6 +434,18 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
     // Periodic mid-session persistence (every 30 s)
     this.clock.setInterval(() => this.persistAllPlayers(), PERSIST_INTERVAL_MS);
+
+    // Load world events and active season (best-effort)
+    Promise.all([
+      getActiveWorldEvents(zoneId).catch(() => [] as WorldEventRecord[]),
+      getActiveSeason().catch(() => null),
+    ]).then(([events, season]) => {
+      this.activeWorldEvents = events;
+      this.activeSeason = season;
+      if (events.length) {
+        console.log(`[ZoneRoom] Loaded ${events.length} world event(s) for zone ${zoneId}`);
+      }
+    });
 
     console.log(`[ZoneRoom] created room ${this.roomId} for zone ${zoneId}`);
   }
@@ -476,6 +503,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
           client.send("faction_reputations", { reputations: reps });
         } catch (_factionErr) {
           // Non-fatal: faction data unavailable
+        }
+
+        // Send world events and active season to the joining player
+        if (this.activeWorldEvents.length) {
+          client.send("world_events", { events: this.activeWorldEvents });
+        }
+        if (this.activeSeason) {
+          client.send("season_info", { name: this.activeSeason.name });
         }
 
         // Friend list — send to joining player and notify friends they're online
@@ -833,6 +868,38 @@ export class ZoneRoom extends Room<ZoneGameState> {
     client.send("chat", { sender: "System", text: `Report submitted against "${reportedName}". Thank you.`, whisper: false });
   }
 
+  // ── Emote Handler ─────────────────────────────────────────────────────────────
+
+  private static readonly VALID_EMOTES = new Set(["wave", "dance", "sit", "cheer", "bow", "angry"]);
+  private static readonly EMOTE_RANGE = 80; // server coord units
+  private readonly _emoteCooldowns = new Map<string, number>(); // sessionId → expiry ms
+  private static readonly EMOTE_COOLDOWN_MS = 2000;
+
+  private handleEmote(client: Client, msg: EmoteMessage) {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+
+    const emoteId = String(msg.emoteId ?? "").trim().toLowerCase();
+    if (!ZoneRoom.VALID_EMOTES.has(emoteId)) return;
+
+    // Per-player cooldown
+    const now = Date.now();
+    const cooldownExp = this._emoteCooldowns.get(client.sessionId) ?? 0;
+    if (now < cooldownExp) return;
+    this._emoteCooldowns.set(client.sessionId, now + ZoneRoom.EMOTE_COOLDOWN_MS);
+
+    // Broadcast to nearby players only
+    const senderName = player.name;
+    this.state.players.forEach((other: Player, sid: string) => {
+      if (sid === client.sessionId) return;
+      if (dist(player.x, player.y, other.x, other.y) > ZoneRoom.EMOTE_RANGE) return;
+      const tc = this.clients.find((c: Client) => c.sessionId === sid);
+      tc?.send("emote", { sessionId: client.sessionId, playerName: senderName, emoteId });
+    });
+    // Also confirm to sender
+    client.send("emote", { sessionId: client.sessionId, playerName: senderName, emoteId });
+  }
+
   // ── Social Handlers ───────────────────────────────────────────────────────────
 
   private async handleFriendRequest(client: Client, msg: FriendRequestMessage) {
@@ -1034,8 +1101,15 @@ export class ZoneRoom extends Room<ZoneGameState> {
     if (!questId) return;
 
     try {
-      const { factionId } = await completeQuestForPlayer(userId, this.state.zoneId, questId);
-      client.send("quest_completed", { questId });
+      const { factionId, chainAdvanced, chainComplete } = await completeQuestForPlayer(userId, this.state.zoneId, questId);
+      client.send("quest_completed", { questId, chainAdvanced, chainComplete });
+      if (chainAdvanced) {
+        if (chainComplete) {
+          client.send("chat", { sender: "System", text: "✦ Quest chain complete! Well done, adventurer.", whisper: false });
+        } else {
+          client.send("chat", { sender: "System", text: "✦ Quest chain step complete — speak to the NPC for the next task!", whisper: false });
+        }
+      }
       console.log(`[ZoneRoom] Quest ${questId} completed by ${userId}`);
 
       // Award faction reputation

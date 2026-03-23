@@ -136,6 +136,25 @@ export interface TradeOffer {
   gold: number;
 }
 
+// ── Emote / world event shapes ────────────────────────────────────────────────
+
+export type EmoteId = "wave" | "dance" | "sit" | "cheer" | "bow" | "angry";
+
+export interface EmoteEvent {
+  sessionId:  string;
+  playerName: string;
+  emoteId:    EmoteId;
+}
+
+export interface WorldEventEntry {
+  id:          string;
+  zoneId:      string;
+  name:        string;
+  description: string;
+  startsAt:    string;
+  endsAt:      string | null;
+}
+
 // ── Social data shapes ────────────────────────────────────────────────────────
 
 export interface FriendEntry {
@@ -210,6 +229,13 @@ export class MultiplayerClient {
   onPartyXp?: (amount: number) => void;
   onPartyError?: (message: string) => void;
   onPartyInfo?: (message: string) => void;
+
+  // Emote callbacks
+  onEmote?: (event: EmoteEvent) => void;
+
+  // World event / season callbacks
+  onWorldEvents?: (events: WorldEventEntry[]) => void;
+  onSeasonInfo?: (name: string) => void;
 
   // Social callbacks
   onFriendsList?: (friends: FriendEntry[]) => void;
@@ -436,6 +462,19 @@ export class MultiplayerClient {
       this.onSkillError?.(msg.message);
     });
 
+    // ── Emote messages ────────────────────────────────────────────────────
+    room.onMessage('emote', (msg: EmoteEvent) => {
+      this.onEmote?.(msg);
+    });
+
+    // ── World event / season messages ─────────────────────────────────────
+    room.onMessage('world_events', (msg: { events: WorldEventEntry[] }) => {
+      this.onWorldEvents?.(msg.events);
+    });
+    room.onMessage('season_info', (msg: { name: string }) => {
+      this.onSeasonInfo?.(msg.name);
+    });
+
     // ── Social messages ───────────────────────────────────────────────────
     room.onMessage('friends_list', (msg: { friends: FriendEntry[] }) => {
       this.onFriendsList?.(msg.friends);
@@ -636,6 +675,12 @@ export class MultiplayerClient {
   /** Notify other zone players that this player just crafted an item. */
   sendCraftNotify(itemId: string, itemName: string): void {
     this.room?.send('craft_notify', { itemId, itemName });
+  }
+
+  // ── Emote messages ────────────────────────────────────────────────────────
+
+  sendEmote(emoteId: EmoteId): void {
+    this.room?.send('emote', { emoteId });
   }
 
   // ── Social messages ───────────────────────────────────────────────────────

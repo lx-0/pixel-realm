@@ -8,7 +8,7 @@ import {
 import { SoundManager } from '../systems/SoundManager';
 import { SettingsManager } from '../systems/SettingsManager';
 import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData }  from '../systems/SaveManager';
-import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FriendEntry } from '../systems/MultiplayerClient';
+import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FriendEntry, type EmoteEvent, type WorldEventEntry, type EmoteId } from '../systems/MultiplayerClient';
 import { FactionReputationPanel } from '../ui/FactionReputationPanel';
 import { ChatOverlay }        from '../ui/ChatOverlay';
 import { PlayerListPanel }    from '../ui/PlayerListPanel';
@@ -122,6 +122,7 @@ export class GameScene extends Phaser.Scene {
   private escapeScrolls   = 1;        // Escape Scrolls (start with 1 per run)
   private deathMarkerPos: { x: number; y: number } | null = null;
   private escScrollKey!:  Phaser.Input.Keyboard.Key;
+  private emoteKey!:      Phaser.Input.Keyboard.Key;
 
   // ── Status effects ────────────────────────────────────────────────────────
   private playerEffects:        Partial<Record<EffectKey, StatusEffectState>> = {};
@@ -274,6 +275,12 @@ export class GameScene extends Phaser.Scene {
 
   /** Social / friend list panel (multiplayer only). */
   private socialPanel?: SocialPanel;
+
+  /** Active emote animations: sessionId → { label, expiry } */
+  private emoteLabels = new Map<string, Phaser.GameObjects.Text>();
+
+  /** Season name HUD label (top-center). */
+  private seasonLabel?: Phaser.GameObjects.Text;
 
   /** Session IDs of current party members (for mini-map highlight). */
   private partySessionIds = new Set<string>();
@@ -535,10 +542,16 @@ export class GameScene extends Phaser.Scene {
       this.sfx.playPanelClose();
     }
 
-    // Hotbar skill activation (keys 1–6)
+    // Hotbar skill activation (keys 1–6), or emote when Z is held
+    const emoteHeld = this.emoteKey?.isDown;
     for (let i = 0; i < 6; i++) {
       if (this.hotbarKeys[i] && Phaser.Input.Keyboard.JustDown(this.hotbarKeys[i])) {
-        if (!this.skillTree?.isVisible) this.activateSkillSlot(i, time);
+        if (emoteHeld && this.isMultiplayer) {
+          const emoteIds: EmoteId[] = ['wave', 'dance', 'sit', 'cheer', 'bow', 'angry'];
+          this.mp?.sendEmote(emoteIds[i]);
+        } else if (!this.skillTree?.isVisible) {
+          this.activateSkillSlot(i, time);
+        }
       }
     }
 
@@ -1046,9 +1059,33 @@ export class GameScene extends Phaser.Scene {
       this.chat?.addMessage(`[Social] ${msg}`, '#ff8888');
     };
 
+    // Emote events — show floating animation above sender
+    client.onEmote = (event: EmoteEvent) => {
+      this.showEmoteAnimation(event.sessionId, event.emoteId);
+    };
+
+    // World events — show in chat on zone enter
+    client.onWorldEvents = (events: WorldEventEntry[]) => {
+      if (events.length) {
+        events.forEach(e => {
+          this.chat?.addMessage(`✦ World Event: ${e.name} — ${e.description}`, '#ffdd44');
+        });
+      }
+    };
+
+    // Season info — show tiny label near top
+    client.onSeasonInfo = (name: string) => {
+      if (!this.seasonLabel) {
+        this.seasonLabel = this.add.text(CANVAS.WIDTH - 4, 4, '', {
+          fontSize: '4px', color: '#88ffcc', fontFamily: 'monospace',
+        }).setOrigin(1, 0).setScrollFactor(0).setDepth(12);
+      }
+      this.seasonLabel.setText(`✿ ${name}`);
+    };
+
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [Z+1-6] emotes  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -2880,6 +2917,7 @@ export class GameScene extends Phaser.Scene {
     this.craftConfirmKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
     this.muteKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.N);
     this.escScrollKey    = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.T);
+    this.emoteKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
     // Hotbar skill keys 1–6
     const hotbarKeyCodes = [
       Phaser.Input.Keyboard.KeyCodes.ONE,
@@ -3120,6 +3158,42 @@ export class GameScene extends Phaser.Scene {
     const flash = this.add.rectangle(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2, CANVAS.WIDTH, CANVAS.HEIGHT, color, alpha)
       .setScrollFactor(0).setDepth(100);
     this.tweens.add({ targets: flash, alpha: 0, duration: 230, ease: 'Power2', onComplete: () => flash.destroy() });
+  }
+
+  // Emote labels — shown above the player sprite for 2.5 s
+  private static readonly EMOTE_DISPLAY: Record<string, string> = {
+    wave:  '👋 Wave',
+    dance: '💃 Dance',
+    sit:   '🪑 Sit',
+    cheer: '🎉 Cheer',
+    bow:   '🙇 Bow',
+    angry: '😠 Angry',
+  };
+  private static readonly EMOTE_DURATION_MS = 2500;
+
+  private showEmoteAnimation(sessionId: string, emoteId: string): void {
+    // Find the sprite for this session
+    const isLocal = sessionId === this.mp?.mySessionId;
+    const sprite: Phaser.GameObjects.GameObject | undefined = isLocal
+      ? this.player
+      : this.remotePlayerSprites.get(sessionId);
+    if (!sprite) return;
+
+    // Destroy existing label if any
+    this.emoteLabels.get(sessionId)?.destroy();
+
+    const label = GameScene.EMOTE_DISPLAY[emoteId] ?? emoteId;
+    const target = sprite as Phaser.Physics.Arcade.Sprite;
+    const t = this.add.text(target.x, target.y - 18, label, {
+      fontSize: '5px', color: '#ffee88', fontFamily: 'monospace',
+      stroke: '#000', strokeThickness: 1,
+    }).setOrigin(0.5).setDepth(35);
+
+    this.emoteLabels.set(sessionId, t);
+    this.time.delayedCall(GameScene.EMOTE_DURATION_MS, () => {
+      t.destroy();
+      if (this.emoteLabels.get(sessionId) === t) this.emoteLabels.delete(sessionId);
+    });
   }
 
   private floatingText(x: number, y: number, text: string, color: string): void {

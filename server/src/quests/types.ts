@@ -59,4 +59,22 @@ export interface QuestGenerationContext {
   factionName: string | null;
   /** Player's current standing with this faction ("neutral", "friendly", etc.) */
   playerStanding: string | null;
+  /** Up to 3 prior NPC interaction summaries for memory continuity. */
+  npcMemory?: string[];
+  /** Active season name + story prompt template for seasonal theming. */
+  seasonName?: string | null;
+  seasonTheme?: string | null;
+  /** Whether this quest belongs to a chain and the chain's overarching theme. */
+  chainTheme?: string | null;
+  /** Step number within the chain (1-indexed). */
+  chainStep?: number;
+  chainTotalSteps?: number;
+}
+
+/** Extended quest with chain metadata. */
+export interface GeneratedQuestWithChain extends GeneratedQuest {
+  chainId?:         string;
+  chainStep?:       number;
+  chainTotalSteps?: number;
+  chainTitle?:      string;
 }

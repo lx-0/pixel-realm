@@ -134,6 +134,31 @@ function buildPrompt(ctx: QuestGenerationContext): string {
     ? `Quest giver faction: ${safeFactionName} (player's standing: ${safeStanding ?? "neutral"})`
     : "";
 
+  // NPC memory context (sanitized)
+  const memoryLines = (ctx.npcMemory ?? [])
+    .map((s) => sanitizePromptInput(s))
+    .filter(Boolean);
+  const memorySection = memoryLines.length
+    ? `Prior player-NPC interactions (use for natural callbacks in dialogue):\n${memoryLines.map((l, i) => `  ${i + 1}. ${l}`).join("\n")}`
+    : "";
+
+  // Season context
+  const safeSeasonName  = ctx.seasonName  ? sanitizePromptInput(ctx.seasonName)  : null;
+  const safeSeasonTheme = ctx.seasonTheme ? sanitizePromptInput(ctx.seasonTheme) : null;
+  const seasonSection = safeSeasonName
+    ? `Active season: ${safeSeasonName}\nSeasonal story theme: ${safeSeasonTheme ?? "none"}`
+    : "";
+
+  // Quest chain context
+  const safeChainTheme = ctx.chainTheme ? sanitizePromptInput(ctx.chainTheme) : null;
+  const chainSection = safeChainTheme
+    ? `This quest is step ${ctx.chainStep ?? 1} of ${ctx.chainTotalSteps ?? 3} in a quest chain.\nChain theme: ${safeChainTheme}\nThe quest should feel like a natural continuation of that theme.`
+    : "";
+
+  const contextExtras = [factionLine, memorySection, seasonSection, chainSection]
+    .filter(Boolean)
+    .join("\n");
+
   // Use delimiter tokens to create a clear instruction hierarchy that prevents
   // any surviving injection from overriding the system-level directives.
   return `<system>
@@ -145,7 +170,7 @@ Zone: ${ctx.zoneName} (${ctx.zoneBiome})
 Zone description: ${ctx.zoneDescription}
 Player level: ${ctx.playerLevel} (difficulty tier ${ctx.levelBucket}/4)
 Quest type: ${ctx.questType} — ${questTypeGuide[ctx.questType]}
-Enemy types present in this zone: ${ctx.enemyTypes.join(", ")}${factionLine ? `\n${factionLine}` : ""}
+Enemy types present in this zone: ${ctx.enemyTypes.join(", ")}${contextExtras ? `\n${contextExtras}` : ""}
 </context>
 
 <task>
@@ -162,7 +187,7 @@ Generate ONE quest in valid JSON. Use this exact schema — no extra keys, no ma
     }
   ],
   "dialogue": {
-    "greeting": "string (NPC opening line, max 120 chars${safeFactionName ? ` — the NPC belongs to the ${safeFactionName}` : ""})",
+    "greeting": "string (NPC opening line, max 120 chars${safeFactionName ? ` — the NPC belongs to the ${safeFactionName}` : ""}${memoryLines.length ? " — reference prior interactions naturally if appropriate" : ""})",
     "acceptance": "string (NPC encouragement after player accepts, max 120 chars)",
     "completion": "string (NPC thank-you when quest is turned in, max 120 chars)"
   },
@@ -175,7 +200,7 @@ Generate ONE quest in valid JSON. Use this exact schema — no extra keys, no ma
 
 Rules:
 - Keep all text age-appropriate and positive in tone.
-- Quest must feel thematically tied to the zone's biome and enemies.${safeFactionName ? `\n- The NPC is a member of the ${safeFactionName} — weave their identity naturally into the dialogue.` : ""}
+- Quest must feel thematically tied to the zone's biome and enemies.${safeFactionName ? `\n- The NPC is a member of the ${safeFactionName} — weave their identity naturally into the dialogue.` : ""}${safeSeasonName ? `\n- Weave the current season "${safeSeasonName}" subtly into the quest flavour.` : ""}${memoryLines.length ? `\n- If the greeting references prior interactions, keep it brief and warm (1 sentence maximum).` : ""}
 - For kill quests, use an enemy type from the zone list.
 - For fetch quests, invent a zone-flavoured item name.
 - For escort/puzzle quests, name the NPC or puzzle element clearly.

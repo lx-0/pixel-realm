@@ -358,6 +358,78 @@ export const playerReports = pgTable("player_reports", {
   reportedAt: timestamp("reported_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── NPC Interaction Memory ────────────────────────────────────────────────────
+
+export const npcInteractions = pgTable(
+  "npc_interactions",
+  {
+    playerId:  uuid("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+    npcId:     varchar("npc_id", { length: 50 }).notNull(),
+    zoneId:    varchar("zone_id", { length: 50 }).notNull(),
+    /** JSON string[]: up to 3 short summaries of prior interactions, most recent last. */
+    summaries: jsonb("summaries").notNull().default([]),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.npcId] }),
+  }),
+);
+
+// ── Seasons ───────────────────────────────────────────────────────────────────
+
+export const seasons = pgTable("seasons", {
+  id:                  uuid("id").defaultRandom().primaryKey(),
+  name:                varchar("name", { length: 60 }).notNull(),
+  startDate:           varchar("start_date", { length: 10 }).notNull(),
+  endDate:             varchar("end_date", { length: 10 }).notNull(),
+  storyPromptTemplate: text("story_prompt_template").notNull().default(""),
+  isActive:            boolean("is_active").notNull().default(false),
+  createdAt:           timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ── World Events ──────────────────────────────────────────────────────────────
+
+export const worldEvents = pgTable("world_events", {
+  id:          uuid("id").defaultRandom().primaryKey(),
+  zoneId:      varchar("zone_id", { length: 50 }).notNull(),
+  name:        varchar("name", { length: 100 }).notNull(),
+  description: text("description").notNull().default(""),
+  isActive:    boolean("is_active").notNull().default(true),
+  eventData:   jsonb("event_data").notNull().default({}),
+  startsAt:    timestamp("starts_at", { withTimezone: true }).notNull().defaultNow(),
+  endsAt:      timestamp("ends_at", { withTimezone: true }),
+  createdAt:   timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt:   timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ── Quest Chains ──────────────────────────────────────────────────────────────
+
+export const questChains = pgTable("quest_chains", {
+  id:                 uuid("id").defaultRandom().primaryKey(),
+  zoneId:             varchar("zone_id", { length: 50 }).notNull(),
+  playerLevelBucket:  integer("player_level_bucket").notNull(),
+  title:              varchar("title", { length: 200 }).notNull(),
+  theme:              text("theme").notNull().default(""),
+  questIds:           jsonb("quest_ids").notNull().default([]),
+  generatedAt:        timestamp("generated_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt:          timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
+export const playerChainProgress = pgTable(
+  "player_chain_progress",
+  {
+    playerId:    uuid("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+    chainId:     uuid("chain_id").notNull().references(() => questChains.id, { onDelete: "cascade" }),
+    currentStep: integer("current_step").notNull().default(0),
+    status:      varchar("status", { length: 20 }).notNull().default("active"),
+    startedAt:   timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt:   timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.chainId] }),
+  }),
+);
+
 // ── Friendships ───────────────────────────────────────────────────────────────
 
 export const friendships = pgTable(
@@ -422,5 +494,10 @@ export type PlayerBan = typeof playerBans.$inferSelect;
 export type PlayerMute = typeof playerMutes.$inferSelect;
 export type ChatLogRow = typeof chatLog.$inferSelect;
 export type PlayerReport = typeof playerReports.$inferSelect;
+export type NpcInteraction = typeof npcInteractions.$inferSelect;
+export type Season = typeof seasons.$inferSelect;
+export type WorldEvent = typeof worldEvents.$inferSelect;
+export type QuestChain = typeof questChains.$inferSelect;
+export type PlayerChainProgress = typeof playerChainProgress.$inferSelect;
 export type Friendship = typeof friendships.$inferSelect;
 export type PlayerBlock = typeof playerBlocks.$inferSelect;
