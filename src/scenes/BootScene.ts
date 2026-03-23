@@ -76,6 +76,39 @@ export class BootScene extends Phaser.Scene {
     this.load.image('pickup_frozen_gem',  'assets/icon_pickup_frozen_gem.png');
     this.load.image('pickup_wyrm_scale',  'assets/icon_pickup_wyrm_scale.png');
 
+    // Dungeon enemies (12 frames × 16×24; boss: 12 frames × 32×32)
+    this.load.spritesheet('enemy_dun_skeleton', 'assets/char_enemy_dun_skeleton.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_dun_spider',   'assets/char_enemy_dun_spider.png',   { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_dun_mage',     'assets/char_enemy_dun_mage.png',     { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_dun_golem',    'assets/char_enemy_dun_golem.png',    { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('boss_dungeon',       'assets/char_boss_dungeon.png',       { frameWidth: 32, frameHeight: 32 });
+
+    // Dungeon decoration spritesheets (animated)
+    this.load.spritesheet('dun_decor_torch',   'assets/sprite_dun_decor_torch.png',   { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('dun_decor_crystal', 'assets/sprite_dun_decor_crystal.png', { frameWidth: 16, frameHeight: 16 });
+
+    // Dungeon decoration sprites (static)
+    this.load.image('dun_decor_rubble', 'assets/sprite_dun_decor_rubble.png');
+    this.load.image('dun_decor_barrel', 'assets/sprite_dun_decor_barrel.png');
+    this.load.image('dun_decor_bones',  'assets/sprite_dun_decor_bones.png');
+
+    // Dungeon loot icons (16×16)
+    this.load.image('loot_shadow_blade', 'assets/icon_dun_loot_shadow_blade.png');
+    this.load.image('loot_cursed_helm',  'assets/icon_dun_loot_cursed_helm.png');
+    this.load.image('loot_soul_gem',     'assets/icon_dun_loot_soul_gem.png');
+    this.load.image('loot_bone_shield',  'assets/icon_dun_loot_bone_shield.png');
+    this.load.image('loot_dark_staff',   'assets/icon_dun_loot_dark_staff.png');
+    this.load.image('loot_crypt_ring',   'assets/icon_dun_loot_crypt_ring.png');
+
+    // Dungeon UI panels & HUD
+    this.load.image('ui_panel_dungeon_entrance', 'assets/ui_panel_dungeon_entrance.png');
+    this.load.image('ui_dungeon_room_progress',  'assets/ui_dungeon_room_progress.png');
+    this.load.image('ui_dungeon_boss_hp_frame',  'assets/ui_dungeon_boss_hp_frame.png');
+    this.load.image('ui_dungeon_timer',          'assets/ui_dungeon_timer.png');
+
+    // Boss chamber background
+    this.load.image('bg_boss_chamber', 'assets/bg_boss_chamber.png');
+
     // Additional UI elements
     this.load.image('ui_btn',        'assets/ui_btn.png');
     this.load.image('ui_cursor',     'assets/ui_cursor.png');
@@ -183,6 +216,27 @@ export class BootScene extends Phaser.Scene {
     if (this.textures.get('boss_glacial_wyrm').frameTotal > 1) {
       this.createVariantAnims('boss_glacial_wyrm', 'glacial_wyrm');
     }
+
+    // Dungeon enemy animations
+    if (this.textures.get('enemy_dun_skeleton').frameTotal > 1) {
+      this.createVariantAnims('enemy_dun_skeleton', 'dun_skeleton');
+    }
+    if (this.textures.get('enemy_dun_spider').frameTotal > 1) {
+      this.createVariantAnims('enemy_dun_spider', 'dun_spider');
+    }
+    if (this.textures.get('enemy_dun_mage').frameTotal > 1) {
+      this.createVariantAnims('enemy_dun_mage', 'dun_mage');
+    }
+    if (this.textures.get('enemy_dun_golem').frameTotal > 1) {
+      this.createVariantAnims('enemy_dun_golem', 'dun_golem');
+    }
+    if (this.textures.get('boss_dungeon').frameTotal > 1) {
+      this.createVariantAnims('boss_dungeon', 'dungeon_boss');
+    }
+
+    // Dungeon decoration animations (4 frames @ 3fps ambient loops)
+    this.createStationAnims('dun_decor_torch', 'dun_torch');
+    this.createStationAnims('dun_decor_crystal', 'dun_crystal');
 
     // Crafting station idle glow animations (4 frames @ 3fps for slow ambient loop)
     this.createStationAnims('station_anvil', 'anvil');
