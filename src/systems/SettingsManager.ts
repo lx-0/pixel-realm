@@ -8,21 +8,25 @@ import { SoundManager } from './SoundManager';
 const LS_KEY = 'pixelrealm_settings';
 
 export interface GameSettings {
-  masterVolume: number; // 0–1
-  sfxVolume:    number; // 0–1
-  musicVolume:  number; // 0–1
-  fullscreen:   boolean;
-  smoothScale:  boolean; // false = pixel-perfect (default), true = bilinear
-  showFPS:      boolean;
+  masterVolume:  number; // 0–1
+  sfxVolume:     number; // 0–1
+  musicVolume:   number; // 0–1
+  ambientVolume: number; // 0–1
+  muted:         boolean;
+  fullscreen:    boolean;
+  smoothScale:   boolean; // false = pixel-perfect (default), true = bilinear
+  showFPS:       boolean;
 }
 
 const DEFAULTS: GameSettings = {
-  masterVolume: 1.0,
-  sfxVolume:    0.8,
-  musicVolume:  0.5,
-  fullscreen:   false,
-  smoothScale:  false,
-  showFPS:      false,
+  masterVolume:  1.0,
+  sfxVolume:     0.8,
+  musicVolume:   0.5,
+  ambientVolume: 0.3,
+  muted:         false,
+  fullscreen:    false,
+  smoothScale:   false,
+  showFPS:       false,
 };
 
 export class SettingsManager {
@@ -66,6 +70,12 @@ export class SettingsManager {
   get musicVolume(): number { return this._s.musicVolume; }
   set musicVolume(v: number) { this._s.musicVolume = Math.max(0, Math.min(1, v)); this.applyAudio(); }
 
+  get ambientVolume(): number { return this._s.ambientVolume; }
+  set ambientVolume(v: number) { this._s.ambientVolume = Math.max(0, Math.min(1, v)); this.applyAudio(); }
+
+  get muted(): boolean { return this._s.muted; }
+  set muted(v: boolean) { this._s.muted = v; }
+
   get fullscreen(): boolean { return this._s.fullscreen; }
   set fullscreen(v: boolean) { this._s.fullscreen = v; }
 
@@ -79,9 +89,13 @@ export class SettingsManager {
 
   /** Push current volume settings to SoundManager. */
   applyAudio(): void {
-    const sfx = SoundManager.getInstance();
-    sfx.sfxVolume   = this._s.masterVolume * this._s.sfxVolume;
-    sfx.musicVolume = this._s.masterVolume * this._s.musicVolume;
+    const sm = SoundManager.getInstance();
+    sm.sfxVolume     = this._s.masterVolume * this._s.sfxVolume;
+    sm.musicVolume   = this._s.masterVolume * this._s.musicVolume;
+    sm.ambientVolume = this._s.masterVolume * this._s.ambientVolume;
+    // Restore mute state
+    if (this._s.muted && !sm.isMuted) sm.toggleMute();
+    if (!this._s.muted && sm.isMuted) sm.toggleMute();
   }
 
   /** Toggle canvas smoothing based on smoothScale setting. */

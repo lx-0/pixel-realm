@@ -6,6 +6,7 @@ import {
   type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
 } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
+import { SettingsManager } from '../systems/SettingsManager';
 import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData }  from '../systems/SaveManager';
 import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged } from '../systems/MultiplayerClient';
 import { FactionReputationPanel } from '../ui/FactionReputationPanel';
@@ -26,6 +27,7 @@ import { PartyPanel } from '../ui/PartyPanel';
 import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
+import { FastTravelPanel } from '../ui/FastTravelPanel';
 import { DayNightSystem } from '../systems/DayNightSystem';
 import { WeatherSystem }   from '../systems/WeatherSystem';
 import {
@@ -245,6 +247,18 @@ export class GameScene extends Phaser.Scene {
   /** Tutorial overlay — shown only for first-time players on zone1. */
   private tutorial?: TutorialOverlay;
 
+  /** Fast travel panel — opened by interacting with the Transport NPC. */
+  private fastTravelPanel?: FastTravelPanel;
+
+  /** Transport NPC sprite (world-space, near zone hub). */
+  private transportNpc?: Phaser.GameObjects.Container;
+
+  /** Proximity hint shown when player is near the Transport NPC. */
+  private transportHint?: Phaser.GameObjects.Text;
+
+  /** T key — opens fast travel dialog. */
+  private fastTravelKey?: Phaser.Input.Keyboard.Key;
+
   /** P2P trade window (multiplayer only). */
   private tradeWindow?: TradeWindow;
 
@@ -396,6 +410,7 @@ export class GameScene extends Phaser.Scene {
     this.input.once('pointerdown', unlockAudio);
     this.input.keyboard!.once('keydown', unlockAudio);
     this.sfx.startZoneMusic(this.zone.id);
+    this.sfx.startAmbient(this.zone.id);
 
     this.buildWorld();
     this.createPlayer();
@@ -429,6 +444,10 @@ export class GameScene extends Phaser.Scene {
       this.tutorial = new TutorialOverlay(this);
       this.tutorial.onComplete = () => {
         SaveManager.completeTutorial();
+        // Fire "First Steps" achievement
+        const unlocked = AchievementTracker.recordEvent('tutorial_complete');
+        unlocked.forEach(a => this.showAchievementUnlock(a));
+        this.fireAchievementEvent('tutorial_complete');
         this.tutorial = undefined;
       };
     }
@@ -467,10 +486,13 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Mute toggle (N key)
+    // Mute toggle (N key) — persist state
     if (this.muteKey && Phaser.Input.Keyboard.JustDown(this.muteKey)) {
       const muted = this.sfx.toggleMute();
       this.muteIndicator?.setVisible(muted);
+      const settings = SettingsManager.getInstance();
+      settings.muted = muted;
+      settings.save();
     }
 
     // Escape Scroll (T key) — teleport to zone spawn / nearest waystone
@@ -501,7 +523,10 @@ export class GameScene extends Phaser.Scene {
     const stWasBefore = this.skillTree?.isVisible ?? false;
     this.skillTree?.update();
     if (!stWasBefore && (this.skillTree?.isVisible ?? false)) {
+      this.sfx.playPanelOpen();
       this.tutorial?.notifySkillTreeOpened();
+    } else if (stWasBefore && !(this.skillTree?.isVisible ?? false)) {
+      this.sfx.playPanelClose();
     }
 
     // Hotbar skill activation (keys 1–6)
@@ -548,6 +573,7 @@ export class GameScene extends Phaser.Scene {
     const mkNow   = this.marketplace?.isVisible  ?? false;
     if (!qlWas && qlNow) {
       // Quest log just opened — close others
+      this.sfx.playPanelOpen();
       this.inventory?.hide();
       this.craftingPanel?.hide();
       this.npcDialogue?.hide();
@@ -555,6 +581,7 @@ export class GameScene extends Phaser.Scene {
       this.skillTree?.hide();
     } else if (!invWas && invNow) {
       // Inventory just opened — close others
+      this.sfx.playPanelOpen();
       this.questLog?.hide();
       this.craftingPanel?.hide();
       this.npcDialogue?.hide();
@@ -562,17 +589,24 @@ export class GameScene extends Phaser.Scene {
       this.tutorial?.notifyInventoryOpened();
     } else if (!crftWas && crftNow) {
       // Crafting panel just opened — close others
+      this.sfx.playPanelOpen();
       this.questLog?.hide();
       this.inventory?.hide();
       this.npcDialogue?.hide();
       this.marketplace?.hide();
     } else if (!mkWas && mkNow) {
       // Marketplace just opened — close others
+      this.sfx.playPanelOpen();
       this.questLog?.hide();
       this.inventory?.hide();
       this.craftingPanel?.hide();
       this.npcDialogue?.hide();
     }
+    // Panel close sounds
+    if (qlWas && !qlNow)     this.sfx.playPanelClose();
+    if (invWas && !invNow)   this.sfx.playPanelClose();
+    if (crftWas && !crftNow) this.sfx.playPanelClose();
+    if (mkWas && !mkNow)     this.sfx.playPanelClose();
 
     // Crafting station proximity hint
     this.updateCraftingStationHint();
@@ -1263,6 +1297,9 @@ export class GameScene extends Phaser.Scene {
     // Crafting station — placed in top-left corner of the zone
     this.addCraftingStation(WALL + 24, WALL + 24);
 
+    // Transport NPC — placed in top-right corner of the zone
+    this.addTransportNpc(W - WALL - 24, WALL + 24);
+
     // Zone name splash
     const zColor = `#${z.accentColor.toString(16).padStart(6, '0')}`;
     const banner = this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2, z.name, {
@@ -1645,6 +1682,7 @@ export class GameScene extends Phaser.Scene {
     this.dodgeEndTime = time + DODGE.DURATION_MS;
     this.dodgeVx    = dx * DODGE.DASH_SPEED;
     this.dodgeVy    = dy * DODGE.DASH_SPEED;
+    this.sfx.playDodge();
 
     // Visual feedback: white-blue flash tint for roll duration
     this.player.setTint(0xaaddff);
@@ -1684,11 +1722,11 @@ export class GameScene extends Phaser.Scene {
 
     if (this.isBossWave) {
       this.spawnBossWave();
+      this.sfx.startBossMusic(this.zone.bossType);
     } else {
       this.spawnNormalWave();
+      this.sfx.startCombatMusic();
     }
-
-    this.sfx.startCombatMusic();
     this.physics.add.collider(this.enemies, this.enemies);
     this.updateHUD();
   }
@@ -2165,7 +2203,11 @@ export class GameScene extends Phaser.Scene {
       });
 
       this.spawnBurst(e.x, e.y, isCrit ? [0xffe040, 0xffff80, 0xffffff] : [0xffffff, 0xffe040, 0xf0f0f0], isCrit ? 9 : 5, isCrit ? 150 : 110);
-      this.sfx.playHit();
+      if (isCrit) {
+        this.sfx.playCriticalHit();
+      } else {
+        this.sfx.playHit();
+      }
       if (isCrit) {
         this.floatingText(e.x, e.y - 10, `✦${hitDmg}!`, '#ffe040');
       } else {
@@ -2175,7 +2217,11 @@ export class GameScene extends Phaser.Scene {
       if (extra.hp <= 0) this.killEnemy(e);
     });
 
-    if (hitAny) this.cameras.main.shake(70, 0.004);
+    if (hitAny) {
+      this.cameras.main.shake(70, 0.004);
+    } else {
+      this.sfx.playMiss();
+    }
     this.updateHUD();
   }
 
@@ -2251,6 +2297,7 @@ export class GameScene extends Phaser.Scene {
       this.bossAlive    = false;
       this.bossSprite   = undefined;
       this.bossHudVisible = false;
+      this.sfx.stopBossMusic();
     }
 
     e.destroy();
@@ -3427,25 +3474,49 @@ export class GameScene extends Phaser.Scene {
    * Appears above the HUD then fades out.
    */
   private showAchievementUnlock(achievement: { icon: string; title: string; points: number }): void {
-    const cx  = CANVAS.WIDTH / 2;
-    const cy  = CANVAS.HEIGHT - 30;
-    const msg = `${achievement.icon} Achievement: ${achievement.title} (+${achievement.points}pts)`;
+    // Toast slides in from the right edge at the top-right corner,
+    // stays 3 seconds, then fades out.
+    const PAD = 4;
+    const toastW = 110;
+    const toastH = 20;
+    const finalX  = CANVAS.WIDTH - toastW / 2 - PAD;
+    const startX  = CANVAS.WIDTH + toastW;          // starts off-screen right
+    const toastY  = 16;
 
-    const txt = this.add.text(cx, cy, msg, {
-      fontSize: '6px',
-      color: '#ffd700',
-      fontFamily: 'monospace',
-      stroke: '#000000',
-      strokeThickness: 2,
-      backgroundColor: '#0008',
-      padding: { x: 4, y: 2 },
-    }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(90).setAlpha(0);
+    // Background pill
+    const bg = this.add.rectangle(startX, toastY, toastW, toastH, 0x1a1a2e, 0.92)
+      .setOrigin(0.5).setScrollFactor(0).setDepth(90)
+      .setStrokeStyle(1, 0xffd700, 0.9);
 
-    this.tweens.add({ targets: txt, alpha: 1, duration: 250, ease: 'Power2' });
+    // Icon
+    const iconTxt = this.add.text(startX - toastW / 2 + 5, toastY, achievement.icon, {
+      fontSize: '7px', fontFamily: 'monospace',
+    }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(91);
+
+    // Title + points line
+    const label = this.add.text(startX - toastW / 2 + 16, toastY - 3,
+      achievement.title,
+      { fontSize: '5px', color: '#ffd700', fontFamily: 'monospace' },
+    ).setOrigin(0, 0).setScrollFactor(0).setDepth(91);
+
+    const pts = this.add.text(startX - toastW / 2 + 16, toastY + 4,
+      `+${achievement.points} pts`,
+      { fontSize: '4px', color: '#aaddff', fontFamily: 'monospace' },
+    ).setOrigin(0, 0).setScrollFactor(0).setDepth(91);
+
+    const toastObjs = [bg, iconTxt, label, pts];
+    const dx = finalX - startX;
+
+    // Slide in
     this.tweens.add({
-      targets: txt, alpha: 0, y: cy - 18,
-      duration: 1200, delay: 2000, ease: 'Power2',
-      onComplete: () => txt.destroy(),
+      targets: toastObjs, x: `+=${dx}`, duration: 300, ease: 'Back.Out',
+    });
+
+    // Hold 3 seconds then fade out
+    this.tweens.add({
+      targets: toastObjs, alpha: 0,
+      duration: 400, delay: 3300, ease: 'Power2',
+      onComplete: () => toastObjs.forEach(o => o.destroy()),
     });
 
     this.updateAchievementPtsHUD();

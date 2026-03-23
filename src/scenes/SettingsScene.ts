@@ -119,9 +119,10 @@ export class SettingsScene extends Phaser.Scene {
       y += 16;
     };
 
-    addVolRow('Master', () => this.settings.masterVolume, (v) => { this.settings.masterVolume = v; this.settings.save(); });
-    addVolRow('Music',  () => this.settings.musicVolume,  (v) => { this.settings.musicVolume  = v; this.settings.save(); });
-    addVolRow('SFX',    () => this.settings.sfxVolume,    (v) => { this.settings.sfxVolume    = v; this.settings.save(); });
+    addVolRow('Master',  () => this.settings.masterVolume,  (v) => { this.settings.masterVolume  = v; this.settings.save(); });
+    addVolRow('Music',   () => this.settings.musicVolume,   (v) => { this.settings.musicVolume   = v; this.settings.save(); });
+    addVolRow('SFX',     () => this.settings.sfxVolume,     (v) => { this.settings.sfxVolume     = v; this.settings.save(); });
+    addVolRow('Ambient', () => this.settings.ambientVolume, (v) => { this.settings.ambientVolume = v; this.settings.save(); });
 
     const c = this.add.container(0, 0, items).setDepth(3);
     return c;
