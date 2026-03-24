@@ -86,17 +86,32 @@ Full-stack enhancement pass based on codebase audit. 14 issues across 4 waves.
 - [x] PIX-18 — Performance optimization and platform build
 - [ ] PIX-19 — Distribution and launch (blocked: needs board for platform accounts)
 
-### M10: Endgame Content — IN PROGRESS
+### M10: Endgame Content — COMPLETE
 Post-v1 content to deepen endgame retention while awaiting distribution.
 
-- [ ] PIX-150 — Prestige/New Game+ system (level 50 reset, permanent bonuses, prestige tiers)
+- [x] PIX-150 — Prestige/New Game+ system (level 50 reset, permanent bonuses, prestige tiers)
 - [x] PIX-151 — Prestige system art (tier icons, rank borders, reset UI, nameplate decorations)
-- [ ] PIX-153 — Guild raid boss encounters (multi-party bosses, loot tables, raid lockouts)
-- [ ] PIX-154 — Guild raid art (boss sprites, raid UI panels, loot effect animations)
-- [ ] PIX-155 — Seasonal event framework (time-limited events, exclusive rewards, LLM story arcs)
-- [ ] PIX-159 — Seasonal event art (event UI, seasonal decorations, exclusive reward sprites)
+- [x] PIX-153 — Guild raid boss encounters (multi-party bosses, loot tables, raid lockouts)
+- [x] PIX-154 — Guild raid art (boss sprites, raid UI panels, loot effect animations)
+- [x] PIX-155 — Seasonal event framework (time-limited events, exclusive rewards, LLM story arcs)
+- [x] PIX-159 — Seasonal event art (event UI, seasonal decorations, exclusive reward sprites)
 
-### M11: NFT Integration — DEFERRED (post-launch)
+### M11: Content Expansion — COMPLETE
+New zones using existing tilesets, plus QA for M10 features.
+
+- [x] PIX-161 — Post-M10 integration test sweep (guild raids, prestige, seasonal events)
+- [x] PIX-162 — Implement Volcanic Highlands zone (zone 6, level 11+)
+- [x] PIX-163 — Create Volcanic Highlands zone art (enemy sprites, boss, NPC)
+- [x] PIX-164 — Create Shadowmire Swamp zone art (enemy sprites, boss, NPC)
+
+### M12: Continued Expansion — IN PROGRESS
+Shadowmire zone implementation, day/night cycle, and next zone art pipeline.
+
+- [x] PIX-168 — Implement Shadowmire Swamp zone (zone 7, level 14+)
+- [ ] PIX-169 — Implement day/night cycle system (time-based lighting and gameplay)
+- [ ] PIX-170 — Create Frostpeak Highlands zone art (enemy sprites, boss, NPC, tileset)
+
+### M13: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
 - Wallet connection (MetaMask / WalletConnect)
 - ERC-721/1155 item minting on EVM L2 (Polygon/Base)
@@ -112,13 +127,17 @@ M0 → M1 → M2 → M3 → M4 ─┐
                            ├→ M7 → M8 → M9 (launch)
 M5 → M6 ──────────────────┘
                 M10 (endgame content, parallel to M9)
-                      M11 (post-launch, independent)
+                      M11 (content expansion, parallel to M9)
+                            M12 (continued expansion, parallel to M9)
+                                  M13 (post-launch, independent)
 ```
 
 ## Key Decisions
 
 - **NFTs deferred to post-launch** — Ship the core MMORPG first, add blockchain later. Reduces scope and risk.
 - **Comprehensive enhancement before launch** — M8 closes security, balance, UX, and content gaps found in codebase audit.
-- **Endgame content while waiting** — M10 adds prestige system to deepen retention; safe to develop in parallel with distribution.
-- **Single engineer** — One engineer has shipped M0-M8 solo. Strong velocity.
-- **Game Artist** — Completed all M8 art. Now on prestige system art for M10.
+- **Endgame content while waiting** — M10 adds prestige, raids, and seasonal events. All complete as of 2026-03-24.
+- **Content expansion** — M11 adds Volcanic Highlands and Shadowmire Swamp zones using existing tilesets. All complete as of 2026-03-24.
+- **Continued expansion** — M12 implements Shadowmire zone code, day/night cycle, and Frostpeak Highlands art pipeline.
+- **Single engineer** — One engineer has shipped M0-M11 solo. Strong velocity.
+- **Game Artist** — Completed all art through M11. Now on Frostpeak Highlands zone art for M12.

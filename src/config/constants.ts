@@ -237,9 +237,10 @@ export type EnemyTypeName =
   | 'wraith' | 'golem' | 'archer'
   | 'crab' | 'wisp' | 'raider'
   | 'ice_elemental' | 'frost_wolf' | 'crystal_golem'
-  | 'lava_slime' | 'fire_imp' | 'magma_golem';
+  | 'lava_slime' | 'fire_imp' | 'magma_golem'
+  | 'bog_crawler' | 'swamp_wraith' | 'toxic_toad';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen';
 
 export interface EnemyTypeDef {
   color: number;
@@ -275,6 +276,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   lava_slime:  { color: 0xff5500, size: 9,  baseHp: 100, baseDmg: 20, speed: 50,  aggroRange: 90,  xpValue: 30, knockbackMultiplier: 1.0, behaviour: 'chase' },
   fire_imp:    { color: 0xff2200, size: 7,  baseHp: 80,  baseDmg: 25, speed: 90,  aggroRange: 115, xpValue: 32, knockbackMultiplier: 1.1, behaviour: 'ranged', projectileColor: 0xff8800 },
   magma_golem: { color: 0xcc3300, size: 13, baseHp: 320, baseDmg: 50, speed: 25,  aggroRange: 80,  xpValue: 45, knockbackMultiplier: 0.0, behaviour: 'tank' },
+  // Shadowmire Swamp enemies
+  bog_crawler:  { color: 0x2d5a1f, size: 9,  baseHp: 130, baseDmg: 28, speed: 45,  aggroRange: 85,  xpValue: 38, knockbackMultiplier: 0.8, behaviour: 'chase' },
+  swamp_wraith: { color: 0x6b8e5e, size: 8,  baseHp: 110, baseDmg: 32, speed: 70,  aggroRange: 120, xpValue: 42, knockbackMultiplier: 0.6, behaviour: 'ranged', projectileColor: 0x44ff66 },
+  toxic_toad:   { color: 0x4a7c1f, size: 10, baseHp: 160, baseDmg: 22, speed: 55,  aggroRange: 90,  xpValue: 35, knockbackMultiplier: 1.1, behaviour: 'chase' },
 };
 
 export interface BossTypeDef {
@@ -294,6 +299,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   kraken:           { color: 0x114455, size: 22, baseHp: 2500, baseDmg: 40, speed: 0,  xpValue: 600,  name: 'Maw of the Deep' },
   glacial_wyrm:     { color: 0x2266aa, size: 24, baseHp: 3500, baseDmg: 45, speed: 35, xpValue: 850,  name: 'Glacial Wyrm Vorthex' },
   infernal_warden:  { color: 0xff4400, size: 22, baseHp: 5000, baseDmg: 55, speed: 40, xpValue: 1200, name: 'Infernal Warden' },
+  mire_queen:       { color: 0x2a5c2a, size: 24, baseHp: 7000, baseDmg: 65, speed: 35, xpValue: 1800, name: 'Mire Queen' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -344,6 +350,7 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   mushroom:      'poison',
   lava_slime:    'burn',
   magma_golem:   'burn',
+  toxic_toad:    'poison',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -457,5 +464,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 1200,
     unlockRequirement: 'zone5',
     difficultyMult: 3.5,
+  },
+  {
+    id: 'zone7',
+    name: 'Shadowmire Swamp',
+    biome: 'Swamp',
+    description: 'Ancient wetlands choked with fog and decay. Bog crawlers, swamp wraiths, and toxic toads lurk in the murk, serving the dreaded Mire Queen.',
+    bgColor: 0x060e04,
+    groundColor: 0x1a3a12,
+    wallColor: 0x030802,
+    accentColor: 0x44cc44,
+    waves: 3,
+    enemyTypes: ['bog_crawler', 'swamp_wraith', 'toxic_toad'],
+    bossType: 'mire_queen',
+    minPlayerLevel: 14,
+    xpReward: 1800,
+    unlockRequirement: 'zone6',
+    difficultyMult: 4.0,
   },
 ];

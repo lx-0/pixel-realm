@@ -51,6 +51,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('tileset_ocean',    'assets/tileset_ocean.png');
     this.load.image('tileset_dungeon',  'assets/tileset_dungeon.png');
     this.load.image('tileset_town',     'assets/tileset_town.png');
+    this.load.image('tileset_swamp',    'assets/tiles/tilesets/tileset_swamp.png');
 
     // Enemy variants (12 frames × 16×24; boss: 12 frames × 32×32)
     this.load.spritesheet('enemy_slime',    'assets/char_enemy_slime.png',    { frameWidth: 16, frameHeight: 24 });
@@ -69,6 +70,26 @@ export class BootScene extends Phaser.Scene {
     this.load.spritesheet('enemy_fire_imp',    'assets/char_enemy_fire_imp.png',    { frameWidth: 16, frameHeight: 24 });
     this.load.spritesheet('enemy_magma_golem', 'assets/char_enemy_magma_golem.png', { frameWidth: 16, frameHeight: 24 });
     this.load.spritesheet('boss_infernal_warden', 'assets/boss_infernal_warden.png', { frameWidth: 32, frameHeight: 32 });
+
+    // Shadowmire Swamp enemies (12 frames × 16×24; boss phases: 32×32 each)
+    this.load.spritesheet('enemy_bog_crawler',  'assets/sprites/enemies/char_enemy_bog_crawler.png',  { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_swamp_wraith', 'assets/sprites/enemies/char_enemy_swamp_wraith.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_toxic_toad',   'assets/sprites/enemies/char_enemy_toxic_toad.png',   { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_mire_queen_phase1', 'assets/sprites/enemies/bosses/boss_mire_queen_phase1.png');
+    this.load.image('boss_mire_queen_phase2', 'assets/sprites/enemies/bosses/boss_mire_queen_phase2.png');
+    this.load.image('boss_mire_queen_phase3', 'assets/sprites/enemies/bosses/boss_mire_queen_phase3.png');
+    this.load.image('boss_mire_queen_idle',   'assets/sprites/enemies/bosses/boss_mire_queen_idle.png');
+    this.load.image('boss_mire_queen_attack', 'assets/sprites/enemies/bosses/boss_mire_queen_attack.png');
+
+    // Shadowmire Swamp NPC sprites
+    this.load.image('npc_swamp_hermit',       'assets/sprites/characters/char_npc_swamp_hermit.png');
+    this.load.image('npc_swamp_potion_seller','assets/sprites/characters/char_npc_swamp_potion_seller.png');
+    this.load.image('npc_quest_swamp',        'assets/sprites/characters/char_npc_quest_swamp.png');
+
+    // Shadowmire Swamp parallax layers
+    this.load.image('bg_parallax_swamp_far',  'assets/backgrounds/parallax/bg_parallax_swamp_far.png');
+    this.load.image('bg_parallax_swamp_mid',  'assets/backgrounds/parallax/bg_parallax_swamp_mid.png');
+    this.load.image('bg_parallax_swamp_near', 'assets/backgrounds/parallax/bg_parallax_swamp_near.png');
 
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
@@ -296,6 +317,17 @@ export class BootScene extends Phaser.Scene {
     }
     if (this.textures.get('boss_infernal_warden').frameTotal > 1) {
       this.createVariantAnims('boss_infernal_warden', 'infernal_warden');
+    }
+
+    // Shadowmire Swamp enemy animations
+    if (this.textures.get('enemy_bog_crawler').frameTotal > 1) {
+      this.createVariantAnims('enemy_bog_crawler', 'bog_crawler');
+    }
+    if (this.textures.get('enemy_swamp_wraith').frameTotal > 1) {
+      this.createVariantAnims('enemy_swamp_wraith', 'swamp_wraith');
+    }
+    if (this.textures.get('enemy_toxic_toad').frameTotal > 1) {
+      this.createVariantAnims('enemy_toxic_toad', 'toxic_toad');
     }
 
     // Dungeon enemy animations

@@ -83,6 +83,8 @@ const SKILL_AoE_RADIUS = 55;  // pixels — for AoE skills
 const SKILL_MELEE_RANGE = 38; // pixels — for targeted melee skills
 
 // ── Status effect flags (bitmask, mirrors client STATUS_EFFECTS) ──────────────
+const STATUS_FLAG_POISON = 1; // bit 0
+const STATUS_POISON_MS   = 6000;
 const STATUS_FLAG_FREEZE = 4; // bit 2
 const STATUS_FREEZE_MS   = 3000;
 // ── Status effect flags (continued) ──────────────────────────────────────────
@@ -94,6 +96,7 @@ const MELEE_STATUS_MAP: Record<string, { flag: number; durationMs: number }> = {
   crystal_golem: { flag: STATUS_FLAG_FREEZE, durationMs: STATUS_FREEZE_MS },
   lava_slime:    { flag: STATUS_FLAG_BURN,   durationMs: STATUS_BURN_MS },
   magma_golem:   { flag: STATUS_FLAG_BURN,   durationMs: STATUS_BURN_MS },
+  toxic_toad:    { flag: STATUS_FLAG_POISON, durationMs: STATUS_POISON_MS },
 };
 
 // ── Crafting material loot tables (per zone) ──────────────────────────────────
@@ -126,6 +129,12 @@ const ZONE_LOOT: Record<string, Array<{ itemId: string; chance: number }>> = {
     { itemId: "mat_magma_core",     chance: 0.35 },
     { itemId: "mat_fire_shard",     chance: 0.28 },
     { itemId: "mat_magic_crystal",  chance: 0.20 },
+  ],
+  zone7: [
+    { itemId: "mat_swamp_root",     chance: 0.40 },
+    { itemId: "mat_bog_essence",    chance: 0.30 },
+    { itemId: "mat_toxic_gland",    chance: 0.22 },
+    { itemId: "mat_magic_crystal",  chance: 0.18 },
   ],
 };
 
@@ -169,6 +178,11 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
     { type: "lava_slime",  hp: 100, dmg: 20, speed: 50, aggroRange: 90,  xp: 55 },
     { type: "fire_imp",    hp: 80,  dmg: 25, speed: 90, aggroRange: 115, xp: 58, ranged: true },
     { type: "magma_golem", hp: 320, dmg: 50, speed: 25, aggroRange: 80,  xp: 90 },
+  ],
+  zone7: [
+    { type: "bog_crawler",  hp: 130, dmg: 28, speed: 45, aggroRange: 85,  xp: 68 },
+    { type: "swamp_wraith", hp: 110, dmg: 32, speed: 70, aggroRange: 120, xp: 72, ranged: true },
+    { type: "toxic_toad",   hp: 160, dmg: 22, speed: 55, aggroRange: 90,  xp: 62 },
   ],
 };
 

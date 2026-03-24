@@ -66,6 +66,12 @@ const ZONE_META: Record<string, { name: string; biome: string; description: stri
     description: "Scorched peaks above a sea of magma. Lava slimes, fire imps, and magma golems guard the forge of the Infernal Warden.",
     enemyTypes: ["lava_slime", "fire_imp", "magma_golem"],
   },
+  zone7: {
+    name: "Shadowmire Swamp",
+    biome: "Swamp",
+    description: "Ancient wetlands choked with fog and decay. Bog crawlers, swamp wraiths, and toxic toads lurk in the murk, serving the dreaded Mire Queen.",
+    enemyTypes: ["bog_crawler", "swamp_wraith", "toxic_toad"],
+  },
 };
 
 const QUEST_TYPES: QuestType[] = ["kill", "fetch", "explore", "escort", "puzzle"];

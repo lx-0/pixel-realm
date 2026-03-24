@@ -572,6 +572,98 @@ const FALLBACKS: FallbackRecord[] = [
     },
     completionConditions: { type: "puzzle", target: "infernal seal" },
   },
+
+  // ── Zone 7 — Shadowmire Swamp (Swamp) ────────────────────────────────────────
+  {
+    zoneId: "zone7",
+    questType: "kill",
+    title: "Bog Crawler Cull",
+    description: "Bog crawlers have overrun the swamp paths, making travel near impossible. Thin their numbers.",
+    objectives: [{ type: "kill", target: "bog_crawler", count: 5, description: "Defeat 5 bog crawlers in the Shadowmire Swamp" }],
+    dialogue: {
+      greeting: "Those bog crawlers are everywhere — you can't take three steps without one snapping at your heels!",
+      acceptance: "They're tough, but slow. Get in fast and hit hard before they drag you into the mire.",
+      completion: "The paths are clear! I haven't seen that many gone at once. You've done us a real service.",
+      choices: [
+        { id: "accept", label: "I'll clear out those bog crawlers.", response: "They're tough but slow — stay light on your feet and strike before they drag you into the mud.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What makes bog crawlers dangerous?", response: "Their grip. Once they latch on, they drag you under. Keep moving and don't let them surround you.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The swamp is too risky for me right now.", response: "I understand. Travel safe — stay to the higher ground where the fog is thinner.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "kill", target: "bog_crawler", count: 5 },
+  },
+  {
+    zoneId: "zone7",
+    questType: "fetch",
+    title: "Swamp Root Harvest",
+    description: "An alchemist needs rare swamp roots for a powerful antidote. Collect them from deep in the mire.",
+    objectives: [{ type: "fetch", target: "swamp root", count: 4, description: "Collect 4 swamp roots from the Shadowmire" }],
+    dialogue: {
+      greeting: "I need swamp roots from the deep mire — they only grow where the fog is thickest. Risky, but I'll pay well.",
+      acceptance: "They glow faint green in the dark. Dig fast — the wraiths do not like anyone disturbing their grounds.",
+      completion: "Four perfect roots! This antidote will save lives. I can't thank you enough.",
+      choices: [
+        { id: "accept", label: "I'll fetch those swamp roots for you.", response: "They glow faint green even in the dark fog. Get them fast — the wraiths patrol that area.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What is the antidote for?", response: "The swamp's toxic toads have been poisoning the water supply. This antidote will cure the afflicted.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The deep mire is beyond me.", response: "No matter. Stay safe — the outer swamp is dangerous enough.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "fetch", target: "swamp root", count: 4 },
+  },
+  {
+    zoneId: "zone7",
+    questType: "explore",
+    title: "The Sunken Shrine",
+    description: "Old maps show a sunken shrine hidden in the deepest part of the Shadowmire. Find it before it sinks further.",
+    objectives: [{ type: "explore", target: "sunken shrine", description: "Discover the sunken shrine in the Shadowmire Swamp" }],
+    dialogue: {
+      greeting: "My grandfather's maps mark a sunken shrine somewhere in the deepest mire. Would you find it? It could answer many questions.",
+      acceptance: "Follow the fireflies — they seem drawn to old magic. Don't stray from the firm ground.",
+      completion: "You found it! The stonework matches the old maps exactly. This changes our understanding of the swamp's history.",
+      choices: [
+        { id: "accept", label: "I'll find the sunken shrine.", response: "Follow the fireflies — the old stories say they're drawn to ancient magic. Trust them over the paths.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who built the shrine?", response: "Unknown. The stonework predates any known swamp settlement. Perhaps those the Mire Queen once served.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The deep mire is too dangerous.", response: "I feared as much. The shrine may remain lost for another generation.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "explore", target: "sunken shrine" },
+  },
+  {
+    zoneId: "zone7",
+    questType: "escort",
+    title: "Lost in the Mire",
+    description: "A swamp herbalist got turned around in the fog. Escort them safely back to the settlement.",
+    objectives: [{ type: "escort", target: "Swamp Herbalist", description: "Escort the Swamp Herbalist back to the settlement" }],
+    dialogue: {
+      greeting: "The fog came in fast and I lost the path completely. Could you guide me back? I know these plants, not these paths.",
+      acceptance: "Stay close — the mire plays tricks on the eyes. What looks like solid ground often isn't.",
+      completion: "Home at last! I thought I'd be wandering until the wraiths found me. You've saved my life.",
+      choices: [
+        { id: "accept", label: "Stay close — I'll get you back safely.", response: "Thank the roots you found me! The fog distorts everything. I'll follow your lead.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "How long have you been lost?", response: "Since midday. The swamp wraiths kept driving me deeper. I daren't stop moving.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "I can't spare the time right now.", response: "I understand. I'll try to wait out the fog here. Please — if you see anyone else, send them my way.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "escort", target: "Swamp Herbalist" },
+  },
+  {
+    zoneId: "zone7",
+    questType: "puzzle",
+    title: "The Mire Seal",
+    description: "An ancient ward seals the passage to the Mire Queen's lair. Solve the toad-rune puzzle to break it.",
+    objectives: [{ type: "puzzle", target: "mire seal", description: "Break the mire seal blocking the path to the Mire Queen" }],
+    dialogue: {
+      greeting: "The mire seal blocks the path forward. No blade can cut it — only those who understand the old runes can break it.",
+      acceptance: "The toad runes must be pressed in the order of the seasons: growth, decay, sleep, then rebirth.",
+      completion: "The seal crumbles! Your understanding of the swamp's old magic is remarkable. The path is clear.",
+      choices: [
+        { id: "accept", label: "I'll break the mire seal.", response: "The toad runes activate in seasonal order — growth, decay, sleep, rebirth. Don't rush it.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who placed this seal?", response: "The Mire Queen herself, long ago — to keep the outside world from her domain. Now she uses it to trap others inside.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Ancient rune puzzles are beyond me.", response: "Perhaps another time. The seal will hold until you're ready to face what lies beyond.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "puzzle", target: "mire seal" },
+  },
 ];
 
 /**
