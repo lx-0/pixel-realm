@@ -272,21 +272,23 @@ export class RaidRoom extends Room<RaidGameState> {
           player.level         = saved.level;
           player.xp            = saved.xp;
           player.prestigeLevel = saved.prestigeLevel ?? 0;
-          // Apply permanent prestige bonuses
-          const { statMultiplier } = getPrestigeBonuses(player.prestigeLevel);
-          if (statMultiplier > 0) {
-            player.maxHp   = Math.round(player.maxHp   * (1 + statMultiplier));
-            player.maxMana = Math.round(player.maxMana  * (1 + statMultiplier));
-            player.hp      = Math.min(player.hp,   player.maxHp);
-            player.mana    = Math.min(player.mana, player.maxMana);
-          }
           this.prestigeLevels.set(client.sessionId, player.prestigeLevel);
         }
 
         const skillState = await initSkillState(userId);
         this.skillStateMap.set(client.sessionId, skillState);
         this.skillCooldowns.set(client.sessionId, {});
+        // Apply skill passives first — they recalculate maxHp/maxMana from base level
         this.applySkillPassives(player, skillState);
+        // Apply permanent prestige bonuses ON TOP of the skill-passive baseline
+        const prestige = this.prestigeLevels.get(client.sessionId) ?? 0;
+        const { statMultiplier } = getPrestigeBonuses(prestige);
+        if (statMultiplier > 0) {
+          player.maxHp   = Math.round(player.maxHp   * (1 + statMultiplier));
+          player.maxMana = Math.round(player.maxMana  * (1 + statMultiplier));
+          player.hp      = Math.min(player.hp,   player.maxHp);
+          player.mana    = Math.min(player.mana, player.maxMana);
+        }
         this.syncSkillState(player, skillState);
 
         try {
