@@ -243,9 +243,10 @@ export type EnemyTypeName =
   | 'star_sentinel' | 'void_mage' | 'astral_beast'
   | 'deep_angler' | 'abyssal_leviathan' | 'coral_golem'
   | 'bone_revenant' | 'ashwyrm' | 'spectral_drake'
-  | 'rift_walker' | 'void_sentinel' | 'shadow_weaver';
+  | 'rift_walker' | 'void_sentinel' | 'shadow_weaver'
+  | 'eclipse_knight' | 'shadow_herald' | 'dusk_wraith';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king';
 
 export interface EnemyTypeDef {
   color: number;
@@ -305,6 +306,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   rift_walker:    { color: 0x8822dd, size: 9,  baseHp: 250, baseDmg: 55, speed: 90,  aggroRange: 130, xpValue: 160, knockbackMultiplier: 0.8, behaviour: 'phase' },
   void_sentinel:  { color: 0x5500cc, size: 10, baseHp: 220, baseDmg: 65, speed: 55,  aggroRange: 155, xpValue: 170, knockbackMultiplier: 0.6, behaviour: 'ranged_flee', projectileColor: 0xaa44ff },
   shadow_weaver:  { color: 0x330055, size: 11, baseHp: 300, baseDmg: 58, speed: 70,  aggroRange: 140, xpValue: 165, knockbackMultiplier: 1.0, behaviour: 'charm',       projectileColor: 0xff00ff },
+  // Eclipsed Throne enemies
+  eclipse_knight: { color: 0x553300, size: 11, baseHp: 320, baseDmg: 65, speed: 60,  aggroRange: 110, xpValue: 185, knockbackMultiplier: 0.3, behaviour: 'tank' },
+  shadow_herald:  { color: 0x331100, size: 9,  baseHp: 270, baseDmg: 72, speed: 85,  aggroRange: 160, xpValue: 195, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0xff6600 },
+  dusk_wraith:    { color: 0x884400, size: 10, baseHp: 290, baseDmg: 68, speed: 100, aggroRange: 145, xpValue: 190, knockbackMultiplier: 0.9, behaviour: 'phase' },
 };
 
 export interface BossTypeDef {
@@ -330,6 +335,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   abyssal_kraken_lord: { color: 0x001133, size: 30, baseHp: 18000, baseDmg: 100, speed: 25, xpValue: 5000, name: 'Abyssal Kraken Lord' },
   ancient_dracolich:   { color: 0x4a2200, size: 32, baseHp: 24000, baseDmg: 115, speed: 20, xpValue: 6500, name: 'Ancient Dracolich' },
   void_architect:      { color: 0x7700ff, size: 34, baseHp: 32000, baseDmg: 130, speed: 25, xpValue: 8000, name: 'Void Architect' },
+  eclipsed_king:       { color: 0xffaa00, size: 36, baseHp: 42000, baseDmg: 145, speed: 22, xpValue: 10000, name: 'The Eclipsed King' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -389,6 +395,8 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   spectral_drake:    'burn',
   rift_walker:       'stun',
   shadow_weaver:     'stun',
+  eclipse_knight:    'burn',
+  dusk_wraith:       'stun',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -410,6 +418,8 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   ancient_dracolich:   'burn',
   void_sentinel:       'stun',
   void_architect:      'stun',
+  shadow_herald:       'burn',
+  eclipsed_king:       'burn',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -616,5 +626,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 7500,
     unlockRequirement: 'zone11',
     difficultyMult: 6.5,
+  },
+  {
+    id: 'zone13',
+    name: 'Eclipsed Throne',
+    biome: 'eclipsed-throne',
+    description: 'A shattered realm where the sun has been devoured. Eclipse knights, shadow heralds, and dusk wraiths guard the obsidian seat of The Eclipsed King — sovereign of eternal darkness.',
+    bgColor: 0x0d0800,
+    groundColor: 0x2d1500,
+    wallColor: 0x080400,
+    accentColor: 0xffaa00,
+    waves: 3,
+    enemyTypes: ['eclipse_knight', 'shadow_herald', 'dusk_wraith'],
+    bossType: 'eclipsed_king',
+    minPlayerLevel: 32,
+    xpReward: 9500,
+    unlockRequirement: 'zone12',
+    difficultyMult: 7.0,
   },
 ];

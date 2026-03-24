@@ -196,6 +196,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_void_sanctum_mid',  'assets/backgrounds/parallax/bg_parallax_void_sanctum_mid.png');
     this.load.image('bg_parallax_void_sanctum_near', 'assets/backgrounds/parallax/bg_parallax_void_sanctum_near.png');
 
+    // Eclipsed Throne tileset
+    this.load.image('tileset_eclipsed_throne', 'assets/tiles/tilesets/tileset_eclipsed_throne.png');
+
+    // Eclipsed Throne enemies (16×24 spritesheet) and boss phases (32×32 each)
+    this.load.spritesheet('enemy_eclipse_knight', 'assets/sprites/enemies/char_enemy_eclipse_knight.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_shadow_herald',  'assets/sprites/enemies/char_enemy_shadow_herald.png',  { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_dusk_wraith',    'assets/sprites/enemies/char_enemy_dusk_wraith.png',    { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_eclipsed_king_phase1', 'assets/sprites/enemies/bosses/boss_eclipsed_king_phase1.png');
+    this.load.image('boss_eclipsed_king_phase2', 'assets/sprites/enemies/bosses/boss_eclipsed_king_phase2.png');
+    this.load.image('boss_eclipsed_king_phase3', 'assets/sprites/enemies/bosses/boss_eclipsed_king_phase3.png');
+    this.load.image('boss_eclipsed_king_idle',   'assets/sprites/enemies/bosses/boss_eclipsed_king_idle.png');
+    this.load.image('boss_eclipsed_king_attack', 'assets/sprites/enemies/bosses/boss_eclipsed_king_attack.png');
+
+    // Eclipsed Throne NPC
+    this.load.image('npc_quest_eclipsed_throne', 'assets/sprites/characters/char_npc_quest_eclipsed_throne.png');
+
+    // Eclipsed Throne parallax layers
+    this.load.image('bg_parallax_eclipsed_throne_far',  'assets/backgrounds/parallax/bg_parallax_eclipsed_throne_far.png');
+    this.load.image('bg_parallax_eclipsed_throne_mid',  'assets/backgrounds/parallax/bg_parallax_eclipsed_throne_mid.png');
+    this.load.image('bg_parallax_eclipsed_throne_near', 'assets/backgrounds/parallax/bg_parallax_eclipsed_throne_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');
