@@ -117,11 +117,23 @@ Frostpeak zone implementation, Celestial Spire art pipeline, continued world gro
 - [x] PIX-172 — Implement Frostpeak Highlands zone (zone 8, level 17+)
 - [x] PIX-173 — Create Celestial Spire zone art (enemy sprites, boss, NPC, tileset)
 
-### M14a: Deep World Expansion — IN PROGRESS
-Celestial Spire zone implementation and Abyssal Depths art pipeline.
+### M14a: Deep World Expansion — COMPLETE
+Zones 9–12 implementation and art pipeline (Celestial Spire through Void Sanctum).
 
 - [x] PIX-175 — Implement Celestial Spire zone (zone 9, level 20+)
-- [ ] PIX-176 — Create Abyssal Depths zone art (zone 10, level 23+)
+- [x] PIX-176 — Create Abyssal Depths zone art (zone 10, level 23+)
+- [x] PIX-181 — Implement Abyssal Depths zone (zone 10, level 23+)
+- [x] PIX-182 — Create Dragonbone Wastes zone art (zone 11, level 26+)
+- [x] PIX-183 — Implement Dragonbone Wastes zone (zone 11, level 26+)
+- [x] PIX-184 — Rebuild distribution zip with latest zone content (v0.2.0)
+- [x] PIX-186 — Create Void Sanctum zone art (zone 12, level 29+)
+
+### M15: Endgame World Expansion — IN PROGRESS
+Void Sanctum zone implementation and Eclipsed Throne zone art pipeline.
+
+- [ ] PIX-187 — Implement Void Sanctum zone (zone 12, level 29+)
+- [ ] PIX-190 — Create Eclipsed Throne zone art (zone 13, level 32+)
+- [ ] PIX-191 — Implement Eclipsed Throne zone (zone 13, level 32+)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -143,7 +155,8 @@ M5 → M6 ──────────────────┘
                             M12 (continued expansion, parallel to M9)
                                   M13 (world expansion, parallel to M9)
                                         M14a (deep world expansion, parallel to M9)
-                                              M14 (post-launch, independent)
+                                              M15 (endgame world expansion, parallel to M9)
+                                                    M14 (post-launch, independent)
 ```
 
 ## Key Decisions
@@ -154,6 +167,7 @@ M5 → M6 ──────────────────┘
 - **Content expansion** — M11 adds Volcanic Highlands and Shadowmire Swamp zones using existing tilesets. All complete as of 2026-03-24.
 - **Continued expansion** — M12 implements Shadowmire zone code, day/night cycle, and Frostpeak Highlands art pipeline.
 - **World expansion** — M13 implements Frostpeak Highlands zone and begins Celestial Spire art pipeline. All complete as of 2026-03-24.
-- **Deep world expansion** — M14a implements Celestial Spire zone and begins Abyssal Depths art pipeline.
-- **Single engineer** — One engineer has shipped M0-M13 solo. Strong velocity.
-- **Game Artist** — Completed all art through M13. Now on Abyssal Depths zone art for M14a.
+- **Deep world expansion** — M14a completed zones 9–12 (Celestial Spire through Void Sanctum). All complete as of 2026-03-24.
+- **Endgame world expansion** — M15 implements Void Sanctum zone and begins Eclipsed Throne art pipeline.
+- **Single engineer** — One engineer has shipped M0–M14a solo. Strong velocity.
+- **Game Artist** — Completed all art through zone 12 (Void Sanctum). Now on Eclipsed Throne zone art for M15.
