@@ -2608,6 +2608,7 @@ export class GameScene extends Phaser.Scene {
           zone1: 'poison',
           zone2: 'burn',
           zone5: 'freeze',
+          zone6: 'burn',
         };
         const zoneEffect = zoneEffectMap[this.zone.id];
         if (zoneEffect) this.applyEffectToEnemy(e, extra, zoneEffect, time);

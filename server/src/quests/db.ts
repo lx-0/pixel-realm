@@ -54,6 +54,18 @@ const ZONE_META: Record<string, { name: string; biome: string; description: stri
     description: "Storm-lashed docks. Corsairs, sea wisps, and crabs defend the sunken vault.",
     enemyTypes: ["crab", "wisp", "raider"],
   },
+  zone5: {
+    name: "Ice Caverns",
+    biome: "Ice / Cave",
+    description: "Frozen depths beneath the world. Ice elementals, frost wolves, and crystal golems guard the lair of the Glacial Wyrm.",
+    enemyTypes: ["ice_elemental", "frost_wolf", "crystal_golem"],
+  },
+  zone6: {
+    name: "Volcanic Highlands",
+    biome: "Volcanic",
+    description: "Scorched peaks above a sea of magma. Lava slimes, fire imps, and magma golems guard the forge of the Infernal Warden.",
+    enemyTypes: ["lava_slime", "fire_imp", "magma_golem"],
+  },
 };
 
 const QUEST_TYPES: QuestType[] = ["kill", "fetch", "explore", "escort", "puzzle"];

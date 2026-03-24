@@ -64,6 +64,12 @@ export class BootScene extends Phaser.Scene {
     this.load.spritesheet('enemy_crystal_golem', 'assets/char_enemy_crystal_golem.png', { frameWidth: 16, frameHeight: 24 });
     this.load.spritesheet('boss_glacial_wyrm',   'assets/char_boss_glacial_wyrm.png',   { frameWidth: 32, frameHeight: 32 });
 
+    // Volcanic Highlands enemies (12 frames × 16×24; boss: 12 frames × 32×32)
+    this.load.spritesheet('enemy_lava_slime',  'assets/char_enemy_lava_slime.png',  { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_fire_imp',    'assets/char_enemy_fire_imp.png',    { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_magma_golem', 'assets/char_enemy_magma_golem.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('boss_infernal_warden', 'assets/boss_infernal_warden.png', { frameWidth: 32, frameHeight: 32 });
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');
@@ -276,6 +282,20 @@ export class BootScene extends Phaser.Scene {
     }
     if (this.textures.get('boss_glacial_wyrm').frameTotal > 1) {
       this.createVariantAnims('boss_glacial_wyrm', 'glacial_wyrm');
+    }
+
+    // Volcanic Highlands enemy animations
+    if (this.textures.get('enemy_lava_slime').frameTotal > 1) {
+      this.createVariantAnims('enemy_lava_slime', 'lava_slime');
+    }
+    if (this.textures.get('enemy_fire_imp').frameTotal > 1) {
+      this.createVariantAnims('enemy_fire_imp', 'fire_imp');
+    }
+    if (this.textures.get('enemy_magma_golem').frameTotal > 1) {
+      this.createVariantAnims('enemy_magma_golem', 'magma_golem');
+    }
+    if (this.textures.get('boss_infernal_warden').frameTotal > 1) {
+      this.createVariantAnims('boss_infernal_warden', 'infernal_warden');
     }
 
     // Dungeon enemy animations

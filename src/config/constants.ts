@@ -236,9 +236,10 @@ export type EnemyTypeName =
   | 'beetle' | 'bandit' | 'sentry'
   | 'wraith' | 'golem' | 'archer'
   | 'crab' | 'wisp' | 'raider'
-  | 'ice_elemental' | 'frost_wolf' | 'crystal_golem';
+  | 'ice_elemental' | 'frost_wolf' | 'crystal_golem'
+  | 'lava_slime' | 'fire_imp' | 'magma_golem';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden';
 
 export interface EnemyTypeDef {
   color: number;
@@ -270,6 +271,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   ice_elemental: { color: 0x44aaff, size: 8,  baseHp: 90,  baseDmg: 22, speed: 55,  aggroRange: 110, xpValue: 26, knockbackMultiplier: 0.6, behaviour: 'ranged', projectileColor: 0x00eeff },
   frost_wolf:    { color: 0xccddee, size: 9,  baseHp: 75,  baseDmg: 18, speed: 100, aggroRange: 120, xpValue: 22, knockbackMultiplier: 1.2, behaviour: 'chase' },
   crystal_golem: { color: 0x5599bb, size: 12, baseHp: 250, baseDmg: 40, speed: 28,  aggroRange: 75,  xpValue: 35, knockbackMultiplier: 0.0, behaviour: 'tank' },
+  // Volcanic Highlands enemies
+  lava_slime:  { color: 0xff5500, size: 9,  baseHp: 100, baseDmg: 20, speed: 50,  aggroRange: 90,  xpValue: 30, knockbackMultiplier: 1.0, behaviour: 'chase' },
+  fire_imp:    { color: 0xff2200, size: 7,  baseHp: 80,  baseDmg: 25, speed: 90,  aggroRange: 115, xpValue: 32, knockbackMultiplier: 1.1, behaviour: 'ranged', projectileColor: 0xff8800 },
+  magma_golem: { color: 0xcc3300, size: 13, baseHp: 320, baseDmg: 50, speed: 25,  aggroRange: 80,  xpValue: 45, knockbackMultiplier: 0.0, behaviour: 'tank' },
 };
 
 export interface BossTypeDef {
@@ -283,11 +288,12 @@ export interface BossTypeDef {
 }
 
 export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
-  slime_king:   { color: 0x22cc22, size: 20, baseHp: 300,  baseDmg: 15, speed: 50, xpValue: 150,  name: 'Slime King' },
-  bandit_chief: { color: 0xff2200, size: 16, baseHp: 600,  baseDmg: 25, speed: 50, xpValue: 250,  name: 'Bandit Chief Korran' },
-  archon:       { color: 0xaa44ff, size: 14, baseHp: 1200, baseDmg: 30, speed: 55, xpValue: 400,  name: 'Archon Thessar' },
-  kraken:       { color: 0x114455, size: 22, baseHp: 2500, baseDmg: 40, speed: 0,  xpValue: 600,  name: 'Maw of the Deep' },
-  glacial_wyrm: { color: 0x2266aa, size: 24, baseHp: 3500, baseDmg: 45, speed: 35, xpValue: 850,  name: 'Glacial Wyrm Vorthex' },
+  slime_king:       { color: 0x22cc22, size: 20, baseHp: 300,  baseDmg: 15, speed: 50, xpValue: 150,  name: 'Slime King' },
+  bandit_chief:     { color: 0xff2200, size: 16, baseHp: 600,  baseDmg: 25, speed: 50, xpValue: 250,  name: 'Bandit Chief Korran' },
+  archon:           { color: 0xaa44ff, size: 14, baseHp: 1200, baseDmg: 30, speed: 55, xpValue: 400,  name: 'Archon Thessar' },
+  kraken:           { color: 0x114455, size: 22, baseHp: 2500, baseDmg: 40, speed: 0,  xpValue: 600,  name: 'Maw of the Deep' },
+  glacial_wyrm:     { color: 0x2266aa, size: 24, baseHp: 3500, baseDmg: 45, speed: 35, xpValue: 850,  name: 'Glacial Wyrm Vorthex' },
+  infernal_warden:  { color: 0xff4400, size: 22, baseHp: 5000, baseDmg: 55, speed: 40, xpValue: 1200, name: 'Infernal Warden' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -336,13 +342,17 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   frost_wolf:    'freeze',
   crystal_golem: 'freeze',
   mushroom:      'poison',
+  lava_slime:    'burn',
+  magma_golem:   'burn',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
 export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeName, EffectKey>> = {
-  ice_elemental: 'freeze',
-  bandit:        'burn',
-  glacial_wyrm:  'freeze',
+  ice_elemental:   'freeze',
+  bandit:          'burn',
+  glacial_wyrm:    'freeze',
+  fire_imp:        'burn',
+  infernal_warden: 'burn',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -430,5 +440,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 850,
     unlockRequirement: 'zone4',
     difficultyMult: 3.0,
+  },
+  {
+    id: 'zone6',
+    name: 'Volcanic Highlands',
+    biome: 'Volcanic',
+    description: 'Scorched peaks above a sea of magma. Lava slimes, fire imps, and magma golems guard the forge of the Infernal Warden.',
+    bgColor: 0x1a0800,
+    groundColor: 0x4a1500,
+    wallColor: 0x100500,
+    accentColor: 0xff5500,
+    waves: 3,
+    enemyTypes: ['lava_slime', 'fire_imp', 'magma_golem'],
+    bossType: 'infernal_warden',
+    minPlayerLevel: 11,
+    xpReward: 1200,
+    unlockRequirement: 'zone5',
+    difficultyMult: 3.5,
   },
 ];

@@ -85,10 +85,15 @@ const SKILL_MELEE_RANGE = 38; // pixels — for targeted melee skills
 // ── Status effect flags (bitmask, mirrors client STATUS_EFFECTS) ──────────────
 const STATUS_FLAG_FREEZE = 4; // bit 2
 const STATUS_FREEZE_MS   = 3000;
+// ── Status effect flags (continued) ──────────────────────────────────────────
+const STATUS_FLAG_BURN = 2; // bit 1
+const STATUS_BURN_MS   = 4000;
 /** Enemy types whose melee contact applies a status flag to the player. */
 const MELEE_STATUS_MAP: Record<string, { flag: number; durationMs: number }> = {
   frost_wolf:    { flag: STATUS_FLAG_FREEZE, durationMs: STATUS_FREEZE_MS },
   crystal_golem: { flag: STATUS_FLAG_FREEZE, durationMs: STATUS_FREEZE_MS },
+  lava_slime:    { flag: STATUS_FLAG_BURN,   durationMs: STATUS_BURN_MS },
+  magma_golem:   { flag: STATUS_FLAG_BURN,   durationMs: STATUS_BURN_MS },
 };
 
 // ── Crafting material loot tables (per zone) ──────────────────────────────────
@@ -116,6 +121,11 @@ const ZONE_LOOT: Record<string, Array<{ itemId: string; chance: number }>> = {
   zone5: [
     { itemId: "mat_magic_crystal",  chance: 0.30 },
     { itemId: "mat_bone_fragment",  chance: 0.25 },
+  ],
+  zone6: [
+    { itemId: "mat_magma_core",     chance: 0.35 },
+    { itemId: "mat_fire_shard",     chance: 0.28 },
+    { itemId: "mat_magic_crystal",  chance: 0.20 },
   ],
 };
 
@@ -154,6 +164,11 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
     { type: "ice_elemental", hp: 90,  dmg: 22, speed: 55,  aggroRange: 110, xp: 48, ranged: true },
     { type: "frost_wolf",    hp: 75,  dmg: 18, speed: 100, aggroRange: 120, xp: 40 },
     { type: "crystal_golem", hp: 250, dmg: 40, speed: 28,  aggroRange: 75,  xp: 75 },
+  ],
+  zone6: [
+    { type: "lava_slime",  hp: 100, dmg: 20, speed: 50, aggroRange: 90,  xp: 55 },
+    { type: "fire_imp",    hp: 80,  dmg: 25, speed: 90, aggroRange: 115, xp: 58, ranged: true },
+    { type: "magma_golem", hp: 320, dmg: 50, speed: 25, aggroRange: 80,  xp: 90 },
   ],
 };
 

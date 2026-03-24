@@ -388,6 +388,190 @@ const FALLBACKS: FallbackRecord[] = [
     },
     completionConditions: { type: "puzzle", target: "tide compass" },
   },
+
+  // ── Zone 5 — Ice Caverns (Ice / Cave) ──────────────────────────────────────
+  {
+    zoneId: "zone5",
+    questType: "kill",
+    title: "Frost Wolf Cull",
+    description: "Frost wolves have been ambushing travellers near the cavern entrance. Drive them back.",
+    objectives: [{ type: "kill", target: "frost_wolf", count: 5, description: "Defeat 5 frost wolves in the Ice Caverns" }],
+    dialogue: {
+      greeting: "Those frost wolves have been hunting in packs again. Could you thin their numbers?",
+      acceptance: "Watch out — they're fast and their bite freezes you solid.",
+      completion: "The pack is broken! The pass should be safe again. Here, take this.",
+      choices: [
+        { id: "accept", label: "I'll drive those wolves off.", response: "Be careful — they hunt in pairs and their bite will freeze you solid.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "How many are in the pack?", response: "At least five, maybe more. They roam the upper tunnels near the icefall.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Those wolves sound too dangerous.", response: "I understand. Perhaps when you're better equipped. Safe travels!", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "kill", target: "frost_wolf", count: 5 },
+  },
+  {
+    zoneId: "zone5",
+    questType: "fetch",
+    title: "Glacial Shard Collection",
+    description: "A researcher needs glacial shards that form deep in the caverns. Help gather some.",
+    objectives: [{ type: "fetch", target: "glacial shard", count: 3, description: "Collect 3 glacial shards from the Ice Caverns" }],
+    dialogue: {
+      greeting: "The glacial shards form only in the deep tunnels. Could you bring me three?",
+      acceptance: "They glow faintly blue — hard to miss against the dark ice.",
+      completion: "Perfect specimens! These will fund my research for months. My thanks!",
+      choices: [
+        { id: "accept", label: "I'll gather those shards for you.", response: "Wonderful! They glow faintly blue against the dark ice — hard to miss.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What are you researching?", response: "The resonance between glacial ice and magical energy. It could revolutionise cold-forging.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The deep tunnels are too far for me.", response: "No matter. I'll wait for the next brave soul. Stay warm!", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "fetch", target: "glacial shard", count: 3 },
+  },
+  {
+    zoneId: "zone5",
+    questType: "explore",
+    title: "The Frozen Archive",
+    description: "Legends speak of an ancient archive sealed in ice. Find it deep in the caverns.",
+    objectives: [{ type: "explore", target: "frozen archive", description: "Discover the frozen archive in the Ice Caverns" }],
+    dialogue: {
+      greeting: "The old maps show a library sealed in ice centuries ago. Would you look for it?",
+      acceptance: "Follow the blue veins in the ice wall — they lead deeper into the mountain.",
+      completion: "You found it! The knowledge in those frozen tomes is priceless. Well done!",
+      choices: [
+        { id: "accept", label: "An archive sealed in ice? I'll find it.", response: "Follow the blue veins in the ice wall — they spiral toward the mountain's heart.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What knowledge is in this archive?", response: "Ancient cold-magic formulae, sealed away before the great frost. Invaluable stuff.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Exploring deep caves isn't for me.", response: "Another time, perhaps. The archive has waited centuries — it can wait a little longer.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "explore", target: "frozen archive" },
+  },
+  {
+    zoneId: "zone5",
+    questType: "escort",
+    title: "Expedition Safe Return",
+    description: "A wounded scout needs to reach the cavern exit before the ice elementals regroup.",
+    objectives: [{ type: "escort", target: "scout Rylan", description: "Escort scout Rylan to the Ice Caverns exit" }],
+    dialogue: {
+      greeting: "My leg is frozen stiff. Could you help me reach the exit before those elementals return?",
+      acceptance: "I'll keep up as best I can — just keep them off me!",
+      completion: "Made it! I owe you my life. Take whatever I have — it's yours.",
+      choices: [
+        { id: "accept", label: "Lean on me — we'll get you out.", response: "Thank you! I'll keep up as best I can. Just keep those elementals at bay!", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "How badly are you hurt?", response: "The frost-bite has slowed me down badly. I can move, but slowly.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "I can't risk slowing down for you.", response: "I understand. I'll rest here and hope the cold isn't too cruel.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "escort", target: "scout Rylan" },
+  },
+  {
+    zoneId: "zone5",
+    questType: "puzzle",
+    title: "The Crystal Resonance",
+    description: "A magical crystal array has locked the inner vault. Tune the crystals to the correct frequency.",
+    objectives: [{ type: "puzzle", target: "crystal array", description: "Tune the crystal array in the Ice Caverns" }],
+    dialogue: {
+      greeting: "This crystal array controls the inner vault. Can you tune it to the right frequency?",
+      acceptance: "Strike the crystals in order from smallest to largest. They'll hum when correct.",
+      completion: "The vault is open! The resonance was perfect. Here is your reward.",
+      choices: [
+        { id: "accept", label: "I'll tune those crystals for you.", response: "Strike them smallest to largest — each will hum when correctly tuned.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What's inside the vault?", response: "Old relics from the glacial mages. Dangerous, but very valuable to the right people.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Crystal puzzles are beyond me.", response: "No matter. I'll find another way in eventually. Thank you for looking!", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "puzzle", target: "crystal array" },
+  },
+
+  // ── Zone 6 — Volcanic Highlands (Volcanic) ──────────────────────────────────
+  {
+    zoneId: "zone6",
+    questType: "kill",
+    title: "Lava Slime Purge",
+    description: "Lava slimes have been blocking the highland paths and burning everything they touch. Clear them out.",
+    objectives: [{ type: "kill", target: "lava_slime", count: 5, description: "Defeat 5 lava slimes in the Volcanic Highlands" }],
+    dialogue: {
+      greeting: "Those lava slimes are destroying everything — they leave trails of fire wherever they go!",
+      acceptance: "Hit them hard and fast. Staying close too long will burn you.",
+      completion: "The paths are clear! We can finally move supplies through again. Thank you!",
+      choices: [
+        { id: "accept", label: "I'll clear those lava slimes out.", response: "Hit them fast — staying too close to their burning trails will roast you.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "How dangerous are these slimes?", response: "They leave trails of molten rock and their touch burns through armour. Very dangerous.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Molten slimes are a bit much for me.", response: "I understand. I'll find another way around. Stay cool out there!", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "kill", target: "lava_slime", count: 5 },
+  },
+  {
+    zoneId: "zone6",
+    questType: "fetch",
+    title: "Magma Core Sample",
+    description: "A forge-master needs raw magma cores from deep in the highlands to craft fire-resistant armour.",
+    objectives: [{ type: "fetch", target: "magma core", count: 3, description: "Collect 3 magma cores from the Volcanic Highlands" }],
+    dialogue: {
+      greeting: "The best armour needs magma cores — they harden to something stronger than iron. Bring me three?",
+      acceptance: "They glow orange near active vents. Use tongs if you have them!",
+      completion: "These are perfect! I'll have fire-resistant armour ready by morning. Here's your payment.",
+      choices: [
+        { id: "accept", label: "I'll gather those magma cores for you.", response: "They glow bright orange near active vents. Handle carefully — they're hot as the forge itself!", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What makes magma cores special?", response: "When cooled and worked, they become harder than steel and naturally resist heat. Perfect for armour.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Lava fields are too risky for me.", response: "Fair enough. I'll try to source them another way. Safe travels!", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "fetch", target: "magma core", count: 3 },
+  },
+  {
+    zoneId: "zone6",
+    questType: "explore",
+    title: "The Ancient Forge",
+    description: "Legends say a great forge predating the current age is hidden in the highland caldera. Find it.",
+    objectives: [{ type: "explore", target: "ancient forge", description: "Discover the ancient forge in the Volcanic Highlands" }],
+    dialogue: {
+      greeting: "The old records mention a primordial forge in the caldera. Would you find it for me?",
+      acceptance: "Follow the heat — the temperature rises as you approach. Trust your instincts.",
+      completion: "You found it! The craftsmanship is unlike anything I've seen. This changes everything!",
+      choices: [
+        { id: "accept", label: "An ancient forge? I'll find it.", response: "Follow the heat — the temperature rises steadily as you get closer. Trust your instincts.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who built this forge?", response: "No one knows. The stonework predates all known civilisations. Very mysterious.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "That caldera sounds far too dangerous.", response: "Perhaps another time. The forge has waited millennia — it can wait a little longer.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "explore", target: "ancient forge" },
+  },
+  {
+    zoneId: "zone6",
+    questType: "escort",
+    title: "Researcher Rescue",
+    description: "The Volcanic Researcher got cut off by a lava flow. Escort them safely back to camp.",
+    objectives: [{ type: "escort", target: "Volcanic Researcher", description: "Escort the Volcanic Researcher to base camp" }],
+    dialogue: {
+      greeting: "The lava flows cut off my retreat! Could you help me get back to base camp?",
+      acceptance: "I know a route around the active vents — follow me and I'll guide you.",
+      completion: "We made it! I thought I was finished back there. Here — take everything in my pack.",
+      choices: [
+        { id: "accept", label: "Stay close — I'll get you to camp.", response: "Thank goodness! Follow me around the active vents — it's longer but much safer.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "How far is base camp?", response: "Perhaps ten minutes if we avoid the main lava channels. The fire imps are the real problem.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "I can't take the detour right now.", response: "I understand. I'll find another way. Be careful around those lava flows!", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "escort", target: "Volcanic Researcher" },
+  },
+  {
+    zoneId: "zone6",
+    questType: "puzzle",
+    title: "The Infernal Seal",
+    description: "An infernal seal blocks the path to the Warden's sanctum. Solve the fire-rune puzzle to break it.",
+    objectives: [{ type: "puzzle", target: "infernal seal", description: "Unlock the infernal seal in the Volcanic Highlands" }],
+    dialogue: {
+      greeting: "That infernal seal is blocking the sanctum path. Do you think you can break it?",
+      acceptance: "The fire runes must be activated in sequence. Red first, then orange, then white.",
+      completion: "The seal is broken! Your understanding of fire-runes is impressive. Here's your reward.",
+      choices: [
+        { id: "accept", label: "I'll break that seal open.", response: "The fire runes activate in sequence — red first, then orange, then the white core rune.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What is behind the seal?", response: "The Infernal Warden's sanctum. The seal was placed to keep intruders out — and the Warden in.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Fire puzzles are beyond my expertise.", response: "No matter. The seal will wait. Perhaps you'll be back once you've faced the highlands more.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "puzzle", target: "infernal seal" },
+  },
 ];
 
 /**
