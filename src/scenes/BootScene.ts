@@ -155,6 +155,26 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_abyssal_mid',  'assets/backgrounds/parallax/bg_parallax_abyssal_mid.png');
     this.load.image('bg_parallax_abyssal_near', 'assets/backgrounds/parallax/bg_parallax_abyssal_near.png');
 
+    this.load.image('tileset_dragonbone', 'assets/tiles/tilesets/tileset_dragonbone.png');
+
+    // Dragonbone Wastes enemies (16×24 spritesheet) and boss phases (32×32 each)
+    this.load.spritesheet('enemy_bone_revenant',  'assets/sprites/enemies/char_enemy_bone_revenant.png',  { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_ashwyrm',        'assets/sprites/enemies/char_enemy_ashwyrm.png',        { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_spectral_drake', 'assets/sprites/enemies/char_enemy_spectral_drake.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_ancient_dracolich_phase1', 'assets/sprites/enemies/bosses/boss_ancient_dracolich_phase1.png');
+    this.load.image('boss_ancient_dracolich_phase2', 'assets/sprites/enemies/bosses/boss_ancient_dracolich_phase2.png');
+    this.load.image('boss_ancient_dracolich_phase3', 'assets/sprites/enemies/bosses/boss_ancient_dracolich_phase3.png');
+    this.load.image('boss_ancient_dracolich_idle',   'assets/sprites/enemies/bosses/boss_ancient_dracolich_idle.png');
+    this.load.image('boss_ancient_dracolich_attack', 'assets/sprites/enemies/bosses/boss_ancient_dracolich_attack.png');
+
+    // Dragonbone Wastes NPC
+    this.load.image('npc_quest_dragonbone', 'assets/sprites/characters/char_npc_quest_dragonbone.png');
+
+    // Dragonbone Wastes parallax layers
+    this.load.image('bg_parallax_dragonbone_far',  'assets/backgrounds/parallax/bg_parallax_dragonbone_far.png');
+    this.load.image('bg_parallax_dragonbone_mid',  'assets/backgrounds/parallax/bg_parallax_dragonbone_mid.png');
+    this.load.image('bg_parallax_dragonbone_near', 'assets/backgrounds/parallax/bg_parallax_dragonbone_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');

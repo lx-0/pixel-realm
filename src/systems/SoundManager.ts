@@ -52,6 +52,13 @@ const ZONE_MELODIES: Record<string, Note[]> = {
     [220.00, 0.40], [233.08, 0.30], [277.18, 0.60], [0, 0.20],
     [233.08, 1.00], [0, 0.50],
   ],
+  zone11: [ // Dragonbone Wastes — B minor, dark & smoldering with heavy steps
+    [123.47, 0.50], [0, 0.10], [146.83, 0.30], [0, 0.10],
+    [185.00, 0.40], [174.61, 0.25], [155.56, 0.25], [123.47, 0.60],
+    [0, 0.15], [110.00, 0.35], [123.47, 0.20], [138.59, 0.20],
+    [185.00, 0.50], [0, 0.10], [174.61, 0.25], [155.56, 0.20],
+    [138.59, 0.20], [123.47, 1.00], [0, 0.40],
+  ],
   combat: [ // Combat — D minor, driving & urgent
     [146.83, 0.15], [174.61, 0.15], [196.00, 0.15], [220.00, 0.20],
     [196.00, 0.15], [174.61, 0.15], [146.83, 0.25], [0, 0.10],
@@ -95,6 +102,14 @@ const BOSS_MELODIES: Record<string, Note[]> = {
     [130.81, 0.30], [0, 0.10], [110.00, 0.15], [98.00, 0.15],
     [82.41, 0.20], [73.42, 0.15], [65.41, 0.40], [0, 0.15],
     [82.41, 0.10], [98.00, 0.10], [110.00, 0.10], [130.81, 0.30], [0, 0.15],
+  ],
+  ancient_dracolich: [ // Undying terror — B minor low register, crushing & relentless
+    [61.74, 0.40], [0, 0.10], [73.42, 0.30], [82.41, 0.20],
+    [98.00, 0.15], [92.50, 0.15], [82.41, 0.30], [0, 0.10],
+    [61.74, 0.20], [69.30, 0.20], [77.78, 0.20], [92.50, 0.35],
+    [0, 0.12], [82.41, 0.15], [73.42, 0.15], [61.74, 0.25],
+    [55.00, 0.15], [61.74, 0.10], [73.42, 0.10], [82.41, 0.40],
+    [0, 0.15], [92.50, 0.12], [98.00, 0.12], [123.47, 0.35], [0, 0.20],
   ],
   glacial_wyrm: [ // Frozen fury — high crystalline + low rumble
     [233.08, 0.20], [277.18, 0.15], [311.13, 0.20], [0, 0.10],
@@ -146,6 +161,12 @@ const ZONE_AMBIENTS: Record<string, AmbientVoice[]> = {
     { type: 'sine',     freq: 160,  gain: 0.02, freqLFO: 0.03, lfoDepth: 3 },   // harmonic drone
     { type: 'triangle', freq: 3400, gain: 0.005, freqLFO: 6.0, lfoDepth: 900, pan: 0.5 }, // crystal tinkle
     { type: 'sine',     freq: 4200, gain: 0.003, freqLFO: 4.5, lfoDepth: 700, pan: -0.4 }, // ice shimmer
+  ],
+  zone11: [ // Dragonbone Wastes: hot ash wind, low bone creak, distant roar
+    { type: 'sawtooth', freq: 55,   gain: 0.035, freqLFO: 0.08, lfoDepth: 6 },   // deep smoldering rumble
+    { type: 'sine',     freq: 110,  gain: 0.025, freqLFO: 0.12, lfoDepth: 10 },  // ash wind harmonic
+    { type: 'square',   freq: 2800, gain: 0.003, freqLFO: 3.5, lfoDepth: 600, pan: 0.4 }, // bone creak R
+    { type: 'square',   freq: 2400, gain: 0.003, freqLFO: 2.8, lfoDepth: 500, pan: -0.5 }, // bone creak L
   ],
 };
 

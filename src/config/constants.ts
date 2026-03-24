@@ -241,9 +241,10 @@ export type EnemyTypeName =
   | 'bog_crawler' | 'swamp_wraith' | 'toxic_toad'
   | 'frost_elemental' | 'snow_wolf' | 'ice_archer'
   | 'star_sentinel' | 'void_mage' | 'astral_beast'
-  | 'deep_angler' | 'abyssal_leviathan' | 'coral_golem';
+  | 'deep_angler' | 'abyssal_leviathan' | 'coral_golem'
+  | 'bone_revenant' | 'ashwyrm' | 'spectral_drake';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich';
 
 export interface EnemyTypeDef {
   color: number;
@@ -295,6 +296,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   deep_angler:        { color: 0x0044aa, size: 9,  baseHp: 180, baseDmg: 42, speed: 70,  aggroRange: 130, xpValue: 110, knockbackMultiplier: 0.8, behaviour: 'ranged_flee', projectileColor: 0x00aaff },
   abyssal_leviathan:  { color: 0x002244, size: 13, baseHp: 280, baseDmg: 55, speed: 60,  aggroRange: 110, xpValue: 130, knockbackMultiplier: 1.1, behaviour: 'chase' },
   coral_golem:        { color: 0xff6644, size: 12, baseHp: 350, baseDmg: 48, speed: 25,  aggroRange: 90,  xpValue: 120, knockbackMultiplier: 0.0, behaviour: 'tank' },
+  // Dragonbone Wastes enemies
+  bone_revenant:  { color: 0xc8a87a, size: 10, baseHp: 220, baseDmg: 48, speed: 50,  aggroRange: 100, xpValue: 140, knockbackMultiplier: 0.9, behaviour: 'chase' },
+  ashwyrm:        { color: 0xff6600, size: 9,  baseHp: 185, baseDmg: 60, speed: 80,  aggroRange: 140, xpValue: 155, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0xff4400 },
+  spectral_drake: { color: 0x9966cc, size: 11, baseHp: 265, baseDmg: 52, speed: 100, aggroRange: 120, xpValue: 145, knockbackMultiplier: 1.2, behaviour: 'chase' },
 };
 
 export interface BossTypeDef {
@@ -318,6 +323,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   frost_titan:         { color: 0x3388cc, size: 26, baseHp: 10000, baseDmg: 75, speed: 30, xpValue: 2500, name: 'Frost Titan' },
   celestial_arbiter:   { color: 0xfff0aa, size: 28, baseHp: 14000, baseDmg: 90,  speed: 35, xpValue: 3500, name: 'Celestial Arbiter' },
   abyssal_kraken_lord: { color: 0x001133, size: 30, baseHp: 18000, baseDmg: 100, speed: 25, xpValue: 5000, name: 'Abyssal Kraken Lord' },
+  ancient_dracolich:   { color: 0x4a2200, size: 32, baseHp: 24000, baseDmg: 115, speed: 20, xpValue: 6500, name: 'Ancient Dracolich' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -373,6 +379,8 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   astral_beast:      'stun',
   abyssal_leviathan: 'poison',
   coral_golem:       'stun',
+  bone_revenant:     'poison',
+  spectral_drake:    'burn',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -390,6 +398,8 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   celestial_arbiter: 'stun',
   deep_angler:         'freeze',
   abyssal_kraken_lord: 'poison',
+  ashwyrm:             'burn',
+  ancient_dracolich:   'burn',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -562,5 +572,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 4800,
     unlockRequirement: 'zone9',
     difficultyMult: 5.5,
+  },
+  {
+    id: 'zone11',
+    name: 'Dragonbone Wastes',
+    biome: 'bone-wasteland',
+    description: 'A scorched graveyard of ancient dragons. Bone revenants, ashwyrms, and spectral drakes prowl the ash-choked ruins, all in service of the undying Ancient Dracolich.',
+    bgColor: 0x1a0e05,
+    groundColor: 0x3d2a1a,
+    wallColor: 0x140a03,
+    accentColor: 0xff8c00,
+    waves: 3,
+    enemyTypes: ['bone_revenant', 'ashwyrm', 'spectral_drake'],
+    bossType: 'ancient_dracolich',
+    minPlayerLevel: 26,
+    xpReward: 6000,
+    unlockRequirement: 'zone10',
+    difficultyMult: 6.0,
   },
 ];
