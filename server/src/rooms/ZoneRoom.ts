@@ -42,6 +42,13 @@ import {
   getActiveSeason,
   type WorldEventRecord,
 } from "../db/content";
+import {
+  getActiveSeasonalEvent,
+  getOrJoinEvent,
+  awardEventPoints,
+  claimEventReward,
+  type SeasonalEvent,
+} from "../db/seasonalEvents";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -347,6 +354,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
   // ── World events + season (loaded on room creation) ───────────────────────
   private activeWorldEvents: WorldEventRecord[] = [];
   private activeSeason: { name: string; storyPromptTemplate: string } | null = null;
+  private activeSeasonalEvent: SeasonalEvent | null = null;
 
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -378,7 +386,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
     // Skill tree messages
     this.onMessage("level_up",        (client: Client)                           => this.handleLevelUp(client));
-    this.onMessage("prestige_reset",  (client: Client)                           => this.handlePrestigeReset(client));
+    this.onMessage("prestige_reset",       (client: Client)                             => this.handlePrestigeReset(client));
+    this.onMessage("event_claim_reward",   (client: Client, msg: { itemId: string })    => this.handleEventClaimReward(client, msg));
     this.onMessage("skill_use",    (client: Client, msg: SkillUseMessage)    => this.handleSkillUse(client, msg));
     this.onMessage("skill_alloc",  (client: Client, msg: SkillAllocMessage)  => this.handleSkillAlloc(client, msg));
     this.onMessage("skill_hotbar", (client: Client, msg: SkillHotbarMessage) => this.handleSkillHotbar(client, msg));
@@ -436,15 +445,20 @@ export class ZoneRoom extends Room<ZoneGameState> {
     // Periodic mid-session persistence (every 30 s)
     this.clock.setInterval(() => this.persistAllPlayers(), PERSIST_INTERVAL_MS);
 
-    // Load world events and active season (best-effort)
+    // Load world events, active season, and active seasonal event (best-effort)
     Promise.all([
       getActiveWorldEvents(zoneId).catch(() => [] as WorldEventRecord[]),
       getActiveSeason().catch(() => null),
-    ]).then(([events, season]) => {
-      this.activeWorldEvents = events;
-      this.activeSeason = season;
+      getActiveSeasonalEvent().catch(() => null),
+    ]).then(([events, season, seasonalEvent]) => {
+      this.activeWorldEvents  = events;
+      this.activeSeason       = season;
+      this.activeSeasonalEvent = seasonalEvent;
       if (events.length) {
         console.log(`[ZoneRoom] Loaded ${events.length} world event(s) for zone ${zoneId}`);
+      }
+      if (seasonalEvent) {
+        console.log(`[ZoneRoom] Active seasonal event: ${seasonalEvent.name}`);
       }
     });
 
@@ -519,6 +533,26 @@ export class ZoneRoom extends Room<ZoneGameState> {
         }
         if (this.activeSeason) {
           client.send("season_info", { name: this.activeSeason.name });
+        }
+
+        // Send active seasonal event info + player participation state
+        if (this.activeSeasonalEvent) {
+          try {
+            const participation = await getOrJoinEvent(userId, this.activeSeasonalEvent.id);
+            client.send("seasonal_event", {
+              event: {
+                id:          this.activeSeasonalEvent.id,
+                name:        this.activeSeasonalEvent.name,
+                description: this.activeSeasonalEvent.description,
+                endsAt:      this.activeSeasonalEvent.endsAt,
+                rewardTiers: this.activeSeasonalEvent.rewardTiers,
+              },
+              participation: {
+                points:         participation.points,
+                claimedRewards: participation.claimedRewards,
+              },
+            });
+          } catch (_evErr) { /* non-fatal */ }
         }
 
         // Friend list — send to joining player and notify friends they're online
@@ -1149,6 +1183,19 @@ export class ZoneRoom extends Room<ZoneGameState> {
         }
       }
       console.log(`[ZoneRoom] Quest ${questId} completed by ${userId}`);
+
+      // Award seasonal event points on quest completion
+      if (this.activeSeasonalEvent) {
+        try {
+          const EVENT_POINTS_PER_QUEST = 50;
+          const newTotal = await awardEventPoints(userId, this.activeSeasonalEvent.id, EVENT_POINTS_PER_QUEST);
+          client.send("seasonal_event_points", {
+            eventId:    this.activeSeasonalEvent.id,
+            pointsDelta: EVENT_POINTS_PER_QUEST,
+            totalPoints: newTotal,
+          });
+        } catch (_evErr) { /* non-fatal */ }
+      }
 
       // Award faction reputation
       if (factionId) {
@@ -1994,6 +2041,37 @@ export class ZoneRoom extends Room<ZoneGameState> {
         console.warn("[ZoneRoom] prestige reset failed:", msg);
         client.send("prestige_error", { message: "Prestige reset failed. Please try again." });
       }
+    }
+  }
+
+  /** Claim a seasonal event reward tier once the player has enough points. */
+  private async handleEventClaimReward(client: Client, msg: { itemId: string }): Promise<void> {
+    if (!this.activeSeasonalEvent) return;
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    const itemId = String(msg.itemId ?? "").slice(0, 100);
+    if (!itemId) return;
+
+    // Find the reward tier to get required points
+    const tier = this.activeSeasonalEvent.rewardTiers.find(t => t.itemId === itemId);
+    if (!tier) {
+      client.send("event_claim_error", { message: "Unknown reward tier." });
+      return;
+    }
+
+    try {
+      const claimed = await claimEventReward(userId, this.activeSeasonalEvent.id, itemId, tier.points);
+      if (!claimed) {
+        client.send("event_claim_error", { message: "Insufficient points or already claimed." });
+        return;
+      }
+      // Grant item
+      await addItem(userId, itemId, 1).catch(() => null);
+      client.send("event_claim_ok", { itemId, label: tier.label });
+    } catch (err) {
+      console.warn(`[ZoneRoom] event claim error for ${userId}:`, (err as Error).message);
+      client.send("event_claim_error", { message: "Claim failed. Please try again." });
     }
   }
 

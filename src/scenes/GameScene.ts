@@ -23,6 +23,7 @@ import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { PrestigePanel } from '../ui/PrestigePanel';
+import { SeasonalEventPanel, type SeasonalEventState } from '../ui/SeasonalEventPanel';
 import { GuildPanel } from '../ui/GuildPanel';
 import { PartyPanel } from '../ui/PartyPanel';
 import { SocialPanel } from '../ui/SocialPanel';
@@ -342,6 +343,9 @@ export class GameScene extends Phaser.Scene {
 
   /** Prestige confirmation dialog. */
   private prestigePanel?: PrestigePanel;
+
+  /** Seasonal event progress tracker panel. */
+  private seasonalEventPanel?: SeasonalEventPanel;
   /** HUD text showing current prestige tier next to level. */
   private prestigeText?: Phaser.GameObjects.Text;
 
@@ -486,6 +490,10 @@ export class GameScene extends Phaser.Scene {
     this.prestigePanel.onConfirm = () => this.mp?.sendPrestigeReset();
     this.prestigePanel.onCancel  = () => { /* nothing */ };
 
+    // Seasonal event panel (V key to toggle)
+    this.seasonalEventPanel = new SeasonalEventPanel(this);
+    this.seasonalEventPanel.onClaimReward = (itemId) => this.mp?.sendEventClaimReward(itemId);
+
     // Leaderboard panel (always present, populated once multiplayer connects)
     this.leaderboardPanel = new LeaderboardPanel(this);
 
@@ -519,6 +527,7 @@ export class GameScene extends Phaser.Scene {
       // Escape closes any open panel before pausing
       const panelClosed =
         this.prestigePanel?.closeIfOpen()     ||
+        this.seasonalEventPanel?.closeIfOpen() ||
         this.worldMap?.closeIfOpen()          ||
         this.skillTree?.closeIfOpen()         ||
         this.tradeWindow?.closeIfOpen()       ||
@@ -585,6 +594,9 @@ export class GameScene extends Phaser.Scene {
         this.chat?.addMessage(`Prestige available at level ${LEVELS.MAX_LEVEL}.`, '#aaaaaa');
       }
     }
+
+    // Seasonal event panel (V key handled inside the panel)
+    this.seasonalEventPanel?.update();
 
     // Skill tree panel (K key is handled inside the panel)
     const stWasBefore = this.skillTree?.isVisible ?? false;
@@ -951,6 +963,28 @@ export class GameScene extends Phaser.Scene {
     };
     client.onSkillError = (msg) => {
       this.chat?.addMessage(`Skill: ${msg}`, '#ff8888');
+    };
+
+    // Seasonal event callbacks
+    client.onSeasonalEvent = (event, participation) => {
+      const state: SeasonalEventState = {
+        ...event,
+        points:         participation.points,
+        claimedRewards: participation.claimedRewards,
+      };
+      this.seasonalEventPanel?.setEventState(state);
+    };
+    client.onSeasonalEventPoints = (eventId, pointsDelta, totalPoints) => {
+      this.seasonalEventPanel?.updateParticipation(totalPoints, []);
+      this.floatingText(this.player.x, this.player.y - 16, `+${pointsDelta} event pts`, '#44cc88');
+      void eventId; // suppress unused warning
+    };
+    client.onEventClaimOk = (itemId, label) => {
+      this.chat?.addMessage(`✦ Event reward claimed: ${label}!`, '#44cc88');
+      void itemId;
+    };
+    client.onEventClaimError = (message) => {
+      this.chat?.addMessage(`Event: ${message}`, '#ff8888');
     };
 
     // Prestige callbacks

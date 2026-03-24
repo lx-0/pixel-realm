@@ -247,6 +247,15 @@ export class MultiplayerClient {
   onPrestigeResetOk?: (prestigeLevel: number, maxPrestige: number, bonuses: { statMultiplier: number }) => void;
   onPrestigeError?: (message: string) => void;
 
+  // Seasonal event callbacks
+  onSeasonalEvent?: (
+    event: { id: string; name: string; description: string; endsAt: string; rewardTiers: Array<{ points: number; itemId: string; label: string; title?: string }> },
+    participation: { points: number; claimedRewards: string[] },
+  ) => void;
+  onSeasonalEventPoints?: (eventId: string, pointsDelta: number, totalPoints: number) => void;
+  onEventClaimOk?:    (itemId: string, label: string) => void;
+  onEventClaimError?: (message: string) => void;
+
   // Crafting callbacks
   /** Called when another player in the zone crafts an item. */
   onCraftEvent?: (playerName: string, itemName: string) => void;
@@ -528,6 +537,23 @@ export class MultiplayerClient {
       this.onPrestigeError?.(msg.message);
     });
 
+    // ── Seasonal event messages ───────────────────────────────────────────
+    room.onMessage('seasonal_event', (msg: {
+      event: { id: string; name: string; description: string; endsAt: string; rewardTiers: Array<{ points: number; itemId: string; label: string; title?: string }> };
+      participation: { points: number; claimedRewards: string[] };
+    }) => {
+      this.onSeasonalEvent?.(msg.event, msg.participation);
+    });
+    room.onMessage('seasonal_event_points', (msg: { eventId: string; pointsDelta: number; totalPoints: number }) => {
+      this.onSeasonalEventPoints?.(msg.eventId, msg.pointsDelta, msg.totalPoints);
+    });
+    room.onMessage('event_claim_ok', (msg: { itemId: string; label: string }) => {
+      this.onEventClaimOk?.(msg.itemId, msg.label);
+    });
+    room.onMessage('event_claim_error', (msg: { message: string }) => {
+      this.onEventClaimError?.(msg.message);
+    });
+
     // ── Emote messages ────────────────────────────────────────────────────
     room.onMessage('emote', (msg: EmoteEvent) => {
       this.onEmote?.(msg);
@@ -699,6 +725,10 @@ export class MultiplayerClient {
 
   sendPrestigeReset(): void {
     this.room?.send('prestige_reset');
+  }
+
+  sendEventClaimReward(itemId: string): void {
+    this.room?.send('event_claim_reward', { itemId });
   }
 
   sendSkillUse(skillId: string): void {

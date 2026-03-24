@@ -46,6 +46,11 @@ import {
   type LeaderboardPeriod,
 } from "./db/leaderboard";
 import {
+  getActiveSeasonalEvent,
+  listSeasonalEvents,
+  getEventLeaderboard,
+} from "./db/seasonalEvents";
+import {
   getLandPlots,
   getPlayerHousing,
   getHousingByPlot,
@@ -553,6 +558,46 @@ app.get("/leaderboard/:category", async (req, res) => {
   } catch (err) {
     console.warn("[REST] leaderboard failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
+});
+
+// ── Seasonal Event REST endpoints ─────────────────────────────────────────────
+
+// GET /events/active — returns the currently active seasonal event (or null)
+app.get("/events/active", async (_req, res) => {
+  try {
+    const event = await getActiveSeasonalEvent();
+    res.json({ event });
+  } catch (err) {
+    console.warn("[REST] events/active failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch active event" });
+  }
+});
+
+// GET /events — list all upcoming and active events
+app.get("/events", async (_req, res) => {
+  try {
+    const events = await listSeasonalEvents();
+    res.json({ events });
+  } catch (err) {
+    console.warn("[REST] events failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to list events" });
+  }
+});
+
+// GET /events/:eventId/leaderboard — top 100 players by event points
+app.get("/events/:eventId/leaderboard", async (req, res) => {
+  const { eventId } = req.params as { eventId: string };
+  if (!eventId || eventId.length > 50) {
+    res.status(400).json({ error: "Invalid eventId" });
+    return;
+  }
+  try {
+    const entries = await getEventLeaderboard(eventId);
+    res.json({ eventId, entries });
+  } catch (err) {
+    console.warn("[REST] event leaderboard failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch event leaderboard" });
   }
 });
 
