@@ -22,6 +22,16 @@ const CELL_PAD = 2;
 
 // ── Item data shape (mirrors server InventoryEntry) ───────────────────────────
 
+/** Stat values on an item (optional — only present when server sends them). */
+export interface ItemStats {
+  damage?:   number;
+  hp?:       number;
+  mana?:     number;
+  speed?:    number;
+  critPct?:  number;
+  defense?:  number;
+}
+
 export interface InventoryItem {
   id: string;
   quantity: number;
@@ -34,6 +44,8 @@ export interface InventoryItem {
     description: string;
     /** Minimum player level required to equip this item. */
     requiredLevel?: number;
+    /** Stat bonuses this item provides when equipped. */
+    stats?: ItemStats;
   };
 }
 
@@ -267,6 +279,56 @@ export class InventoryPanel {
           fontFamily: 'monospace',
         }).setScrollFactor(0);
         this.container.add(lvlTxt);
+      }
+
+      // Equipment stat comparison (show delta vs currently equipped item of same type)
+      if (entry.item.stats && !entry.equipped) {
+        const equippedSameType = this.items.find(
+          it => it.equipped && it.item.type === entry.item.type && it !== entry,
+        );
+        const baseStats = equippedSameType?.item.stats ?? {};
+        const newStats  = entry.item.stats;
+        const statKeys: (keyof typeof newStats)[] = ['damage', 'hp', 'mana', 'speed', 'critPct', 'defense'];
+        const statLabels: Record<string, string> = {
+          damage: 'DMG', hp: 'HP', mana: 'MP', speed: 'SPD', critPct: 'CRIT', defense: 'DEF',
+        };
+        const deltaParts: string[] = [];
+        for (const key of statKeys) {
+          const nv = newStats[key] ?? 0;
+          const bv = baseStats[key] ?? 0;
+          if (nv === 0 && bv === 0) continue;
+          const delta = nv - bv;
+          const sign  = delta >= 0 ? '+' : '';
+          deltaParts.push(`${statLabels[key]} ${sign}${key === 'critPct' ? delta.toFixed(1) + '%' : delta}`);
+        }
+        if (deltaParts.length > 0) {
+          const compY = detailY + (reqLvl > 0 ? 22 : 13);
+          // Split into two rows if needed
+          const row1 = deltaParts.slice(0, 3).join('  ');
+          const row2 = deltaParts.slice(3).join('  ');
+          const hdr = this.scene.add.text(PANEL_X + PAD, compY - 1, 'vs equipped:', {
+            fontSize: '3px', color: '#667788', fontFamily: 'monospace',
+          }).setScrollFactor(0);
+          this.container.add(hdr);
+
+          const renderRow = (text: string, y: number) => {
+            const parts = text.split(/(\s+)/);
+            let cx2 = PANEL_X + PAD;
+            for (const p of parts) {
+              if (!p.trim()) { cx2 += 3; continue; }
+              const isNeg = p.startsWith('-');
+              const isPos = p.startsWith('+');
+              const col   = isNeg ? '#ff5555' : isPos ? '#55cc55' : '#aabbcc';
+              const t     = this.scene.add.text(cx2, y, p, {
+                fontSize: '4px', color: col, fontFamily: 'monospace',
+              }).setScrollFactor(0);
+              cx2 += t.width + 1;
+              this.container.add(t);
+            }
+          };
+          renderRow(row1, compY + 4);
+          if (row2) renderRow(row2, compY + 10);
+        }
       }
     } else if (this.items.length > 0) {
       const hintTxt = this.scene.add.text(

@@ -22,6 +22,7 @@ import { TutorialOverlay }  from '../ui/TutorialOverlay';
 import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
+import { StatSheetPanel, type StatSheetState } from '../ui/StatSheetPanel';
 import { PrestigePanel } from '../ui/PrestigePanel';
 import { SeasonalEventPanel, type SeasonalEventState } from '../ui/SeasonalEventPanel';
 import { GuildPanel } from '../ui/GuildPanel';
@@ -367,6 +368,12 @@ export class GameScene extends Phaser.Scene {
   /** Skill tree panel (always present, K to open). */
   private skillTree?: SkillTreePanel;
 
+  /** Character stat sheet panel (V to open). */
+  private statSheet?: StatSheetPanel;
+
+  /** Shared HUD stat tooltip overlay (HP/mana bar hover). */
+  private hudTooltip?: Phaser.GameObjects.Container;
+
   /** Prestige confirmation dialog. */
   private prestigePanel?: PrestigePanel;
 
@@ -523,7 +530,11 @@ export class GameScene extends Phaser.Scene {
     this.prestigePanel.onConfirm = () => this.mp?.sendPrestigeReset();
     this.prestigePanel.onCancel  = () => { /* nothing */ };
 
-    // Seasonal event panel (V key to toggle)
+    // Character stat sheet panel (V key to toggle)
+    this.statSheet = new StatSheetPanel(this);
+    this.statSheet.updateState(this.buildStatSheetState());
+
+    // Seasonal event panel (G key to toggle)
     this.seasonalEventPanel = new SeasonalEventPanel(this);
     this.seasonalEventPanel.onClaimReward = (itemId) => this.mp?.sendEventClaimReward(itemId);
 
@@ -560,6 +571,7 @@ export class GameScene extends Phaser.Scene {
       // Escape closes any open panel before pausing
       const panelClosed =
         this.prestigePanel?.closeIfOpen()     ||
+        this.statSheet?.closeIfOpen()         ||
         this.seasonalEventPanel?.closeIfOpen() ||
         this.worldMap?.closeIfOpen()          ||
         this.skillTree?.closeIfOpen()         ||
@@ -629,8 +641,11 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Seasonal event panel (V key handled inside the panel)
+    // Seasonal event panel (G key handled inside the panel)
     this.seasonalEventPanel?.update();
+
+    // Character stat sheet (V key handled inside the panel)
+    this.statSheet?.update();
 
     // Skill tree panel (K key is handled inside the panel)
     const stWasBefore = this.skillTree?.isVisible ?? false;
@@ -3265,6 +3280,7 @@ export class GameScene extends Phaser.Scene {
     this.skillPoints += 1;
     this.saveSoloSkillState();
     this.skillTree?.updateState(this.buildSkillTreeState());
+    this.statSheet?.updateState(this.buildStatSheetState());
     this.updateHotbarHUD();
     if (this.isMultiplayer && this.mp) this.mp.sendLevelUp();
 
@@ -3353,9 +3369,21 @@ export class GameScene extends Phaser.Scene {
     this.add.rectangle(bx + bw / 2, 5, bw, 4, 0x440000).setScrollFactor(0).setDepth(Z - 1);
     this.hpBar = this.add.rectangle(bx, 5, bw, 4, 0x00ee44).setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z);
 
+    // HP bar hover tooltip
+    const hpHitZone = this.add.rectangle(bx + bw / 2, 5, bw, 8, 0x000000, 0)
+      .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(Z + 1).setInteractive();
+    hpHitZone.on('pointerover', () => this.showHudStatTooltip('hp'));
+    hpHitZone.on('pointerout',  () => this.hideHudStatTooltip());
+
     this.add.text(lx, 13, 'MP', { fontSize: '5px', color: '#9090ff', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.add.rectangle(bx + bw / 2, 13, bw, 3, 0x1a0a3a).setScrollFactor(0).setDepth(Z - 1);
     this.manaBar = this.add.rectangle(bx, 13, bw, 3, 0x9050e0).setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z);
+
+    // Mana bar hover tooltip
+    const mpHitZone = this.add.rectangle(bx + bw / 2, 13, bw, 8, 0x000000, 0)
+      .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(Z + 1).setInteractive();
+    mpHitZone.on('pointerover', () => this.showHudStatTooltip('mana'));
+    mpHitZone.on('pointerout',  () => this.hideHudStatTooltip());
 
     this.add.text(lx, 20, 'XP', { fontSize: '5px', color: '#ffe040', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.add.rectangle(bx + bw / 2, 20, bw, 3, 0x3a2a00).setScrollFactor(0).setDepth(Z - 1);
@@ -3534,6 +3562,59 @@ export class GameScene extends Phaser.Scene {
     this.goldText?.setText(`Gold: ${this.gold}`);
     this.scrollText?.setText(`T:Scroll x${this.escapeScrolls}`);
     this.scrollText?.setColor(this.escapeScrolls > 0 ? '#88ffcc' : '#555555');
+  }
+
+  /** Shows a compact stat formula tooltip near the HUD bars. */
+  private showHudStatTooltip(kind: 'hp' | 'mana'): void {
+    this.hudTooltip?.destroy();
+    const pb = this.passiveBonusCache;
+    const lv = this.level;
+
+    let lines: string[];
+    if (kind === 'hp') {
+      const base    = PLAYER.BASE_HP;
+      const lvBonus = (lv - 1) * LEVELS.HP_BONUS_PER_LEVEL;
+      const passive = pb.maxHpFlat;
+      const total   = this.getMaxHp();
+      lines = [
+        `HP: ${total}`,
+        `${base} base  +${lvBonus} lvl  +${passive} passv`,
+        `Current: ${Math.floor(this.hp)}`,
+      ];
+    } else {
+      const base    = PLAYER.BASE_MANA;
+      const passive = pb.maxManaFlat;
+      const total   = this.getMaxMana();
+      const regen   = this.getEffectiveManaRegen();
+      lines = [
+        `MP: ${total}  (${Math.floor(this.mana)} cur)`,
+        `${base} base  +${passive} passv`,
+        `Regen: ${regen}/s  Cost: ${MANA.ATTACK_COST} atk`,
+      ];
+    }
+
+    const Z   = 25;
+    const TW  = 100;
+    const TH  = lines.length * 8 + 6;
+    const tx  = 85;
+    const ty  = kind === 'hp' ? 18 : 26;
+
+    const c = this.add.container(tx, ty).setScrollFactor(0).setDepth(Z);
+    c.add(this.add.rectangle(0, 0, TW, TH, 0x000011, 0.90).setStrokeStyle(1, 0x3344aa));
+    lines.forEach((line, i) => {
+      c.add(this.add.text(
+        -TW / 2 + 3, -TH / 2 + 3 + i * 8,
+        line,
+        { fontSize: '4px', color: i === 0 ? '#aaddff' : '#8899bb', fontFamily: 'monospace' },
+      ));
+    });
+    this.hudTooltip = c;
+  }
+
+  /** Hides the HUD stat tooltip. */
+  private hideHudStatTooltip(): void {
+    this.hudTooltip?.destroy();
+    this.hudTooltip = undefined;
   }
 
   /** Updates the prestige tier label in the HUD. */
@@ -3718,6 +3799,17 @@ export class GameScene extends Phaser.Scene {
     this.hp   = Math.min(this.hp,   newMaxHp);
     this.mana = Math.min(this.mana, newMaxMana);
     // (max values are derived dynamically in updateHUD / movement code)
+    this.statSheet?.updateState(this.buildStatSheetState());
+  }
+
+  /** Builds the state object for the character stat sheet panel. */
+  private buildStatSheetState(): StatSheetState {
+    return {
+      level:           this.level,
+      prestigeLevel:   this.prestigeLevel,
+      passiveBonus:    { ...this.passiveBonusCache },
+      unlockedSkillIds: [...this.unlockedSkills],
+    };
   }
 
   /** Get effective max HP including passive bonuses. */

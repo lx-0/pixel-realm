@@ -6,7 +6,7 @@
  *   - Player's accumulated event points
  *   - Reward tiers with claimed/unclaimed state + "Claim" buttons
  *
- * Press V to toggle open/close (or open it programmatically from GameScene).
+ * Press G to toggle open/close (or open it programmatically from GameScene).
  * Layout (within 320×180 canvas, scroll-factor 0): 240×130 centred.
  */
 
@@ -61,7 +61,7 @@ export class SeasonalEventPanel {
   private scene:     Phaser.Scene;
   private container: Phaser.GameObjects.Container;
   private visible    = false;
-  private vKey!:     Phaser.Input.Keyboard.Key;
+  private gKey!:     Phaser.Input.Keyboard.Key;
 
   private state: SeasonalEventState | null = null;
 
@@ -72,7 +72,7 @@ export class SeasonalEventPanel {
     this.scene = scene;
     this.container = scene.add.container(0, 0)
       .setScrollFactor(0).setDepth(DEPTH).setVisible(false);
-    this.vKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.V);
+    this.gKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.G);
   }
 
   // ── Public API ──────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ export class SeasonalEventPanel {
   }
 
   update(): void {
-    if (Phaser.Input.Keyboard.JustDown(this.vKey)) this.toggle();
+    if (Phaser.Input.Keyboard.JustDown(this.gKey)) this.toggle();
   }
 
   closeIfOpen(): boolean {
@@ -228,7 +228,7 @@ export class SeasonalEventPanel {
     // Footer hint
     this.container.add(this.scene.add.text(
       PANEL_X + PANEL_W / 2, PANEL_Y + PANEL_H - 4,
-      '[V] close',
+      '[G] close',
       { fontSize: '4px', color: COL_GREY, fontFamily: 'monospace' },
     ).setOrigin(0.5, 1));
   }
