@@ -134,6 +134,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_celestial_mid',  'assets/backgrounds/parallax/bg_parallax_celestial_mid.png');
     this.load.image('bg_parallax_celestial_near', 'assets/backgrounds/parallax/bg_parallax_celestial_near.png');
 
+    // Abyssal Depths tileset
+    this.load.image('tileset_abyssal', 'assets/tiles/tilesets/tileset_abyssal.png');
+
+    // Abyssal Depths enemies (16×24 spritesheet) and boss phases (32×32 each)
+    this.load.spritesheet('enemy_deep_angler',       'assets/sprites/enemies/char_enemy_deep_angler.png',       { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_abyssal_leviathan', 'assets/sprites/enemies/char_enemy_abyssal_leviathan.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_coral_golem',       'assets/sprites/enemies/char_enemy_coral_golem.png',       { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_abyssal_kraken_lord_phase1', 'assets/sprites/enemies/bosses/boss_abyssal_kraken_phase1.png');
+    this.load.image('boss_abyssal_kraken_lord_phase2', 'assets/sprites/enemies/bosses/boss_abyssal_kraken_phase2.png');
+    this.load.image('boss_abyssal_kraken_lord_phase3', 'assets/sprites/enemies/bosses/boss_abyssal_kraken_phase3.png');
+    this.load.image('boss_abyssal_kraken_lord_idle',   'assets/sprites/enemies/bosses/boss_abyssal_kraken_idle.png');
+    this.load.image('boss_abyssal_kraken_lord_attack', 'assets/sprites/enemies/bosses/boss_abyssal_kraken_attack.png');
+
+    // Abyssal Depths NPC
+    this.load.image('npc_quest_abyssal', 'assets/sprites/characters/char_npc_quest_abyssal.png');
+
+    // Abyssal Depths parallax layers
+    this.load.image('bg_parallax_abyssal_far',  'assets/backgrounds/parallax/bg_parallax_abyssal_far.png');
+    this.load.image('bg_parallax_abyssal_mid',  'assets/backgrounds/parallax/bg_parallax_abyssal_mid.png');
+    this.load.image('bg_parallax_abyssal_near', 'assets/backgrounds/parallax/bg_parallax_abyssal_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');
