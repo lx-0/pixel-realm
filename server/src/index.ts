@@ -5,6 +5,7 @@ import { Server, matchMaker } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ZoneRoom } from "./rooms/ZoneRoom";
 import { DungeonRoom, DUNGEON_COOLDOWN_MS } from "./rooms/DungeonRoom";
+import { RaidRoom } from "./rooms/RaidRoom";
 import { getDungeonCooldownRemainingDb } from "./db/cooldowns";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
@@ -838,6 +839,11 @@ gameServer.define("zone", ZoneRoom).filterBy(["zoneId"]);
 // Clients join via: client.joinOrCreate("dungeon", { tier: 1, token })
 // Max 4 players per dungeon instance. Instances clean up when all players leave.
 gameServer.define("dungeon", DungeonRoom).filterBy(["tier"]);
+
+// Register the RaidRoom. Each boss gets a shared instance (up to 16 players).
+// Clients join via: client.joinOrCreate("raid", { bossId: "raid_dragon", token })
+// Weekly lockout tracked per-player per boss.
+gameServer.define("raid", RaidRoom).filterBy(["bossId"]);
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 
