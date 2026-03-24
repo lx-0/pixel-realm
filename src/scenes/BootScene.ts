@@ -175,6 +175,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_dragonbone_mid',  'assets/backgrounds/parallax/bg_parallax_dragonbone_mid.png');
     this.load.image('bg_parallax_dragonbone_near', 'assets/backgrounds/parallax/bg_parallax_dragonbone_near.png');
 
+    // Void Sanctum tileset
+    this.load.image('tileset_void_sanctum', 'assets/tiles/tilesets/tileset_void_sanctum.png');
+
+    // Void Sanctum enemies (16×24 spritesheet) and boss phases (32×32 each)
+    this.load.spritesheet('enemy_rift_walker',   'assets/sprites/enemies/char_enemy_rift_walker.png',   { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_void_sentinel', 'assets/sprites/enemies/char_enemy_void_sentinel.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_shadow_weaver', 'assets/sprites/enemies/char_enemy_shadow_weaver.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_void_architect_phase1', 'assets/sprites/enemies/bosses/boss_void_architect_phase1.png');
+    this.load.image('boss_void_architect_phase2', 'assets/sprites/enemies/bosses/boss_void_architect_phase2.png');
+    this.load.image('boss_void_architect_phase3', 'assets/sprites/enemies/bosses/boss_void_architect_phase3.png');
+    this.load.image('boss_void_architect_idle',   'assets/sprites/enemies/bosses/boss_void_architect_idle.png');
+    this.load.image('boss_void_architect_attack', 'assets/sprites/enemies/bosses/boss_void_architect_attack.png');
+
+    // Void Sanctum NPC
+    this.load.image('npc_quest_void_sanctum', 'assets/sprites/characters/char_npc_quest_void_sanctum.png');
+
+    // Void Sanctum parallax layers
+    this.load.image('bg_parallax_void_sanctum_far',  'assets/backgrounds/parallax/bg_parallax_void_sanctum_far.png');
+    this.load.image('bg_parallax_void_sanctum_mid',  'assets/backgrounds/parallax/bg_parallax_void_sanctum_mid.png');
+    this.load.image('bg_parallax_void_sanctum_near', 'assets/backgrounds/parallax/bg_parallax_void_sanctum_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');

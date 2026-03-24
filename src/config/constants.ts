@@ -242,9 +242,10 @@ export type EnemyTypeName =
   | 'frost_elemental' | 'snow_wolf' | 'ice_archer'
   | 'star_sentinel' | 'void_mage' | 'astral_beast'
   | 'deep_angler' | 'abyssal_leviathan' | 'coral_golem'
-  | 'bone_revenant' | 'ashwyrm' | 'spectral_drake';
+  | 'bone_revenant' | 'ashwyrm' | 'spectral_drake'
+  | 'rift_walker' | 'void_sentinel' | 'shadow_weaver';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect';
 
 export interface EnemyTypeDef {
   color: number;
@@ -300,6 +301,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   bone_revenant:  { color: 0xc8a87a, size: 10, baseHp: 220, baseDmg: 48, speed: 50,  aggroRange: 100, xpValue: 140, knockbackMultiplier: 0.9, behaviour: 'chase' },
   ashwyrm:        { color: 0xff6600, size: 9,  baseHp: 185, baseDmg: 60, speed: 80,  aggroRange: 140, xpValue: 155, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0xff4400 },
   spectral_drake: { color: 0x9966cc, size: 11, baseHp: 265, baseDmg: 52, speed: 100, aggroRange: 120, xpValue: 145, knockbackMultiplier: 1.2, behaviour: 'chase' },
+  // Void Sanctum enemies
+  rift_walker:    { color: 0x8822dd, size: 9,  baseHp: 250, baseDmg: 55, speed: 90,  aggroRange: 130, xpValue: 160, knockbackMultiplier: 0.8, behaviour: 'phase' },
+  void_sentinel:  { color: 0x5500cc, size: 10, baseHp: 220, baseDmg: 65, speed: 55,  aggroRange: 155, xpValue: 170, knockbackMultiplier: 0.6, behaviour: 'ranged_flee', projectileColor: 0xaa44ff },
+  shadow_weaver:  { color: 0x330055, size: 11, baseHp: 300, baseDmg: 58, speed: 70,  aggroRange: 140, xpValue: 165, knockbackMultiplier: 1.0, behaviour: 'charm',       projectileColor: 0xff00ff },
 };
 
 export interface BossTypeDef {
@@ -324,6 +329,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   celestial_arbiter:   { color: 0xfff0aa, size: 28, baseHp: 14000, baseDmg: 90,  speed: 35, xpValue: 3500, name: 'Celestial Arbiter' },
   abyssal_kraken_lord: { color: 0x001133, size: 30, baseHp: 18000, baseDmg: 100, speed: 25, xpValue: 5000, name: 'Abyssal Kraken Lord' },
   ancient_dracolich:   { color: 0x4a2200, size: 32, baseHp: 24000, baseDmg: 115, speed: 20, xpValue: 6500, name: 'Ancient Dracolich' },
+  void_architect:      { color: 0x7700ff, size: 34, baseHp: 32000, baseDmg: 130, speed: 25, xpValue: 8000, name: 'Void Architect' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -381,6 +387,8 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   coral_golem:       'stun',
   bone_revenant:     'poison',
   spectral_drake:    'burn',
+  rift_walker:       'stun',
+  shadow_weaver:     'stun',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -400,6 +408,8 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   abyssal_kraken_lord: 'poison',
   ashwyrm:             'burn',
   ancient_dracolich:   'burn',
+  void_sentinel:       'stun',
+  void_architect:      'stun',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -589,5 +599,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 6000,
     unlockRequirement: 'zone10',
     difficultyMult: 6.0,
+  },
+  {
+    id: 'zone12',
+    name: 'Void Sanctum',
+    biome: 'void-dimension',
+    description: 'A fractured realm beyond reality. Rift walkers, void sentinels, and shadow weavers haunt the collapsing architecture of the Void Architect — master of dimensional collapse.',
+    bgColor: 0x050008,
+    groundColor: 0x0d001a,
+    wallColor: 0x020005,
+    accentColor: 0xcc33ff,
+    waves: 3,
+    enemyTypes: ['rift_walker', 'void_sentinel', 'shadow_weaver'],
+    bossType: 'void_architect',
+    minPlayerLevel: 29,
+    xpReward: 7500,
+    unlockRequirement: 'zone11',
+    difficultyMult: 6.5,
   },
 ];
