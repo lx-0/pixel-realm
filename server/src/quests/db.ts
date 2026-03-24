@@ -78,6 +78,12 @@ const ZONE_META: Record<string, { name: string; biome: string; description: stri
     description: "Frozen peaks battered by eternal blizzards. Frost elementals, snow wolves, and ice archers guard the summit throne of the mighty Frost Titan.",
     enemyTypes: ["frost_elemental", "snow_wolf", "ice_archer"],
   },
+  zone9: {
+    name: "Celestial Spire",
+    biome: "Sky / Celestial",
+    description: "A towering spire piercing the heavens. Star sentinels, void mages, and astral beasts guard the throne of the Celestial Arbiter.",
+    enemyTypes: ["star_sentinel", "void_mage", "astral_beast"],
+  },
 };
 
 const QUEST_TYPES: QuestType[] = ["kill", "fetch", "explore", "escort", "puzzle"];

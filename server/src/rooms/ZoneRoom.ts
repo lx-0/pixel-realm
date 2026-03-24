@@ -142,6 +142,12 @@ const ZONE_LOOT: Record<string, Array<{ itemId: string; chance: number }>> = {
     { itemId: "mat_permafrost_ore", chance: 0.25 },
     { itemId: "mat_magic_crystal",  chance: 0.20 },
   ],
+  zone9: [
+    { itemId: "mat_star_shard",     chance: 0.45 },
+    { itemId: "mat_void_essence",   chance: 0.35 },
+    { itemId: "mat_astral_dust",    chance: 0.28 },
+    { itemId: "mat_magic_crystal",  chance: 0.22 },
+  ],
 };
 
 // Zone → enemy type tables
@@ -194,6 +200,11 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
     { type: "frost_elemental", hp: 150, dmg: 35, speed: 60,  aggroRange: 115, xp: 82, ranged: true },
     { type: "snow_wolf",       hp: 120, dmg: 28, speed: 115, aggroRange: 130, xp: 78 },
     { type: "ice_archer",      hp: 110, dmg: 38, speed: 45,  aggroRange: 125, xp: 80, ranged: true },
+  ],
+  zone9: [
+    { type: "star_sentinel",  hp: 200, dmg: 45, speed: 75,  aggroRange: 140, xp: 95, ranged: true },
+    { type: "void_mage",      hp: 170, dmg: 50, speed: 55,  aggroRange: 150, xp: 100, ranged: true },
+    { type: "astral_beast",   hp: 250, dmg: 38, speed: 80,  aggroRange: 100, xp: 90 },
   ],
 };
 

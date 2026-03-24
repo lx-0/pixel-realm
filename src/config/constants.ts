@@ -239,9 +239,10 @@ export type EnemyTypeName =
   | 'ice_elemental' | 'frost_wolf' | 'crystal_golem'
   | 'lava_slime' | 'fire_imp' | 'magma_golem'
   | 'bog_crawler' | 'swamp_wraith' | 'toxic_toad'
-  | 'frost_elemental' | 'snow_wolf' | 'ice_archer';
+  | 'frost_elemental' | 'snow_wolf' | 'ice_archer'
+  | 'star_sentinel' | 'void_mage' | 'astral_beast';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter';
 
 export interface EnemyTypeDef {
   color: number;
@@ -285,6 +286,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   frost_elemental: { color: 0x88ccff, size: 8,  baseHp: 150, baseDmg: 35, speed: 60,  aggroRange: 115, xpValue: 50, knockbackMultiplier: 0.7, behaviour: 'ranged', projectileColor: 0x00ccff },
   snow_wolf:       { color: 0xddeeff, size: 9,  baseHp: 120, baseDmg: 28, speed: 115, aggroRange: 130, xpValue: 45, knockbackMultiplier: 1.3, behaviour: 'chase' },
   ice_archer:      { color: 0x99bbdd, size: 8,  baseHp: 110, baseDmg: 38, speed: 45,  aggroRange: 125, xpValue: 48, knockbackMultiplier: 0.9, behaviour: 'ranged_flee', projectileColor: 0x44eeff },
+  // Celestial Spire enemies
+  star_sentinel:   { color: 0xffd700, size: 9,  baseHp: 200, baseDmg: 45, speed: 75,  aggroRange: 140, xpValue: 95, knockbackMultiplier: 0.8, behaviour: 'ranged',      projectileColor: 0xffee44 },
+  void_mage:       { color: 0x9933ff, size: 8,  baseHp: 170, baseDmg: 50, speed: 55,  aggroRange: 150, xpValue: 100, knockbackMultiplier: 0.6, behaviour: 'ranged_flee', projectileColor: 0xcc55ff },
+  astral_beast:    { color: 0x66ccff, size: 11, baseHp: 250, baseDmg: 38, speed: 80,  aggroRange: 100, xpValue: 90, knockbackMultiplier: 1.2, behaviour: 'chase' },
 };
 
 export interface BossTypeDef {
@@ -305,7 +310,8 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   glacial_wyrm:     { color: 0x2266aa, size: 24, baseHp: 3500, baseDmg: 45, speed: 35, xpValue: 850,  name: 'Glacial Wyrm Vorthex' },
   infernal_warden:  { color: 0xff4400, size: 22, baseHp: 5000, baseDmg: 55, speed: 40, xpValue: 1200, name: 'Infernal Warden' },
   mire_queen:       { color: 0x2a5c2a, size: 24, baseHp: 7000,  baseDmg: 65, speed: 35, xpValue: 1800, name: 'Mire Queen' },
-  frost_titan:      { color: 0x3388cc, size: 26, baseHp: 10000, baseDmg: 75, speed: 30, xpValue: 2500, name: 'Frost Titan' },
+  frost_titan:         { color: 0x3388cc, size: 26, baseHp: 10000, baseDmg: 75, speed: 30, xpValue: 2500, name: 'Frost Titan' },
+  celestial_arbiter:   { color: 0xfff0aa, size: 28, baseHp: 14000, baseDmg: 90, speed: 35, xpValue: 3500, name: 'Celestial Arbiter' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -357,7 +363,8 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   lava_slime:    'burn',
   magma_golem:   'burn',
   toxic_toad:    'poison',
-  snow_wolf:     'freeze',
+  snow_wolf:    'freeze',
+  astral_beast: 'stun',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -367,9 +374,12 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   glacial_wyrm:    'freeze',
   fire_imp:        'burn',
   infernal_warden: 'burn',
-  frost_elemental: 'freeze',
-  ice_archer:      'freeze',
-  frost_titan:     'freeze',
+  frost_elemental:   'freeze',
+  ice_archer:        'freeze',
+  frost_titan:       'freeze',
+  star_sentinel:     'stun',
+  void_mage:         'stun',
+  celestial_arbiter: 'stun',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -508,5 +518,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 2500,
     unlockRequirement: 'zone7',
     difficultyMult: 4.5,
+  },
+  {
+    id: 'zone9',
+    name: 'Celestial Spire',
+    biome: 'Sky / Celestial',
+    description: 'A towering spire piercing the heavens. Star sentinels, void mages, and astral beasts guard the throne of the Celestial Arbiter.',
+    bgColor: 0x050a1a,
+    groundColor: 0x0a1540,
+    wallColor: 0x03071a,
+    accentColor: 0xaaccff,
+    waves: 3,
+    enemyTypes: ['star_sentinel', 'void_mage', 'astral_beast'],
+    bossType: 'celestial_arbiter',
+    minPlayerLevel: 20,
+    xpReward: 3500,
+    unlockRequirement: 'zone8',
+    difficultyMult: 5.0,
   },
 ];

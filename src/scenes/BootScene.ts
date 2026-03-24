@@ -113,6 +113,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_frostpeak_mid',  'assets/backgrounds/parallax/bg_parallax_frostpeak_mid.png');
     this.load.image('bg_parallax_frostpeak_near', 'assets/backgrounds/parallax/bg_parallax_frostpeak_near.png');
 
+    // Celestial Spire tileset
+    this.load.image('tileset_celestial', 'assets/tiles/tilesets/tileset_celestial.png');
+
+    // Celestial Spire enemies (12 frames × 16×24; boss phases: 32×32 each)
+    this.load.spritesheet('enemy_star_sentinel', 'assets/sprites/enemies/char_enemy_sky_sentinel.png',    { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_void_mage',     'assets/sprites/enemies/char_enemy_storm_harpy.png',     { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_astral_beast',  'assets/sprites/enemies/char_enemy_wind_elemental.png',  { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_celestial_arbiter_phase1', 'assets/sprites/enemies/bosses/boss_stormkeeper_titan_phase1.png');
+    this.load.image('boss_celestial_arbiter_phase2', 'assets/sprites/enemies/bosses/boss_stormkeeper_titan_phase2.png');
+    this.load.image('boss_celestial_arbiter_phase3', 'assets/sprites/enemies/bosses/boss_stormkeeper_titan_phase3.png');
+    this.load.image('boss_celestial_arbiter_idle',   'assets/sprites/enemies/bosses/boss_stormkeeper_titan_idle.png');
+    this.load.image('boss_celestial_arbiter_attack', 'assets/sprites/enemies/bosses/boss_stormkeeper_titan_attack.png');
+
+    // Celestial Spire NPC
+    this.load.image('npc_quest_celestial', 'assets/sprites/characters/char_npc_quest_celestial.png');
+
+    // Celestial Spire parallax layers
+    this.load.image('bg_parallax_celestial_far',  'assets/backgrounds/parallax/bg_parallax_celestial_far.png');
+    this.load.image('bg_parallax_celestial_mid',  'assets/backgrounds/parallax/bg_parallax_celestial_mid.png');
+    this.load.image('bg_parallax_celestial_near', 'assets/backgrounds/parallax/bg_parallax_celestial_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');

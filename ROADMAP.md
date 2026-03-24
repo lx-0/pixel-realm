@@ -104,14 +104,26 @@ New zones using existing tilesets, plus QA for M10 features.
 - [x] PIX-163 — Create Volcanic Highlands zone art (enemy sprites, boss, NPC)
 - [x] PIX-164 — Create Shadowmire Swamp zone art (enemy sprites, boss, NPC)
 
-### M12: Continued Expansion — IN PROGRESS
-Shadowmire zone implementation, day/night cycle, and next zone art pipeline.
+### M12: Continued Expansion — COMPLETE
+Shadowmire zone implementation, day/night cycle, and Frostpeak Highlands art pipeline.
 
 - [x] PIX-168 — Implement Shadowmire Swamp zone (zone 7, level 14+)
-- [ ] PIX-169 — Implement day/night cycle system (time-based lighting and gameplay)
-- [ ] PIX-170 — Create Frostpeak Highlands zone art (enemy sprites, boss, NPC, tileset)
+- [x] PIX-169 — Implement day/night cycle system (time-based lighting and gameplay)
+- [x] PIX-170 — Create Frostpeak Highlands zone art (enemy sprites, boss, NPC, tileset)
 
-### M13: NFT Integration — DEFERRED (post-launch)
+### M13: World Expansion — COMPLETE
+Frostpeak zone implementation, Celestial Spire art pipeline, continued world growth.
+
+- [x] PIX-172 — Implement Frostpeak Highlands zone (zone 8, level 17+)
+- [x] PIX-173 — Create Celestial Spire zone art (enemy sprites, boss, NPC, tileset)
+
+### M14a: Deep World Expansion — IN PROGRESS
+Celestial Spire zone implementation and Abyssal Depths art pipeline.
+
+- [x] PIX-175 — Implement Celestial Spire zone (zone 9, level 20+)
+- [ ] PIX-176 — Create Abyssal Depths zone art (zone 10, level 23+)
+
+### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
 - Wallet connection (MetaMask / WalletConnect)
 - ERC-721/1155 item minting on EVM L2 (Polygon/Base)
@@ -129,7 +141,9 @@ M5 → M6 ──────────────────┘
                 M10 (endgame content, parallel to M9)
                       M11 (content expansion, parallel to M9)
                             M12 (continued expansion, parallel to M9)
-                                  M13 (post-launch, independent)
+                                  M13 (world expansion, parallel to M9)
+                                        M14a (deep world expansion, parallel to M9)
+                                              M14 (post-launch, independent)
 ```
 
 ## Key Decisions
@@ -139,5 +153,7 @@ M5 → M6 ──────────────────┘
 - **Endgame content while waiting** — M10 adds prestige, raids, and seasonal events. All complete as of 2026-03-24.
 - **Content expansion** — M11 adds Volcanic Highlands and Shadowmire Swamp zones using existing tilesets. All complete as of 2026-03-24.
 - **Continued expansion** — M12 implements Shadowmire zone code, day/night cycle, and Frostpeak Highlands art pipeline.
-- **Single engineer** — One engineer has shipped M0-M11 solo. Strong velocity.
-- **Game Artist** — Completed all art through M11. Now on Frostpeak Highlands zone art for M12.
+- **World expansion** — M13 implements Frostpeak Highlands zone and begins Celestial Spire art pipeline. All complete as of 2026-03-24.
+- **Deep world expansion** — M14a implements Celestial Spire zone and begins Abyssal Depths art pipeline.
+- **Single engineer** — One engineer has shipped M0-M13 solo. Strong velocity.
+- **Game Artist** — Completed all art through M13. Now on Abyssal Depths zone art for M14a.

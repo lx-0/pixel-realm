@@ -754,6 +754,96 @@ const FALLBACKS: FallbackRecord[] = [
     },
     completionConditions: { type: "puzzle", target: "titan ward" },
   },
+  {
+    zoneId: "zone9",
+    questType: "kill",
+    title: "Star Sentinel Purge",
+    description: "Star sentinels are blasting the spire's lower platforms with stellar energy, sealing all ascent routes. Destroy them before the Arbiter calls more.",
+    objectives: [{ type: "kill", target: "star_sentinel", count: 5, description: "Destroy 5 star sentinels on the Celestial Spire" }],
+    dialogue: {
+      greeting: "Those star sentinels appeared at dawn and haven't stopped firing. They'll seal off the entire spire if you don't act fast.",
+      acceptance: "Their projectiles stun on contact — keep moving and don't let them line you up.",
+      completion: "The sentinels are down! The platforms are accessible again. You made that look effortless.",
+      choices: [
+        { id: "accept", label: "I'll destroy the star sentinels.", response: "Stay mobile — they track movement patterns. Break line of sight behind the floating stones to avoid their stun blasts.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who commands these sentinels?", response: "The Celestial Arbiter. Defeat enough and you may disrupt his sentinel network — weakening his hold over the spire.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The spire is too dangerous right now.", response: "I understand. The platforms will remain sealed until someone stops them.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "kill", target: "star_sentinel", count: 5 },
+  },
+  {
+    zoneId: "zone9",
+    questType: "fetch",
+    title: "Astral Crystals",
+    description: "An arcanist needs astral crystals grown in the spire's upper reaches to calibrate a void-detection array. Retrieve them before the void mages harvest them all.",
+    objectives: [{ type: "fetch", target: "astral crystal", count: 4, description: "Collect 4 astral crystals from the upper Celestial Spire" }],
+    dialogue: {
+      greeting: "Astral crystals — the pure kind, grown where starlight meets void energy — are exactly what I need to track the Arbiter's movements.",
+      acceptance: "They pulse with a faint golden light. Move quickly — the void mages drain them to fuel their spells.",
+      completion: "Perfect specimens! Still resonating. With these calibrated, I can predict the Arbiter's next conduit opening.",
+      choices: [
+        { id: "accept", label: "I'll retrieve those astral crystals.", response: "They cluster near the spire's star vents — look for the golden glow. But void mages patrol there, and they flee while shooting.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Why are void mages so dangerous?", response: "They strike from range and vanish before you close in. Their void bolts stun — if they land, you're helpless while the astral beasts close in.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The upper spire is beyond me.", response: "No shame in knowing your limits. Come back stronger.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "fetch", target: "astral crystal", count: 4 },
+  },
+  {
+    zoneId: "zone9",
+    questType: "explore",
+    title: "The Void Conduit",
+    description: "Legends speak of a void conduit near the spire's apex — a rift the Celestial Arbiter uses to draw power from beyond the stars. Find it.",
+    objectives: [{ type: "explore", target: "void conduit", description: "Discover the void conduit at the Celestial Spire apex" }],
+    dialogue: {
+      greeting: "My research points to a conduit near the apex — a tear in reality itself that feeds the Arbiter. It must still be open.",
+      acceptance: "Follow the void mages — they gather near the conduit to recharge. Look for the shimmer where starlight bends unnaturally.",
+      completion: "You found it! The conduit is larger than I feared. If we can seal it, we cut off the Arbiter's power source entirely.",
+      choices: [
+        { id: "accept", label: "I'll find the void conduit.", response: "The void mages orbit it — follow their patrol routes inward. The air distortion will mark it before you see the light.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who opened this conduit?", response: "The Celestial Arbiter himself, centuries ago. He has drawn power from it so long he may not survive its closure — which is exactly why we must try.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The apex is too dangerous.", response: "The conduit has pulsed for centuries. It can wait a little longer.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "explore", target: "void conduit" },
+  },
+  {
+    zoneId: "zone9",
+    questType: "escort",
+    title: "Celestial Cartographer",
+    description: "A cartographer mapping the spire's shifting platforms became separated from their team after an astral beast attack. Escort them to safety.",
+    objectives: [{ type: "escort", target: "Celestial Cartographer", description: "Escort the Celestial Cartographer safely off the Celestial Spire" }],
+    dialogue: {
+      greeting: "An astral beast knocked me clean off the platform — I've been clinging to this ledge for an hour. Can you get me down safely?",
+      acceptance: "I'll keep sketching as we move — these platform formations shift every few minutes. My maps may be our only way back.",
+      completion: "Safe at last! My survey survived, and so did I. These platform charts will help future climbers reach the Arbiter — and come back.",
+      choices: [
+        { id: "accept", label: "Stay close — I'll get you out of here.", response: "Thank you! I've mapped three platform cycles already — I can guide us between the astral beast patrols if you handle the sentinels.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What were you mapping?", response: "The spire's platform drift — they orbit the apex on a twelve-minute cycle. Understanding it is the key to reaching the Arbiter without triggering his sentinels.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "I can't spare the time right now.", response: "I'll hold on then. If you see anyone else up here, please send them my way.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "escort", target: "Celestial Cartographer" },
+  },
+  {
+    zoneId: "zone9",
+    questType: "puzzle",
+    title: "The Arbiter's Seal",
+    description: "An ancient celestial seal bars the path to the Arbiter's throne at the spire's apex. Align the star-rune constellation to shatter it.",
+    objectives: [{ type: "puzzle", target: "arbiter seal", description: "Solve the star-rune constellation puzzle to break the Arbiter's seal" }],
+    dialogue: {
+      greeting: "The Arbiter's seal is carved in celestial runes — no weapon can break it, only the correct star alignment will open the path.",
+      acceptance: "The constellations must align: dawn star, the void arc, twin moons, then the apex shard — in that order.",
+      completion: "The seal shatters! The path to the throne lies open. The Celestial Arbiter cannot hide behind his wards any longer.",
+      choices: [
+        { id: "accept", label: "I'll break the Arbiter's seal.", response: "The rune sequence mirrors the celestial calendar: dawn star, void arc, twin moons, apex shard. Do not rush the final alignment.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who created this seal?", response: "The Arbiter created it himself — a failsafe against challengers. That it can be solved at all is an ancient scholar's gift to those brave enough to reach this height.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Celestial rune puzzles are beyond me.", response: "The seal will hold until you understand the star calendar. Return when you do.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "puzzle", target: "arbiter seal" },
+  },
 ];
 
 /**
