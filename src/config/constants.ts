@@ -245,9 +245,10 @@ export type EnemyTypeName =
   | 'bone_revenant' | 'ashwyrm' | 'spectral_drake'
   | 'rift_walker' | 'void_sentinel' | 'shadow_weaver'
   | 'eclipse_knight' | 'shadow_herald' | 'dusk_wraith'
-  | 'shattered_golem' | 'reality_fracture' | 'dominion_shade';
+  | 'shattered_golem' | 'reality_fracture' | 'dominion_shade'
+  | 'elemental_amalgam' | 'primordial_shard' | 'core_sentinel';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame';
 
 export interface EnemyTypeDef {
   color: number;
@@ -315,6 +316,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   shattered_golem:  { color: 0x8844cc, size: 13, baseHp: 380, baseDmg: 78, speed: 28,  aggroRange: 85,  xpValue: 210, knockbackMultiplier: 0.0, behaviour: 'tank' },
   reality_fracture: { color: 0xff44ff, size: 9,  baseHp: 300, baseDmg: 82, speed: 95,  aggroRange: 165, xpValue: 225, knockbackMultiplier: 0.8, behaviour: 'ranged_flee', projectileColor: 0xff88ff },
   dominion_shade:   { color: 0x220033, size: 10, baseHp: 340, baseDmg: 75, speed: 110, aggroRange: 150, xpValue: 215, knockbackMultiplier: 1.0, behaviour: 'phase' },
+  // Primordial Core enemies
+  elemental_amalgam: { color: 0xff8800, size: 13, baseHp: 420, baseDmg: 88, speed: 32,  aggroRange: 90,  xpValue: 240, knockbackMultiplier: 0.1, behaviour: 'tank' },
+  primordial_shard:  { color: 0x00ffcc, size: 9,  baseHp: 330, baseDmg: 95, speed: 105, aggroRange: 175, xpValue: 260, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0x88ffee },
+  core_sentinel:     { color: 0xff4400, size: 11, baseHp: 370, baseDmg: 90, speed: 55,  aggroRange: 120, xpValue: 250, knockbackMultiplier: 0.4, behaviour: 'block' },
 };
 
 export interface BossTypeDef {
@@ -342,6 +347,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   void_architect:      { color: 0x7700ff, size: 34, baseHp: 32000, baseDmg: 130, speed: 25, xpValue: 8000, name: 'Void Architect' },
   eclipsed_king:       { color: 0xffaa00, size: 36, baseHp: 42000, baseDmg: 145, speed: 22, xpValue: 10000, name: 'The Eclipsed King' },
   the_unmaker:         { color: 0xcc00ff, size: 38, baseHp: 55000, baseDmg: 165, speed: 20, xpValue: 13000, name: 'The Unmaker' },
+  genesis_flame:       { color: 0xff6600, size: 40, baseHp: 70000, baseDmg: 188, speed: 22, xpValue: 16500, name: 'The Genesis Flame' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -403,6 +409,7 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   shadow_weaver:     'stun',
   eclipse_knight:    'burn',
   dusk_wraith:       'stun',
+  core_sentinel:     'burn',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -426,6 +433,8 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   void_architect:      'stun',
   shadow_herald:       'burn',
   eclipsed_king:       'burn',
+  primordial_shard:    'burn',
+  genesis_flame:       'burn',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -666,5 +675,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 12000,
     unlockRequirement: 'zone13',
     difficultyMult: 7.5,
+  },
+  {
+    id: 'zone15',
+    name: 'Primordial Core',
+    biome: 'primordial-core',
+    description: 'The raw beating heart of elemental chaos. Elemental amalgams, primordial shards, and core sentinels swarm the crystallized energy platforms where The Genesis Flame seeks to ignite a new age of destruction.',
+    bgColor: 0x0d0600,
+    groundColor: 0x1a0800,
+    wallColor: 0x080300,
+    accentColor: 0xff6600,
+    waves: 3,
+    enemyTypes: ['elemental_amalgam', 'primordial_shard', 'core_sentinel'],
+    bossType: 'genesis_flame',
+    minPlayerLevel: 38,
+    xpReward: 15000,
+    unlockRequirement: 'zone14',
+    difficultyMult: 8.0,
   },
 ];

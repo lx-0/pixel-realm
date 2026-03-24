@@ -1673,6 +1673,7 @@ export class GameScene extends Phaser.Scene {
     if (b.includes('volcanic') || b.includes('bone') || b.includes('wasteland')) return 'volcanic';
     if (b.includes('void') || b.includes('dimension')) return 'dungeon';
     if (b.includes('eclipsed') || b.includes('eclipse')) return 'volcanic';
+    if (b.includes('primordial') || b.includes('core')) return 'volcanic';
     if (b.includes('town'))     return 'town';
     // swamp and other unrecognised biomes — default to forest (wet/dark)
     return 'forest';
@@ -2763,6 +2764,7 @@ export class GameScene extends Phaser.Scene {
           zone12: 'stun',
           zone13: 'burn',
           zone14: 'stun',
+          zone15: 'burn',
         };
         const zoneEffect = zoneEffectMap[this.zone.id];
         if (zoneEffect) this.applyEffectToEnemy(e, extra, zoneEffect, time);

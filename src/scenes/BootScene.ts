@@ -238,6 +238,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_shattered_dominion_mid',  'assets/backgrounds/parallax/bg_parallax_shattered_dominion_mid.png');
     this.load.image('bg_parallax_shattered_dominion_near', 'assets/backgrounds/parallax/bg_parallax_shattered_dominion_near.png');
 
+    // Primordial Core tileset
+    this.load.image('tileset_primordial_core', 'assets/tiles/tilesets/tileset_primordial_core.png');
+
+    // Primordial Core enemies (128×16 spritesheet, 8 frames: 16×16 per frame) and boss phases (32×32 each)
+    this.load.spritesheet('enemy_elemental_amalgam', 'assets/sprites/enemies/char_enemy_elemental_amalgam.png', { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('enemy_primordial_shard',  'assets/sprites/enemies/char_enemy_primordial_shard.png',  { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('enemy_core_sentinel',     'assets/sprites/enemies/char_enemy_core_sentinel.png',     { frameWidth: 16, frameHeight: 16 });
+    this.load.image('boss_genesis_flame_phase1', 'assets/sprites/enemies/bosses/boss_genesis_flame_phase1.png');
+    this.load.image('boss_genesis_flame_phase2', 'assets/sprites/enemies/bosses/boss_genesis_flame_phase2.png');
+    this.load.image('boss_genesis_flame_phase3', 'assets/sprites/enemies/bosses/boss_genesis_flame_phase3.png');
+    this.load.image('boss_genesis_flame_idle',   'assets/sprites/enemies/bosses/boss_genesis_flame_idle.png');
+    this.load.image('boss_genesis_flame_attack', 'assets/sprites/enemies/bosses/boss_genesis_flame_attack.png');
+
+    // Primordial Core NPC
+    this.load.image('npc_quest_primordial_core', 'assets/sprites/characters/char_npc_quest_primordial_core.png');
+
+    // Primordial Core parallax layers
+    this.load.image('bg_parallax_primordial_core_far',  'assets/backgrounds/parallax/bg_parallax_primordial_core_far.png');
+    this.load.image('bg_parallax_primordial_core_mid',  'assets/backgrounds/parallax/bg_parallax_primordial_core_mid.png');
+    this.load.image('bg_parallax_primordial_core_near', 'assets/backgrounds/parallax/bg_parallax_primordial_core_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');
