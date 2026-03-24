@@ -128,12 +128,19 @@ Zones 9–12 implementation and art pipeline (Celestial Spire through Void Sanct
 - [x] PIX-184 — Rebuild distribution zip with latest zone content (v0.2.0)
 - [x] PIX-186 — Create Void Sanctum zone art (zone 12, level 29+)
 
-### M15: Endgame World Expansion — IN PROGRESS
-Void Sanctum zone implementation and Eclipsed Throne zone art pipeline.
+### M15: Endgame World Expansion — COMPLETE
+Void Sanctum zone implementation and Eclipsed Throne zone pipeline.
 
-- [ ] PIX-187 — Implement Void Sanctum zone (zone 12, level 29+)
-- [ ] PIX-190 — Create Eclipsed Throne zone art (zone 13, level 32+)
-- [ ] PIX-191 — Implement Eclipsed Throne zone (zone 13, level 32+)
+- [x] PIX-187 — Implement Void Sanctum zone (zone 12, level 29+)
+- [x] PIX-190 — Create Eclipsed Throne zone art (zone 13, level 32+)
+- [x] PIX-191 — Implement Eclipsed Throne zone (zone 13, level 32+)
+- [x] PIX-199 — Rebuild distribution zip with all zone content (v0.3.0)
+
+### M16: Shattered Dominion Expansion — IN PROGRESS
+Shattered Dominion zone art and implementation pipeline (zone 14, level 35+).
+
+- [ ] PIX-193 — Create Shattered Dominion zone art (zone 14, level 35+)
+- [ ] PIX-194 — Implement Shattered Dominion zone (zone 14, level 35+)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -156,7 +163,8 @@ M5 → M6 ──────────────────┘
                                   M13 (world expansion, parallel to M9)
                                         M14a (deep world expansion, parallel to M9)
                                               M15 (endgame world expansion, parallel to M9)
-                                                    M14 (post-launch, independent)
+                                                    M16 (Shattered Dominion, parallel to M9)
+                                                          M14 (post-launch, independent)
 ```
 
 ## Key Decisions
@@ -168,6 +176,7 @@ M5 → M6 ──────────────────┘
 - **Continued expansion** — M12 implements Shadowmire zone code, day/night cycle, and Frostpeak Highlands art pipeline.
 - **World expansion** — M13 implements Frostpeak Highlands zone and begins Celestial Spire art pipeline. All complete as of 2026-03-24.
 - **Deep world expansion** — M14a completed zones 9–12 (Celestial Spire through Void Sanctum). All complete as of 2026-03-24.
-- **Endgame world expansion** — M15 implements Void Sanctum zone and begins Eclipsed Throne art pipeline.
-- **Single engineer** — One engineer has shipped M0–M14a solo. Strong velocity.
-- **Game Artist** — Completed all art through zone 12 (Void Sanctum). Now on Eclipsed Throne zone art for M15.
+- **Endgame world expansion** — M15 completed Void Sanctum zone and Eclipsed Throne art. Implementation in progress.
+- **Shattered Dominion** — M16 adds zone 14 (level 35+), continuing the endgame world expansion.
+- **Single engineer** — One engineer has shipped M0–M15 solo. Strong velocity.
+- **Game Artist** — Completed all art through zone 13 (Eclipsed Throne). Now on Shattered Dominion zone art for M16.
