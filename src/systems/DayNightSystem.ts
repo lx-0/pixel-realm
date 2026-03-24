@@ -136,6 +136,16 @@ export class DayNightSystem {
   }
 
   /**
+   * Sync the in-game hour to a server-authoritative value.
+   * Call when the server broadcasts a `zone_time` message so all players
+   * in the same zone see the same time of day.
+   */
+  syncHour(hour: number): void {
+    this.gameHour = ((hour % 24) + 24) % 24;
+    this.applyOverlay();
+  }
+
+  /**
    * Set the active biome. Call when the player enters a new zone.
    * Adjusts the overlay tint modifier and sprite tints.
    */

@@ -285,6 +285,9 @@ export class MultiplayerClient {
   // Emote callbacks
   onEmote?: (event: EmoteEvent) => void;
 
+  // Day/night time sync — server broadcasts authoritative zone hour
+  onZoneTime?: (hour: number) => void;
+
   // World event / season callbacks
   onWorldEvents?: (events: WorldEventEntry[]) => void;
   onSeasonInfo?: (name: string) => void;
@@ -557,6 +560,13 @@ export class MultiplayerClient {
     // ── Emote messages ────────────────────────────────────────────────────
     room.onMessage('emote', (msg: EmoteEvent) => {
       this.onEmote?.(msg);
+    });
+
+    // ── Day/night time sync ───────────────────────────────────────────────
+    // Server broadcasts the authoritative zone hour (~once per game-minute)
+    // so all players in the zone share the same time of day.
+    room.onMessage('zone_time', (msg: { hour: number }) => {
+      this.onZoneTime?.(msg.hour);
     });
 
     // ── World event / season messages ─────────────────────────────────────

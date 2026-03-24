@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SCENES } from '../config/constants';
 import { SettingsManager } from '../systems/SettingsManager';
+import { DayNightSystem } from '../systems/DayNightSystem';
 
 /**
  * BootScene — loads PNG assets from public/assets/ then transitions to Menu.
@@ -263,6 +264,9 @@ export class BootScene extends Phaser.Scene {
     this.load.image('plot_boundary', 'assets/sprite_plot_boundary.png');
     this.load.image('plot_for_sale', 'assets/sprite_plot_for_sale.png');
     this.load.image('plot_flag',     'assets/sprite_plot_flag.png');
+
+    // Day/night cycle HUD icons (4-frame spritesheet: dawn, sun, dusk, moon)
+    DayNightSystem.preload(this);
 
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();

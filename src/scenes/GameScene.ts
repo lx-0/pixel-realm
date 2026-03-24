@@ -35,6 +35,7 @@ import { ConnectionOverlay } from '../ui/ConnectionOverlay';
 import { LootRollPanel } from '../ui/LootRollPanel';
 import { DayNightSystem } from '../systems/DayNightSystem';
 import { WeatherSystem }   from '../systems/WeatherSystem';
+import { type BiomeKey }   from '../config/dayNightPalette';
 import { MobileTouchControls } from '../systems/MobileTouchControls';
 import {
   SKILL_BY_ID, computePassiveBonuses,
@@ -473,6 +474,7 @@ export class GameScene extends Phaser.Scene {
     this.setupCamera();
     this.createHUD();
     this.dayNight = new DayNightSystem(this);
+    this.dayNight.setBiome(this.zoneToBiomeKey(this.zone.biome));
     this.weather  = new WeatherSystem(this, this.zone.biome);
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
@@ -1190,6 +1192,11 @@ export class GameScene extends Phaser.Scene {
       this.showEmoteAnimation(event.sessionId, event.emoteId);
     };
 
+    // Day/night time sync — align local clock to server-authoritative zone hour
+    client.onZoneTime = (hour: number) => {
+      this.dayNight?.syncHour(hour);
+    };
+
     // World events — show in chat on zone enter
     client.onWorldEvents = (events: WorldEventEntry[]) => {
       if (events.length) {
@@ -1593,6 +1600,22 @@ export class GameScene extends Phaser.Scene {
 
     this.remoteEnemySprites.forEach(s => s.destroy());
     this.remoteEnemySprites.clear();
+  }
+
+  // ── Day/night helpers ─────────────────────────────────────────────────────
+
+  /** Map zone biome strings to the BiomeKey expected by DayNightSystem. */
+  private zoneToBiomeKey(biome: string): BiomeKey {
+    const b = biome.toLowerCase();
+    if (b.includes('forest'))   return 'forest';
+    if (b.includes('desert') || b.includes('plains')) return 'desert';
+    if (b.includes('dungeon'))  return 'dungeon';
+    if (b.includes('ocean') || b.includes('coastal')) return 'ocean';
+    if (b.includes('ice') || b.includes('cave'))      return 'ice';
+    if (b.includes('volcanic')) return 'volcanic';
+    if (b.includes('town'))     return 'town';
+    // swamp and other unrecognised biomes — default to forest (wet/dark)
+    return 'forest';
   }
 
   // ── World ─────────────────────────────────────────────────────────────────
@@ -2162,11 +2185,16 @@ export class GameScene extends Phaser.Scene {
     const types = this.zone.enemyTypes;
     const WALL  = 52;
 
-    for (let i = 0; i < count; i++) {
+    // Night spawns are 20 % harder — more HP and one extra enemy per wave.
+    const isNight    = this.dayNight?.period === 'night';
+    const nightMult  = isNight ? 1.2 : 1.0;
+    const nightBonus = isNight ? 1   : 0;
+
+    for (let i = 0; i < count + nightBonus; i++) {
       const typeName = types[i % types.length];
       const def      = ENEMY_TYPES[typeName];
       const hpScale  = (1 + (this.wave - 1) * COMBAT.WAVE_HP_SCALE_PER_WAVE + (this.level - 1) * 0.15)
-                       * this.zone.difficultyMult;
+                       * this.zone.difficultyMult * nightMult;
       const hp       = Math.floor(def.baseHp * hpScale);
       const pos      = this.safeSpawnPos(WALL);
       const e        = this.spawnEnemyAt(pos.x, pos.y, typeName, hp);

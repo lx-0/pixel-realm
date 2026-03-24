@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="520" viewBox="0 0 720 520" style="font-family: monospace; image-rendering: pixelated;">
+  <rect width="720" height="520" fill="#1a1a1a"/>
+  <text x="16" y="24" fill="#f0f0f0" font-size="14" font-weight="bold">PixelRealm — Day/Night Palette Chart</text>
+  <text x="16" y="40" fill="#969696" font-size="9">Per-biome lighting overlay tints × 4 time periods (all colours from 32-colour master palette)</text>
+
+  <!-- Column headers -->
+  <text x="130" y="65" fill="#f8a060" font-size="10" text-anchor="middle">Dawn</text>
+  <text x="250" y="65" fill="#ffe040" font-size="10" text-anchor="middle">Day</text>
+  <text x="370" y="65" fill="#f06020" font-size="10" text-anchor="middle">Dusk</text>
+  <text x="490" y="65" fill="#90d0f8" font-size="10" text-anchor="middle">Night</text>
+
+  <!-- Sub-headers: Overlay | Sprite Tint -->
+  <text x="110" y="78" fill="#6e6e6e" font-size="7" text-anchor="middle">Overlay</text>
+  <text x="155" y="78" fill="#6e6e6e" font-size="7" text-anchor="middle">Tint</text>
+  <text x="230" y="78" fill="#6e6e6e" font-size="7" text-anchor="middle">Overlay</text>
+  <text x="275" y="78" fill="#6e6e6e" font-size="7" text-anchor="middle">Tint</text>
+  <text x="350" y="78" fill="#6e6e6e" font-size="7" text-anchor="middle">Overlay</text>
+  <text x="395" y="78" fill="#6e6e6e" font-size="7" text-anchor="middle">Tint</text>
+  <text x="470" y="78" fill="#6e6e6e" font-size="7" text-anchor="middle">Overlay</text>
+  <text x="515" y="78" fill="#6e6e6e" font-size="7" text-anchor="middle">Tint</text>
+
+  <!-- ── FOREST ────────────────────────── -->
+  <text x="16" y="100" fill="#4c9b4c" font-size="10">Forest</text>
+  <!-- Dawn -->
+  <rect x="96"  y="86" width="28" height="20" fill="#2d6e2d" opacity="0.22"/>
+  <rect x="140" y="86" width="28" height="20" fill="#eec89a"/>
+  <!-- Day -->
+  <rect x="216" y="86" width="28" height="20" fill="#78c878" opacity="0.00"/>
+  <rect x="260" y="86" width="28" height="20" fill="#ffffff"/>
+  <!-- Dusk -->
+  <rect x="336" y="86" width="28" height="20" fill="#6b3a1f" opacity="0.23"/>
+  <rect x="380" y="86" width="28" height="20" fill="#d49060"/>
+  <!-- Night -->
+  <rect x="456" y="86" width="28" height="20" fill="#1a3a1a" opacity="0.53"/>
+  <rect x="500" y="86" width="28" height="20" fill="#4a6a8a"/>
+
+  <!-- ── DESERT ────────────────────────── -->
+  <text x="16" y="140" fill="#d4a85a" font-size="10">Desert</text>
+  <rect x="96"  y="126" width="28" height="20" fill="#d4a85a" opacity="0.23"/>
+  <rect x="140" y="126" width="28" height="20" fill="#f0d080"/>
+  <rect x="216" y="126" width="28" height="20" fill="#e8d08a" opacity="0.00"/>
+  <rect x="260" y="126" width="28" height="20" fill="#fff8e0"/>
+  <rect x="336" y="126" width="28" height="20" fill="#f06020" opacity="0.23"/>
+  <rect x="380" y="126" width="28" height="20" fill="#e87040"/>
+  <rect x="456" y="126" width="28" height="20" fill="#1a4a8a" opacity="0.47"/>
+  <rect x="500" y="126" width="28" height="20" fill="#5070a0"/>
+
+  <!-- ── ICE ───────────────────────────── -->
+  <text x="16" y="180" fill="#90d0f8" font-size="10">Ice</text>
+  <rect x="96"  y="166" width="28" height="20" fill="#90d0f8" opacity="0.22"/>
+  <rect x="140" y="166" width="28" height="20" fill="#c0d8f0"/>
+  <rect x="216" y="166" width="28" height="20" fill="#c8f0ff" opacity="0.00"/>
+  <rect x="260" y="166" width="28" height="20" fill="#f0f8ff"/>
+  <rect x="336" y="166" width="28" height="20" fill="#9050e0" opacity="0.22"/>
+  <rect x="380" y="166" width="28" height="20" fill="#a080c0"/>
+  <rect x="456" y="166" width="28" height="20" fill="#0a1a3a" opacity="0.55"/>
+  <rect x="500" y="166" width="28" height="20" fill="#304060"/>
+
+  <!-- ── VOLCANIC ──────────────────────── -->
+  <text x="16" y="220" fill="#d42020" font-size="10">Volcanic</text>
+  <rect x="96"  y="206" width="28" height="20" fill="#f06020" opacity="0.15"/>
+  <rect x="140" y="206" width="28" height="20" fill="#e09060"/>
+  <rect x="216" y="206" width="28" height="20" fill="#f8a060" opacity="0.00"/>
+  <rect x="260" y="206" width="28" height="20" fill="#f0c090"/>
+  <rect x="336" y="206" width="28" height="20" fill="#d42020" opacity="0.20"/>
+  <rect x="380" y="206" width="28" height="20" fill="#c04020"/>
+  <rect x="456" y="206" width="28" height="20" fill="#5a0a0a" opacity="0.50"/>
+  <rect x="500" y="206" width="28" height="20" fill="#602020"/>
+
+  <!-- ── OCEAN ─────────────────────────── -->
+  <text x="16" y="260" fill="#2a7ac0" font-size="10">Ocean</text>
+  <rect x="96"  y="246" width="28" height="20" fill="#2a7ac0" opacity="0.22"/>
+  <rect x="140" y="246" width="28" height="20" fill="#b0c8e0"/>
+  <rect x="216" y="246" width="28" height="20" fill="#50a8e8" opacity="0.00"/>
+  <rect x="260" y="246" width="28" height="20" fill="#e0f0ff"/>
+  <rect x="336" y="246" width="28" height="20" fill="#f8a060" opacity="0.21"/>
+  <rect x="380" y="246" width="28" height="20" fill="#e0a060"/>
+  <rect x="456" y="246" width="28" height="20" fill="#0a1a3a" opacity="0.52"/>
+  <rect x="500" y="246" width="28" height="20" fill="#203050"/>
+
+  <!-- ── DUNGEON ───────────────────────── -->
+  <text x="16" y="300" fill="#4a4a4a" font-size="10">Dungeon</text>
+  <rect x="96"  y="286" width="28" height="20" fill="#4a4a4a" opacity="0.30"/>
+  <rect x="140" y="286" width="28" height="20" fill="#808080"/>
+  <rect x="216" y="286" width="28" height="20" fill="#4a4a4a" opacity="0.08"/>
+  <rect x="260" y="286" width="28" height="20" fill="#909090"/>
+  <rect x="336" y="286" width="28" height="20" fill="#4a4a4a" opacity="0.28"/>
+  <rect x="380" y="286" width="28" height="20" fill="#706050"/>
+  <rect x="456" y="286" width="28" height="20" fill="#2b2b2b" opacity="0.57"/>
+  <rect x="500" y="286" width="28" height="20" fill="#404040"/>
+
+  <!-- ── TOWN ──────────────────────────── -->
+  <text x="16" y="340" fill="#78c878" font-size="10">Town</text>
+  <rect x="96"  y="326" width="28" height="20" fill="#e8d08a" opacity="0.21"/>
+  <rect x="140" y="326" width="28" height="20" fill="#f0d8a0"/>
+  <rect x="216" y="326" width="28" height="20" fill="#ffffff" opacity="0.00"/>
+  <rect x="260" y="326" width="28" height="20" fill="#ffffff"/>
+  <rect x="336" y="326" width="28" height="20" fill="#e8b800" opacity="0.22"/>
+  <rect x="380" y="326" width="28" height="20" fill="#e0b060"/>
+  <rect x="456" y="326" width="28" height="20" fill="#a87000" opacity="0.40"/>
+  <rect x="500" y="326" width="28" height="20" fill="#6080a0"/>
+
+  <!-- ── Global Overlay Ramp ──────────── -->
+  <text x="16" y="390" fill="#f0f0f0" font-size="12" font-weight="bold">Global Lighting Overlay Ramp (24h)</text>
+  <!-- Gradient bar showing overlay colour across 24 hours -->
+  <rect x="16"  y="400" width="26" height="30" fill="#0a1a3a" opacity="0.45"/>
+  <rect x="42"  y="400" width="26" height="30" fill="#0a1a3a" opacity="0.40"/>
+  <rect x="68"  y="400" width="26" height="30" fill="#0a1a3a" opacity="0.38"/>
+  <rect x="94"  y="400" width="26" height="30" fill="#0a1a3a" opacity="0.36"/>
+  <rect x="120" y="400" width="26" height="30" fill="#0a1a3a" opacity="0.35"/>
+  <rect x="146" y="400" width="26" height="30" fill="#d4a85a" opacity="0.20"/>
+  <rect x="172" y="400" width="26" height="30" fill="#f8a060" opacity="0.15"/>
+  <rect x="198" y="400" width="26" height="30" fill="#f8a060" opacity="0.08"/>
+  <rect x="224" y="400" width="52" height="30" fill="#ffffff" opacity="0.00"/>
+  <rect x="276" y="400" width="52" height="30" fill="#ffffff" opacity="0.00"/>
+  <rect x="328" y="400" width="52" height="30" fill="#ffffff" opacity="0.00"/>
+  <rect x="380" y="400" width="26" height="30" fill="#ffffff" opacity="0.00"/>
+  <rect x="406" y="400" width="26" height="30" fill="#f06020" opacity="0.12"/>
+  <rect x="432" y="400" width="26" height="30" fill="#d42020" opacity="0.18"/>
+  <rect x="458" y="400" width="26" height="30" fill="#a01010" opacity="0.25"/>
+  <rect x="484" y="400" width="26" height="30" fill="#a01010" opacity="0.32"/>
+  <rect x="510" y="400" width="26" height="30" fill="#0a1a3a" opacity="0.45"/>
+  <rect x="536" y="400" width="26" height="30" fill="#0a1a3a" opacity="0.45"/>
+  <rect x="562" y="400" width="26" height="30" fill="#0a1a3a" opacity="0.45"/>
+  <rect x="588" y="400" width="26" height="30" fill="#0a1a3a" opacity="0.45"/>
+
+  <!-- Hour labels -->
+  <text x="28"  y="445" fill="#969696" font-size="7" text-anchor="middle">0</text>
+  <text x="80"  y="445" fill="#969696" font-size="7" text-anchor="middle">3</text>
+  <text x="146" y="445" fill="#969696" font-size="7" text-anchor="middle">6</text>
+  <text x="224" y="445" fill="#969696" font-size="7" text-anchor="middle">9</text>
+  <text x="354" y="445" fill="#969696" font-size="7" text-anchor="middle">12</text>
+  <text x="406" y="445" fill="#969696" font-size="7" text-anchor="middle">17</text>
+  <text x="458" y="445" fill="#969696" font-size="7" text-anchor="middle">19</text>
+  <text x="510" y="445" fill="#969696" font-size="7" text-anchor="middle">21</text>
+  <text x="588" y="445" fill="#969696" font-size="7" text-anchor="middle">24</text>
+
+  <!-- Period labels -->
+  <text x="80"  y="460" fill="#90d0f8" font-size="8" text-anchor="middle">Night</text>
+  <text x="172" y="460" fill="#f8a060" font-size="8" text-anchor="middle">Dawn</text>
+  <text x="302" y="460" fill="#ffe040" font-size="8" text-anchor="middle">Day</text>
+  <text x="432" y="460" fill="#f06020" font-size="8" text-anchor="middle">Dusk</text>
+  <text x="550" y="460" fill="#90d0f8" font-size="8" text-anchor="middle">Night</text>
+
+  <text x="16" y="490" fill="#4a4a4a" font-size="8">Overlay = full-screen colour rect, alpha 0–0.45. Sprite tints apply to tilemap layers via Phaser setTint().</text>
+  <text x="16" y="502" fill="#4a4a4a" font-size="8">Dungeons are always dim (time barely matters). Towns have lamplight at night (reduced darkness).</text>
+</svg>
