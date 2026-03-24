@@ -13,6 +13,13 @@ const SLOT_KEY_PREFIX = 'pixelrealm_slot_v1_';
 export const NUM_SLOTS   = 3;
 const CURRENT_SCHEMA = 1;
 
+/** Personal-best stats recorded per zone. */
+export interface ZoneBest {
+  bestTimeSecs:  number;  // fastest clear (lower = better); 0 = never set
+  mostKills:     number;  // highest kill count in a single run
+  leastDmgTaken: number;  // lowest damage taken in a single clear; -1 = never set
+}
+
 export interface SaveData {
   unlockedZones: string[];
   playerLevel: number;
@@ -20,6 +27,7 @@ export interface SaveData {
   totalKills: number;
   totalDeaths: number;
   highScores: Record<string, number>;
+  zoneBests: Record<string, ZoneBest>;
   completedGame: boolean;
   tutorialCompleted: boolean;
 }
@@ -56,6 +64,7 @@ const DEFAULT_SAVE: SaveData = {
   totalKills: 0,
   totalDeaths: 0,
   highScores: {},
+  zoneBests: {},
   completedGame: false,
   tutorialCompleted: false,
 };
@@ -75,6 +84,7 @@ export class SaveManager {
         totalKills:        p.totalKills        ?? 0,
         totalDeaths:       p.totalDeaths       ?? 0,
         highScores:        p.highScores        ?? {},
+        zoneBests:         p.zoneBests         ?? {},
         completedGame:     p.completedGame     ?? false,
         tutorialCompleted: p.tutorialCompleted ?? false,
       };
@@ -132,6 +142,26 @@ export class SaveManager {
     return data;
   }
 
+  /**
+   * Record personal-best stats for a zone clear.
+   * Only updates a field when the new value is strictly better.
+   */
+  static recordZoneBest(
+    zoneId: string,
+    timeSecs: number,
+    kills: number,
+    damageTaken: number,
+  ): void {
+    const data = SaveManager.load();
+    const prev = data.zoneBests[zoneId] ?? { bestTimeSecs: 0, mostKills: 0, leastDmgTaken: -1 };
+    data.zoneBests[zoneId] = {
+      bestTimeSecs:  prev.bestTimeSecs  === 0 || timeSecs < prev.bestTimeSecs ? timeSecs : prev.bestTimeSecs,
+      mostKills:     kills > prev.mostKills ? kills : prev.mostKills,
+      leastDmgTaken: prev.leastDmgTaken === -1 || damageTaken < prev.leastDmgTaken ? damageTaken : prev.leastDmgTaken,
+    };
+    SaveManager.save(data);
+  }
+
   static completeTutorial(): void {
     const data = SaveManager.load();
     data.tutorialCompleted = true;
@@ -177,6 +207,7 @@ export class SaveManager {
         totalKills:        p.totalKills        ?? 0,
         totalDeaths:       p.totalDeaths       ?? 0,
         highScores:        p.highScores        ?? {},
+        zoneBests:         p.zoneBests         ?? {},
         completedGame:     p.completedGame     ?? false,
         tutorialCompleted: p.tutorialCompleted ?? false,
         // SkillSaveData
@@ -234,6 +265,7 @@ export class SaveManager {
       totalKills:        slot.totalKills,
       totalDeaths:       slot.totalDeaths ?? 0,
       highScores:        slot.highScores,
+      zoneBests:         slot.zoneBests ?? {},
       completedGame:     slot.completedGame,
       tutorialCompleted: slot.tutorialCompleted,
     });

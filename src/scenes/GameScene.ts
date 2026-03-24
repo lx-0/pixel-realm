@@ -77,15 +77,32 @@ export interface GameSceneData {
   zoneId: string;
 }
 
+/** Per-session combat statistics accumulated during a zone run. */
+export interface SessionStats {
+  damageDealt:      number;
+  damageTaken:      number;
+  xpGained:         number;
+  goldEarned:       number;
+  itemsLooted:      number;
+  critHits:         number;
+  totalHits:        number;
+  dodgesAttempted:  number;
+  dodgesSuccessful: number;
+  skillCasts:       Record<string, number>;
+  healingReceived:  number;
+  highestHit:       number;
+}
+
 export interface GameOverData {
-  wave:     number;
-  kills:    number;
-  level:    number;
-  timeSecs: number;
-  zoneId:   string;
-  zoneName: string;
-  victory:  boolean;
-  score:    number;
+  wave:         number;
+  kills:        number;
+  level:        number;
+  timeSecs:     number;
+  zoneId:       string;
+  zoneName:     string;
+  victory:      boolean;
+  score:        number;
+  sessionStats: SessionStats;
 }
 
 /**
@@ -321,6 +338,14 @@ export class GameScene extends Phaser.Scene {
   /** Leaderboard panel (always present, L to open). */
   private leaderboardPanel?: LeaderboardPanel;
 
+  /** Per-session combat statistics, reset each zone load. */
+  private sessionStats!: SessionStats;
+
+  /** Compact in-game stats overlay (F key toggle). */
+  private statsOverlayVisible = false;
+  private statsOverlayContainer?: Phaser.GameObjects.Container;
+  private statsKey?: Phaser.Input.Keyboard.Key;
+
   /** Faction reputation panel (multiplayer only, R to open). */
   private factionPanel?: FactionReputationPanel;
 
@@ -417,6 +442,12 @@ export class GameScene extends Phaser.Scene {
     this.charmedUntil         = 0;
     this.playerEffects        = {};
     this.playerEffectImmunity = {};
+
+    this.sessionStats = {
+      damageDealt: 0, damageTaken: 0, xpGained: 0, goldEarned: 0,
+      itemsLooted: 0, critHits: 0, totalHits: 0, dodgesAttempted: 0,
+      dodgesSuccessful: 0, skillCasts: {}, healingReceived: 0, highestHit: 0,
+    };
     this.sprintDustTimer      = 0;
     this.isDodging         = false;
     this.dodgeEndTime      = 0;
@@ -539,6 +570,7 @@ export class GameScene extends Phaser.Scene {
         this.socialPanel?.closeIfOpen()       ||
         this.achievementPanel?.closeIfOpen()  ||
         this.leaderboardPanel?.closeIfOpen()  ||
+        (this.statsOverlayVisible && (() => { this.statsOverlayVisible = false; this.rebuildStatsOverlay(); return true; })()) ||
         this.factionPanel?.closeIfOpen()      ||
         this.fastTravelPanel?.closeIfOpen()   ||
         this.npcDialogue?.closeIfOpen()       ||
@@ -652,6 +684,17 @@ export class GameScene extends Phaser.Scene {
     this.achievementPanel?.update();
     this.leaderboardPanel?.update();
     this.factionPanel?.update();
+
+    // F key — toggle live stats overlay
+    if (this.statsKey && Phaser.Input.Keyboard.JustDown(this.statsKey)) {
+      this.statsOverlayVisible = !this.statsOverlayVisible;
+      this.rebuildStatsOverlay();
+    } else if (this.statsOverlayVisible) {
+      // Refresh every 60 frames (~1 s) for live updates
+      if (Math.floor(this.time.now / 1000) !== Math.floor((this.time.now - this.game.loop.delta) / 1000)) {
+        this.rebuildStatsOverlay();
+      }
+    }
 
     // Panel updates with mutual exclusion — opening one closes the others
     const qlWas   = this.questLog?.isVisible     ?? false;
@@ -2129,6 +2172,7 @@ export class GameScene extends Phaser.Scene {
     // Consume mana and start dash
     this.mana -= DODGE.MANA_COST;
     this.isDodging  = true;
+    this.sessionStats.dodgesAttempted++;
     this.tutorial?.notifyDodged();
     this.dodgeEndTime = time + DODGE.DURATION_MS;
     this.dodgeVx    = dx * DODGE.DASH_SPEED;
@@ -2542,6 +2586,60 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  // ── Live stats overlay ────────────────────────────────────────────────────
+
+  private rebuildStatsOverlay(): void {
+    this.statsOverlayContainer?.destroy();
+    this.statsOverlayContainer = undefined;
+    if (!this.statsOverlayVisible) return;
+
+    const s   = this.sessionStats;
+    const W   = 130;
+    const PAD = 5;
+    const cx  = CANVAS.WIDTH - W / 2 - 4;
+    const cy  = 90;
+
+    const timeSecs = Math.max(1, Math.floor((this.time.now - this.gameStartTime) / 1000));
+    const dps      = Math.round(s.damageDealt / timeSecs);
+    const critPct  = s.totalHits > 0 ? Math.round((s.critHits / s.totalHits) * 100) : 0;
+    const dodgePct = s.dodgesAttempted > 0 ? Math.round((s.dodgesSuccessful / s.dodgesAttempted) * 100) : 0;
+
+    const rows: [string, string][] = [
+      ['DMG Dealt',   String(s.damageDealt)],
+      ['DPS',         String(dps)],
+      ['Highest Hit', String(s.highestHit)],
+      ['DMG Taken',   String(s.damageTaken)],
+      ['Crit %',      `${critPct}%`],
+      ['Dodge %',     `${dodgePct}%`],
+      ['Healing',     String(s.healingReceived)],
+      ['XP Gained',   String(s.xpGained)],
+      ['Gold Earned', String(s.goldEarned)],
+      ['Items',       String(s.itemsLooted)],
+    ];
+
+    const H = PAD * 2 + 10 + rows.length * 10 + 4;
+    const container = this.add.container(cx, cy).setScrollFactor(0).setDepth(85);
+
+    container.add(this.add.rectangle(0, 0, W, H, 0x000000, 0.85));
+    const gfx = this.add.graphics();
+    gfx.lineStyle(1, 0x4466aa, 0.9);
+    gfx.strokeRect(cx - W / 2, cy - H / 2, W, H);
+    container.add(gfx);
+
+    container.add(this.add.text(-W / 2 + PAD, -H / 2 + PAD, '▸ Run Stats  [F]', {
+      fontSize: '5px', color: '#88bbff', fontFamily: 'monospace',
+    }));
+    container.add(this.add.graphics().fillStyle(0x334466, 1).fillRect(-W / 2 + PAD, -H / 2 + 12, W - PAD * 2, 1));
+
+    rows.forEach(([label, value], i) => {
+      const y = -H / 2 + 17 + i * 10;
+      container.add(this.add.text(-W / 2 + PAD, y, label, { fontSize: '5px', color: '#99aacc', fontFamily: 'monospace' }));
+      container.add(this.add.text(W / 2 - PAD, y, value, { fontSize: '5px', color: '#ffffff', fontFamily: 'monospace' }).setOrigin(1, 0));
+    });
+
+    this.statsOverlayContainer = container;
+  }
+
   // ── Attack ────────────────────────────────────────────────────────────────
 
   private handleAttack(time: number): void {
@@ -2631,6 +2729,10 @@ export class GameScene extends Phaser.Scene {
       const hitDmg = isCrit ? Math.floor(dmg * 1.5) : dmg;
       extra.hp -= hitDmg;
       e.setData('extra', extra);
+      this.sessionStats.damageDealt += hitDmg;
+      this.sessionStats.totalHits++;
+      if (isCrit) this.sessionStats.critHits++;
+      if (hitDmg > this.sessionStats.highestHit) this.sessionStats.highestHit = hitDmg;
 
       // Zone-infused weapon: player attacks carry a zone-specific effect (25% chance on non-boss enemies)
       if (extra.typeName !== 'boss' && !extra.isPillar && !extra.isTentacle && Math.random() < 0.25) {
@@ -2722,11 +2824,16 @@ export class GameScene extends Phaser.Scene {
     this.kills++;
     this.xp    += xpGain;
     this.score += xpGain * 10;
-    this.gold  += isBoss ? Phaser.Math.Between(40, 80) : Phaser.Math.Between(5, 20);
+    const goldDrop = isBoss ? Phaser.Math.Between(40, 80) : Phaser.Math.Between(5, 20);
+    this.gold  += goldDrop;
+    this.sessionStats.xpGained  += xpGain;
+    this.sessionStats.goldEarned += goldDrop;
 
     // Bloodthirst passive: restore HP on non-boss kills
     if (!isBoss && this.passiveBonusCache.healOnKill > 0) {
-      this.hp = Math.min(this.getMaxHp(), this.hp + this.passiveBonusCache.healOnKill);
+      const healed = Math.min(this.getMaxHp() - this.hp, this.passiveBonusCache.healOnKill);
+      this.hp += healed;
+      this.sessionStats.healingReceived += healed;
     }
 
     // Achievement tracking — kills and boss kills
@@ -2752,8 +2859,10 @@ export class GameScene extends Phaser.Scene {
     const epicRate  = isBoss ? LOOT.EPIC_DROP_RATE_BOSS  : 0;
     if (epicRate > 0 && epicRoll < epicRate) {
       this.floatingText(e.x, e.y - 22, '✦ EPIC DROP!', '#aa44ff');
+      this.sessionStats.itemsLooted++;
     } else if (rareRoll < rareRate) {
       this.floatingText(e.x, e.y - 22, '✦ RARE DROP!', '#4488ff');
+      this.sessionStats.itemsLooted++;
     }
 
     if (isBoss) {
@@ -2772,9 +2881,9 @@ export class GameScene extends Phaser.Scene {
   // ── Player damage ─────────────────────────────────────────────────────────
 
   private handleEnemyContact(time: number): void {
-    if (this.isDodging || time < this.dodgeEndTime + (DODGE.INVULN_MS - DODGE.DURATION_MS)) return;
+    const dodging = this.isDodging || time < this.dodgeEndTime + (DODGE.INVULN_MS - DODGE.DURATION_MS);
     if (this.respawnImmune) return;
-    if (time - this.lastHitTime < COMBAT.PLAYER_INVINCIBILITY_MS) return;
+    if (!dodging && time - this.lastHitTime < COMBAT.PLAYER_INVINCIBILITY_MS) return;
     const pb = this.player.getBounds();
     let   hit      = false;
     let   hitExtra: EnemyExtra | null = null;
@@ -2788,6 +2897,10 @@ export class GameScene extends Phaser.Scene {
         if (!hitExtra) hitExtra = extra;
       }
     });
+    if (dodging) {
+      if (hit) this.sessionStats.dodgesSuccessful++;
+      return;
+    }
     if (!hit) return;
     this.lastHitTime = time;
     this.applyDamageToPlayer(Math.floor((COMBAT.PLAYER_HIT_DAMAGE + (this.wave - 1) * 1.5) * this.zone.difficultyMult), time, 0xff4444);
@@ -2849,6 +2962,7 @@ export class GameScene extends Phaser.Scene {
     dmg = Math.max(1, Math.round(dmg * (1 - dr)));
 
     this.hp = Math.max(0, this.hp - dmg);
+    this.sessionStats.damageTaken += dmg;
     this.player.setTint(tint);
     this.time.delayedCall(300, () => {
       if (!this.isDead) {
@@ -2937,17 +3051,21 @@ export class GameScene extends Phaser.Scene {
     this.playerList?.destroy();
     this.sfx.stopMusic();
 
+    // Record personal bests for this zone
+    SaveManager.recordZoneBest(this.zone.id, timeSecs, this.kills, this.sessionStats.damageTaken);
+
     this.cameras.main.fadeOut(600, 0, 0, 0);
     this.time.delayedCall(600, () => {
       this.scene.start(SCENES.GAME_OVER, {
-        wave:     this.zone.waves + 1,
-        kills:    this.kills,
-        level:    savedData.playerLevel,
+        wave:         this.zone.waves + 1,
+        kills:        this.kills,
+        level:        savedData.playerLevel,
         timeSecs,
-        zoneId:   this.zone.id,
-        zoneName: this.zone.name,
-        victory:  true,
-        score:    this.score,
+        zoneId:       this.zone.id,
+        zoneName:     this.zone.name,
+        victory:      true,
+        score:        this.score,
+        sessionStats: this.sessionStats,
       } satisfies GameOverData);
     });
   }
@@ -3203,6 +3321,7 @@ export class GameScene extends Phaser.Scene {
     this.escScrollKey    = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.T);
     this.emoteKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
     this.prestigeKey     = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Y);
+    this.statsKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F);
     // Hotbar skill keys 1–6
     const hotbarKeyCodes = [
       Phaser.Input.Keyboard.KeyCodes.ONE,
@@ -3722,6 +3841,7 @@ export class GameScene extends Phaser.Scene {
     this.mana = Math.max(0, this.mana - manaCost);
     this.updateHotbarHUD();
 
+    this.sessionStats.skillCasts[skillId] = (this.sessionStats.skillCasts[skillId] ?? 0) + 1;
     if (this.isMultiplayer && this.mp) {
       this.mp.sendSkillUse(skillId);
       // Visual-only feedback (server handles effects)
@@ -3784,7 +3904,9 @@ export class GameScene extends Phaser.Scene {
       }
       // ── Paladin ──────────────────────────────────────────────────────────
       case 'holy_mending': {
+        const healAmt = Math.min(50, this.getMaxHp() - this.hp);
         this.hp = Math.min(this.getMaxHp(), this.hp + 50);
+        this.sessionStats.healingReceived += Math.max(0, healAmt);
         this.spawnBurst(this.player.x, this.player.y, [0xffffff, 0xffe040, 0x88ff88], 12, 90);
         this.floatingText(this.player.x, this.player.y - 14, '+50 HP', '#88ff88');
         break;
@@ -3914,6 +4036,8 @@ export class GameScene extends Phaser.Scene {
     if (!extra || extra.hp <= 0) return;
 
     extra.hp = Math.max(0, extra.hp - damage);
+    this.sessionStats.damageDealt += damage;
+    if (damage > this.sessionStats.highestHit) this.sessionStats.highestHit = damage;
     this.floatingText(sprite.x, sprite.y - 10, `-${damage}`, '#ffcc44');
     this.sfx.playHit();
 
