@@ -72,6 +72,12 @@ const ZONE_META: Record<string, { name: string; biome: string; description: stri
     description: "Ancient wetlands choked with fog and decay. Bog crawlers, swamp wraiths, and toxic toads lurk in the murk, serving the dreaded Mire Queen.",
     enemyTypes: ["bog_crawler", "swamp_wraith", "toxic_toad"],
   },
+  zone8: {
+    name: "Frostpeak Highlands",
+    biome: "Ice / Mountain",
+    description: "Frozen peaks battered by eternal blizzards. Frost elementals, snow wolves, and ice archers guard the summit throne of the mighty Frost Titan.",
+    enemyTypes: ["frost_elemental", "snow_wolf", "ice_archer"],
+  },
 };
 
 const QUEST_TYPES: QuestType[] = ["kill", "fetch", "explore", "escort", "puzzle"];

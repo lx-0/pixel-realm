@@ -238,9 +238,10 @@ export type EnemyTypeName =
   | 'crab' | 'wisp' | 'raider'
   | 'ice_elemental' | 'frost_wolf' | 'crystal_golem'
   | 'lava_slime' | 'fire_imp' | 'magma_golem'
-  | 'bog_crawler' | 'swamp_wraith' | 'toxic_toad';
+  | 'bog_crawler' | 'swamp_wraith' | 'toxic_toad'
+  | 'frost_elemental' | 'snow_wolf' | 'ice_archer';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan';
 
 export interface EnemyTypeDef {
   color: number;
@@ -280,6 +281,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   bog_crawler:  { color: 0x2d5a1f, size: 9,  baseHp: 130, baseDmg: 28, speed: 45,  aggroRange: 85,  xpValue: 38, knockbackMultiplier: 0.8, behaviour: 'chase' },
   swamp_wraith: { color: 0x6b8e5e, size: 8,  baseHp: 110, baseDmg: 32, speed: 70,  aggroRange: 120, xpValue: 42, knockbackMultiplier: 0.6, behaviour: 'ranged', projectileColor: 0x44ff66 },
   toxic_toad:   { color: 0x4a7c1f, size: 10, baseHp: 160, baseDmg: 22, speed: 55,  aggroRange: 90,  xpValue: 35, knockbackMultiplier: 1.1, behaviour: 'chase' },
+  // Frostpeak Highlands enemies
+  frost_elemental: { color: 0x88ccff, size: 8,  baseHp: 150, baseDmg: 35, speed: 60,  aggroRange: 115, xpValue: 50, knockbackMultiplier: 0.7, behaviour: 'ranged', projectileColor: 0x00ccff },
+  snow_wolf:       { color: 0xddeeff, size: 9,  baseHp: 120, baseDmg: 28, speed: 115, aggroRange: 130, xpValue: 45, knockbackMultiplier: 1.3, behaviour: 'chase' },
+  ice_archer:      { color: 0x99bbdd, size: 8,  baseHp: 110, baseDmg: 38, speed: 45,  aggroRange: 125, xpValue: 48, knockbackMultiplier: 0.9, behaviour: 'ranged_flee', projectileColor: 0x44eeff },
 };
 
 export interface BossTypeDef {
@@ -299,7 +304,8 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   kraken:           { color: 0x114455, size: 22, baseHp: 2500, baseDmg: 40, speed: 0,  xpValue: 600,  name: 'Maw of the Deep' },
   glacial_wyrm:     { color: 0x2266aa, size: 24, baseHp: 3500, baseDmg: 45, speed: 35, xpValue: 850,  name: 'Glacial Wyrm Vorthex' },
   infernal_warden:  { color: 0xff4400, size: 22, baseHp: 5000, baseDmg: 55, speed: 40, xpValue: 1200, name: 'Infernal Warden' },
-  mire_queen:       { color: 0x2a5c2a, size: 24, baseHp: 7000, baseDmg: 65, speed: 35, xpValue: 1800, name: 'Mire Queen' },
+  mire_queen:       { color: 0x2a5c2a, size: 24, baseHp: 7000,  baseDmg: 65, speed: 35, xpValue: 1800, name: 'Mire Queen' },
+  frost_titan:      { color: 0x3388cc, size: 26, baseHp: 10000, baseDmg: 75, speed: 30, xpValue: 2500, name: 'Frost Titan' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -351,6 +357,7 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   lava_slime:    'burn',
   magma_golem:   'burn',
   toxic_toad:    'poison',
+  snow_wolf:     'freeze',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -360,6 +367,9 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   glacial_wyrm:    'freeze',
   fire_imp:        'burn',
   infernal_warden: 'burn',
+  frost_elemental: 'freeze',
+  ice_archer:      'freeze',
+  frost_titan:     'freeze',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -481,5 +491,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 1800,
     unlockRequirement: 'zone6',
     difficultyMult: 4.0,
+  },
+  {
+    id: 'zone8',
+    name: 'Frostpeak Highlands',
+    biome: 'Ice / Mountain',
+    description: 'Frozen peaks battered by eternal blizzards. Frost elementals, snow wolves, and ice archers guard the summit throne of the mighty Frost Titan.',
+    bgColor: 0x050d1a,
+    groundColor: 0x0e2a4a,
+    wallColor: 0x030a12,
+    accentColor: 0x88ccff,
+    waves: 3,
+    enemyTypes: ['frost_elemental', 'snow_wolf', 'ice_archer'],
+    bossType: 'frost_titan',
+    minPlayerLevel: 17,
+    xpReward: 2500,
+    unlockRequirement: 'zone7',
+    difficultyMult: 4.5,
   },
 ];

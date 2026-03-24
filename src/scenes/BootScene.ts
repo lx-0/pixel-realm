@@ -92,6 +92,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_swamp_mid',  'assets/backgrounds/parallax/bg_parallax_swamp_mid.png');
     this.load.image('bg_parallax_swamp_near', 'assets/backgrounds/parallax/bg_parallax_swamp_near.png');
 
+    // Frostpeak Highlands tileset
+    this.load.image('tileset_frostpeak', 'assets/tiles/tilesets/tileset_frostpeak.png');
+
+    // Frostpeak Highlands enemies (12 frames × 16×24; boss phases: 32×32 each)
+    this.load.spritesheet('enemy_frost_elemental', 'assets/sprites/enemies/char_enemy_frost_elemental.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_snow_wolf',       'assets/sprites/enemies/char_enemy_snow_wolf.png',       { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_ice_archer',      'assets/sprites/enemies/char_enemy_ice_archer.png',      { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_frost_titan_phase1', 'assets/sprites/enemies/bosses/boss_frost_titan_phase1.png');
+    this.load.image('boss_frost_titan_phase2', 'assets/sprites/enemies/bosses/boss_frost_titan_phase2.png');
+    this.load.image('boss_frost_titan_phase3', 'assets/sprites/enemies/bosses/boss_frost_titan_phase3.png');
+    this.load.image('boss_frost_titan_idle',   'assets/sprites/enemies/bosses/boss_frost_titan_idle.png');
+    this.load.image('boss_frost_titan_attack', 'assets/sprites/enemies/bosses/boss_frost_titan_attack.png');
+
+    // Frostpeak Highlands NPC
+    this.load.image('npc_quest_frostpeak', 'assets/sprites/characters/char_npc_quest_frostpeak.png');
+
+    // Frostpeak Highlands parallax layers
+    this.load.image('bg_parallax_frostpeak_far',  'assets/backgrounds/parallax/bg_parallax_frostpeak_far.png');
+    this.load.image('bg_parallax_frostpeak_mid',  'assets/backgrounds/parallax/bg_parallax_frostpeak_mid.png');
+    this.load.image('bg_parallax_frostpeak_near', 'assets/backgrounds/parallax/bg_parallax_frostpeak_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');

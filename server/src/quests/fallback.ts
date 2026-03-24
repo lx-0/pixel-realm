@@ -664,6 +664,96 @@ const FALLBACKS: FallbackRecord[] = [
     },
     completionConditions: { type: "puzzle", target: "mire seal" },
   },
+  {
+    zoneId: "zone8",
+    questType: "kill",
+    title: "Frost Elemental Purge",
+    description: "Frost elementals are shattering the highland pass, blocking all travel. Destroy them before the blizzard traps everyone.",
+    objectives: [{ type: "kill", target: "frost_elemental", count: 5, description: "Destroy 5 frost elementals in the Frostpeak Highlands" }],
+    dialogue: {
+      greeting: "Those frost elementals appeared with the last storm and they haven't stopped freezing everything in sight!",
+      acceptance: "They shatter when hit hard enough — but move fast, their ice blasts will slow you down.",
+      completion: "The pass is clear! I saw you cutting through them like they were made of nothing. Remarkable.",
+      choices: [
+        { id: "accept", label: "I'll destroy those frost elementals.", response: "Strike fast and don't let their freeze shots land — they slow you to a crawl.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Where did they come from?", response: "The Frost Titan summons them. Defeat enough and you may weaken his hold over the highlands.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The highlands are too dangerous right now.", response: "I understand. The pass will remain frozen until someone stops them.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "kill", target: "frost_elemental", count: 5 },
+  },
+  {
+    zoneId: "zone8",
+    questType: "fetch",
+    title: "Glacial Shards",
+    description: "A highland smith needs glacial shards embedded in the summit ice to forge cold-resistant armour. Retrieve them before the wolves find you.",
+    objectives: [{ type: "fetch", target: "glacial shard", count: 4, description: "Collect 4 glacial shards from the Frostpeak summit" }],
+    dialogue: {
+      greeting: "I need glacial shards — the pure kind, from the summit ice — to temper armour that can withstand the Titan's cold.",
+      acceptance: "They catch the light like blue diamonds. Move quickly — the snow wolves hunt in packs up there.",
+      completion: "Perfect shards! Pure as the summit itself. This armour will protect many lives against the Frost Titan.",
+      choices: [
+        { id: "accept", label: "I'll find those glacial shards for you.", response: "They catch the light — bright blue in the snow. The summit caves are your best bet, but watch for wolves.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Why are snow wolves so dangerous?", response: "Speed and pack tactics. They'll circle you and freeze you with their bite. Stay near the cliff walls.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The summit is beyond me.", response: "No shame in knowing your limits. Come back stronger.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "fetch", target: "glacial shard", count: 4 },
+  },
+  {
+    zoneId: "zone8",
+    questType: "explore",
+    title: "The Frozen Citadel",
+    description: "Legends speak of a frozen citadel near the Frostpeak summit where the Frost Titan was first imprisoned. Find it.",
+    objectives: [{ type: "explore", target: "frozen citadel", description: "Discover the frozen citadel at the Frostpeak summit" }],
+    dialogue: {
+      greeting: "My order's records mention a citadel frozen at the peak — built by those who imprisoned the Frost Titan. It must still be there.",
+      acceptance: "Follow the ice archers — they nest near the citadel's walls. Look for carved stone beneath the frost.",
+      completion: "You found it! The seal-runes are still intact. If we can read them, we may find the Titan's weakness.",
+      choices: [
+        { id: "accept", label: "I'll find the frozen citadel.", response: "The ice archers patrol its perimeter — follow their patrol routes inward. The carved stone beneath the frost will mark it.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who imprisoned the Frost Titan?", response: "An ancient order of warmage scholars. They paid dearly for it. Their knowledge sealed within the citadel may be our only hope.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The summit is too dangerous.", response: "The citadel has waited centuries. It can wait a little longer.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "explore", target: "frozen citadel" },
+  },
+  {
+    zoneId: "zone8",
+    questType: "escort",
+    title: "Highland Scholar",
+    description: "A scholar studying the Frost Titan's magic became separated from their expedition in the blizzard. Escort them to safety.",
+    objectives: [{ type: "escort", target: "Highland Scholar", description: "Escort the Highland Scholar safely off the Frostpeak summit" }],
+    dialogue: {
+      greeting: "My instruments led me straight into a snow wolf den. I've been hiding here for hours — can you get me down safely?",
+      acceptance: "I'll keep recording data as we move — this blizzard cycle is unprecedented. Just keep those wolves away.",
+      completion: "Safe at last! My research survived — and with your protection, so did I. The Frost Titan's patterns are clearer now.",
+      choices: [
+        { id: "accept", label: "Stay close — I'll get you out of here.", response: "Thank you! I'll keep to your left — I've mapped the patrol routes of the ice archers, I can guide us clear.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What were you studying?", response: "The Frost Titan's breath patterns — they match the blizzard cycle perfectly. He IS the blizzard, in a way.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "I can't spare the time right now.", response: "I'll keep hiding then. Please — if you see another traveller, send them my way.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "escort", target: "Highland Scholar" },
+  },
+  {
+    zoneId: "zone8",
+    questType: "puzzle",
+    title: "The Titan's Ward",
+    description: "An ancient ward of ice-runes bars the path to the Frost Titan's summit throne. Solve the constellation puzzle to shatter it.",
+    objectives: [{ type: "puzzle", target: "titan ward", description: "Solve the ice-rune constellation puzzle to break the Titan's ward" }],
+    dialogue: {
+      greeting: "The Titan's ward is a puzzle of star-runes carved into the ice. No weapon can break it — only the correct sequence will.",
+      acceptance: "The constellations must align: winter star, frost moon, glacier peak, then the void between — in that order.",
+      completion: "The ward shatters! The path to the summit throne lies open. The Frost Titan cannot hide now.",
+      choices: [
+        { id: "accept", label: "I'll break the Titan's ward.", response: "The rune sequence mirrors the winter sky: winter star, frost moon, glacier peak, the void. Do not rush the final step.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who created this ward?", response: "The Frost Titan created it himself — to keep challengers away. That it can be broken at all is due to an ancient scholar's intervention.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Ancient rune puzzles are beyond me.", response: "The ward will hold until you understand the winter sky. Return when you do.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "puzzle", target: "titan ward" },
+  },
 ];
 
 /**

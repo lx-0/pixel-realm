@@ -136,6 +136,12 @@ const ZONE_LOOT: Record<string, Array<{ itemId: string; chance: number }>> = {
     { itemId: "mat_toxic_gland",    chance: 0.22 },
     { itemId: "mat_magic_crystal",  chance: 0.18 },
   ],
+  zone8: [
+    { itemId: "mat_frost_crystal",  chance: 0.42 },
+    { itemId: "mat_glacial_shard",  chance: 0.32 },
+    { itemId: "mat_permafrost_ore", chance: 0.25 },
+    { itemId: "mat_magic_crystal",  chance: 0.20 },
+  ],
 };
 
 // Zone → enemy type tables
@@ -183,6 +189,11 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
     { type: "bog_crawler",  hp: 130, dmg: 28, speed: 45, aggroRange: 85,  xp: 68 },
     { type: "swamp_wraith", hp: 110, dmg: 32, speed: 70, aggroRange: 120, xp: 72, ranged: true },
     { type: "toxic_toad",   hp: 160, dmg: 22, speed: 55, aggroRange: 90,  xp: 62 },
+  ],
+  zone8: [
+    { type: "frost_elemental", hp: 150, dmg: 35, speed: 60,  aggroRange: 115, xp: 82, ranged: true },
+    { type: "snow_wolf",       hp: 120, dmg: 28, speed: 115, aggroRange: 130, xp: 78 },
+    { type: "ice_archer",      hp: 110, dmg: 38, speed: 45,  aggroRange: 125, xp: 80, ranged: true },
   ],
 };
 
