@@ -217,6 +217,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_eclipsed_throne_mid',  'assets/backgrounds/parallax/bg_parallax_eclipsed_throne_mid.png');
     this.load.image('bg_parallax_eclipsed_throne_near', 'assets/backgrounds/parallax/bg_parallax_eclipsed_throne_near.png');
 
+    // Shattered Dominion tileset
+    this.load.image('tileset_shattered_dominion', 'assets/tiles/tilesets/tileset_shattered_dominion.png');
+
+    // Shattered Dominion enemies (16×24 spritesheet) and boss phases (32×32 each)
+    this.load.spritesheet('enemy_shattered_golem',  'assets/sprites/enemies/char_enemy_shattered_golem.png',  { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_reality_fracture', 'assets/sprites/enemies/char_enemy_reality_fracture.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_dominion_shade',   'assets/sprites/enemies/char_enemy_dominion_shade.png',   { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_the_unmaker_phase1', 'assets/sprites/enemies/bosses/boss_unmaker_phase1.png');
+    this.load.image('boss_the_unmaker_phase2', 'assets/sprites/enemies/bosses/boss_unmaker_phase2.png');
+    this.load.image('boss_the_unmaker_phase3', 'assets/sprites/enemies/bosses/boss_unmaker_phase3.png');
+    this.load.image('boss_the_unmaker_idle',   'assets/sprites/enemies/bosses/boss_unmaker_idle.png');
+    this.load.image('boss_the_unmaker_attack', 'assets/sprites/enemies/bosses/boss_unmaker_attack.png');
+
+    // Shattered Dominion NPC
+    this.load.image('npc_quest_shattered_dominion', 'assets/sprites/characters/char_npc_quest_shattered_dominion.png');
+
+    // Shattered Dominion parallax layers
+    this.load.image('bg_parallax_shattered_dominion_far',  'assets/backgrounds/parallax/bg_parallax_shattered_dominion_far.png');
+    this.load.image('bg_parallax_shattered_dominion_mid',  'assets/backgrounds/parallax/bg_parallax_shattered_dominion_mid.png');
+    this.load.image('bg_parallax_shattered_dominion_near', 'assets/backgrounds/parallax/bg_parallax_shattered_dominion_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');

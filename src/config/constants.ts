@@ -244,9 +244,10 @@ export type EnemyTypeName =
   | 'deep_angler' | 'abyssal_leviathan' | 'coral_golem'
   | 'bone_revenant' | 'ashwyrm' | 'spectral_drake'
   | 'rift_walker' | 'void_sentinel' | 'shadow_weaver'
-  | 'eclipse_knight' | 'shadow_herald' | 'dusk_wraith';
+  | 'eclipse_knight' | 'shadow_herald' | 'dusk_wraith'
+  | 'shattered_golem' | 'reality_fracture' | 'dominion_shade';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker';
 
 export interface EnemyTypeDef {
   color: number;
@@ -310,6 +311,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   eclipse_knight: { color: 0x553300, size: 11, baseHp: 320, baseDmg: 65, speed: 60,  aggroRange: 110, xpValue: 185, knockbackMultiplier: 0.3, behaviour: 'tank' },
   shadow_herald:  { color: 0x331100, size: 9,  baseHp: 270, baseDmg: 72, speed: 85,  aggroRange: 160, xpValue: 195, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0xff6600 },
   dusk_wraith:    { color: 0x884400, size: 10, baseHp: 290, baseDmg: 68, speed: 100, aggroRange: 145, xpValue: 190, knockbackMultiplier: 0.9, behaviour: 'phase' },
+  // Shattered Dominion enemies
+  shattered_golem:  { color: 0x8844cc, size: 13, baseHp: 380, baseDmg: 78, speed: 28,  aggroRange: 85,  xpValue: 210, knockbackMultiplier: 0.0, behaviour: 'tank' },
+  reality_fracture: { color: 0xff44ff, size: 9,  baseHp: 300, baseDmg: 82, speed: 95,  aggroRange: 165, xpValue: 225, knockbackMultiplier: 0.8, behaviour: 'ranged_flee', projectileColor: 0xff88ff },
+  dominion_shade:   { color: 0x220033, size: 10, baseHp: 340, baseDmg: 75, speed: 110, aggroRange: 150, xpValue: 215, knockbackMultiplier: 1.0, behaviour: 'phase' },
 };
 
 export interface BossTypeDef {
@@ -336,6 +341,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   ancient_dracolich:   { color: 0x4a2200, size: 32, baseHp: 24000, baseDmg: 115, speed: 20, xpValue: 6500, name: 'Ancient Dracolich' },
   void_architect:      { color: 0x7700ff, size: 34, baseHp: 32000, baseDmg: 130, speed: 25, xpValue: 8000, name: 'Void Architect' },
   eclipsed_king:       { color: 0xffaa00, size: 36, baseHp: 42000, baseDmg: 145, speed: 22, xpValue: 10000, name: 'The Eclipsed King' },
+  the_unmaker:         { color: 0xcc00ff, size: 38, baseHp: 55000, baseDmg: 165, speed: 20, xpValue: 13000, name: 'The Unmaker' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -643,5 +649,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 9500,
     unlockRequirement: 'zone12',
     difficultyMult: 7.0,
+  },
+  {
+    id: 'zone14',
+    name: 'Shattered Dominion',
+    biome: 'shattered-dominion',
+    description: 'A dimension torn apart by primordial conflict. Shattered golems, reality fractures, and dominion shades haunt the broken landscape where The Unmaker seeks to unmake all existence.',
+    bgColor: 0x0a0012,
+    groundColor: 0x1a0030,
+    wallColor: 0x050008,
+    accentColor: 0xcc00ff,
+    waves: 3,
+    enemyTypes: ['shattered_golem', 'reality_fracture', 'dominion_shade'],
+    bossType: 'the_unmaker',
+    minPlayerLevel: 35,
+    xpReward: 12000,
+    unlockRequirement: 'zone13',
+    difficultyMult: 7.5,
   },
 ];
