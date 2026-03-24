@@ -136,11 +136,22 @@ Void Sanctum zone implementation and Eclipsed Throne zone pipeline.
 - [x] PIX-191 — Implement Eclipsed Throne zone (zone 13, level 32+)
 - [x] PIX-199 — Rebuild distribution zip with all zone content (v0.3.0)
 
-### M16: Shattered Dominion Expansion — IN PROGRESS
+### M16: Shattered Dominion Expansion — COMPLETE
 Shattered Dominion zone art and implementation pipeline (zone 14, level 35+).
 
-- [ ] PIX-193 — Create Shattered Dominion zone art (zone 14, level 35+)
-- [ ] PIX-194 — Implement Shattered Dominion zone (zone 14, level 35+)
+- [x] PIX-193 — Create Shattered Dominion zone art (zone 14, level 35+)
+- [x] PIX-194 — Implement Shattered Dominion zone (zone 14, level 35+)
+- [x] PIX-202 — Per-session combat statistics tracking and expanded game-over summary
+- [x] PIX-203 — Character stat sheet with damage formula breakdown and passive bonuses
+- [x] PIX-200 — Achievement system update for zones 7–13
+
+### M17: Primordial Core & Ethereal Nexus — IN PROGRESS
+Primordial Core zone implementation (zone 15, level 38+) and Ethereal Nexus art pipeline (zone 16, level 41+).
+
+- [x] PIX-205 — Create Primordial Core zone art (zone 15, level 38+)
+- [ ] PIX-207 — Implement Primordial Core zone (zone 15, level 38+)
+- [ ] PIX-209 — Create Ethereal Nexus zone art (zone 16, level 41+)
+- [ ] PIX-206 — Rebuild distribution zip as v0.4.0 with zone 15 content
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -164,7 +175,8 @@ M5 → M6 ──────────────────┘
                                         M14a (deep world expansion, parallel to M9)
                                               M15 (endgame world expansion, parallel to M9)
                                                     M16 (Shattered Dominion, parallel to M9)
-                                                          M14 (post-launch, independent)
+                                                          M17 (Primordial Core + Ethereal Nexus, parallel to M9)
+                                                                M14 (post-launch, independent)
 ```
 
 ## Key Decisions
@@ -177,6 +189,7 @@ M5 → M6 ──────────────────┘
 - **World expansion** — M13 implements Frostpeak Highlands zone and begins Celestial Spire art pipeline. All complete as of 2026-03-24.
 - **Deep world expansion** — M14a completed zones 9–12 (Celestial Spire through Void Sanctum). All complete as of 2026-03-24.
 - **Endgame world expansion** — M15 completed Void Sanctum zone and Eclipsed Throne art. Implementation in progress.
-- **Shattered Dominion** — M16 adds zone 14 (level 35+), continuing the endgame world expansion.
-- **Single engineer** — One engineer has shipped M0–M15 solo. Strong velocity.
-- **Game Artist** — Completed all art through zone 13 (Eclipsed Throne). Now on Shattered Dominion zone art for M16.
+- **Shattered Dominion** — M16 completed zone 14 (level 35+), plus combat stats, stat sheet, and achievement updates.
+- **Primordial Core & Ethereal Nexus** — M17 implements zone 15 and begins zone 16 art pipeline. In progress as of 2026-03-24.
+- **Single engineer** — One engineer has shipped M0–M16 solo. Strong velocity.
+- **Game Artist** — Completed all art through zone 15 (Primordial Core). Now on Ethereal Nexus zone art for M17.
