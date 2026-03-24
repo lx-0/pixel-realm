@@ -2,6 +2,7 @@ import { Room, Client, Delayed } from "@colyseus/core";
 import { incrementMessageCount } from "../metrics";
 import { ZoneGameState, Player, Enemy, Projectile } from "./schema/GameState";
 import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
+import { performPrestigeReset, getPrestigeBonuses, MAX_PRESTIGE } from "../db/prestige";
 import { invalidateLeaderboardCache } from "../db/leaderboard";
 import { getPool } from "../db/client";
 import { getOrGenerateQuest, completeQuestForPlayer } from "../quests/db";
@@ -376,7 +377,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("dialogue_choice",  (client: Client, msg: DialogueChoiceMessage) => this.handleDialogueChoice(client, msg));
 
     // Skill tree messages
-    this.onMessage("level_up",     (client: Client)                           => this.handleLevelUp(client));
+    this.onMessage("level_up",        (client: Client)                           => this.handleLevelUp(client));
+    this.onMessage("prestige_reset",  (client: Client)                           => this.handlePrestigeReset(client));
     this.onMessage("skill_use",    (client: Client, msg: SkillUseMessage)    => this.handleSkillUse(client, msg));
     this.onMessage("skill_alloc",  (client: Client, msg: SkillAllocMessage)  => this.handleSkillAlloc(client, msg));
     this.onMessage("skill_hotbar", (client: Client, msg: SkillHotbarMessage) => this.handleSkillHotbar(client, msg));
@@ -470,12 +472,19 @@ export class ZoneRoom extends Room<ZoneGameState> {
         await initPlayerState(userId);
         const saved = await loadPlayerState(userId);
         if (saved) {
-          player.hp      = saved.hp;
-          player.maxHp   = saved.maxHp;
-          player.mana    = saved.mana;
-          player.maxMana = saved.maxMana;
-          player.level   = saved.level;
-          player.xp      = saved.xp;
+          player.hp            = saved.hp;
+          player.maxHp         = saved.maxHp;
+          player.mana          = saved.mana;
+          player.maxMana       = saved.maxMana;
+          player.level         = saved.level;
+          player.xp            = saved.xp;
+          player.prestigeLevel = saved.prestigeLevel ?? 0;
+          // Apply permanent prestige stat bonuses
+          this.applyPrestigeBonuses(player);
+          client.send("prestige_state", {
+            prestigeLevel: player.prestigeLevel,
+            maxPrestige:   MAX_PRESTIGE,
+          });
         }
         // Load skill allocations and apply passive bonuses
         const skillState = await initSkillState(userId);
@@ -610,6 +619,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
         level: player.level,
         xp: player.xp,
         currentZone: this.state.zoneId,
+        prestigeLevel: player.prestigeLevel,
       });
       const skillState = this.skillStateMap.get(sessionId);
       if (skillState) {
@@ -1904,6 +1914,87 @@ export class ZoneRoom extends Room<ZoneGameState> {
     player.skillPoints    = skillState.skillPoints;
     player.unlockedSkills = JSON.stringify(Object.keys(skillState.unlockedSkills));
     player.hotbar         = JSON.stringify(skillState.hotbar.slice(0, 6));
+  }
+
+  /** Applies permanent prestige stat bonuses to the player's max stats. */
+  private applyPrestigeBonuses(player: Player): void {
+    const { statMultiplier } = getPrestigeBonuses(player.prestigeLevel);
+    if (statMultiplier <= 0) return;
+    player.maxHp   = Math.round(player.maxHp   * (1 + statMultiplier));
+    player.maxMana = Math.round(player.maxMana  * (1 + statMultiplier));
+    player.hp      = Math.min(player.hp,   player.maxHp);
+    player.mana    = Math.min(player.mana, player.maxMana);
+  }
+
+  /** Prestige reset — player must be at level 50 and below the prestige cap. */
+  private async handlePrestigeReset(client: Client): Promise<void> {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    if (player.level < 50) {
+      client.send("prestige_error", { message: "Must be level 50 to prestige." });
+      return;
+    }
+    if (player.prestigeLevel >= MAX_PRESTIGE) {
+      client.send("prestige_error", { message: "Already at maximum prestige tier." });
+      return;
+    }
+
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    try {
+      const result = await performPrestigeReset(userId);
+
+      // Reset in-memory state
+      player.level         = 1;
+      player.xp            = 0;
+      player.prestigeLevel = result.newPrestigeLevel;
+
+      // Reset skill allocations
+      const skillState = this.skillStateMap.get(client.sessionId);
+      if (skillState) {
+        skillState.unlockedSkills = {};
+        skillState.hotbar         = [];
+        skillState.skillPoints    = 0;
+        this.applySkillPassives(player, skillState);
+        this.syncSkillState(player, skillState);
+      }
+
+      // Apply prestige bonuses on top of fresh level-1 base stats
+      player.maxHp   = 100; // reset to base before applying bonus
+      player.maxMana = 50;
+      player.hp      = 100;
+      player.mana    = 50;
+      this.applyPrestigeBonuses(player);
+
+      await savePlayerState(userId, {
+        level:         player.level,
+        xp:            player.xp,
+        hp:            player.hp,
+        maxHp:         player.maxHp,
+        mana:          player.mana,
+        maxMana:       player.maxMana,
+        prestigeLevel: player.prestigeLevel,
+      });
+
+      client.send("prestige_reset_ok", {
+        prestigeLevel: result.newPrestigeLevel,
+        maxPrestige:   MAX_PRESTIGE,
+        bonuses:       result.bonuses,
+      });
+
+      await invalidateLeaderboardCache("prestige");
+    } catch (err) {
+      const msg = (err as Error).message;
+      if (msg === "MAX_PRESTIGE_REACHED") {
+        client.send("prestige_error", { message: "Already at maximum prestige tier." });
+      } else if (msg === "NOT_MAX_LEVEL") {
+        client.send("prestige_error", { message: "Must be level 50 to prestige." });
+      } else {
+        console.warn("[ZoneRoom] prestige reset failed:", msg);
+        client.send("prestige_error", { message: "Prestige reset failed. Please try again." });
+      }
+    }
   }
 
   /** Called by the client on level-up — grant one skill point. */

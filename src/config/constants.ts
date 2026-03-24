@@ -22,11 +22,46 @@ export const PLAYER = {
 
 // ── Level Progression ─────────────────────────────────────────────────────────
 export const LEVELS = {
-  XP_THRESHOLDS: [80, 200, 350, 540, 760, 1020, 1320, 1660, 2040, 2500] as const,
-  MAX_LEVEL: 10,
+  // Cumulative XP required to reach each level (index 0 = reach level 2).
+  // Levels 1–10 preserve original pacing; 11–50 continue the curve at +60/level.
+  XP_THRESHOLDS: [
+    // lv 1→2 … 9→10
+       80,   200,   350,   540,   760,  1020,  1320,  1660,  2040,
+    // lv 10→11 … 19→20
+     2500,  3020,  3600,  4240,  4940,  5700,  6520,  7400,  8340,  9340,
+    // lv 20→21 … 29→30
+    10400, 11520, 12700, 13940, 15240, 16600, 18020, 19500, 21040, 22640,
+    // lv 30→31 … 39→40
+    24300, 26020, 27800, 29640, 31540, 33500, 35520, 37600, 39740, 41940,
+    // lv 40→41 … 49→50
+    44200, 46520, 48900, 51340, 53840, 56400, 59020, 61700, 64440, 67240,
+  ] as const,
+  MAX_LEVEL: 50,
   HP_BONUS_PER_LEVEL: 20,
   DAMAGE_BONUS_PER_LEVEL: 5,
   SPEED_BONUS_PER_LEVEL: 5,
+} as const;
+
+// ── Prestige System ───────────────────────────────────────────────────────────
+/** New Game+ prestige reset — available at level 50. */
+export const PRESTIGE = {
+  /** Number of prestige tiers (resets). Cap beyond which bonuses stop increasing. */
+  MAX_PRESTIGE: 10,
+  /** Permanent stat multiplier bonus per prestige level (+2% per tier). */
+  BONUS_PER_LEVEL: 0.02,
+  /** Prestige tier cosmetic border colours (index = prestige level 1–10). */
+  BORDER_COLORS: [
+    0xaaaaaa, // P1 — silver
+    0x44aaff, // P2 — blue
+    0x44ff88, // P3 — green
+    0xffaa00, // P4 — orange
+    0xff4444, // P5 — red
+    0xff44ff, // P6 — magenta
+    0x44ffff, // P7 — cyan
+    0xffff44, // P8 — yellow
+    0xff8844, // P9 — gold-orange
+    0xffd700, // P10 — gold
+  ] as const,
 } as const;
 
 // ── Mana ──────────────────────────────────────────────────────────────────────

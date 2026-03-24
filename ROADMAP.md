@@ -90,7 +90,11 @@ Full-stack enhancement pass based on codebase audit. 14 issues across 4 waves.
 Post-v1 content to deepen endgame retention while awaiting distribution.
 
 - [ ] PIX-150 — Prestige/New Game+ system (level 50 reset, permanent bonuses, prestige tiers)
-- [ ] PIX-151 — Prestige system art (tier icons, rank borders, reset UI, nameplate decorations)
+- [x] PIX-151 — Prestige system art (tier icons, rank borders, reset UI, nameplate decorations)
+- [ ] PIX-153 — Guild raid boss encounters (multi-party bosses, loot tables, raid lockouts)
+- [ ] PIX-154 — Guild raid art (boss sprites, raid UI panels, loot effect animations)
+- [ ] PIX-155 — Seasonal event framework (time-limited events, exclusive rewards, LLM story arcs)
+- [ ] PIX-159 — Seasonal event art (event UI, seasonal decorations, exclusive reward sprites)
 
 ### M11: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.

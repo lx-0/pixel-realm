@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import {
-  CANVAS, PLAYER, COMBAT, MANA, LEVELS, SCENES, SPRINT, DODGE,
+  CANVAS, PLAYER, COMBAT, MANA, LEVELS, PRESTIGE, SCENES, SPRINT, DODGE,
   ZONES, ENEMY_TYPES, BOSS_TYPES, ECONOMY, LOOT,
   STATUS_EFFECTS, MELEE_STATUS_ON_HIT, PROJECTILE_STATUS_ON_HIT,
   type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
@@ -22,6 +22,7 @@ import { TutorialOverlay }  from '../ui/TutorialOverlay';
 import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
+import { PrestigePanel } from '../ui/PrestigePanel';
 import { GuildPanel } from '../ui/GuildPanel';
 import { PartyPanel } from '../ui/PartyPanel';
 import { SocialPanel } from '../ui/SocialPanel';
@@ -110,6 +111,10 @@ export class GameScene extends Phaser.Scene {
   private mana: number = PLAYER.BASE_MANA;
   private xp    = 0;
   private level = 1;
+  /** Current prestige tier (0 = never prestiged). Updated from server. */
+  private prestigeLevel = 0;
+  /** Max prestige tiers (from server, defaults to PRESTIGE.MAX_PRESTIGE). */
+  private maxPrestige: number = PRESTIGE.MAX_PRESTIGE;
   private lastAttackTime = 0;
   private lastHitTime    = 0;
   private isDead         = false;
@@ -126,6 +131,7 @@ export class GameScene extends Phaser.Scene {
   private deathMarkerPos: { x: number; y: number } | null = null;
   private escScrollKey!:  Phaser.Input.Keyboard.Key;
   private emoteKey!:      Phaser.Input.Keyboard.Key;
+  private prestigeKey?:  Phaser.Input.Keyboard.Key;
 
   // ── Status effects ────────────────────────────────────────────────────────
   private playerEffects:        Partial<Record<EffectKey, StatusEffectState>> = {};
@@ -190,6 +196,8 @@ export class GameScene extends Phaser.Scene {
   private remotePlayerLabels  = new Map<string, Phaser.GameObjects.Text>();
   /** HP bar graphics for remote players. */
   private remotePlayerHpBars  = new Map<string, Phaser.GameObjects.Rectangle>();
+  /** Prestige tier border rectangles around remote player nameplates. */
+  private remotePlayerPrestigeBorders = new Map<string, Phaser.GameObjects.Rectangle>();
 
   /** Server-synced enemy sprites keyed by server enemy id. */
   private remoteEnemySprites = new Map<string, Phaser.Physics.Arcade.Sprite>();
@@ -332,6 +340,11 @@ export class GameScene extends Phaser.Scene {
   /** Skill tree panel (always present, K to open). */
   private skillTree?: SkillTreePanel;
 
+  /** Prestige confirmation dialog. */
+  private prestigePanel?: PrestigePanel;
+  /** HUD text showing current prestige tier next to level. */
+  private prestigeText?: Phaser.GameObjects.Text;
+
   /** Current class id. */
   private classId: ClassId = 'warrior';
 
@@ -468,6 +481,11 @@ export class GameScene extends Phaser.Scene {
     this.skillTree.onRespec      = () => this.respecSkills();
     this.skillTree.onSetClass    = (c)  => this.setClass(c);
 
+    // Prestige panel (confirmation dialog — shown when player triggers prestige reset)
+    this.prestigePanel = new PrestigePanel(this);
+    this.prestigePanel.onConfirm = () => this.mp?.sendPrestigeReset();
+    this.prestigePanel.onCancel  = () => { /* nothing */ };
+
     // Leaderboard panel (always present, populated once multiplayer connects)
     this.leaderboardPanel = new LeaderboardPanel(this);
 
@@ -500,6 +518,7 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.escKey) || this.touch?.menu.justPressed) {
       // Escape closes any open panel before pausing
       const panelClosed =
+        this.prestigePanel?.closeIfOpen()     ||
         this.worldMap?.closeIfOpen()          ||
         this.skillTree?.closeIfOpen()         ||
         this.tradeWindow?.closeIfOpen()       ||
@@ -553,6 +572,17 @@ export class GameScene extends Phaser.Scene {
       if (time >= this.immunityEndAt) {
         this.respawnImmune = false;
         this.player.setAlpha(1);
+      }
+    }
+
+    // Prestige reset (Y key) — opens confirmation dialog when at max level in MP
+    if (this.prestigeKey && Phaser.Input.Keyboard.JustDown(this.prestigeKey) && this.isMultiplayer) {
+      if (this.level >= LEVELS.MAX_LEVEL && this.prestigeLevel < this.maxPrestige) {
+        this.prestigePanel?.show(this.prestigeLevel, this.maxPrestige);
+      } else if (this.prestigeLevel >= this.maxPrestige) {
+        this.chat?.addMessage('Already at maximum prestige tier.', '#ff8888');
+      } else {
+        this.chat?.addMessage(`Prestige available at level ${LEVELS.MAX_LEVEL}.`, '#aaaaaa');
       }
     }
 
@@ -921,6 +951,24 @@ export class GameScene extends Phaser.Scene {
     };
     client.onSkillError = (msg) => {
       this.chat?.addMessage(`Skill: ${msg}`, '#ff8888');
+    };
+
+    // Prestige callbacks
+    client.onPrestigeState = (prestigeLevel, maxPrestige) => {
+      this.prestigeLevel = prestigeLevel;
+      this.maxPrestige   = maxPrestige;
+      this.updatePrestigeHUD();
+    };
+    client.onPrestigeResetOk = (prestigeLevel, maxPrestige, bonuses) => {
+      this.prestigeLevel = prestigeLevel;
+      this.maxPrestige   = maxPrestige;
+      this.updatePrestigeHUD();
+      const pct = (bonuses.statMultiplier * 100).toFixed(0);
+      this.chat?.addMessage(`✦ Prestige P${prestigeLevel} unlocked! +${pct}% permanent stats.`, '#ffd700');
+      this.floatingText(this.player.x, this.player.y - 24, `✦ PRESTIGE P${prestigeLevel}!`, '#ffd700');
+    };
+    client.onPrestigeError = (msg) => {
+      this.chat?.addMessage(`Prestige: ${msg}`, '#ff8888');
     };
 
     // Crafting events — show floating zone-wide notifications
@@ -1437,6 +1485,11 @@ export class GameScene extends Phaser.Scene {
         const hpBar = this.add.rectangle(rp.x, rp.y - 8, 12, 2, 0x00ee44)
           .setOrigin(0.5).setDepth(11);
         this.remotePlayerHpBars.set(rp.sessionId, hpBar);
+
+        // Prestige border (hidden until prestige level > 0)
+        const prestigeBorder = this.add.rectangle(rp.x, rp.y - 12, 40, 7, 0, 0)
+          .setStrokeStyle(1, 0xffd700).setOrigin(0.5).setDepth(10).setVisible(false);
+        this.remotePlayerPrestigeBorders.set(rp.sessionId, prestigeBorder);
       } else {
         const lerpFactor = 0.3;
         sprite.x = Phaser.Math.Linear(sprite.x, rp.x, lerpFactor);
@@ -1459,6 +1512,18 @@ export class GameScene extends Phaser.Scene {
         hpBar.scaleX = pct;
         hpBar.setFillStyle(pct > 0.5 ? 0x00ee44 : pct > 0.25 ? 0xffaa00 : 0xff2222);
       }
+      // Prestige border — show with tier colour when prestige > 0
+      const prestigeBorder = this.remotePlayerPrestigeBorders.get(rp.sessionId);
+      if (prestigeBorder) {
+        prestigeBorder.x = s.x;
+        prestigeBorder.y = s.y - 12;
+        if (rp.prestigeLevel > 0) {
+          const borderColor = PRESTIGE.BORDER_COLORS[rp.prestigeLevel - 1] ?? 0xffd700;
+          prestigeBorder.setStrokeStyle(1, borderColor).setVisible(true);
+        } else {
+          prestigeBorder.setVisible(false);
+        }
+      }
     });
 
     // Remove sprites for players who left
@@ -1467,9 +1532,11 @@ export class GameScene extends Phaser.Scene {
         sprite.destroy();
         this.remotePlayerLabels.get(sid)?.destroy();
         this.remotePlayerHpBars.get(sid)?.destroy();
+        this.remotePlayerPrestigeBorders.get(sid)?.destroy();
         this.remotePlayerSprites.delete(sid);
         this.remotePlayerLabels.delete(sid);
         this.remotePlayerHpBars.delete(sid);
+        this.remotePlayerPrestigeBorders.delete(sid);
       }
     });
 
@@ -1484,9 +1551,11 @@ export class GameScene extends Phaser.Scene {
     this.remotePlayerSprites.forEach(s => s.destroy());
     this.remotePlayerLabels.forEach(l => l.destroy());
     this.remotePlayerHpBars.forEach(b => b.destroy());
+    this.remotePlayerPrestigeBorders.forEach(b => b.destroy());
     this.remotePlayerSprites.clear();
     this.remotePlayerLabels.clear();
     this.remotePlayerHpBars.clear();
+    this.remotePlayerPrestigeBorders.clear();
 
     this.remoteEnemySprites.forEach(s => s.destroy());
     this.remoteEnemySprites.clear();
@@ -3062,6 +3131,7 @@ export class GameScene extends Phaser.Scene {
     this.muteKey         = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.N);
     this.escScrollKey    = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.T);
     this.emoteKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+    this.prestigeKey     = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Y);
     // Hotbar skill keys 1–6
     const hotbarKeyCodes = [
       Phaser.Input.Keyboard.KeyCodes.ONE,
@@ -3102,7 +3172,8 @@ export class GameScene extends Phaser.Scene {
     this.xpBar = this.add.rectangle(bx, 20, bw, 3, 0xe8b800).setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z);
 
     this.levelText = this.add.text(bx + bw + 4, 5, 'Lv.1', { fontSize: '5px', color: '#ffffff', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
-    this.achievePtsText = this.add.text(bx + bw + 4, 13, '0 pts', { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.prestigeText = this.add.text(bx + bw + 4, 12, '', { fontSize: '4px', color: '#ffd700', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.achievePtsText = this.add.text(bx + bw + 4, 19, '0 pts', { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.updateAchievementPtsHUD();
 
     this.waveText = this.add.text(lx, 28, 'Wave 1', { fontSize: '5px', color: '#ffd700', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
@@ -3273,6 +3344,18 @@ export class GameScene extends Phaser.Scene {
     this.goldText?.setText(`Gold: ${this.gold}`);
     this.scrollText?.setText(`T:Scroll x${this.escapeScrolls}`);
     this.scrollText?.setColor(this.escapeScrolls > 0 ? '#88ffcc' : '#555555');
+  }
+
+  /** Updates the prestige tier label in the HUD. */
+  private updatePrestigeHUD(): void {
+    if (!this.prestigeText) return;
+    if (this.prestigeLevel > 0) {
+      const color = PRESTIGE.BORDER_COLORS[this.prestigeLevel - 1] ?? 0xffd700;
+      const hex   = `#${color.toString(16).padStart(6, '0')}`;
+      this.prestigeText.setText(`P${this.prestigeLevel}`).setColor(hex).setVisible(true);
+    } else {
+      this.prestigeText.setVisible(false);
+    }
   }
 
   // ── VFX ───────────────────────────────────────────────────────────────────

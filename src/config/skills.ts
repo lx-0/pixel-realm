@@ -393,4 +393,4 @@ export function computePassiveBonuses(unlockedIds: string[]): Required<PassiveBo
 }
 
 /** Maximum skill points available at max level (1 per level from lv2). */
-export const MAX_SKILL_POINTS = 9; // levels 2–10
+export const MAX_SKILL_POINTS = 49; // levels 2–50

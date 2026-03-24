@@ -58,6 +58,9 @@ export class Player extends Schema {
   // Party (empty string = no party)
   @type("string")  partyId: string = "";
   @type("boolean") isPartyLeader: boolean = false;
+
+  // Prestige (0 = never prestiged)
+  @type("int8")    prestigeLevel: number = 0;
 }
 
 // ── Enemy ─────────────────────────────────────────────────────────────────────

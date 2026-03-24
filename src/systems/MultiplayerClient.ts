@@ -25,8 +25,9 @@ export interface RemotePlayer {
   maxHp: number;
   level: number;
   isAttacking: boolean;
-  guildTag: string; // e.g. "[PFG]" or empty string
-  partyId: string;  // empty string = no party
+  guildTag: string;    // e.g. "[PFG]" or empty string
+  partyId: string;     // empty string = no party
+  prestigeLevel: number; // 0 = never prestiged
 }
 
 // ── Party data shapes ─────────────────────────────────────────────────────────
@@ -240,6 +241,11 @@ export class MultiplayerClient {
   onSkillUsed?: (skillId: string, cooldownMs: number, expiresAt: number) => void;
   onSkillOnCooldown?: (skillId: string, expiresAt: number) => void;
   onSkillError?: (message: string) => void;
+
+  // Prestige callbacks
+  onPrestigeState?: (prestigeLevel: number, maxPrestige: number) => void;
+  onPrestigeResetOk?: (prestigeLevel: number, maxPrestige: number, bonuses: { statMultiplier: number }) => void;
+  onPrestigeError?: (message: string) => void;
 
   // Crafting callbacks
   /** Called when another player in the zone crafts an item. */
@@ -511,6 +517,17 @@ export class MultiplayerClient {
       this.onSkillError?.(msg.message);
     });
 
+    // ── Prestige messages ─────────────────────────────────────────────────
+    room.onMessage('prestige_state', (msg: { prestigeLevel: number; maxPrestige: number }) => {
+      this.onPrestigeState?.(msg.prestigeLevel, msg.maxPrestige);
+    });
+    room.onMessage('prestige_reset_ok', (msg: { prestigeLevel: number; maxPrestige: number; bonuses: { statMultiplier: number } }) => {
+      this.onPrestigeResetOk?.(msg.prestigeLevel, msg.maxPrestige, msg.bonuses);
+    });
+    room.onMessage('prestige_error', (msg: { message: string }) => {
+      this.onPrestigeError?.(msg.message);
+    });
+
     // ── Emote messages ────────────────────────────────────────────────────
     room.onMessage('emote', (msg: EmoteEvent) => {
       this.onEmote?.(msg);
@@ -591,6 +608,7 @@ export class MultiplayerClient {
       isAttacking: p.isAttacking as boolean,
       guildTag: (p.guildTag as string) ?? '',
       partyId: (p.partyId as string) ?? '',
+      prestigeLevel: (p.prestigeLevel as number) ?? 0,
     };
   }
 
@@ -677,6 +695,10 @@ export class MultiplayerClient {
 
   sendLevelUp(): void {
     this.room?.send('level_up');
+  }
+
+  sendPrestigeReset(): void {
+    this.room?.send('prestige_reset');
   }
 
   sendSkillUse(skillId: string): void {

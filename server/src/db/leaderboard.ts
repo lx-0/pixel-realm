@@ -21,7 +21,7 @@ import { sql } from "drizzle-orm";
 import { getDb } from "./client";
 import { getRedis } from "./redis";
 
-export type LeaderboardCategory = "xp" | "kills" | "quests" | "achievements" | "crafting";
+export type LeaderboardCategory = "xp" | "kills" | "quests" | "achievements" | "crafting" | "prestige";
 export type LeaderboardPeriod = "all" | "weekly" | "daily";
 
 export interface LeaderboardEntry {
@@ -116,6 +116,15 @@ async function queryLeaderboard(
       GROUP BY pa.player_id, p.username
       HAVING SUM(points_map.points) > 0
       ORDER BY score DESC
+      LIMIT 100
+    `)) as unknown as typeof rows;
+  } else if (category === "prestige") {
+    rows = await db.execute(sql.raw(`
+      SELECT ps.player_id, p.username, ps.prestige_level AS score
+      FROM player_state ps
+      JOIN players p ON p.id = ps.player_id
+      WHERE ps.prestige_level > 0 ${pf}
+      ORDER BY ps.prestige_level DESC, ps.total_prestige_resets DESC
       LIMIT 100
     `)) as unknown as typeof rows;
   } else {

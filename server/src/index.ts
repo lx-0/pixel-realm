@@ -528,7 +528,7 @@ app.get("/dungeon/cooldown/:userId", async (req, res) => {
 
 // ── Leaderboard REST endpoints ────────────────────────────────────────────────
 
-const VALID_CATEGORIES = new Set<LeaderboardCategory>(["xp", "kills", "quests", "achievements", "crafting"]);
+const VALID_CATEGORIES = new Set<LeaderboardCategory>(["xp", "kills", "quests", "achievements", "crafting", "prestige"]);
 const VALID_PERIODS    = new Set<LeaderboardPeriod>(["all", "weekly", "daily"]);
 
 // GET /leaderboard/:category?period=all|weekly|daily
@@ -538,7 +538,7 @@ app.get("/leaderboard/:category", async (req, res) => {
   const period   = (req.query.period ?? "all") as LeaderboardPeriod;
 
   if (!VALID_CATEGORIES.has(category)) {
-    res.status(400).json({ error: "Invalid category. Must be one of: xp, kills, quests, achievements, crafting" });
+    res.status(400).json({ error: "Invalid category. Must be one of: xp, kills, quests, achievements, crafting, prestige" });
     return;
   }
   if (!VALID_PERIODS.has(period)) {

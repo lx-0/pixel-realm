@@ -134,6 +134,8 @@ export interface PlayerStateUpdate {
   gold?: number;
   currentZone?: string;
   pveKills?: number;
+  prestigeLevel?: number;
+  totalPrestigeResets?: number;
 }
 
 export async function savePlayerState(
