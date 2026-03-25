@@ -1229,6 +1229,19 @@ export class GameScene extends Phaser.Scene {
       client.sendBlockPlayer(name);
       this.chat?.addMessage(`Blocked ${name}.`, '#ff9977');
     };
+    this.socialPanel.onPartyInvite = (name) => {
+      // Find session ID from player name in the current zone
+      let foundSessionId: string | undefined;
+      for (const [sid, p] of client.players) {
+        if (p.name === name) { foundSessionId = sid; break; }
+      }
+      if (foundSessionId) {
+        client.sendPartyInvite(foundSessionId);
+        this.chat?.addMessage(`[Party] Inviting ${name}…`, '#aaffaa');
+      } else {
+        this.chat?.addMessage(`[Party] ${name} is not in this zone.`, '#ff9977');
+      }
+    };
     this.socialPanel.onWhisper = (name) => {
       // Pre-fill the chat input with the whisper prefix
       this.chat?.openInput();
@@ -1578,19 +1591,20 @@ export class GameScene extends Phaser.Scene {
         if (this.anims.exists('player-walk')) sprite.play('player-walk');
         this.remotePlayerSprites.set(rp.sessionId, sprite);
 
-        // Right-click → initiate trade
+        // Right-click → social context menu; Shift+Right-click → trade
         sprite.setInteractive();
         const capturedSessionId = rp.sessionId;
         const capturedName      = rp.name;
         sprite.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
           if (ptr.rightButtonDown()) {
             if (ptr.event.shiftKey) {
-              // Shift+Right-click → party invite
-              this.mp?.sendPartyInvite(capturedSessionId);
-              this.chat?.addMessage(`[Party] Inviting ${capturedName}…`, '#aaffaa');
-            } else if (this.tradeWindow && !this.tradeWindow.isVisible) {
-              // Right-click → trade
-              this.tradeWindow.requestTrade(capturedSessionId, capturedName);
+              // Shift+Right-click → trade
+              if (this.tradeWindow && !this.tradeWindow.isVisible) {
+                this.tradeWindow.requestTrade(capturedSessionId, capturedName);
+              }
+            } else {
+              // Right-click → social context menu (whisper / party invite / block)
+              this.socialPanel?.showContextMenu(capturedName, ptr.x, ptr.y);
             }
           }
         });
