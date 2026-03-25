@@ -42,6 +42,8 @@ import {
 } from "./db/achievements";
 import {
   getLeaderboard,
+  getPlayerRank,
+  recordPvpWin,
   type LeaderboardCategory,
   type LeaderboardPeriod,
 } from "./db/leaderboard";
@@ -541,7 +543,7 @@ app.get("/dungeon/cooldown/:userId", async (req, res) => {
 
 // ── Leaderboard REST endpoints ────────────────────────────────────────────────
 
-const VALID_CATEGORIES = new Set<LeaderboardCategory>(["xp", "kills", "quests", "achievements", "crafting", "prestige"]);
+const VALID_CATEGORIES = new Set<LeaderboardCategory>(["xp", "kills", "quests", "achievements", "crafting", "prestige", "pvp_wins", "guild"]);
 const VALID_PERIODS    = new Set<LeaderboardPeriod>(["all", "weekly", "daily"]);
 
 // GET /leaderboard/:category?period=all|weekly|daily
@@ -565,6 +567,61 @@ app.get("/leaderboard/:category", async (req, res) => {
   } catch (err) {
     console.warn("[REST] leaderboard failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
+});
+
+// GET /leaderboard/:category/rank/:playerId — rank of a specific player (1-based, 0 = not ranked)
+app.get("/leaderboard/:category/rank/:playerId", async (req, res) => {
+  const category = req.params.category as LeaderboardCategory;
+  const { playerId } = req.params as { playerId: string };
+  const period = (req.query.period ?? "all") as LeaderboardPeriod;
+
+  if (!VALID_CATEGORIES.has(category)) {
+    res.status(400).json({ error: "Invalid category" });
+    return;
+  }
+  if (!VALID_PERIODS.has(period)) {
+    res.status(400).json({ error: "Invalid period" });
+    return;
+  }
+  if (!playerId || playerId.length > 36) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+
+  try {
+    const rank = await getPlayerRank(playerId, category, period);
+    res.json({ category, period, playerId, rank });
+  } catch (err) {
+    console.warn("[REST] leaderboard rank failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch player rank" });
+  }
+});
+
+// POST /arena/match-result — record a PvP win for the winning player(s)
+// Body: { winnerId: string } or { winnerIds: string[] }
+// No server-enforced auth; consistent with other REST endpoints in this codebase.
+app.post("/arena/match-result", async (req, res) => {
+  const body = req.body as { winnerId?: string; winnerIds?: string[] };
+  const ids: string[] = [];
+  if (typeof body.winnerId === "string" && body.winnerId.length <= 36) ids.push(body.winnerId);
+  if (Array.isArray(body.winnerIds)) {
+    for (const id of body.winnerIds) {
+      if (typeof id === "string" && id.length <= 36) ids.push(id);
+    }
+  }
+
+  if (ids.length === 0) {
+    res.status(400).json({ error: "winnerId or winnerIds required" });
+    return;
+  }
+
+  try {
+    await Promise.all(ids.map((id) => recordPvpWin(id)));
+    res.json({ recorded: ids.length });
+  } catch (err) {
+    console.warn("[REST] arena match-result failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to record match result" });
   }
 });
 

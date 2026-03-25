@@ -134,6 +134,7 @@ export interface PlayerStateUpdate {
   gold?: number;
   currentZone?: string;
   pveKills?: number;
+  pvpWins?: number;
   prestigeLevel?: number;
   totalPrestigeResets?: number;
 }

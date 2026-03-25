@@ -37,6 +37,7 @@ export const playerState = pgTable("player_state", {
   gold: integer("gold").notNull().default(0),
   currentZone: varchar("current_zone", { length: 50 }).notNull().default("zone1"),
   pveKills: integer("pve_kills").notNull().default(0),
+  pvpWins: integer("pvp_wins").notNull().default(0),
   prestigeLevel: integer("prestige_level").notNull().default(0),
   totalPrestigeResets: integer("total_prestige_resets").notNull().default(0),
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),

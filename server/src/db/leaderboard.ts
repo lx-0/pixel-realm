@@ -17,11 +17,12 @@
  * Falls back to DB-only if Redis is unavailable.
  */
 
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { getDb } from "./client";
 import { getRedis } from "./redis";
+import { playerState } from "./schema";
 
-export type LeaderboardCategory = "xp" | "kills" | "quests" | "achievements" | "crafting" | "prestige";
+export type LeaderboardCategory = "xp" | "kills" | "quests" | "achievements" | "crafting" | "prestige" | "pvp_wins" | "guild";
 export type LeaderboardPeriod = "all" | "weekly" | "daily";
 
 export interface LeaderboardEntry {
@@ -127,6 +128,32 @@ async function queryLeaderboard(
       ORDER BY ps.prestige_level DESC, ps.total_prestige_resets DESC
       LIMIT 100
     `)) as unknown as typeof rows;
+  } else if (category === "pvp_wins") {
+    rows = await db.execute(sql.raw(`
+      SELECT ps.player_id, p.username, ps.pvp_wins AS score
+      FROM player_state ps
+      JOIN players p ON p.id = ps.player_id
+      WHERE ps.pvp_wins > 0 ${pf}
+      ORDER BY ps.pvp_wins DESC
+      LIMIT 100
+    `)) as unknown as typeof rows;
+  } else if (category === "guild") {
+    // Guild power = aggregate XP of all active guild members (period filter via last_seen_at)
+    rows = await db.execute(sql.raw(`
+      SELECT
+        gm.guild_id AS player_id,
+        g.name      AS username,
+        SUM(ps.xp)::int AS score
+      FROM guild_memberships gm
+      JOIN guilds g ON g.id = gm.guild_id
+      JOIN player_state ps ON ps.player_id = gm.player_id
+      JOIN players p ON p.id = gm.player_id AND p.deleted_at IS NULL
+      WHERE g.deleted_at IS NULL ${pf}
+      GROUP BY gm.guild_id, g.name
+      HAVING SUM(ps.xp) > 0
+      ORDER BY score DESC
+      LIMIT 100
+    `)) as unknown as typeof rows;
   } else {
     // crafting
     rows = await db.execute(sql.raw(`
@@ -182,6 +209,38 @@ export async function getLeaderboard(
   }
 
   return entries;
+}
+
+/**
+ * Returns a player's rank (1-based) for a given category + period.
+ * Returns 0 if the player is not ranked.
+ * For the guild category, playerId is ignored (guild boards are not player-specific).
+ */
+export async function getPlayerRank(
+  playerId: string,
+  category: LeaderboardCategory,
+  period: LeaderboardPeriod,
+): Promise<number> {
+  if (category === "guild") return 0;
+  const entries = await getLeaderboard(category, period);
+  const entry = entries.find((e) => e.playerId === playerId);
+  return entry?.rank ?? 0;
+}
+
+/**
+ * Increments pvp_wins for a player and invalidates the pvp_wins leaderboard cache.
+ */
+export async function recordPvpWin(playerId: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(playerState)
+    .set({
+      pvpWins: sql`${playerState.pvpWins} + 1`,
+      lastSeenAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(playerState.playerId, playerId));
+  await invalidateLeaderboardCache("pvp_wins");
 }
 
 /**

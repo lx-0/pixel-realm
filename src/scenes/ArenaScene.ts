@@ -29,6 +29,13 @@ import { ArenaHUD }              from '../ui/ArenaHUD';
 import { ArenaResultsPanel }     from '../ui/ArenaResultsPanel';
 import { ArenaSpectatorOverlay } from '../ui/ArenaSpectatorOverlay';
 
+const SERVER_HTTP: string = (() => {
+  const wsUrl: string =
+    ((import.meta as Record<string, any>).env?.VITE_COLYSEUS_URL as string | undefined)
+    ?? 'ws://localhost:2567';
+  return wsUrl.replace('ws://', 'http://').replace('wss://', 'https://');
+})();
+
 // ── Data contracts ─────────────────────────────────────────────────────────────
 
 export interface ArenaSceneData {
@@ -516,6 +523,19 @@ export class ArenaScene extends Phaser.Scene {
     const won    = local ? winnerIds.includes(local.player.id) : false;
     const delta  = local ? (deltas[local.player.id] ?? 0) : 0;
     const newRat = local ? ArenaManager.getInstance().getPlayer(local.player.id)?.rating ?? 0 : 0;
+
+    // Report the win to the server so global leaderboards stay current.
+    // Fire-and-forget — a failure here is non-fatal.
+    if (won && !this.spectating) {
+      const serverId = localStorage.getItem('pr_userId');
+      if (serverId) {
+        fetch(`${SERVER_HTTP}/arena/match-result`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ winnerId: serverId }),
+        }).catch(() => { /* non-fatal */ });
+      }
+    }
 
     const resultData: ArenaResultData = {
       won,
