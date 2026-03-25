@@ -844,6 +844,96 @@ const FALLBACKS: FallbackRecord[] = [
     },
     completionConditions: { type: "puzzle", target: "arbiter seal" },
   },
+  {
+    zoneId: "zone16",
+    questType: "kill",
+    title: "Nexus Guardian Suppression",
+    description: "Nexus guardians are sealing the dimensional conduits, cutting off all retreat paths. Destroy them before the Overseer locks down the entire nexus.",
+    objectives: [{ type: "kill", target: "nexus_guardian", count: 5, description: "Destroy 5 nexus guardians in the Ethereal Nexus" }],
+    dialogue: {
+      greeting: "Those nexus guardians appeared at the conduit junctions and they haven't stopped sealing exits. We'll be trapped here if you don't act now.",
+      acceptance: "Their energy fields freeze on contact — strike fast and pull back before they can lock onto you.",
+      completion: "The guardians are down! The conduits are open again. That was precise work — the Dimensional Weaver will want to hear of this.",
+      choices: [
+        { id: "accept", label: "I'll destroy the nexus guardians.", response: "Stay aggressive — they absorb energy over time and grow more resilient. Hit them before their shields cycle back up.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who commands these guardians?", response: "The Nexus Overseer. They are extensions of his will — destroy enough and you disrupt his dimensional lock on this zone entirely.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The nexus is too dangerous right now.", response: "The conduits will remain sealed then. Return when you are ready.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "kill", target: "nexus_guardian", count: 5 },
+  },
+  {
+    zoneId: "zone16",
+    questType: "fetch",
+    title: "Nexus Crystals",
+    description: "The Dimensional Weaver needs nexus crystals from the deepest conduit chambers to calibrate a rift-sealing array. Retrieve them before the energy parasites drain them dry.",
+    objectives: [{ type: "fetch", target: "nexus crystal", count: 4, description: "Collect 4 nexus crystals from the Ethereal Nexus conduit chambers" }],
+    dialogue: {
+      greeting: "Nexus crystals — grown where dimensional energy converges — are the only material that can anchor my rift-sealing array. I need four of them.",
+      acceptance: "They pulse with cold blue light in the conduit chambers. Move quickly — energy parasites are draining them to fuel their own existence.",
+      completion: "Extraordinary specimens. Still resonating at full amplitude. With these I can begin sealing the Overseer's conduit network from the inside.",
+      choices: [
+        { id: "accept", label: "I'll retrieve those nexus crystals.", response: "They cluster near the conduit cores — look for the blue glow. Energy parasites patrol there and will freeze you from range if you linger.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Why are energy parasites so dangerous?", response: "They drain dimensional energy on contact, freezing their targets solid. If one latches onto you, break free fast before the phase striders close in.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The conduit chambers are too dangerous.", response: "No shame in knowing your limits. The crystals will keep — for now. Come back stronger.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "fetch", target: "nexus crystal", count: 4 },
+  },
+  {
+    zoneId: "zone16",
+    questType: "explore",
+    title: "The Overseer's Conduit",
+    description: "Deep within the Ethereal Nexus lies the Overseer's prime conduit — the source of his power over dimensional fabric. Locate it before it finishes consuming this plane of existence.",
+    objectives: [{ type: "explore", target: "overseer conduit", description: "Discover the Nexus Overseer's prime conduit in the depths of the Ethereal Nexus" }],
+    dialogue: {
+      greeting: "My readings point to a prime conduit somewhere in the deepest reaches — a nexus point the Overseer uses to pull dimensional fabric apart. It must still be active.",
+      acceptance: "Follow the phase striders — they phase toward it to recharge. Look for where the light bends completely inward and reality distorts.",
+      completion: "You found it! The prime conduit is far larger than my models predicted. If we can collapse it, the Overseer loses his anchor to this dimension entirely.",
+      choices: [
+        { id: "accept", label: "I'll find the Overseer's prime conduit.", response: "Phase striders orbit the conduit on irregular cycles. Track their movement inward — the distortion of space itself will guide you when you are close.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What happens if the conduit isn't closed?", response: "The Overseer consumes this entire plane — every piece of matter reduced to raw energy and fed into his nexus. It cannot be allowed.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The deep nexus is beyond my reach.", response: "The conduit has been expanding for centuries. It can wait a little longer.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "explore", target: "overseer conduit" },
+  },
+  {
+    zoneId: "zone16",
+    questType: "escort",
+    title: "Dimensional Researcher",
+    description: "A researcher mapping the nexus conduit network became separated from their team after a phase strider ambush. Escort them to a stable exit rift before the nexus collapses around them.",
+    objectives: [{ type: "escort", target: "Dimensional Researcher", description: "Escort the Dimensional Researcher safely out of the Ethereal Nexus" }],
+    dialogue: {
+      greeting: "A phase strider phased through the wall directly behind me — I barely escaped. I've been pinned in this conduit loop for what feels like hours. Please, I need to get out.",
+      acceptance: "I'll keep documenting as we move — the conduit cycles repeat every few minutes. My notes may be the only map through here.",
+      completion: "Solid ground. Finally. My survey data survived — the conduit resonance patterns I recorded will help the Dimensional Weaver understand how the Overseer is expanding his reach.",
+      choices: [
+        { id: "accept", label: "Stay close — I'll get you out of here.", response: "Thank you. I've mapped two conduit cycles already — I can guide us between energy parasite patrols if you handle the phase striders ahead.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What were you mapping?", response: "The conduit resonance network — it expands every time the Overseer absorbs a new dimensional fragment. Understanding the pattern is the key to predicting his next target.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "I can't spare the time right now.", response: "I'll hold out as long as I can. If you find another way through, please send help.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "escort", target: "Dimensional Researcher" },
+  },
+  {
+    zoneId: "zone16",
+    questType: "puzzle",
+    title: "The Nexus Lock",
+    description: "An ancient dimensional lock bars the path to the Overseer's sanctum at the nexus core. Align the phase-rune sequence to shatter it and force a confrontation.",
+    objectives: [{ type: "puzzle", target: "nexus lock", description: "Solve the phase-rune dimensional lock to open the path to the Nexus Overseer" }],
+    dialogue: {
+      greeting: "The Overseer's lock is woven from phase-runes — dimensional anchors that no physical force can break. Only the correct resonance sequence will open the path.",
+      acceptance: "The phase-runes must align: void anchor, rift pulse, energy convergence, then the null point — in that exact order.",
+      completion: "The lock shatters! The sanctum lies open. The Nexus Overseer cannot retreat behind his dimensional wards any longer.",
+      choices: [
+        { id: "accept", label: "I'll break the Nexus Lock.", response: "The sequence mirrors the conduit resonance cycle: void anchor, rift pulse, energy convergence, null point. Do not rush the final alignment — the null point is unstable.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who created this lock?", response: "The Overseer himself — it is a fragment of dimensional fabric shaped into a ward. That it can be solved at all is because all dimensional constructs have a resonance flaw, if you know where to look.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Phase-rune puzzles are beyond me.", response: "The lock will hold until you understand the conduit resonance. Return when you do.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "puzzle", target: "nexus lock" },
+  },
 ];
 
 /**

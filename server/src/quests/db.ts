@@ -84,6 +84,12 @@ const ZONE_META: Record<string, { name: string; biome: string; description: stri
     description: "A towering spire piercing the heavens. Star sentinels, void mages, and astral beasts guard the throne of the Celestial Arbiter.",
     enemyTypes: ["star_sentinel", "void_mage", "astral_beast"],
   },
+  zone16: {
+    name: "Ethereal Nexus",
+    biome: "ethereal-nexus",
+    description: "A shimmering dimension where reality dissolves into pure energy. Nexus guardians, phase striders, and energy parasites swarm the crystalline conduits where The Nexus Overseer seeks to consume all dimensional fabric.",
+    enemyTypes: ["nexus_guardian", "phase_strider", "energy_parasite"],
+  },
 };
 
 const QUEST_TYPES: QuestType[] = ["kill", "fetch", "explore", "escort", "puzzle"];

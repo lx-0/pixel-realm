@@ -246,9 +246,10 @@ export type EnemyTypeName =
   | 'rift_walker' | 'void_sentinel' | 'shadow_weaver'
   | 'eclipse_knight' | 'shadow_herald' | 'dusk_wraith'
   | 'shattered_golem' | 'reality_fracture' | 'dominion_shade'
-  | 'elemental_amalgam' | 'primordial_shard' | 'core_sentinel';
+  | 'elemental_amalgam' | 'primordial_shard' | 'core_sentinel'
+  | 'nexus_guardian' | 'phase_strider' | 'energy_parasite';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame' | 'nexus_overseer';
 
 export interface EnemyTypeDef {
   color: number;
@@ -320,6 +321,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   elemental_amalgam: { color: 0xff8800, size: 13, baseHp: 420, baseDmg: 88, speed: 32,  aggroRange: 90,  xpValue: 240, knockbackMultiplier: 0.1, behaviour: 'tank' },
   primordial_shard:  { color: 0x00ffcc, size: 9,  baseHp: 330, baseDmg: 95, speed: 105, aggroRange: 175, xpValue: 260, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0x88ffee },
   core_sentinel:     { color: 0xff4400, size: 11, baseHp: 370, baseDmg: 90, speed: 55,  aggroRange: 120, xpValue: 250, knockbackMultiplier: 0.4, behaviour: 'block' },
+  // Ethereal Nexus enemies
+  nexus_guardian:  { color: 0x0066ff, size: 12, baseHp: 460, baseDmg: 92,  speed: 35,  aggroRange: 95,  xpValue: 270, knockbackMultiplier: 0.1, behaviour: 'block' },
+  phase_strider:   { color: 0x44ffdd, size: 9,  baseHp: 350, baseDmg: 105, speed: 110, aggroRange: 180, xpValue: 285, knockbackMultiplier: 0.6, behaviour: 'phase' },
+  energy_parasite: { color: 0x00ddff, size: 8,  baseHp: 310, baseDmg: 110, speed: 95,  aggroRange: 185, xpValue: 295, knockbackMultiplier: 0.8, behaviour: 'ranged_flee', projectileColor: 0x55eeff },
 };
 
 export interface BossTypeDef {
@@ -348,6 +353,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   eclipsed_king:       { color: 0xffaa00, size: 36, baseHp: 42000, baseDmg: 145, speed: 22, xpValue: 10000, name: 'The Eclipsed King' },
   the_unmaker:         { color: 0xcc00ff, size: 38, baseHp: 55000, baseDmg: 165, speed: 20, xpValue: 13000, name: 'The Unmaker' },
   genesis_flame:       { color: 0xff6600, size: 40, baseHp: 70000, baseDmg: 188, speed: 22, xpValue: 16500, name: 'The Genesis Flame' },
+  nexus_overseer:      { color: 0x0044cc, size: 42, baseHp: 88000, baseDmg: 205, speed: 20, xpValue: 20000, name: 'The Nexus Overseer' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -410,6 +416,8 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   eclipse_knight:    'burn',
   dusk_wraith:       'stun',
   core_sentinel:     'burn',
+  nexus_guardian:    'freeze',
+  phase_strider:     'stun',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -435,6 +443,8 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   eclipsed_king:       'burn',
   primordial_shard:    'burn',
   genesis_flame:       'burn',
+  energy_parasite:     'freeze',
+  nexus_overseer:      'stun',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -692,5 +702,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 15000,
     unlockRequirement: 'zone14',
     difficultyMult: 8.0,
+  },
+  {
+    id: 'zone16',
+    name: 'Ethereal Nexus',
+    biome: 'ethereal-nexus',
+    description: 'A shimmering dimension where reality dissolves into pure energy. Nexus guardians, phase striders, and energy parasites swarm the crystalline conduits where The Nexus Overseer seeks to consume all dimensional fabric.',
+    bgColor: 0x010510,
+    groundColor: 0x061028,
+    wallColor: 0x010208,
+    accentColor: 0x00aaff,
+    waves: 3,
+    enemyTypes: ['nexus_guardian', 'phase_strider', 'energy_parasite'],
+    bossType: 'nexus_overseer',
+    minPlayerLevel: 41,
+    xpReward: 20000,
+    unlockRequirement: 'zone15',
+    difficultyMult: 8.5,
   },
 ];

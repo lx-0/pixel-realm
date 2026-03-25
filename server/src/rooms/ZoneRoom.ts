@@ -148,6 +148,12 @@ const ZONE_LOOT: Record<string, Array<{ itemId: string; chance: number }>> = {
     { itemId: "mat_astral_dust",    chance: 0.28 },
     { itemId: "mat_magic_crystal",  chance: 0.22 },
   ],
+  zone16: [
+    { itemId: "mat_nexus_crystal",  chance: 0.50 },
+    { itemId: "mat_ethereal_shard", chance: 0.40 },
+    { itemId: "mat_void_essence",   chance: 0.32 },
+    { itemId: "mat_astral_dust",    chance: 0.25 },
+  ],
 };
 
 // Zone → enemy type tables
@@ -205,6 +211,11 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
     { type: "star_sentinel",  hp: 200, dmg: 45, speed: 75,  aggroRange: 140, xp: 95, ranged: true },
     { type: "void_mage",      hp: 170, dmg: 50, speed: 55,  aggroRange: 150, xp: 100, ranged: true },
     { type: "astral_beast",   hp: 250, dmg: 38, speed: 80,  aggroRange: 100, xp: 90 },
+  ],
+  zone16: [
+    { type: "nexus_guardian",  hp: 600, dmg: 120, speed: 35,  aggroRange: 95,  xp: 270 },
+    { type: "phase_strider",   hp: 460, dmg: 140, speed: 110, aggroRange: 180, xp: 285 },
+    { type: "energy_parasite", hp: 420, dmg: 145, speed: 95,  aggroRange: 185, xp: 295, ranged: true },
   ],
 };
 
