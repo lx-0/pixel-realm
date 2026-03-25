@@ -247,9 +247,10 @@ export type EnemyTypeName =
   | 'eclipse_knight' | 'shadow_herald' | 'dusk_wraith'
   | 'shattered_golem' | 'reality_fracture' | 'dominion_shade'
   | 'elemental_amalgam' | 'primordial_shard' | 'core_sentinel'
-  | 'nexus_guardian' | 'phase_strider' | 'energy_parasite';
+  | 'nexus_guardian' | 'phase_strider' | 'energy_parasite'
+  | 'twilight_sentinel' | 'rift_stalker' | 'echo_wraith';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame' | 'nexus_overseer';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame' | 'nexus_overseer' | 'twilight_warden';
 
 export interface EnemyTypeDef {
   color: number;
@@ -325,6 +326,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   nexus_guardian:  { color: 0x0066ff, size: 12, baseHp: 460, baseDmg: 92,  speed: 35,  aggroRange: 95,  xpValue: 270, knockbackMultiplier: 0.1, behaviour: 'block' },
   phase_strider:   { color: 0x44ffdd, size: 9,  baseHp: 350, baseDmg: 105, speed: 110, aggroRange: 180, xpValue: 285, knockbackMultiplier: 0.6, behaviour: 'phase' },
   energy_parasite: { color: 0x00ddff, size: 8,  baseHp: 310, baseDmg: 110, speed: 95,  aggroRange: 185, xpValue: 295, knockbackMultiplier: 0.8, behaviour: 'ranged_flee', projectileColor: 0x55eeff },
+  // Twilight Citadel enemies
+  twilight_sentinel: { color: 0xaa6622, size: 12, baseHp: 520, baseDmg: 118, speed: 30,  aggroRange: 90,  xpValue: 300, knockbackMultiplier: 0.0, behaviour: 'block' },
+  rift_stalker:      { color: 0x8844cc, size: 9,  baseHp: 380, baseDmg: 125, speed: 120, aggroRange: 195, xpValue: 315, knockbackMultiplier: 0.6, behaviour: 'phase' },
+  echo_wraith:       { color: 0xcc88ff, size: 8,  baseHp: 340, baseDmg: 132, speed: 100, aggroRange: 190, xpValue: 325, knockbackMultiplier: 0.8, behaviour: 'ranged_flee', projectileColor: 0xff88cc },
 };
 
 export interface BossTypeDef {
@@ -354,6 +359,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   the_unmaker:         { color: 0xcc00ff, size: 38, baseHp: 55000, baseDmg: 165, speed: 20, xpValue: 13000, name: 'The Unmaker' },
   genesis_flame:       { color: 0xff6600, size: 40, baseHp: 70000, baseDmg: 188, speed: 22, xpValue: 16500, name: 'The Genesis Flame' },
   nexus_overseer:      { color: 0x0044cc, size: 42, baseHp: 88000, baseDmg: 205, speed: 20, xpValue: 20000, name: 'The Nexus Overseer' },
+  twilight_warden:     { color: 0xaa55ff, size: 44, baseHp: 108000, baseDmg: 225, speed: 18, xpValue: 24000, name: 'The Twilight Warden' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -418,6 +424,8 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   core_sentinel:     'burn',
   nexus_guardian:    'freeze',
   phase_strider:     'stun',
+  twilight_sentinel: 'burn',
+  rift_stalker:      'stun',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -445,6 +453,8 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   genesis_flame:       'burn',
   energy_parasite:     'freeze',
   nexus_overseer:      'stun',
+  echo_wraith:         'burn',
+  twilight_warden:     'stun',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -719,5 +729,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 20000,
     unlockRequirement: 'zone15',
     difficultyMult: 8.5,
+  },
+  {
+    id: 'zone17',
+    name: 'Twilight Citadel',
+    biome: 'twilight-citadel',
+    description: 'A crumbling citadel suspended between twilight dimensions — half light, half shadow, ancient grandeur corrupted by dimensional instability. Twilight sentinels, rift stalkers, and echo wraiths patrol the amber-and-violet battlements where The Twilight Warden enforces an eternal dusk.',
+    bgColor: 0x0c0410,
+    groundColor: 0x1a0b28,
+    wallColor: 0x080210,
+    accentColor: 0xaa55ff,
+    waves: 3,
+    enemyTypes: ['twilight_sentinel', 'rift_stalker', 'echo_wraith'],
+    bossType: 'twilight_warden',
+    minPlayerLevel: 44,
+    xpReward: 26000,
+    unlockRequirement: 'zone16',
+    difficultyMult: 9.0,
   },
 ];

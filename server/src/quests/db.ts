@@ -90,6 +90,12 @@ const ZONE_META: Record<string, { name: string; biome: string; description: stri
     description: "A shimmering dimension where reality dissolves into pure energy. Nexus guardians, phase striders, and energy parasites swarm the crystalline conduits where The Nexus Overseer seeks to consume all dimensional fabric.",
     enemyTypes: ["nexus_guardian", "phase_strider", "energy_parasite"],
   },
+  zone17: {
+    name: "Twilight Citadel",
+    biome: "twilight-citadel",
+    description: "A crumbling citadel suspended between twilight dimensions, half light and half shadow. Twilight sentinels, rift stalkers, and echo wraiths patrol the amber-and-violet battlements where The Twilight Warden enforces an eternal dusk.",
+    enemyTypes: ["twilight_sentinel", "rift_stalker", "echo_wraith"],
+  },
 };
 
 const QUEST_TYPES: QuestType[] = ["kill", "fetch", "explore", "escort", "puzzle"];
