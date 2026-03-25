@@ -226,7 +226,11 @@ Server-side observability, seasonal content pipeline, and roadmap housekeeping t
 Player retention features and quality-of-life improvements to deepen engagement after launch.
 
 - [x] PIX-258 — Update roadmap (mark M27 complete, add M28 post-launch improvements milestone)
-- [ ] PIX-259 — Implement daily login rewards and streak system
+- [x] PIX-259 — Implement daily login rewards and streak system
+- [x] PIX-260 — Create summer seasonal event art pack (event enemies, decorations, reward sprites, event banner)
+- [ ] PIX-262 — Implement friends list and social system (friend requests, online status, whisper chat, party invites)
+- [ ] PIX-263 — Implement global leaderboards and rankings (level, achievements, prestige, guild power)
+- [ ] PIX-264 — Create fall seasonal event art pack (Harvest Golem, Scarecrow Shade, autumn decorations)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -287,6 +291,6 @@ M5 → M6 ──────────────────┘
 - **Release Candidate & Launch Assets** — M25 builds v1.0.0 RC, adds social sharing meta tags, and creates launch announcement graphics while awaiting board credentials for itch.io distribution.
 - **Post-RC Quality & Launch Readiness** — M26 promoted v1.0.0-rc1 to stable and created itch.io game page content. All complete as of 2026-03-25.
 - **Post-Launch Readiness** — M27 adds server-side analytics/telemetry (PIX-254) and a spring seasonal event art pass (PIX-255) to keep the live game healthy and content-rich. All complete as of 2026-03-25.
-- **Post-Launch Improvements** — M28 adds player retention features starting with daily login rewards and a streak system (PIX-259) to deepen long-term engagement.
+- **Post-Launch Improvements** — M28 adds player retention features: daily login rewards (PIX-259), summer seasonal art (PIX-260), friends list and social system (PIX-262), leaderboards (PIX-263), and fall seasonal art (PIX-264). Focus is deepening social engagement and competitive retention loops.
 - **Single engineer** — One engineer has shipped M0–M24 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
