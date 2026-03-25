@@ -202,12 +202,18 @@ Quality-of-life improvements and expanded platform reach while awaiting distribu
 - [x] PIX-242 — Performance audit and optimization for 19-zone game (load times, memory, frame rates)
 - [x] PIX-243 — Create itch.io store page promotional art (cover image, banner, feature graphics)
 
-### M25: Release Candidate & Launch Assets — IN PROGRESS
+### M25: Release Candidate & Launch Assets — COMPLETE
 Final release candidate build and marketing assets while awaiting board credentials for itch.io distribution (PIX-19).
 
-- [ ] PIX-245 — Build v1.0.0 release candidate distribution package and verify deployment readiness
-- [ ] PIX-246 — Add Open Graph meta tags and social sharing preview for web client
-- [ ] PIX-247 — Create social media launch announcement graphics (Twitter/X cards, gameplay montage screenshots)
+- [x] PIX-245 — Build v1.0.0 release candidate distribution package and verify deployment readiness
+- [x] PIX-246 — Add Open Graph meta tags and social sharing preview for web client
+- [x] PIX-247 — Create social media launch announcement graphics (Twitter/X cards, gameplay montage screenshots)
+
+### M26: Post-RC Quality & Launch Readiness — IN PROGRESS
+Final quality sweep and player-facing polish while awaiting board credentials for itch.io distribution (PIX-19).
+
+- [ ] PIX-249 — Promote v1.0.0-rc1 to v1.0.0 stable (version bump, full test suite, rebuild dist)
+- [ ] PIX-250 — Create itch.io game page content (description, features, controls, screenshot captions)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
