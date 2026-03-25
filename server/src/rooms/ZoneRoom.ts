@@ -49,6 +49,14 @@ import {
   claimEventReward,
   type SeasonalEvent,
 } from "../db/seasonalEvents";
+import {
+  SEASONAL_ENEMY_OVERLAYS,
+  SEASONAL_FEATURED_ZONES,
+  SEASONAL_SPAWN_RATIO,
+  SEASONAL_OVERLAY_KEY,
+  getSeasonForDate,
+  type SeasonalEnemyDef,
+} from "../seasons/rotation";
 
 // ── Constants (mirrored from client constants.ts) ─────────────────────────────
 const TICK_RATE_MS = 50;          // 20 Hz server tick
@@ -357,6 +365,9 @@ interface LootRoll {
   timer: Delayed;
 }
 
+// Seasonal shop messages
+interface SeasonalShopBuyMessage { itemId: string }
+
 // Loot roll response from client
 interface LootRollResponseMessage {
   rollId: string;
@@ -483,6 +494,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("level_up",        (client: Client)                           => this.handleLevelUp(client));
     this.onMessage("prestige_reset",       (client: Client)                             => this.handlePrestigeReset(client));
     this.onMessage("event_claim_reward",   (client: Client, msg: { itemId: string })    => this.handleEventClaimReward(client, msg));
+    this.onMessage("seasonal_shop_open",   (client: Client)                              => this.handleSeasonalShopOpen(client));
+    this.onMessage("seasonal_shop_buy",    (client: Client, msg: SeasonalShopBuyMessage) => this.handleSeasonalShopBuy(client, msg));
     this.onMessage("skill_use",    (client: Client, msg: SkillUseMessage)    => this.handleSkillUse(client, msg));
     this.onMessage("skill_alloc",  (client: Client, msg: SkillAllocMessage)  => this.handleSkillAlloc(client, msg));
     this.onMessage("skill_hotbar", (client: Client, msg: SkillHotbarMessage) => this.handleSkillHotbar(client, msg));
@@ -647,6 +660,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
                 claimedRewards: participation.claimedRewards,
               },
             });
+            // Send zone overlay key so client can apply seasonal decorations
+            if (SEASONAL_FEATURED_ZONES.has(this.state.zoneId)) {
+              const season = getSeasonForDate(new Date());
+              client.send("season_overlay", {
+                overlayKey: SEASONAL_OVERLAY_KEY[season],
+                season,
+              });
+            }
           } catch (_evErr) { /* non-fatal */ }
         }
 
@@ -1339,8 +1360,25 @@ export class ZoneRoom extends Room<ZoneGameState> {
     const zoneDefs = ZONE_ENEMIES[this.state.zoneId] ?? ZONE_ENEMIES["zone1"];
     const count = BASE_ENEMY_COUNT + (this.state.currentWave - 1) * 2;
 
+    // Determine whether to blend seasonal enemies into this zone
+    const isSeasonalZone = this.activeSeasonalEvent !== null
+      && SEASONAL_FEATURED_ZONES.has(this.state.zoneId);
+    const currentSeason  = isSeasonalZone ? getSeasonForDate(new Date()) : null;
+    const seasonalDefs: SeasonalEnemyDef[] = currentSeason
+      ? (SEASONAL_ENEMY_OVERLAYS[currentSeason] ?? [])
+      : [];
+
     for (let i = 0; i < count; i++) {
-      const def = zoneDefs[Math.floor(Math.random() * zoneDefs.length)];
+      // Blend: SEASONAL_SPAWN_RATIO chance of a seasonal enemy in featured zones
+      const useSeasonalEnemy =
+        isSeasonalZone && seasonalDefs.length > 0 && Math.random() < SEASONAL_SPAWN_RATIO;
+
+      let def: EnemyDef;
+      if (useSeasonalEnemy) {
+        def = seasonalDefs[Math.floor(Math.random() * seasonalDefs.length)];
+      } else {
+        def = zoneDefs[Math.floor(Math.random() * zoneDefs.length)];
+      }
       const enemy = new Enemy();
       enemy.id = uid();
       enemy.type = def.type;
@@ -2167,6 +2205,88 @@ export class ZoneRoom extends Room<ZoneGameState> {
     } catch (err) {
       console.warn(`[ZoneRoom] event claim error for ${userId}:`, (err as Error).message);
       client.send("event_claim_error", { message: "Claim failed. Please try again." });
+    }
+  }
+
+  // ── Seasonal Shop ────────────────────────────────────────────────────────────
+
+  /**
+   * Returns the active event's reward tiers as shop inventory alongside the
+   * player's current event point balance.  Reward tiers act as priced items —
+   * the player "buys" them with event points (same as claiming via the panel).
+   */
+  private async handleSeasonalShopOpen(client: Client): Promise<void> {
+    if (!this.activeSeasonalEvent) {
+      client.send("seasonal_shop_data", { open: false, reason: "No seasonal event is active." });
+      return;
+    }
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    try {
+      const participation = await getOrJoinEvent(userId, this.activeSeasonalEvent.id);
+      client.send("seasonal_shop_data", {
+        open:    true,
+        event: {
+          id:   this.activeSeasonalEvent.id,
+          name: this.activeSeasonalEvent.name,
+        },
+        items:          this.activeSeasonalEvent.rewardTiers,
+        points:         participation.points,
+        claimedRewards: participation.claimedRewards,
+      });
+    } catch (err) {
+      console.warn(`[ZoneRoom] seasonal shop open error for ${userId}:`, (err as Error).message);
+      client.send("seasonal_shop_data", { open: false, reason: "Shop unavailable." });
+    }
+  }
+
+  /**
+   * Purchases a seasonal shop item by spending event points.
+   * Delegates to the existing claimEventReward flow.
+   */
+  private async handleSeasonalShopBuy(client: Client, msg: SeasonalShopBuyMessage): Promise<void> {
+    if (!this.activeSeasonalEvent) {
+      client.send("seasonal_shop_error", { message: "No seasonal event is active." });
+      return;
+    }
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    const itemId = String(msg.itemId ?? "").slice(0, 100);
+    if (!itemId) {
+      client.send("seasonal_shop_error", { message: "Invalid item." });
+      return;
+    }
+
+    const tier = this.activeSeasonalEvent.rewardTiers.find(t => t.itemId === itemId);
+    if (!tier) {
+      client.send("seasonal_shop_error", { message: "Item not available in the seasonal shop." });
+      return;
+    }
+
+    try {
+      const claimed = await claimEventReward(userId, this.activeSeasonalEvent.id, itemId, tier.points);
+      if (!claimed) {
+        client.send("seasonal_shop_error", {
+          message: "Insufficient event points or already purchased.",
+        });
+        return;
+      }
+      await addItem(userId, itemId, 1).catch(() => null);
+      client.send("seasonal_shop_buy_ok", { itemId, label: tier.label });
+      // Refresh participation state for the client
+      const participation = await getOrJoinEvent(userId, this.activeSeasonalEvent.id);
+      client.send("seasonal_shop_data", {
+        open:    true,
+        event: { id: this.activeSeasonalEvent.id, name: this.activeSeasonalEvent.name },
+        items:          this.activeSeasonalEvent.rewardTiers,
+        points:         participation.points,
+        claimedRewards: participation.claimedRewards,
+      });
+    } catch (err) {
+      console.warn(`[ZoneRoom] seasonal shop buy error for ${userId}:`, (err as Error).message);
+      client.send("seasonal_shop_error", { message: "Purchase failed. Please try again." });
     }
   }
 

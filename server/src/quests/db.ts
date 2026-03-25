@@ -26,6 +26,7 @@ import {
   getOrStartChainProgress,
   advanceChainStep,
 } from "../db/content";
+import { getActiveSeasonalEvent } from "../db/seasonalEvents";
 
 // ── Zone metadata (mirrors client constants.ts ZONES) ─────────────────────────
 
@@ -229,7 +230,10 @@ async function generateQuestChain(
 
     const meta = ZONE_META[zoneId] ?? ZONE_META["zone1"];
     const faction = factionForZone(zoneId);
-    const season = await getActiveSeason();
+    const [season, seasonalEvent] = await Promise.all([
+      getActiveSeason().catch(() => null),
+      getActiveSeasonalEvent().catch(() => null),
+    ]);
 
     let playerStanding: string | null = null;
     if (faction) {
@@ -237,9 +241,13 @@ async function generateQuestChain(
       playerStanding = rep.standing;
     }
 
-    // Chain theme: derive from season name and zone, or use a fallback
-    const chainTheme = season
-      ? `${season.name} — ${meta.biome} troubles`
+    // Prefer seasonal event theme over generic world season
+    const effectiveSeasonName  = seasonalEvent?.name  ?? season?.name  ?? null;
+    const effectiveSeasonTheme = seasonalEvent?.theme ?? season?.storyPromptTemplate ?? null;
+
+    // Chain theme: derive from seasonal event or generic season + zone, or fallback
+    const chainTheme = effectiveSeasonName
+      ? `${effectiveSeasonName} — ${meta.biome} troubles`
       : `Mysteries of ${meta.name}`;
 
     // Generate each quest step with the chain context
@@ -262,8 +270,8 @@ async function generateQuestChain(
         factionId: faction?.id ?? null,
         factionName: faction?.name ?? null,
         playerStanding,
-        seasonName: season?.name ?? null,
-        seasonTheme: season?.storyPromptTemplate ?? null,
+        seasonName:  effectiveSeasonName,
+        seasonTheme: effectiveSeasonTheme,
         chainTheme,
         chainStep: step,
         chainTotalSteps: CHAIN_LENGTH,
@@ -439,11 +447,12 @@ export async function getOrGenerateQuest(
   const questType = pickQuestType();
   const cacheKey = buildCacheKey(zoneId, bucket, questType);
 
-  // Load NPC memory and season for context
+  // Load NPC memory, world season, and active seasonal event for context
   const npcId = `quest_npc_${zoneId}`;
-  const [npcMemory, season] = await Promise.all([
+  const [npcMemory, season, seasonalEvent] = await Promise.all([
     getNpcMemory(playerId, npcId).catch(() => [] as string[]),
     getActiveSeason().catch(() => null),
+    getActiveSeasonalEvent().catch(() => null),
   ]);
 
   let quest = await getCachedQuest(cacheKey);
@@ -458,6 +467,10 @@ export async function getOrGenerateQuest(
       playerStanding = rep.standing;
     }
 
+    // Prefer the active seasonal event's theme over the generic world season when both exist
+    const effectiveSeasonName  = seasonalEvent?.name  ?? season?.name  ?? null;
+    const effectiveSeasonTheme = seasonalEvent?.theme ?? season?.storyPromptTemplate ?? null;
+
     const ctx: QuestGenerationContext = {
       zoneId,
       zoneName: meta.name,
@@ -471,8 +484,8 @@ export async function getOrGenerateQuest(
       factionName: faction?.name ?? null,
       playerStanding,
       npcMemory: npcMemory.length ? npcMemory : undefined,
-      seasonName: season?.name ?? null,
-      seasonTheme: season?.storyPromptTemplate ?? null,
+      seasonName:  effectiveSeasonName,
+      seasonTheme: effectiveSeasonTheme,
     };
     quest = await generateAndStore(ctx);
   }

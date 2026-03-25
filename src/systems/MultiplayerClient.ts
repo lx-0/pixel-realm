@@ -14,6 +14,17 @@ const SERVER_URL: string =
   ((import.meta as Record<string, any>).env?.VITE_COLYSEUS_URL as string | undefined) ??
   'ws://localhost:2567';
 
+// ── Seasonal shop types ───────────────────────────────────────────────────────
+
+export interface SeasonalShopData {
+  open:    boolean;
+  reason?: string;
+  event?:  { id: string; name: string };
+  items?:  Array<{ points: number; itemId: string; label: string; title?: string }>;
+  points?: number;
+  claimedRewards?: string[];
+}
+
 // ── Public data shapes ────────────────────────────────────────────────────────
 
 export interface RemotePlayer {
@@ -255,6 +266,11 @@ export class MultiplayerClient {
   onSeasonalEventPoints?: (eventId: string, pointsDelta: number, totalPoints: number) => void;
   onEventClaimOk?:    (itemId: string, label: string) => void;
   onEventClaimError?: (message: string) => void;
+  /** Fired when joining a featured zone during an active seasonal event — provides the decoration overlay key. */
+  onSeasonOverlay?: (overlayKey: string, season: string) => void;
+  onSeasonalShopData?:   (data: SeasonalShopData) => void;
+  onSeasonalShopBuyOk?:  (itemId: string, label: string) => void;
+  onSeasonalShopError?:  (message: string) => void;
 
   // Crafting callbacks
   /** Called when another player in the zone crafts an item. */
@@ -556,6 +572,18 @@ export class MultiplayerClient {
     room.onMessage('event_claim_error', (msg: { message: string }) => {
       this.onEventClaimError?.(msg.message);
     });
+    room.onMessage('season_overlay', (msg: { overlayKey: string; season: string }) => {
+      this.onSeasonOverlay?.(msg.overlayKey, msg.season);
+    });
+    room.onMessage('seasonal_shop_data', (msg: SeasonalShopData) => {
+      this.onSeasonalShopData?.(msg);
+    });
+    room.onMessage('seasonal_shop_buy_ok', (msg: { itemId: string; label: string }) => {
+      this.onSeasonalShopBuyOk?.(msg.itemId, msg.label);
+    });
+    room.onMessage('seasonal_shop_error', (msg: { message: string }) => {
+      this.onSeasonalShopError?.(msg.message);
+    });
 
     // ── Emote messages ────────────────────────────────────────────────────
     room.onMessage('emote', (msg: EmoteEvent) => {
@@ -739,6 +767,14 @@ export class MultiplayerClient {
 
   sendEventClaimReward(itemId: string): void {
     this.room?.send('event_claim_reward', { itemId });
+  }
+
+  sendSeasonalShopOpen(): void {
+    this.room?.send('seasonal_shop_open');
+  }
+
+  sendSeasonalShopBuy(itemId: string): void {
+    this.room?.send('seasonal_shop_buy', { itemId });
   }
 
   sendSkillUse(skillId: string): void {

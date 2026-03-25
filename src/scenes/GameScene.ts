@@ -379,6 +379,8 @@ export class GameScene extends Phaser.Scene {
 
   /** Seasonal event progress tracker panel. */
   private seasonalEventPanel?: SeasonalEventPanel;
+  /** Small persistent HUD badge shown when a seasonal event is active. */
+  private seasonalEventBadge?: Phaser.GameObjects.Text;
   /** HUD text showing current prestige tier next to level. */
   private prestigeText?: Phaser.GameObjects.Text;
 
@@ -1056,6 +1058,17 @@ export class GameScene extends Phaser.Scene {
         claimedRewards: participation.claimedRewards,
       };
       this.seasonalEventPanel?.setEventState(state);
+      // Show a small persistent HUD badge so players know an event is active
+      if (!this.seasonalEventBadge) {
+        this.seasonalEventBadge = this.add.text(
+          CANVAS.WIDTH - 4, 10,
+          '',
+          { fontSize: '4px', color: '#ffdd44', fontFamily: 'monospace' },
+        ).setOrigin(1, 0).setScrollFactor(0).setDepth(12)
+         .setInteractive({ useHandCursor: true })
+         .on('pointerdown', () => this.seasonalEventPanel?.show());
+      }
+      this.seasonalEventBadge.setText(`✦ ${event.name} [G]`);
     };
     client.onSeasonalEventPoints = (eventId, pointsDelta, totalPoints) => {
       this.seasonalEventPanel?.updateParticipation(totalPoints, []);

@@ -72,6 +72,7 @@ import {
 } from "./db/analytics";
 import { claimDailyReward, getStreakStatus } from "./db/dailyRewards";
 import { getUptimeSeconds, recordHttpRequest, renderPrometheusMetrics } from "./metrics";
+import { ensureSeasonalEvents, syncSeasonalActivation } from "./seasons/rotation";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
 
@@ -79,6 +80,13 @@ async function initDb(): Promise<void> {
   try {
     await runMigrations();
     await seed();
+    // Seed canonical seasonal events and activate the current one
+    await ensureSeasonalEvents().catch(err =>
+      console.warn("[Seasons] ensureSeasonalEvents failed:", (err as Error).message),
+    );
+    await syncSeasonalActivation().catch(err =>
+      console.warn("[Seasons] syncSeasonalActivation failed:", (err as Error).message),
+    );
   } catch (err) {
     if (config.isProduction) {
       // Fatal in production — we never run without persistence
@@ -91,6 +99,13 @@ async function initDb(): Promise<void> {
 }
 
 initDb();
+
+// Re-sync seasonal activation once per hour (handles day-boundary rollovers)
+setInterval(() => {
+  syncSeasonalActivation().catch(err =>
+    console.warn("[Seasons] hourly sync failed:", (err as Error).message),
+  );
+}, 60 * 60 * 1000);
 
 // ── Express app ───────────────────────────────────────────────────────────────
 

@@ -240,6 +240,27 @@ const SEED_ITEMS = [
     description: "A blade forged from void shards. Cuts through dimensions as easily as flesh.",
     rarity: "legendary",
   },
+  // ── Seasonal Event Rewards ────────────────────────────────────────────────────
+  // Spring
+  { id: "icon_reward_spring_staff",     name: "Spring Staff",      type: "weapon",  stats: { attack: 22, magic: 18, speed: 0.9 }, description: "A staff wreathed in living blossoms. Channels the renewal of spring.", rarity: "epic" },
+  { id: "icon_reward_spring_butterfly", name: "Butterfly Wings",   type: "armor",   stats: { defense: 8, speed: 0.3 },            description: "Iridescent wings spun from spring magic. Light as petals.", rarity: "rare" },
+  { id: "icon_reward_spring_crown",     name: "Flower Crown",      type: "armor",   stats: { defense: 6, magic: 12 },             description: "A crown of eternal blossoms. Grants the wearer nature's favour.", rarity: "epic" },
+  { id: "icon_reward_spring_bow",       name: "Petal Bow",         type: "weapon",  stats: { attack: 26, range: 140, speed: 1.1 }, description: "A bow carved from living wood and strung with vine silk.", rarity: "legendary" },
+  // Summer
+  { id: "icon_reward_summer_shield",    name: "Coral Shield",      type: "armor",   stats: { defense: 18 },                       description: "A shield grown from deep coral. Repels ocean curses.", rarity: "rare" },
+  { id: "icon_reward_summer_crown",     name: "Shell Crown",       type: "armor",   stats: { defense: 7, magic: 10 },             description: "A crown fashioned from legendary sea shells. Smells of the deep.", rarity: "epic" },
+  { id: "icon_reward_summer_blade",     name: "Sun Blade",         type: "weapon",  stats: { attack: 30, speed: 1.2 },            description: "Forged in sunlight and quenched in ocean spray. Burns brightly.", rarity: "epic" },
+  { id: "icon_reward_summer_wings",     name: "Tidal Wings",       type: "armor",   stats: { defense: 10, speed: 0.4 },           description: "Wings of concentrated tidal force. Grants flight over water.", rarity: "legendary" },
+  // Fall
+  { id: "icon_reward_fall_scythe",      name: "Harvest Scythe",    type: "weapon",  stats: { attack: 28, speed: 0.85 },           description: "A scythe that reaps more than crops. Carries autumn's weight.", rarity: "rare" },
+  { id: "icon_reward_fall_crown",       name: "Autumn Crown",      type: "armor",   stats: { defense: 7, magic: 11 },             description: "A crown of burnished leaves that never fall.", rarity: "epic" },
+  { id: "icon_reward_fall_cloak",       name: "Leaf Cloak",        type: "armor",   stats: { defense: 14, speed: 0.1 },           description: "A cloak woven from a thousand autumn leaves. Camouflages in forests.", rarity: "epic" },
+  { id: "icon_reward_fall_shield",      name: "Pumpkin Shield",    type: "armor",   stats: { defense: 20 },                       description: "A hollow pumpkin magically hardened to steel. Intimidating.", rarity: "legendary" },
+  // Winter
+  { id: "icon_reward_winter_staff",     name: "Glacial Staff",     type: "weapon",  stats: { attack: 20, magic: 25, speed: 0.85 }, description: "A staff of pure glacial ice that never melts. Freezes on contact.", rarity: "epic" },
+  { id: "icon_reward_winter_crown",     name: "Aurora Crown",      type: "armor",   stats: { defense: 8, magic: 14 },             description: "A crown that shifts with the northern lights. Grants cold immunity.", rarity: "epic" },
+  { id: "icon_reward_winter_blade",     name: "Frostbite Blade",   type: "weapon",  stats: { attack: 32, speed: 1.1 },            description: "A blade so cold it burns. Inflicts frostbite on every strike.", rarity: "epic" },
+  { id: "icon_reward_winter_cloak",     name: "Snowdrift Cloak",   type: "armor",   stats: { defense: 16, speed: 0.2 },           description: "A cloak woven from living snowfall. The wearer leaves no footprints.", rarity: "legendary" },
   // ── Crafted Gear ─────────────────────────────────────────────────────────────
   {
     id: "boots_leather",
