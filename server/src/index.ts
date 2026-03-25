@@ -64,6 +64,16 @@ import {
   getEventLeaderboard,
 } from "./db/seasonalEvents";
 import {
+  getTerritories,
+  getGuildTerritories,
+  getGuildBuffs,
+  declareWar,
+  recordCapturePoints,
+  activatePendingWars,
+  resolveExpiredWars,
+  getWarById,
+} from "./db/territory";
+import {
   getLandPlots,
   getPlayerHousing,
   getHousingByPlot,
@@ -841,6 +851,135 @@ app.get("/events/:eventId/leaderboard", async (req, res) => {
   } catch (err) {
     console.warn("[REST] event leaderboard failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to fetch event leaderboard" });
+  }
+});
+
+// ── Territory Wars REST endpoints ─────────────────────────────────────────────
+
+// GET /territory — list all 6 contestable territories with owner + active war info
+app.get("/territory", async (_req, res) => {
+  try {
+    // Auto-activate any pending wars whose window has opened and resolve expired ones
+    await activatePendingWars();
+    await resolveExpiredWars();
+    const territories = await getTerritories();
+    res.json({ territories });
+  } catch (err) {
+    console.warn("[Territory] list failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch territories" });
+  }
+});
+
+// GET /territory/guild/:guildId — territories owned by a specific guild
+app.get("/territory/guild/:guildId", async (req, res) => {
+  const { guildId } = req.params as { guildId: string };
+  if (!guildId || guildId.length > 100) {
+    res.status(400).json({ error: "Invalid guildId" });
+    return;
+  }
+  try {
+    const territories = await getGuildTerritories(guildId);
+    res.json({ territories });
+  } catch (err) {
+    console.warn("[Territory] guild territories failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch guild territories" });
+  }
+});
+
+// GET /territory/buffs/:guildId — active XP/drop buffs from owned territories
+app.get("/territory/buffs/:guildId", async (req, res) => {
+  const { guildId } = req.params as { guildId: string };
+  if (!guildId || guildId.length > 100) {
+    res.status(400).json({ error: "Invalid guildId" });
+    return;
+  }
+  try {
+    const buffs = await getGuildBuffs(guildId);
+    res.json(buffs);
+  } catch (err) {
+    console.warn("[Territory] buffs failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch territory buffs" });
+  }
+});
+
+// GET /territory/war/:warId — war details + current points
+app.get("/territory/war/:warId", async (req, res) => {
+  const { warId } = req.params as { warId: string };
+  if (!warId || warId.length > 100) {
+    res.status(400).json({ error: "Invalid warId" });
+    return;
+  }
+  try {
+    const war = await getWarById(warId);
+    if (!war) { res.status(404).json({ error: "War not found" }); return; }
+    res.json(war);
+  } catch (err) {
+    console.warn("[Territory] war lookup failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch war" });
+  }
+});
+
+// POST /territory/declare-war — guild leader declares war on a territory
+// Body: { userId, guildId, territoryId }
+app.post("/territory/declare-war", async (req, res) => {
+  const { userId, guildId, territoryId } =
+    req.body as { userId?: string; guildId?: string; territoryId?: string };
+  if (!userId || !guildId || !territoryId
+      || userId.length > 100 || guildId.length > 100 || territoryId.length > 60) {
+    res.status(400).json({ error: "userId, guildId, and territoryId are required" });
+    return;
+  }
+  try {
+    const result = await declareWar(userId, guildId, territoryId);
+    if (!result.success) {
+      res.status(400).json({ error: result.error });
+      return;
+    }
+    res.json({
+      success: true,
+      warId:       result.warId,
+      windowStart: result.windowStart,
+      windowEnd:   result.windowEnd,
+    });
+  } catch (err) {
+    console.warn("[Territory] declare-war failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to declare war" });
+  }
+});
+
+// POST /territory/capture-points — record capture points earned by a player during a war
+// Body: { userId, guildId, warId, points? }
+app.post("/territory/capture-points", async (req, res) => {
+  const { userId, guildId, warId, points } =
+    req.body as { userId?: string; guildId?: string; warId?: string; points?: number };
+  if (!userId || !guildId || !warId
+      || userId.length > 100 || guildId.length > 100 || warId.length > 100) {
+    res.status(400).json({ error: "userId, guildId, and warId are required" });
+    return;
+  }
+  const pts = Math.min(Math.max(Number(points ?? 1), 1), 100); // clamp 1–100
+  try {
+    const result = await recordCapturePoints(warId, userId, guildId, pts);
+    if (!result.success) {
+      res.status(400).json({ error: result.error });
+      return;
+    }
+    res.json({ success: true, newTotal: result.newTotal });
+  } catch (err) {
+    console.warn("[Territory] capture-points failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to record capture points" });
+  }
+});
+
+// POST /territory/resolve — manually trigger war resolution (admin / cron use)
+app.post("/territory/resolve", async (_req, res) => {
+  try {
+    await activatePendingWars();
+    const resolved = await resolveExpiredWars();
+    res.json({ resolved });
+  } catch (err) {
+    console.warn("[Territory] resolve failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to resolve wars" });
   }
 });
 

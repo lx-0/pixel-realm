@@ -569,6 +569,43 @@ export const arenaSeasonRewards = pgTable(
   }),
 );
 
+// ── Guild Territories ─────────────────────────────────────────────────────────
+
+export const guildTerritories = pgTable("guild_territories", {
+  id:            varchar("id", { length: 50 }).primaryKey(),
+  name:          varchar("name", { length: 100 }).notNull(),
+  description:   text("description").notNull().default(""),
+  ownerGuildId:  uuid("owner_guild_id").references(() => guilds.id, { onDelete: "set null" }),
+  capturedAt:    timestamp("captured_at", { withTimezone: true }),
+  xpBonusPct:    integer("xp_bonus_pct").notNull().default(10),
+  dropBonusPct:  integer("drop_bonus_pct").notNull().default(5),
+  updatedAt:     timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const guildWars = pgTable("guild_wars", {
+  id:               uuid("id").defaultRandom().primaryKey(),
+  territoryId:      varchar("territory_id", { length: 50 }).notNull().references(() => guildTerritories.id),
+  attackerGuildId:  uuid("attacker_guild_id").notNull().references(() => guilds.id, { onDelete: "cascade" }),
+  defenderGuildId:  uuid("defender_guild_id").references(() => guilds.id, { onDelete: "set null" }),
+  status:           varchar("status", { length: 20 }).notNull().default("pending"), // 'pending'|'active'|'completed'|'cancelled'
+  windowStart:      timestamp("window_start", { withTimezone: true }).notNull(),
+  windowEnd:        timestamp("window_end", { withTimezone: true }).notNull(),
+  attackerPoints:   integer("attacker_points").notNull().default(0),
+  defenderPoints:   integer("defender_points").notNull().default(0),
+  winnerGuildId:    uuid("winner_guild_id").references(() => guilds.id, { onDelete: "set null" }),
+  declaredAt:       timestamp("declared_at", { withTimezone: true }).notNull().defaultNow(),
+  resolvedAt:       timestamp("resolved_at", { withTimezone: true }),
+});
+
+export const warCapturePoints = pgTable("war_capture_points", {
+  id:        uuid("id").defaultRandom().primaryKey(),
+  warId:     uuid("war_id").notNull().references(() => guildWars.id, { onDelete: "cascade" }),
+  playerId:  uuid("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+  guildId:   uuid("guild_id").notNull().references(() => guilds.id, { onDelete: "cascade" }),
+  points:    integer("points").notNull().default(1),
+  earnedAt:  timestamp("earned_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
 export const playerSessions = pgTable("player_sessions", {
@@ -629,3 +666,6 @@ export type PlayerSession = typeof playerSessions.$inferSelect;
 export type ZoneVisit = typeof zoneVisits.$inferSelect;
 export type PlayerLoginStreak = typeof playerLoginStreaks.$inferSelect;
 export type DailyRewardClaim = typeof dailyRewardClaims.$inferSelect;
+export type GuildTerritory = typeof guildTerritories.$inferSelect;
+export type GuildWar = typeof guildWars.$inferSelect;
+export type WarCapturePoint = typeof warCapturePoints.$inferSelect;

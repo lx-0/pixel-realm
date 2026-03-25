@@ -21,6 +21,7 @@ import { sql, eq } from "drizzle-orm";
 import { getDb } from "./client";
 import { getRedis } from "./redis";
 import { playerState } from "./schema";
+// Note: guild_territories is referenced via sql.raw() in the guild leaderboard query
 
 export type LeaderboardCategory = "xp" | "kills" | "quests" | "achievements" | "crafting" | "prestige" | "pvp_wins" | "guild";
 export type LeaderboardPeriod = "all" | "weekly" | "daily";
@@ -138,18 +139,23 @@ async function queryLeaderboard(
       LIMIT 100
     `)) as unknown as typeof rows;
   } else if (category === "guild") {
-    // Guild power = aggregate XP of all active guild members (period filter via last_seen_at)
+    // Guild power = aggregate XP of active members + territory bonus (50 000 pts per territory)
     rows = await db.execute(sql.raw(`
       SELECT
         gm.guild_id AS player_id,
         g.name      AS username,
-        SUM(ps.xp)::int AS score
+        (SUM(ps.xp) + COALESCE(tc.territory_count, 0) * 50000)::int AS score
       FROM guild_memberships gm
       JOIN guilds g ON g.id = gm.guild_id
       JOIN player_state ps ON ps.player_id = gm.player_id
       JOIN players p ON p.id = gm.player_id AND p.deleted_at IS NULL
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS territory_count
+        FROM guild_territories gt
+        WHERE gt.owner_guild_id = gm.guild_id
+      ) tc ON true
       WHERE g.deleted_at IS NULL ${pf}
-      GROUP BY gm.guild_id, g.name
+      GROUP BY gm.guild_id, g.name, tc.territory_count
       HAVING SUM(ps.xp) > 0
       ORDER BY score DESC
       LIMIT 100
