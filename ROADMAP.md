@@ -161,11 +161,18 @@ Ethereal Nexus zone implementation (zone 16, level 41+) and Twilight Citadel art
 - [x] PIX-214 — Update roadmap (M17 complete, add M18 milestone)
 - [x] PIX-215 — Rebuild distribution zip as v0.5.0 with zone 16 content
 
-### M19: Twilight Citadel & Oblivion Spire — IN PROGRESS
+### M19: Twilight Citadel & Oblivion Spire — COMPLETE
 Twilight Citadel zone implementation (zone 17, level 44+) and Oblivion Spire art pipeline (zone 18, level 47+).
 
-- [ ] PIX-217 — Implement Twilight Citadel zone (zone 17, level 44+)
-- [ ] PIX-218 — Create Oblivion Spire zone art (zone 18, level 47+)
+- [x] PIX-217 — Implement Twilight Citadel zone (zone 17, level 44+)
+- [x] PIX-218 — Create Oblivion Spire zone art (zone 18, level 47+)
+
+### M20: Oblivion Spire & Final Zone — IN PROGRESS
+Oblivion Spire zone implementation (zone 18, level 47+), Astral Pinnacle art pipeline (zone 19, level 50 final zone), roadmap update, and distribution rebuild.
+
+- [ ] PIX-220 — Implement Oblivion Spire zone (zone 18, level 47+)
+- [ ] PIX-221 — Create Astral Pinnacle zone art (zone 19, level 50 final endgame zone)
+- [ ] PIX-222 — Rebuild distribution zip as v0.6.0 with zone 17-18 content
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -192,7 +199,8 @@ M5 → M6 ──────────────────┘
                                                           M17 (Primordial Core + Ethereal Nexus, parallel to M9)
                                                                 M18 (Ethereal Nexus + Twilight Citadel, parallel to M9)
                                                                       M19 (Twilight Citadel + Oblivion Spire, parallel to M9)
-                                                                            M14 (post-launch, independent)
+                                                                            M20 (Oblivion Spire + Astral Pinnacle, parallel to M9)
+                                                                                  M14 (post-launch, independent)
 ```
 
 ## Key Decisions
@@ -208,6 +216,7 @@ M5 → M6 ──────────────────┘
 - **Shattered Dominion** — M16 completed zone 14 (level 35+), plus combat stats, stat sheet, and achievement updates.
 - **Primordial Core & Ethereal Nexus** — M17 completed zone 15 implementation, zone 16 art, and v0.4.0 distribution. All complete as of 2026-03-25.
 - **Ethereal Nexus & Twilight Citadel** — M18 completed zone 16 implementation, zone 17 art, and v0.5.0 distribution. All complete as of 2026-03-25.
-- **Twilight Citadel & Oblivion Spire** — M19 implements zone 17 (level 44+) and begins Oblivion Spire art pipeline (zone 18, level 47+). In progress as of 2026-03-25.
+- **Twilight Citadel & Oblivion Spire** — M19 completed zone 17 implementation and zone 18 art. All complete as of 2026-03-25.
+- **Oblivion Spire & Final Zone** — M20 implements zone 18 (level 47+) and begins Astral Pinnacle art pipeline (zone 19, level 50 final zone). In progress as of 2026-03-25.
 - **Single engineer** — One engineer has shipped M0–M18 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 17 (Twilight Citadel). Starting zone 18 (Oblivion Spire) art pipeline for M19.
