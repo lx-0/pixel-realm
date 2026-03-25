@@ -7,6 +7,11 @@ import { DayNightSystem } from '../systems/DayNightSystem';
  * BootScene — loads PNG assets from public/assets/ then transitions to Menu.
  * Falls back to procedurally-generated textures for any asset that fails to load.
  * Also generates always-procedural textures ('particle', 'wall') needed for VFX.
+ *
+ * Only assets actually referenced by game scenes are loaded here. Zone-specific
+ * enemy/boss/NPC/tileset/parallax assets for zones 1-19 are NOT loaded because
+ * GameScene renders all enemies using the generic 'enemy' sprite (tinted per type)
+ * and builds all zone geometry procedurally from ZoneConfig color values.
  */
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -14,479 +19,32 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // Spritesheets (animated characters) — horizontal strips
+    // ── Core sprites ─────────────────────────────────────────────────────────
     // player: 14 frames × 16px = 224×24  (idle:0-1, walk:2-5, attack:6-9, death:10-13)
     // enemy : 12 frames × 16px = 192×24  (idle:0-1, walk:2-5, attack:6-9, death:10-11)
     this.load.spritesheet('player', 'assets/char_player_warrior.png', { frameWidth: 16, frameHeight: 24 });
     this.load.spritesheet('enemy',  'assets/char_enemy_goblin.png',   { frameWidth: 16, frameHeight: 24 });
 
-    // Tiles & pickups
-    this.load.image('ground', 'assets/tile_grass_plains.png');
-    this.load.image('pickup', 'assets/icon_pickup_xp.png');
-    this.load.image('hazard', 'assets/tile_hazard_fire.png');
-
-    // UI elements
-    this.load.image('ui_hud_frame', 'assets/ui_hud_frame.png');
-    this.load.image('ui_bar_fill',  'assets/ui_bar_fill.png');
-    this.load.image('ui_bar_mp',    'assets/ui_bar_mp_fill.png');
-
-    // Parallax background layers
-    this.load.image('bg_sky',        'assets/bg_sky.png');
-    this.load.image('bg_hills_far',  'assets/bg_hills_far.png');
-    this.load.image('bg_hills_near', 'assets/bg_hills_near.png');
-
-    // Ice Caverns parallax layers
-    this.load.image('bg_ice_far',  'assets/bg_ice_far.png');
-    this.load.image('bg_ice_near', 'assets/bg_ice_near.png');
-
-    // Menu / screen backgrounds
-    this.load.image('bg_menu_title', 'assets/bg_menu_title.png');
-    this.load.image('bg_options',    'assets/bg_options.png');
-    this.load.image('bg_credits',    'assets/bg_credits.png');
-    this.load.image('bg_gameover',   'assets/bg_gameover.png');
-
-    // Additional tilesets (biomes)
-    this.load.image('tileset_desert',   'assets/tileset_desert.png');
-    this.load.image('tileset_ice',      'assets/tileset_ice.png');
-    this.load.image('tileset_volcanic', 'assets/tileset_volcanic.png');
-    this.load.image('tileset_ocean',    'assets/tileset_ocean.png');
-    this.load.image('tileset_dungeon',  'assets/tileset_dungeon.png');
-    this.load.image('tileset_town',     'assets/tileset_town.png');
-    this.load.image('tileset_swamp',    'assets/tiles/tilesets/tileset_swamp.png');
-
-    // Enemy variants (12 frames × 16×24; boss: 12 frames × 32×32)
-    this.load.spritesheet('enemy_slime',    'assets/char_enemy_slime.png',    { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_skeleton', 'assets/char_enemy_skeleton.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_orc',      'assets/char_enemy_orc.png',      { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_boss',     'assets/char_enemy_boss.png',     { frameWidth: 32, frameHeight: 32 });
-
-    // Ice Caverns enemies (12 frames × 16×24; boss: 12 frames × 32×32)
-    this.load.spritesheet('enemy_ice_elemental', 'assets/char_enemy_ice_elemental.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_frost_wolf',    'assets/char_enemy_frost_wolf.png',    { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_crystal_golem', 'assets/char_enemy_crystal_golem.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('boss_glacial_wyrm',   'assets/char_boss_glacial_wyrm.png',   { frameWidth: 32, frameHeight: 32 });
-
-    // Volcanic Highlands enemies (12 frames × 16×24; boss: 12 frames × 32×32)
-    this.load.spritesheet('enemy_lava_slime',  'assets/char_enemy_lava_slime.png',  { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_fire_imp',    'assets/char_enemy_fire_imp.png',    { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_magma_golem', 'assets/char_enemy_magma_golem.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('boss_infernal_warden', 'assets/boss_infernal_warden.png', { frameWidth: 32, frameHeight: 32 });
-
-    // Shadowmire Swamp enemies (12 frames × 16×24; boss phases: 32×32 each)
-    this.load.spritesheet('enemy_bog_crawler',  'assets/sprites/enemies/char_enemy_bog_crawler.png',  { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_swamp_wraith', 'assets/sprites/enemies/char_enemy_swamp_wraith.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_toxic_toad',   'assets/sprites/enemies/char_enemy_toxic_toad.png',   { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_mire_queen_phase1', 'assets/sprites/enemies/bosses/boss_mire_queen_phase1.png');
-    this.load.image('boss_mire_queen_phase2', 'assets/sprites/enemies/bosses/boss_mire_queen_phase2.png');
-    this.load.image('boss_mire_queen_phase3', 'assets/sprites/enemies/bosses/boss_mire_queen_phase3.png');
-    this.load.image('boss_mire_queen_idle',   'assets/sprites/enemies/bosses/boss_mire_queen_idle.png');
-    this.load.image('boss_mire_queen_attack', 'assets/sprites/enemies/bosses/boss_mire_queen_attack.png');
-
-    // Shadowmire Swamp NPC sprites
-    this.load.image('npc_swamp_hermit',       'assets/sprites/characters/char_npc_swamp_hermit.png');
-    this.load.image('npc_swamp_potion_seller','assets/sprites/characters/char_npc_swamp_potion_seller.png');
-    this.load.image('npc_quest_swamp',        'assets/sprites/characters/char_npc_quest_swamp.png');
-
-    // Shadowmire Swamp parallax layers
-    this.load.image('bg_parallax_swamp_far',  'assets/backgrounds/parallax/bg_parallax_swamp_far.png');
-    this.load.image('bg_parallax_swamp_mid',  'assets/backgrounds/parallax/bg_parallax_swamp_mid.png');
-    this.load.image('bg_parallax_swamp_near', 'assets/backgrounds/parallax/bg_parallax_swamp_near.png');
-
-    // Frostpeak Highlands tileset
-    this.load.image('tileset_frostpeak', 'assets/tiles/tilesets/tileset_frostpeak.png');
-
-    // Frostpeak Highlands enemies (12 frames × 16×24; boss phases: 32×32 each)
-    this.load.spritesheet('enemy_frost_elemental', 'assets/sprites/enemies/char_enemy_frost_elemental.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_snow_wolf',       'assets/sprites/enemies/char_enemy_snow_wolf.png',       { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_ice_archer',      'assets/sprites/enemies/char_enemy_ice_archer.png',      { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_frost_titan_phase1', 'assets/sprites/enemies/bosses/boss_frost_titan_phase1.png');
-    this.load.image('boss_frost_titan_phase2', 'assets/sprites/enemies/bosses/boss_frost_titan_phase2.png');
-    this.load.image('boss_frost_titan_phase3', 'assets/sprites/enemies/bosses/boss_frost_titan_phase3.png');
-    this.load.image('boss_frost_titan_idle',   'assets/sprites/enemies/bosses/boss_frost_titan_idle.png');
-    this.load.image('boss_frost_titan_attack', 'assets/sprites/enemies/bosses/boss_frost_titan_attack.png');
-
-    // Frostpeak Highlands NPC
-    this.load.image('npc_quest_frostpeak', 'assets/sprites/characters/char_npc_quest_frostpeak.png');
-
-    // Frostpeak Highlands parallax layers
-    this.load.image('bg_parallax_frostpeak_far',  'assets/backgrounds/parallax/bg_parallax_frostpeak_far.png');
-    this.load.image('bg_parallax_frostpeak_mid',  'assets/backgrounds/parallax/bg_parallax_frostpeak_mid.png');
-    this.load.image('bg_parallax_frostpeak_near', 'assets/backgrounds/parallax/bg_parallax_frostpeak_near.png');
-
-    // Celestial Spire tileset
-    this.load.image('tileset_celestial', 'assets/tiles/tilesets/tileset_celestial.png');
-
-    // Celestial Spire enemies (12 frames × 16×24; boss phases: 32×32 each)
-    this.load.spritesheet('enemy_star_sentinel', 'assets/sprites/enemies/char_enemy_sky_sentinel.png',    { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_void_mage',     'assets/sprites/enemies/char_enemy_storm_harpy.png',     { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_astral_beast',  'assets/sprites/enemies/char_enemy_wind_elemental.png',  { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_celestial_arbiter_phase1', 'assets/sprites/enemies/bosses/boss_stormkeeper_titan_phase1.png');
-    this.load.image('boss_celestial_arbiter_phase2', 'assets/sprites/enemies/bosses/boss_stormkeeper_titan_phase2.png');
-    this.load.image('boss_celestial_arbiter_phase3', 'assets/sprites/enemies/bosses/boss_stormkeeper_titan_phase3.png');
-    this.load.image('boss_celestial_arbiter_idle',   'assets/sprites/enemies/bosses/boss_stormkeeper_titan_idle.png');
-    this.load.image('boss_celestial_arbiter_attack', 'assets/sprites/enemies/bosses/boss_stormkeeper_titan_attack.png');
-
-    // Celestial Spire NPC
-    this.load.image('npc_quest_celestial', 'assets/sprites/characters/char_npc_quest_celestial.png');
-
-    // Celestial Spire parallax layers
-    this.load.image('bg_parallax_celestial_far',  'assets/backgrounds/parallax/bg_parallax_celestial_far.png');
-    this.load.image('bg_parallax_celestial_mid',  'assets/backgrounds/parallax/bg_parallax_celestial_mid.png');
-    this.load.image('bg_parallax_celestial_near', 'assets/backgrounds/parallax/bg_parallax_celestial_near.png');
-
-    // Abyssal Depths tileset
-    this.load.image('tileset_abyssal', 'assets/tiles/tilesets/tileset_abyssal.png');
-
-    // Abyssal Depths enemies (16×24 spritesheet) and boss phases (32×32 each)
-    this.load.spritesheet('enemy_deep_angler',       'assets/sprites/enemies/char_enemy_deep_angler.png',       { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_abyssal_leviathan', 'assets/sprites/enemies/char_enemy_abyssal_leviathan.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_coral_golem',       'assets/sprites/enemies/char_enemy_coral_golem.png',       { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_abyssal_kraken_lord_phase1', 'assets/sprites/enemies/bosses/boss_abyssal_kraken_phase1.png');
-    this.load.image('boss_abyssal_kraken_lord_phase2', 'assets/sprites/enemies/bosses/boss_abyssal_kraken_phase2.png');
-    this.load.image('boss_abyssal_kraken_lord_phase3', 'assets/sprites/enemies/bosses/boss_abyssal_kraken_phase3.png');
-    this.load.image('boss_abyssal_kraken_lord_idle',   'assets/sprites/enemies/bosses/boss_abyssal_kraken_idle.png');
-    this.load.image('boss_abyssal_kraken_lord_attack', 'assets/sprites/enemies/bosses/boss_abyssal_kraken_attack.png');
-
-    // Abyssal Depths NPC
-    this.load.image('npc_quest_abyssal', 'assets/sprites/characters/char_npc_quest_abyssal.png');
-
-    // Abyssal Depths parallax layers
-    this.load.image('bg_parallax_abyssal_far',  'assets/backgrounds/parallax/bg_parallax_abyssal_far.png');
-    this.load.image('bg_parallax_abyssal_mid',  'assets/backgrounds/parallax/bg_parallax_abyssal_mid.png');
-    this.load.image('bg_parallax_abyssal_near', 'assets/backgrounds/parallax/bg_parallax_abyssal_near.png');
-
-    this.load.image('tileset_dragonbone', 'assets/tiles/tilesets/tileset_dragonbone.png');
-
-    // Dragonbone Wastes enemies (16×24 spritesheet) and boss phases (32×32 each)
-    this.load.spritesheet('enemy_bone_revenant',  'assets/sprites/enemies/char_enemy_bone_revenant.png',  { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_ashwyrm',        'assets/sprites/enemies/char_enemy_ashwyrm.png',        { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_spectral_drake', 'assets/sprites/enemies/char_enemy_spectral_drake.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_ancient_dracolich_phase1', 'assets/sprites/enemies/bosses/boss_ancient_dracolich_phase1.png');
-    this.load.image('boss_ancient_dracolich_phase2', 'assets/sprites/enemies/bosses/boss_ancient_dracolich_phase2.png');
-    this.load.image('boss_ancient_dracolich_phase3', 'assets/sprites/enemies/bosses/boss_ancient_dracolich_phase3.png');
-    this.load.image('boss_ancient_dracolich_idle',   'assets/sprites/enemies/bosses/boss_ancient_dracolich_idle.png');
-    this.load.image('boss_ancient_dracolich_attack', 'assets/sprites/enemies/bosses/boss_ancient_dracolich_attack.png');
-
-    // Dragonbone Wastes NPC
-    this.load.image('npc_quest_dragonbone', 'assets/sprites/characters/char_npc_quest_dragonbone.png');
-
-    // Dragonbone Wastes parallax layers
-    this.load.image('bg_parallax_dragonbone_far',  'assets/backgrounds/parallax/bg_parallax_dragonbone_far.png');
-    this.load.image('bg_parallax_dragonbone_mid',  'assets/backgrounds/parallax/bg_parallax_dragonbone_mid.png');
-    this.load.image('bg_parallax_dragonbone_near', 'assets/backgrounds/parallax/bg_parallax_dragonbone_near.png');
-
-    // Void Sanctum tileset
-    this.load.image('tileset_void_sanctum', 'assets/tiles/tilesets/tileset_void_sanctum.png');
-
-    // Void Sanctum enemies (16×24 spritesheet) and boss phases (32×32 each)
-    this.load.spritesheet('enemy_rift_walker',   'assets/sprites/enemies/char_enemy_rift_walker.png',   { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_void_sentinel', 'assets/sprites/enemies/char_enemy_void_sentinel.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_shadow_weaver', 'assets/sprites/enemies/char_enemy_shadow_weaver.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_void_architect_phase1', 'assets/sprites/enemies/bosses/boss_void_architect_phase1.png');
-    this.load.image('boss_void_architect_phase2', 'assets/sprites/enemies/bosses/boss_void_architect_phase2.png');
-    this.load.image('boss_void_architect_phase3', 'assets/sprites/enemies/bosses/boss_void_architect_phase3.png');
-    this.load.image('boss_void_architect_idle',   'assets/sprites/enemies/bosses/boss_void_architect_idle.png');
-    this.load.image('boss_void_architect_attack', 'assets/sprites/enemies/bosses/boss_void_architect_attack.png');
-
-    // Void Sanctum NPC
-    this.load.image('npc_quest_void_sanctum', 'assets/sprites/characters/char_npc_quest_void_sanctum.png');
-
-    // Void Sanctum parallax layers
-    this.load.image('bg_parallax_void_sanctum_far',  'assets/backgrounds/parallax/bg_parallax_void_sanctum_far.png');
-    this.load.image('bg_parallax_void_sanctum_mid',  'assets/backgrounds/parallax/bg_parallax_void_sanctum_mid.png');
-    this.load.image('bg_parallax_void_sanctum_near', 'assets/backgrounds/parallax/bg_parallax_void_sanctum_near.png');
-
-    // Eclipsed Throne tileset
-    this.load.image('tileset_eclipsed_throne', 'assets/tiles/tilesets/tileset_eclipsed_throne.png');
-
-    // Eclipsed Throne enemies (16×24 spritesheet) and boss phases (32×32 each)
-    this.load.spritesheet('enemy_eclipse_knight', 'assets/sprites/enemies/char_enemy_eclipse_knight.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_shadow_herald',  'assets/sprites/enemies/char_enemy_shadow_herald.png',  { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_dusk_wraith',    'assets/sprites/enemies/char_enemy_dusk_wraith.png',    { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_eclipsed_king_phase1', 'assets/sprites/enemies/bosses/boss_eclipsed_king_phase1.png');
-    this.load.image('boss_eclipsed_king_phase2', 'assets/sprites/enemies/bosses/boss_eclipsed_king_phase2.png');
-    this.load.image('boss_eclipsed_king_phase3', 'assets/sprites/enemies/bosses/boss_eclipsed_king_phase3.png');
-    this.load.image('boss_eclipsed_king_idle',   'assets/sprites/enemies/bosses/boss_eclipsed_king_idle.png');
-    this.load.image('boss_eclipsed_king_attack', 'assets/sprites/enemies/bosses/boss_eclipsed_king_attack.png');
-
-    // Eclipsed Throne NPC
-    this.load.image('npc_quest_eclipsed_throne', 'assets/sprites/characters/char_npc_quest_eclipsed_throne.png');
-
-    // Eclipsed Throne parallax layers
-    this.load.image('bg_parallax_eclipsed_throne_far',  'assets/backgrounds/parallax/bg_parallax_eclipsed_throne_far.png');
-    this.load.image('bg_parallax_eclipsed_throne_mid',  'assets/backgrounds/parallax/bg_parallax_eclipsed_throne_mid.png');
-    this.load.image('bg_parallax_eclipsed_throne_near', 'assets/backgrounds/parallax/bg_parallax_eclipsed_throne_near.png');
-
-    // Shattered Dominion tileset
-    this.load.image('tileset_shattered_dominion', 'assets/tiles/tilesets/tileset_shattered_dominion.png');
-
-    // Shattered Dominion enemies (16×24 spritesheet) and boss phases (32×32 each)
-    this.load.spritesheet('enemy_shattered_golem',  'assets/sprites/enemies/char_enemy_shattered_golem.png',  { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_reality_fracture', 'assets/sprites/enemies/char_enemy_reality_fracture.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_dominion_shade',   'assets/sprites/enemies/char_enemy_dominion_shade.png',   { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_the_unmaker_phase1', 'assets/sprites/enemies/bosses/boss_unmaker_phase1.png');
-    this.load.image('boss_the_unmaker_phase2', 'assets/sprites/enemies/bosses/boss_unmaker_phase2.png');
-    this.load.image('boss_the_unmaker_phase3', 'assets/sprites/enemies/bosses/boss_unmaker_phase3.png');
-    this.load.image('boss_the_unmaker_idle',   'assets/sprites/enemies/bosses/boss_unmaker_idle.png');
-    this.load.image('boss_the_unmaker_attack', 'assets/sprites/enemies/bosses/boss_unmaker_attack.png');
-
-    // Shattered Dominion NPC
-    this.load.image('npc_quest_shattered_dominion', 'assets/sprites/characters/char_npc_quest_shattered_dominion.png');
-
-    // Shattered Dominion parallax layers
-    this.load.image('bg_parallax_shattered_dominion_far',  'assets/backgrounds/parallax/bg_parallax_shattered_dominion_far.png');
-    this.load.image('bg_parallax_shattered_dominion_mid',  'assets/backgrounds/parallax/bg_parallax_shattered_dominion_mid.png');
-    this.load.image('bg_parallax_shattered_dominion_near', 'assets/backgrounds/parallax/bg_parallax_shattered_dominion_near.png');
-
-    // Primordial Core tileset
-    this.load.image('tileset_primordial_core', 'assets/tiles/tilesets/tileset_primordial_core.png');
-
-    // Primordial Core enemies (128×16 spritesheet, 8 frames: 16×16 per frame) and boss phases (32×32 each)
-    this.load.spritesheet('enemy_elemental_amalgam', 'assets/sprites/enemies/char_enemy_elemental_amalgam.png', { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('enemy_primordial_shard',  'assets/sprites/enemies/char_enemy_primordial_shard.png',  { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('enemy_core_sentinel',     'assets/sprites/enemies/char_enemy_core_sentinel.png',     { frameWidth: 16, frameHeight: 16 });
-    this.load.image('boss_genesis_flame_phase1', 'assets/sprites/enemies/bosses/boss_genesis_flame_phase1.png');
-    this.load.image('boss_genesis_flame_phase2', 'assets/sprites/enemies/bosses/boss_genesis_flame_phase2.png');
-    this.load.image('boss_genesis_flame_phase3', 'assets/sprites/enemies/bosses/boss_genesis_flame_phase3.png');
-    this.load.image('boss_genesis_flame_idle',   'assets/sprites/enemies/bosses/boss_genesis_flame_idle.png');
-    this.load.image('boss_genesis_flame_attack', 'assets/sprites/enemies/bosses/boss_genesis_flame_attack.png');
-
-    // Primordial Core NPC
-    this.load.image('npc_quest_primordial_core', 'assets/sprites/characters/char_npc_quest_primordial_core.png');
-
-    // Primordial Core parallax layers
-    this.load.image('bg_parallax_primordial_core_far',  'assets/backgrounds/parallax/bg_parallax_primordial_core_far.png');
-    this.load.image('bg_parallax_primordial_core_mid',  'assets/backgrounds/parallax/bg_parallax_primordial_core_mid.png');
-    this.load.image('bg_parallax_primordial_core_near', 'assets/backgrounds/parallax/bg_parallax_primordial_core_near.png');
-
-    // Ethereal Nexus tileset (zone 16)
-    this.load.image('tileset_ethereal_nexus', 'assets/tiles/tilesets/tileset_ethereal_nexus.png');
-
-    // Ethereal Nexus enemies and boss phases
-    this.load.spritesheet('enemy_nexus_guardian', 'assets/sprites/enemies/char_enemy_nexus_guardian.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_phase_strider',  'assets/sprites/enemies/char_enemy_phase_strider.png',  { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_energy_parasite','assets/sprites/enemies/char_enemy_energy_parasite.png',{ frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_nexus_overseer_phase1', 'assets/sprites/enemies/bosses/boss_nexus_overseer_phase1.png');
-    this.load.image('boss_nexus_overseer_phase2', 'assets/sprites/enemies/bosses/boss_nexus_overseer_phase2.png');
-    this.load.image('boss_nexus_overseer_phase3', 'assets/sprites/enemies/bosses/boss_nexus_overseer_phase3.png');
-    this.load.image('boss_nexus_overseer_idle',   'assets/sprites/enemies/bosses/boss_nexus_overseer_idle.png');
-    this.load.image('boss_nexus_overseer_attack', 'assets/sprites/enemies/bosses/boss_nexus_overseer_attack.png');
-
-    // Ethereal Nexus NPC
-    this.load.image('npc_quest_ethereal_nexus', 'assets/sprites/characters/char_npc_quest_ethereal_nexus.png');
-
-    // Ethereal Nexus parallax layers
-    this.load.image('bg_parallax_ethereal_nexus_far',  'assets/backgrounds/parallax/bg_parallax_ethereal_nexus_far.png');
-    this.load.image('bg_parallax_ethereal_nexus_mid',  'assets/backgrounds/parallax/bg_parallax_ethereal_nexus_mid.png');
-    this.load.image('bg_parallax_ethereal_nexus_near', 'assets/backgrounds/parallax/bg_parallax_ethereal_nexus_near.png');
-
-    // Twilight Citadel tileset (zone 17)
-    this.load.image('tileset_twilight_citadel', 'assets/tiles/tilesets/tileset_twilight_citadel.png');
-
-    // Twilight Citadel enemies and boss phases
-    this.load.spritesheet('enemy_twilight_sentinel', 'assets/sprites/enemies/char_enemy_twilight_sentinel.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_rift_stalker',      'assets/sprites/enemies/char_enemy_rift_stalker.png',      { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_echo_wraith',       'assets/sprites/enemies/char_enemy_echo_wraith.png',       { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_twilight_warden_phase1', 'assets/sprites/enemies/bosses/boss_twilight_warden_phase1.png');
-    this.load.image('boss_twilight_warden_phase2', 'assets/sprites/enemies/bosses/boss_twilight_warden_phase2.png');
-    this.load.image('boss_twilight_warden_phase3', 'assets/sprites/enemies/bosses/boss_twilight_warden_phase3.png');
-    this.load.image('boss_twilight_warden_idle',   'assets/sprites/enemies/bosses/boss_twilight_warden_idle.png');
-    this.load.image('boss_twilight_warden_attack', 'assets/sprites/enemies/bosses/boss_twilight_warden_attack.png');
-
-    // Twilight Citadel NPC
-    this.load.image('npc_quest_twilight_citadel', 'assets/sprites/characters/char_npc_quest_twilight_citadel.png');
-
-    // Twilight Citadel parallax layers
-    this.load.image('bg_parallax_twilight_citadel_far',  'assets/backgrounds/parallax/bg_parallax_twilight_citadel_far.png');
-    this.load.image('bg_parallax_twilight_citadel_mid',  'assets/backgrounds/parallax/bg_parallax_twilight_citadel_mid.png');
-    this.load.image('bg_parallax_twilight_citadel_near', 'assets/backgrounds/parallax/bg_parallax_twilight_citadel_near.png');
-
-    // Oblivion Spire tileset (zone 18)
-    this.load.image('tileset_oblivion_spire', 'assets/tiles/tilesets/tileset_oblivion_spire.png');
-
-    // Oblivion Spire enemies and boss phases
-    this.load.spritesheet('enemy_spire_sentinel',  'assets/sprites/enemies/char_enemy_void_sentinel.png',    { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_reality_shard',   'assets/sprites/enemies/char_enemy_reality_shard.png',    { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_oblivion_wraith', 'assets/sprites/enemies/char_enemy_oblivion_wraith.png',  { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_spire_keeper_phase1', 'assets/sprites/enemies/bosses/boss_spire_keeper_phase1.png');
-    this.load.image('boss_spire_keeper_phase2', 'assets/sprites/enemies/bosses/boss_spire_keeper_phase2.png');
-    this.load.image('boss_spire_keeper_phase3', 'assets/sprites/enemies/bosses/boss_spire_keeper_phase3.png');
-    this.load.image('boss_spire_keeper_idle',   'assets/sprites/enemies/bosses/boss_spire_keeper_idle.png');
-    this.load.image('boss_spire_keeper_attack', 'assets/sprites/enemies/bosses/boss_spire_keeper_attack.png');
-
-    // Oblivion Spire NPC
-    this.load.image('npc_quest_oblivion_spire', 'assets/sprites/characters/char_npc_quest_oblivion_spire.png');
-
-    // Oblivion Spire parallax layers
-    this.load.image('bg_parallax_oblivion_spire_far',  'assets/backgrounds/parallax/bg_parallax_oblivion_spire_far.png');
-    this.load.image('bg_parallax_oblivion_spire_mid',  'assets/backgrounds/parallax/bg_parallax_oblivion_spire_mid.png');
-    this.load.image('bg_parallax_oblivion_spire_near', 'assets/backgrounds/parallax/bg_parallax_oblivion_spire_near.png');
-
-    // Astral Pinnacle tileset (zone 19)
-    this.load.image('tileset_astral_pinnacle', 'assets/tiles/tilesets/tileset_astral_pinnacle.png');
-
-    // Astral Pinnacle enemies and boss phases
-    this.load.spritesheet('enemy_astral_warden',   'assets/sprites/enemies/char_enemy_astral_warden.png',   { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_cosmic_devourer', 'assets/sprites/enemies/char_enemy_cosmic_devourer.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_nebula_wisp',     'assets/sprites/enemies/char_enemy_nebula_wisp.png',     { frameWidth: 16, frameHeight: 24 });
-    this.load.image('boss_astral_sovereign_phase1', 'assets/sprites/enemies/bosses/boss_astral_sovereign_phase1.png');
-    this.load.image('boss_astral_sovereign_phase2', 'assets/sprites/enemies/bosses/boss_astral_sovereign_phase2.png');
-    this.load.image('boss_astral_sovereign_phase3', 'assets/sprites/enemies/bosses/boss_astral_sovereign_phase3.png');
-    this.load.image('boss_astral_sovereign_idle',   'assets/sprites/enemies/bosses/boss_astral_sovereign_idle.png');
-    this.load.image('boss_astral_sovereign_attack', 'assets/sprites/enemies/bosses/boss_astral_sovereign_attack.png');
-
-    // Astral Pinnacle NPC
-    this.load.image('npc_quest_astral_pinnacle', 'assets/sprites/characters/char_npc_quest_astral_pinnacle.png');
-
-    // Astral Pinnacle parallax layers
-    this.load.image('bg_parallax_astral_pinnacle_far',  'assets/backgrounds/parallax/bg_parallax_astral_pinnacle_far.png');
-    this.load.image('bg_parallax_astral_pinnacle_mid',  'assets/backgrounds/parallax/bg_parallax_astral_pinnacle_mid.png');
-    this.load.image('bg_parallax_astral_pinnacle_near', 'assets/backgrounds/parallax/bg_parallax_astral_pinnacle_near.png');
-
-    // Pickups & collectibles
-    this.load.image('pickup_health', 'assets/icon_pickup_health.png');
-    this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');
-    this.load.image('pickup_coin',   'assets/icon_pickup_coin.png');
-    this.load.image('pickup_gem',    'assets/icon_pickup_gem.png');
-    this.load.image('pickup_star',   'assets/icon_pickup_star.png');
-
-    // Ice Caverns loot
-    this.load.image('pickup_ice_shard',   'assets/icon_pickup_ice_shard.png');
-    this.load.image('pickup_frozen_gem',  'assets/icon_pickup_frozen_gem.png');
-    this.load.image('pickup_wyrm_scale',  'assets/icon_pickup_wyrm_scale.png');
-
-    // Dungeon enemies (12 frames × 16×24; boss: 12 frames × 32×32)
-    this.load.spritesheet('enemy_dun_skeleton', 'assets/char_enemy_dun_skeleton.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_dun_spider',   'assets/char_enemy_dun_spider.png',   { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_dun_mage',     'assets/char_enemy_dun_mage.png',     { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy_dun_golem',    'assets/char_enemy_dun_golem.png',    { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('boss_dungeon',       'assets/char_boss_dungeon.png',       { frameWidth: 32, frameHeight: 32 });
-
-    // Dungeon decoration spritesheets (animated)
-    this.load.spritesheet('dun_decor_torch',   'assets/sprite_dun_decor_torch.png',   { frameWidth: 16, frameHeight: 16 });
-    this.load.spritesheet('dun_decor_crystal', 'assets/sprite_dun_decor_crystal.png', { frameWidth: 16, frameHeight: 16 });
-
-    // Dungeon decoration sprites (static)
-    this.load.image('dun_decor_rubble', 'assets/sprite_dun_decor_rubble.png');
-    this.load.image('dun_decor_barrel', 'assets/sprite_dun_decor_barrel.png');
-    this.load.image('dun_decor_bones',  'assets/sprite_dun_decor_bones.png');
-
-    // Dungeon loot icons (16×16)
-    this.load.image('loot_shadow_blade', 'assets/icon_dun_loot_shadow_blade.png');
-    this.load.image('loot_cursed_helm',  'assets/icon_dun_loot_cursed_helm.png');
-    this.load.image('loot_soul_gem',     'assets/icon_dun_loot_soul_gem.png');
-    this.load.image('loot_bone_shield',  'assets/icon_dun_loot_bone_shield.png');
-    this.load.image('loot_dark_staff',   'assets/icon_dun_loot_dark_staff.png');
-    this.load.image('loot_crypt_ring',   'assets/icon_dun_loot_crypt_ring.png');
-
-    // Dungeon UI panels & HUD
-    this.load.image('ui_panel_dungeon_entrance', 'assets/ui_panel_dungeon_entrance.png');
-    this.load.image('ui_dungeon_room_progress',  'assets/ui_dungeon_room_progress.png');
-    this.load.image('ui_dungeon_boss_hp_frame',  'assets/ui_dungeon_boss_hp_frame.png');
-    this.load.image('ui_dungeon_timer',          'assets/ui_dungeon_timer.png');
-
-    // Boss chamber background
-    this.load.image('bg_boss_chamber', 'assets/bg_boss_chamber.png');
-
-    // Additional UI elements
-    this.load.image('ui_btn',        'assets/ui_btn.png');
-    this.load.image('ui_cursor',     'assets/ui_cursor.png');
-    this.load.image('ui_icon_skill', 'assets/ui_icon_skill.png');
-    this.load.image('ui_slot',       'assets/ui_slot.png');
-
-    // Skill tree UI assets
-    this.load.image('ui_skill_tree_panel_bg',   'assets/ui/skill_tree/ui_skill_tree_panel_bg.png');
-    this.load.image('ui_skill_node_unlocked',    'assets/ui/skill_tree/ui_skill_node_unlocked.png');
-    this.load.image('ui_skill_node_available',   'assets/ui/skill_tree/ui_skill_node_available.png');
-    this.load.image('ui_skill_node_locked',      'assets/ui/skill_tree/ui_skill_node_locked.png');
-    this.load.image('ui_skill_connector_h',      'assets/ui/skill_tree/ui_skill_connector_h.png');
-    this.load.image('ui_skill_connector_v',      'assets/ui/skill_tree/ui_skill_connector_v.png');
-    this.load.image('ui_skill_point_pip',        'assets/ui/skill_tree/ui_skill_point_pip.png');
-    this.load.image('ui_skill_point_pip_empty',  'assets/ui/skill_tree/ui_skill_point_pip_empty.png');
+    // Pickups used in GameScene
+    this.load.image('pickup',      'assets/icon_pickup_xp.png');
+    this.load.image('pickup_coin', 'assets/icon_pickup_coin.png');
+
+    // ── Skill tree UI ─────────────────────────────────────────────────────────
+    // ui_icon_skill is the fallback badge; archetype badges are used per class
+    this.load.image('ui_icon_skill',              'assets/ui_icon_skill.png');
     this.load.image('ui_archetype_badge_warrior', 'assets/ui/skill_tree/ui_archetype_badge_warrior.png');
     this.load.image('ui_archetype_badge_mage',    'assets/ui/skill_tree/ui_archetype_badge_mage.png');
     this.load.image('ui_archetype_badge_ranger',  'assets/ui/skill_tree/ui_archetype_badge_ranger.png');
 
-    // Crafting station spritesheets (4 frames × 32×32 = 128×32)
-    this.load.spritesheet('station_anvil',          'assets/station_anvil.png',          { frameWidth: 32, frameHeight: 32 });
-    this.load.spritesheet('station_alchemy_table',  'assets/station_alchemy_table.png',  { frameWidth: 32, frameHeight: 32 });
-    this.load.spritesheet('station_workbench',      'assets/station_workbench.png',      { frameWidth: 32, frameHeight: 32 });
-
-    // Crafting material icons (16×16)
-    this.load.image('icon_mat_iron_ore',     'assets/icon_mat_iron_ore.png');
-    this.load.image('icon_mat_gold_ore',     'assets/icon_mat_gold_ore.png');
-    this.load.image('icon_mat_crystal',      'assets/icon_mat_crystal.png');
-    this.load.image('icon_mat_herb_green',   'assets/icon_mat_herb_green.png');
-    this.load.image('icon_mat_herb_red',     'assets/icon_mat_herb_red.png');
-    this.load.image('icon_mat_herb_blue',    'assets/icon_mat_herb_blue.png');
-    this.load.image('icon_mat_gem_ruby',     'assets/icon_mat_gem_ruby.png');
-    this.load.image('icon_mat_gem_sapphire', 'assets/icon_mat_gem_sapphire.png');
-    this.load.image('icon_mat_gem_emerald',  'assets/icon_mat_gem_emerald.png');
-    this.load.image('icon_mat_leather',      'assets/icon_mat_leather.png');
-    this.load.image('icon_mat_wood',         'assets/icon_mat_wood.png');
-    this.load.image('icon_mat_cloth',        'assets/icon_mat_cloth.png');
-    this.load.image('icon_mat_bone',         'assets/icon_mat_bone.png');
-    this.load.image('icon_mat_feather',      'assets/icon_mat_feather.png');
-    this.load.image('icon_mat_venom',        'assets/icon_mat_venom.png');
-    this.load.image('icon_mat_coal',         'assets/icon_mat_coal.png');
-    this.load.image('icon_mat_moonstone',    'assets/icon_mat_moonstone.png');
-
-    // Crafted item icons (16×16)
-    this.load.image('icon_craft_iron_sword',    'assets/icon_craft_iron_sword.png');
-    this.load.image('icon_craft_gold_ring',     'assets/icon_craft_gold_ring.png');
-    this.load.image('icon_craft_leather_armor', 'assets/icon_craft_leather_armor.png');
-    this.load.image('icon_craft_wooden_shield', 'assets/icon_craft_wooden_shield.png');
-    this.load.image('icon_craft_health_potion', 'assets/icon_craft_health_potion.png');
-    this.load.image('icon_craft_mana_potion',   'assets/icon_craft_mana_potion.png');
-    this.load.image('icon_craft_fire_scroll',   'assets/icon_craft_fire_scroll.png');
-    this.load.image('icon_craft_iron_helm',     'assets/icon_craft_iron_helm.png');
-    this.load.image('icon_craft_bow',           'assets/icon_craft_bow.png');
-    this.load.image('icon_craft_pickaxe',       'assets/icon_craft_pickaxe.png');
-    this.load.image('icon_craft_staff',         'assets/icon_craft_staff.png');
-    this.load.image('icon_craft_boots',         'assets/icon_craft_boots.png');
-
-    // Crafting UI panel
-    this.load.image('ui_panel_crafting', 'assets/ui_panel_crafting.png');
-
-    // PvP Arena tilesets (16 tiles × 16×16 = 256×16)
-    this.load.image('tileset_arena_gladiator', 'assets/tileset_arena_gladiator.png');
-    this.load.image('tileset_arena_shadow',    'assets/tileset_arena_shadow.png');
-
-    // Arena UI panels
-    this.load.image('ui_panel_arena_queue',   'assets/ui_panel_arena_queue.png');
-    this.load.image('ui_arena_hud',           'assets/ui_arena_hud.png');
-    this.load.image('ui_panel_arena_results', 'assets/ui_panel_arena_results.png');
-
-    // Arena rank tier icons (16×16)
-    this.load.image('icon_rank_arena_bronze',   'assets/icon_rank_arena_bronze.png');
-    this.load.image('icon_rank_arena_silver',   'assets/icon_rank_arena_silver.png');
-    this.load.image('icon_rank_arena_gold',     'assets/icon_rank_arena_gold.png');
-    this.load.image('icon_rank_arena_platinum', 'assets/icon_rank_arena_platinum.png');
-    this.load.image('icon_rank_arena_diamond',  'assets/icon_rank_arena_diamond.png');
-
-    // Arena leaderboard panel
+    // ── PvP Arena ─────────────────────────────────────────────────────────────
+    this.load.image('tileset_arena_gladiator',    'assets/tileset_arena_gladiator.png');
+    this.load.image('tileset_arena_shadow',       'assets/tileset_arena_shadow.png');
+    this.load.image('ui_arena_hud',               'assets/ui_arena_hud.png');
     this.load.image('ui_panel_arena_leaderboard', 'assets/ui_panel_arena_leaderboard.png');
+    this.load.image('bg_arena_victory',           'assets/bg_arena_victory.png');
+    this.load.image('bg_arena_defeat',            'assets/bg_arena_defeat.png');
 
-    // Arena spectator overlay
-    this.load.image('ui_arena_spectator', 'assets/ui_arena_spectator.png');
-
-    // Arena victory/defeat splash screens (320×180)
-    this.load.image('bg_arena_victory', 'assets/bg_arena_victory.png');
-    this.load.image('bg_arena_defeat',  'assets/bg_arena_defeat.png');
-
-    // Crafting progress bar (8 frames × 80×10 = 640×10)
-    this.load.spritesheet('ui_craft_progress', 'assets/ui_craft_progress.png', { frameWidth: 80, frameHeight: 10 });
-
-    // Craft result VFX (6 frames × 32×32 = 192×32)
-    this.load.spritesheet('vfx_craft_success', 'assets/vfx_craft_success.png', { frameWidth: 32, frameHeight: 32 });
-    this.load.spritesheet('vfx_craft_failure', 'assets/vfx_craft_failure.png', { frameWidth: 32, frameHeight: 32 });
-
-    // Player housing tilesets (16 tiles × 16×16 = 256×16)
-    this.load.image('tileset_house_cottage',  'assets/tileset_house_cottage.png');
-    this.load.image('tileset_house_manor',    'assets/tileset_house_manor.png');
-    this.load.image('tileset_house_interior', 'assets/tileset_house_interior.png');
-
-    // Housing furniture sprites (16×16)
+    // ── Housing furniture sprites (16×16) ─────────────────────────────────────
     this.load.image('furn_bed',            'assets/sprite_furn_bed.png');
     this.load.image('furn_table',          'assets/sprite_furn_table.png');
     this.load.image('furn_chair',          'assets/sprite_furn_chair.png');
@@ -498,7 +56,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('furn_crafting_bench', 'assets/sprite_furn_crafting_bench.png');
     this.load.image('furn_cooking_pot',    'assets/sprite_furn_cooking_pot.png');
 
-    // Housing decoration sprites (16×16)
+    // ── Housing decoration sprites (16×16) ────────────────────────────────────
     this.load.image('decor_painting', 'assets/sprite_decor_painting.png');
     this.load.image('decor_plant',    'assets/sprite_decor_plant.png');
     this.load.image('decor_trophy',   'assets/sprite_decor_trophy.png');
@@ -506,17 +64,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('decor_banner',   'assets/sprite_decor_banner.png');
     this.load.image('decor_candles',  'assets/sprite_decor_candles.png');
 
-    // Housing UI
-    this.load.image('ui_panel_housing',       'assets/ui/housing/ui_panel_housing.png');
-    this.load.image('icon_land_deed',         'assets/ui/housing/icon_land_deed.png');
-    this.load.image('ui_house_preview_frame', 'assets/ui/housing/ui_house_preview_frame.png');
-
-    // Land plot markers (16×16)
-    this.load.image('plot_boundary', 'assets/sprite_plot_boundary.png');
-    this.load.image('plot_for_sale', 'assets/sprite_plot_for_sale.png');
-    this.load.image('plot_flag',     'assets/sprite_plot_flag.png');
-
-    // Day/night cycle HUD icons (4-frame spritesheet: dawn, sun, dusk, moon)
+    // ── Day/night cycle HUD icon sheet ────────────────────────────────────────
     DayNightSystem.preload(this);
 
     this.load.on('loaderror', () => {
@@ -534,89 +82,6 @@ export class BootScene extends Phaser.Scene {
     }
     if (this.textures.get('enemy').frameTotal > 1) {
       this.createEnemyAnims();
-    }
-    if (this.textures.get('enemy_slime').frameTotal > 1) {
-      this.createVariantAnims('enemy_slime', 'slime');
-    }
-    if (this.textures.get('enemy_skeleton').frameTotal > 1) {
-      this.createVariantAnims('enemy_skeleton', 'skeleton');
-    }
-    if (this.textures.get('enemy_orc').frameTotal > 1) {
-      this.createVariantAnims('enemy_orc', 'orc');
-    }
-    if (this.textures.get('enemy_boss').frameTotal > 1) {
-      this.createVariantAnims('enemy_boss', 'boss');
-    }
-    if (this.textures.get('enemy_ice_elemental').frameTotal > 1) {
-      this.createVariantAnims('enemy_ice_elemental', 'ice_elemental');
-    }
-    if (this.textures.get('enemy_frost_wolf').frameTotal > 1) {
-      this.createVariantAnims('enemy_frost_wolf', 'frost_wolf');
-    }
-    if (this.textures.get('enemy_crystal_golem').frameTotal > 1) {
-      this.createVariantAnims('enemy_crystal_golem', 'crystal_golem');
-    }
-    if (this.textures.get('boss_glacial_wyrm').frameTotal > 1) {
-      this.createVariantAnims('boss_glacial_wyrm', 'glacial_wyrm');
-    }
-
-    // Volcanic Highlands enemy animations
-    if (this.textures.get('enemy_lava_slime').frameTotal > 1) {
-      this.createVariantAnims('enemy_lava_slime', 'lava_slime');
-    }
-    if (this.textures.get('enemy_fire_imp').frameTotal > 1) {
-      this.createVariantAnims('enemy_fire_imp', 'fire_imp');
-    }
-    if (this.textures.get('enemy_magma_golem').frameTotal > 1) {
-      this.createVariantAnims('enemy_magma_golem', 'magma_golem');
-    }
-    if (this.textures.get('boss_infernal_warden').frameTotal > 1) {
-      this.createVariantAnims('boss_infernal_warden', 'infernal_warden');
-    }
-
-    // Shadowmire Swamp enemy animations
-    if (this.textures.get('enemy_bog_crawler').frameTotal > 1) {
-      this.createVariantAnims('enemy_bog_crawler', 'bog_crawler');
-    }
-    if (this.textures.get('enemy_swamp_wraith').frameTotal > 1) {
-      this.createVariantAnims('enemy_swamp_wraith', 'swamp_wraith');
-    }
-    if (this.textures.get('enemy_toxic_toad').frameTotal > 1) {
-      this.createVariantAnims('enemy_toxic_toad', 'toxic_toad');
-    }
-
-    // Dungeon enemy animations
-    if (this.textures.get('enemy_dun_skeleton').frameTotal > 1) {
-      this.createVariantAnims('enemy_dun_skeleton', 'dun_skeleton');
-    }
-    if (this.textures.get('enemy_dun_spider').frameTotal > 1) {
-      this.createVariantAnims('enemy_dun_spider', 'dun_spider');
-    }
-    if (this.textures.get('enemy_dun_mage').frameTotal > 1) {
-      this.createVariantAnims('enemy_dun_mage', 'dun_mage');
-    }
-    if (this.textures.get('enemy_dun_golem').frameTotal > 1) {
-      this.createVariantAnims('enemy_dun_golem', 'dun_golem');
-    }
-    if (this.textures.get('boss_dungeon').frameTotal > 1) {
-      this.createVariantAnims('boss_dungeon', 'dungeon_boss');
-    }
-
-    // Dungeon decoration animations (4 frames @ 3fps ambient loops)
-    this.createStationAnims('dun_decor_torch', 'dun_torch');
-    this.createStationAnims('dun_decor_crystal', 'dun_crystal');
-
-    // Crafting station idle glow animations (4 frames @ 3fps for slow ambient loop)
-    this.createStationAnims('station_anvil', 'anvil');
-    this.createStationAnims('station_alchemy_table', 'alchemy_table');
-    this.createStationAnims('station_workbench', 'workbench');
-
-    // Craft result VFX animations (6 frames)
-    if (this.textures.get('vfx_craft_success').frameTotal > 1) {
-      this.anims.create({ key: 'vfx-craft-success', frames: this.anims.generateFrameNumbers('vfx_craft_success', { start: 0, end: 5 }), frameRate: 12, repeat: 0 });
-    }
-    if (this.textures.get('vfx_craft_failure').frameTotal > 1) {
-      this.anims.create({ key: 'vfx-craft-failure', frames: this.anims.generateFrameNumbers('vfx_craft_failure', { start: 0, end: 5 }), frameRate: 12, repeat: 0 });
     }
 
     SettingsManager.getInstance().applyAll();
@@ -639,25 +104,6 @@ export class BootScene extends Phaser.Scene {
     if (!a.exists('enemy-walk'))   a.create({ key: 'enemy-walk',   frames: a.generateFrameNumbers('enemy', { start: 2,  end: 5  }), frameRate: 10, repeat: -1 });
     if (!a.exists('enemy-attack')) a.create({ key: 'enemy-attack', frames: a.generateFrameNumbers('enemy', { start: 6,  end: 9  }), frameRate: 14, repeat: 0  });
     if (!a.exists('enemy-death'))  a.create({ key: 'enemy-death',  frames: a.generateFrameNumbers('enemy', { start: 10, end: 11 }), frameRate: 6,  repeat: 0  });
-  }
-
-  /** Register idle/walk/attack/death animations for a named enemy variant spritesheet. */
-  private createVariantAnims(textureKey: string, name: string): void {
-    const a = this.anims;
-    if (!a.exists(`${name}-idle`))   a.create({ key: `${name}-idle`,   frames: a.generateFrameNumbers(textureKey, { start: 0,  end: 1  }), frameRate: 4,  repeat: -1 });
-    if (!a.exists(`${name}-walk`))   a.create({ key: `${name}-walk`,   frames: a.generateFrameNumbers(textureKey, { start: 2,  end: 5  }), frameRate: 10, repeat: -1 });
-    if (!a.exists(`${name}-attack`)) a.create({ key: `${name}-attack`, frames: a.generateFrameNumbers(textureKey, { start: 6,  end: 9  }), frameRate: 14, repeat: 0  });
-    if (!a.exists(`${name}-death`))  a.create({ key: `${name}-death`,  frames: a.generateFrameNumbers(textureKey, { start: 10, end: 11 }), frameRate: 6,  repeat: 0  });
-  }
-
-  /** Register idle glow animation for a crafting station spritesheet. */
-  private createStationAnims(textureKey: string, name: string): void {
-    if (this.textures.get(textureKey).frameTotal > 1) {
-      const a = this.anims;
-      if (!a.exists(`${name}-idle`)) {
-        a.create({ key: `${name}-idle`, frames: a.generateFrameNumbers(textureKey, { start: 0, end: 3 }), frameRate: 3, repeat: -1 });
-      }
-    }
   }
 
   // ─── Texture generation ───────────────────────────────────────────────────

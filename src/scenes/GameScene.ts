@@ -424,6 +424,10 @@ export class GameScene extends Phaser.Scene {
   /** Mobile virtual joystick + action buttons (no-op on desktop). */
   private touch!: MobileTouchControls;
 
+  /** Cached SaveData to avoid localStorage reads on every frame. */
+  private _saveCache: ReturnType<typeof SaveManager.load> | null = null;
+  private _saveCacheMs = 0;
+
   constructor() {
     super(SCENES.GAME);
   }
@@ -818,7 +822,13 @@ export class GameScene extends Phaser.Scene {
       this.partySessionIds,
     );
 
-    const save = SaveManager.load();
+    // Refresh save cache at most once per second to avoid synchronous
+    // localStorage reads on every frame (60 fps).
+    if (!this._saveCache || time - this._saveCacheMs > 1000) {
+      this._saveCache  = SaveManager.load();
+      this._saveCacheMs = time;
+    }
+    const save = this._saveCache;
     this.worldMap?.update({
       currentZoneId:   this.zone.id,
       unlockedZoneIds: save.unlockedZones,
@@ -3059,6 +3069,7 @@ export class GameScene extends Phaser.Scene {
       nextZone?.id ?? null,
       isLastZone,
     );
+    this._saveCache = null; // invalidate so the next update() frame reloads
 
     // Auto-save on zone clear (slot 0) — captures updated level/XP from recordZoneClear
     if (!this.isMultiplayer) {
