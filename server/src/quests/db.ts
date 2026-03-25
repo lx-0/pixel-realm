@@ -96,6 +96,12 @@ const ZONE_META: Record<string, { name: string; biome: string; description: stri
     description: "A crumbling citadel suspended between twilight dimensions, half light and half shadow. Twilight sentinels, rift stalkers, and echo wraiths patrol the amber-and-violet battlements where The Twilight Warden enforces an eternal dusk.",
     enemyTypes: ["twilight_sentinel", "rift_stalker", "echo_wraith"],
   },
+  zone18: {
+    name: "Oblivion Spire",
+    biome: "oblivion-spire",
+    description: "The Oblivion Spire rises at the edge of reality — fractured celestial architecture suspended over absolute void. Spire sentinels, reality shards, and oblivion wraiths guard the crystallized platforms where The Spire Keeper channels void-gold energy to unmake the boundaries of existence.",
+    enemyTypes: ["spire_sentinel", "reality_shard", "oblivion_wraith"],
+  },
 };
 
 const QUEST_TYPES: QuestType[] = ["kill", "fetch", "explore", "escort", "puzzle"];

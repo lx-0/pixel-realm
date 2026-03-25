@@ -160,6 +160,12 @@ const ZONE_LOOT: Record<string, Array<{ itemId: string; chance: number }>> = {
     { itemId: "mat_dusk_essence",     chance: 0.34 },
     { itemId: "mat_citadel_fragment", chance: 0.27 },
   ],
+  zone18: [
+    { itemId: "mat_oblivion_shard",   chance: 0.54 },
+    { itemId: "mat_spire_crystal",    chance: 0.44 },
+    { itemId: "mat_void_gold",        chance: 0.36 },
+    { itemId: "mat_celestial_dust",   chance: 0.29 },
+  ],
 };
 
 // Zone → enemy type tables
@@ -227,6 +233,11 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
     { type: "twilight_sentinel", hp: 680, dmg: 152, speed: 30,  aggroRange: 90,  xp: 300 },
     { type: "rift_stalker",      hp: 500, dmg: 162, speed: 120, aggroRange: 195, xp: 315 },
     { type: "echo_wraith",       hp: 450, dmg: 170, speed: 100, aggroRange: 190, xp: 325, ranged: true },
+  ],
+  zone18: [
+    { type: "spire_sentinel",  hp: 760, dmg: 178, speed: 28,  aggroRange: 92,  xp: 345 },
+    { type: "reality_shard",   hp: 560, dmg: 192, speed: 115, aggroRange: 200, xp: 360, ranged: true },
+    { type: "oblivion_wraith", hp: 615, dmg: 205, speed: 110, aggroRange: 195, xp: 375 },
   ],
 };
 

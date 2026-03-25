@@ -248,9 +248,10 @@ export type EnemyTypeName =
   | 'shattered_golem' | 'reality_fracture' | 'dominion_shade'
   | 'elemental_amalgam' | 'primordial_shard' | 'core_sentinel'
   | 'nexus_guardian' | 'phase_strider' | 'energy_parasite'
-  | 'twilight_sentinel' | 'rift_stalker' | 'echo_wraith';
+  | 'twilight_sentinel' | 'rift_stalker' | 'echo_wraith'
+  | 'spire_sentinel' | 'reality_shard' | 'oblivion_wraith';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame' | 'nexus_overseer' | 'twilight_warden';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame' | 'nexus_overseer' | 'twilight_warden' | 'spire_keeper';
 
 export interface EnemyTypeDef {
   color: number;
@@ -330,6 +331,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   twilight_sentinel: { color: 0xaa6622, size: 12, baseHp: 520, baseDmg: 118, speed: 30,  aggroRange: 90,  xpValue: 300, knockbackMultiplier: 0.0, behaviour: 'block' },
   rift_stalker:      { color: 0x8844cc, size: 9,  baseHp: 380, baseDmg: 125, speed: 120, aggroRange: 195, xpValue: 315, knockbackMultiplier: 0.6, behaviour: 'phase' },
   echo_wraith:       { color: 0xcc88ff, size: 8,  baseHp: 340, baseDmg: 132, speed: 100, aggroRange: 190, xpValue: 325, knockbackMultiplier: 0.8, behaviour: 'ranged_flee', projectileColor: 0xff88cc },
+  // Oblivion Spire enemies
+  spire_sentinel:  { color: 0x3322aa, size: 12, baseHp: 580, baseDmg: 138, speed: 28,  aggroRange: 92,  xpValue: 345, knockbackMultiplier: 0.0, behaviour: 'block' },
+  reality_shard:   { color: 0x88ccff, size: 8,  baseHp: 430, baseDmg: 148, speed: 115, aggroRange: 200, xpValue: 360, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0xffd040 },
+  oblivion_wraith: { color: 0x6622bb, size: 9,  baseHp: 470, baseDmg: 158, speed: 110, aggroRange: 195, xpValue: 375, knockbackMultiplier: 0.8, behaviour: 'phase' },
 };
 
 export interface BossTypeDef {
@@ -360,6 +365,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   genesis_flame:       { color: 0xff6600, size: 40, baseHp: 70000, baseDmg: 188, speed: 22, xpValue: 16500, name: 'The Genesis Flame' },
   nexus_overseer:      { color: 0x0044cc, size: 42, baseHp: 88000, baseDmg: 205, speed: 20, xpValue: 20000, name: 'The Nexus Overseer' },
   twilight_warden:     { color: 0xaa55ff, size: 44, baseHp: 108000, baseDmg: 225, speed: 18, xpValue: 24000, name: 'The Twilight Warden' },
+  spire_keeper:        { color: 0xffd040, size: 46, baseHp: 130000, baseDmg: 248, speed: 16, xpValue: 30000, name: 'The Spire Keeper' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -426,6 +432,8 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   phase_strider:     'stun',
   twilight_sentinel: 'burn',
   rift_stalker:      'stun',
+  spire_sentinel:    'freeze',
+  oblivion_wraith:   'stun',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -455,6 +463,8 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   nexus_overseer:      'stun',
   echo_wraith:         'burn',
   twilight_warden:     'stun',
+  reality_shard:       'burn',
+  spire_keeper:        'freeze',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -746,5 +756,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 26000,
     unlockRequirement: 'zone16',
     difficultyMult: 9.0,
+  },
+  {
+    id: 'zone18',
+    name: 'Oblivion Spire',
+    biome: 'oblivion-spire',
+    description: 'The Oblivion Spire rises at the edge of reality — fractured celestial architecture suspended over absolute void. Spire sentinels, reality shards, and oblivion wraiths guard the crystallized platforms where The Spire Keeper channels void-gold energy to unmake the boundaries of existence.',
+    bgColor: 0x030208,
+    groundColor: 0x0a0820,
+    wallColor: 0x020106,
+    accentColor: 0xffd040,
+    waves: 3,
+    enemyTypes: ['spire_sentinel', 'reality_shard', 'oblivion_wraith'],
+    bossType: 'spire_keeper',
+    minPlayerLevel: 47,
+    xpReward: 33000,
+    unlockRequirement: 'zone17',
+    difficultyMult: 9.5,
   },
 ];
