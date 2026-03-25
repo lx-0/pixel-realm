@@ -222,22 +222,27 @@ Server-side observability, seasonal content pipeline, and roadmap housekeeping t
 - [x] PIX-254 — Add server-side player analytics and telemetry endpoints
 - [x] PIX-255 — Create spring seasonal event art (event enemies, decorations, reward sprites, event banner)
 
-### M28: Post-Launch Improvements — IN PROGRESS
+### M28: Post-Launch Improvements — COMPLETE
 Player retention features and quality-of-life improvements to deepen engagement after launch.
 
 - [x] PIX-258 — Update roadmap (mark M27 complete, add M28 post-launch improvements milestone)
 - [x] PIX-259 — Implement daily login rewards and streak system
 - [x] PIX-260 — Create summer seasonal event art pack (event enemies, decorations, reward sprites, event banner)
 - [x] PIX-262 — Implement friends list and social system (friend requests, online status, whisper chat, party invites)
-- [ ] PIX-263 — Implement global leaderboards and rankings (level, achievements, prestige, guild power)
+- [x] PIX-263 — Implement global leaderboards and rankings (level, achievements, prestige, guild power)
 - [x] PIX-264 — Create fall seasonal event art pack (Harvest Golem, Scarecrow Shade, autumn decorations)
 
-### M29: Live Events & Competitive Play — TODO
+### M29: Live Events & Competitive Play — IN PROGRESS
 Complete the four-season art cycle, activate live seasonal rotation, and begin PvP arena pipeline.
 
-- [ ] PIX-266 — Create winter seasonal event art pack (Frost Wraith, Ice Golem, winter decorations)
-- [ ] PIX-267 — Implement seasonal event content rotation system (calendar-based auto-activation, seasonal shop, event UI)
-- [ ] PIX-268 — Create PvP arena art assets (arena backgrounds, rank badges, matchmaking UI, arena NPC)
+- [x] PIX-266 — Create winter seasonal event art pack (Frost Wraith, Ice Golem, winter decorations)
+- [x] PIX-267 — Implement seasonal event content rotation system (calendar-based auto-activation, seasonal shop, event UI)
+- [x] PIX-268 — Create PvP arena art assets (arena backgrounds, rank badges, matchmaking UI, arena NPC)
+
+### M30: PvP Arena & Competitive Systems — TODO
+PvP ranked arena implementation and next post-launch competitive features.
+
+- [ ] PIX-271 — Implement PvP ranked arena system (matchmaking, ranked tiers, arena combat, seasonal rewards)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -274,6 +279,7 @@ M5 → M6 ──────────────────┘
                                                                                                                       M27 (Post-Launch Readiness, parallel to M9)
                                                                                                                                   M28 (Post-Launch Improvements, parallel to M9)
                                                                                                                                         M29 (Live Events & Competitive Play, parallel to M9)
+                                                                                                                                              M30 (PvP Arena & Competitive Systems, parallel to M9)
                                                                                                                             M14 (post-launch, independent)
 ```
 
@@ -299,7 +305,8 @@ M5 → M6 ──────────────────┘
 - **Release Candidate & Launch Assets** — M25 builds v1.0.0 RC, adds social sharing meta tags, and creates launch announcement graphics while awaiting board credentials for itch.io distribution.
 - **Post-RC Quality & Launch Readiness** — M26 promoted v1.0.0-rc1 to stable and created itch.io game page content. All complete as of 2026-03-25.
 - **Post-Launch Readiness** — M27 adds server-side analytics/telemetry (PIX-254) and a spring seasonal event art pass (PIX-255) to keep the live game healthy and content-rich. All complete as of 2026-03-25.
-- **Post-Launch Improvements** — M28 adds player retention features: daily login rewards (PIX-259), summer seasonal art (PIX-260), friends list and social system (PIX-262), leaderboards (PIX-263), and fall seasonal art (PIX-264). Focus is deepening social engagement and competitive retention loops.
-- **Live Events & Competitive Play** — M29 completes the four-season art cycle (PIX-266 winter art), activates live seasonal rotation (PIX-267), and starts the PvP arena art pipeline (PIX-268). Seasonal rotation turns four milestones of art investment into a live engagement loop.
+- **Post-Launch Improvements** — M28 adds player retention features: daily login rewards (PIX-259), summer seasonal art (PIX-260), friends list and social system (PIX-262), leaderboards (PIX-263), and fall seasonal art (PIX-264). Focus is deepening social engagement and competitive retention loops. All complete as of 2026-03-25.
+- **Live Events & Competitive Play** — M29 completed the four-season art cycle (PIX-266 winter art), activated live seasonal rotation (PIX-267), and shipped PvP arena art assets (PIX-268). Seasonal rotation turns four milestones of art investment into a live engagement loop. In progress as of 2026-03-25.
+- **PvP Arena & Competitive Systems** — M30 implements the PvP ranked arena system (PIX-271) with matchmaking, ranked tiers, arena combat, and seasonal rewards. Builds on the art assets shipped in M29.
 - **Single engineer** — One engineer has shipped M0–M24 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
