@@ -6,6 +6,7 @@ import { WebSocketTransport } from "@colyseus/ws-transport";
 import { ZoneRoom } from "./rooms/ZoneRoom";
 import { DungeonRoom, DUNGEON_COOLDOWN_MS } from "./rooms/DungeonRoom";
 import { RaidRoom } from "./rooms/RaidRoom";
+import { ArenaRoom, leaveArenaQueue, getQueueDepths } from "./rooms/ArenaRoom";
 import { getDungeonCooldownRemainingDb } from "./db/cooldowns";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
@@ -47,6 +48,16 @@ import {
   type LeaderboardCategory,
   type LeaderboardPeriod,
 } from "./db/leaderboard";
+import {
+  getActiveSeason,
+  getOrCreateActiveSeason,
+  getPlayerArenaRating,
+  getArenaLeaderboard,
+  getPlayerArenaRank,
+  recordArenaMatch,
+  advanceSeason,
+  ratingToTier,
+} from "./db/arena";
 import {
   getActiveSeasonalEvent,
   listSeasonalEvents,
@@ -613,31 +624,184 @@ app.get("/leaderboard/:category/rank/:playerId", async (req, res) => {
   }
 });
 
-// POST /arena/match-result — record a PvP win for the winning player(s)
-// Body: { winnerId: string } or { winnerIds: string[] }
-// No server-enforced auth; consistent with other REST endpoints in this codebase.
+// ── Arena REST endpoints ───────────────────────────────────────────────────────
+
+// GET /arena/season — current active season info
+app.get("/arena/season", async (_req, res) => {
+  try {
+    const season = await getActiveSeason();
+    if (!season) {
+      res.status(404).json({ error: "No active arena season" });
+      return;
+    }
+    res.json({
+      id:       season.id,
+      number:   season.number,
+      name:     season.name,
+      startsAt: season.startsAt,
+      endsAt:   season.endsAt,
+    });
+  } catch (err) {
+    console.warn("[Arena] season failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch season" });
+  }
+});
+
+// GET /arena/queue — current queue depths
+app.get("/arena/queue", (_req, res) => {
+  res.json(getQueueDepths());
+});
+
+// GET /arena/rating/:playerId — player's current season rating and tier
+app.get("/arena/rating/:playerId", async (req, res) => {
+  const { playerId } = req.params as { playerId: string };
+  if (!playerId || playerId.length > 36) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+  try {
+    const rating = await getPlayerArenaRating(playerId);
+    if (!rating) {
+      // Return default for unranked players
+      const season = await getActiveSeason();
+      res.json({
+        rating:       1000,
+        wins:         0,
+        losses:       0,
+        kills:        0,
+        deaths:       0,
+        peakRating:   1000,
+        tier:         "BRONZE",
+        seasonId:     season?.id ?? null,
+        seasonNumber: season?.number ?? 1,
+        seasonName:   season?.name ?? "Season 1",
+      });
+      return;
+    }
+    res.json({ ...rating, tier: ratingToTier(rating.rating) });
+  } catch (err) {
+    console.warn("[Arena] rating lookup failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch arena rating" });
+  }
+});
+
+// GET /arena/leaderboard — top 100 by ELO for the current season
+app.get("/arena/leaderboard", async (req, res) => {
+  const limit = Math.min(parseInt((req.query as { limit?: string }).limit ?? "50", 10) || 50, 100);
+  try {
+    const season = await getActiveSeason();
+    if (!season) {
+      res.json({ entries: [], seasonNumber: 0 });
+      return;
+    }
+    const entries = await getArenaLeaderboard(season.id, limit);
+    res.json({
+      seasonNumber: season.number,
+      seasonName:   season.name,
+      entries:      entries.map(e => ({ ...e, tier: ratingToTier(e.rating) })),
+    });
+  } catch (err) {
+    console.warn("[Arena] leaderboard failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch arena leaderboard" });
+  }
+});
+
+// GET /arena/rank/:playerId — player's leaderboard rank this season
+app.get("/arena/rank/:playerId", async (req, res) => {
+  const { playerId } = req.params as { playerId: string };
+  if (!playerId || playerId.length > 36) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+  try {
+    const rank = await getPlayerArenaRank(playerId);
+    res.json({ playerId, rank });
+  } catch (err) {
+    console.warn("[Arena] rank lookup failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch arena rank" });
+  }
+});
+
+// POST /arena/match-result — server-authoritative: record match + update ELO
+// Body: { winnerIds: string[], loserIds: string[], mode?: string, map?: string,
+//         kills?: Record<string,number>, durationMs?: number }
+// Legacy: also accepts { winnerId: string } for backwards compatibility.
 app.post("/arena/match-result", async (req, res) => {
-  const body = req.body as { winnerId?: string; winnerIds?: string[] };
-  const ids: string[] = [];
-  if (typeof body.winnerId === "string" && body.winnerId.length <= 36) ids.push(body.winnerId);
+  const body = req.body as {
+    winnerId?:  string;
+    winnerIds?: string[];
+    loserIds?:  string[];
+    mode?:      string;
+    map?:       string;
+    kills?:     Record<string, number>;
+    durationMs?: number;
+  };
+
+  // Normalise winner IDs
+  const winnerIds: string[] = [];
+  if (typeof body.winnerId === "string" && body.winnerId.length <= 36) winnerIds.push(body.winnerId);
   if (Array.isArray(body.winnerIds)) {
     for (const id of body.winnerIds) {
-      if (typeof id === "string" && id.length <= 36) ids.push(id);
+      if (typeof id === "string" && id.length <= 36) winnerIds.push(id);
     }
   }
-
-  if (ids.length === 0) {
-    res.status(400).json({ error: "winnerId or winnerIds required" });
+  if (winnerIds.length === 0) {
+    res.status(400).json({ error: "winnerIds required" });
     return;
   }
 
+  const loserIds: string[] = [];
+  if (Array.isArray(body.loserIds)) {
+    for (const id of body.loserIds) {
+      if (typeof id === "string" && id.length <= 36) loserIds.push(id);
+    }
+  }
+
   try {
-    await Promise.all(ids.map((id) => recordPvpWin(id)));
-    res.json({ recorded: ids.length });
+    // If loserIds provided, use full server-authoritative path
+    if (loserIds.length > 0) {
+      const season = await getOrCreateActiveSeason();
+      const deltas = await recordArenaMatch({
+        seasonId:  season.id,
+        mode:      (body.mode === "2v2" ? "2v2" : "1v1") as "1v1" | "2v2",
+        map:       (body.map as string) || "gladiator_pit",
+        winnerIds,
+        loserIds,
+        kills:     (body.kills as Record<string, number>) || {},
+        durationMs: body.durationMs ?? 0,
+      });
+      res.json({ recorded: winnerIds.length, ratingDeltas: deltas });
+    } else {
+      // Legacy path: just increment pvp_wins
+      await Promise.all(winnerIds.map((id) => recordPvpWin(id)));
+      res.json({ recorded: winnerIds.length });
+    }
   } catch (err) {
     console.warn("[REST] arena match-result failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to record match result" });
   }
+});
+
+// POST /arena/season/advance — admin-only: end current season, start next
+app.post("/arena/season/advance", adminAuth, async (_req: Request, res: Response) => {
+  try {
+    const next = await advanceSeason();
+    res.json({ ok: true, nextSeason: { id: next.id, number: next.number, name: next.name } });
+  } catch (err) {
+    console.warn("[Arena] season advance failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to advance season" });
+  }
+});
+
+// DELETE /arena/queue/:playerId — leave the matchmaking queue
+app.delete("/arena/queue/:playerId", (req, res) => {
+  const { playerId } = req.params as { playerId: string };
+  if (!playerId || playerId.length > 36) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+  const removed = leaveArenaQueue(playerId);
+  res.json({ removed });
 });
 
 // ── Seasonal Event REST endpoints ─────────────────────────────────────────────
@@ -1102,6 +1266,12 @@ gameServer.define("dungeon", DungeonRoom).filterBy(["tier"]);
 // Clients join via: client.joinOrCreate("raid", { bossId: "raid_dragon", token })
 // Weekly lockout tracked per-player per boss.
 gameServer.define("raid", RaidRoom).filterBy(["bossId"]);
+
+// Register the ArenaRoom. Each match is a private instance — created by the
+// queue system when two players are matched.
+// Clients receive room ID via the "arena:matched" message over their ZoneRoom
+// connection, then join: client.joinById(roomId, { playerId })
+gameServer.define("arena", ArenaRoom);
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 

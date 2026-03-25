@@ -497,6 +497,78 @@ export const dailyRewardClaims = pgTable("daily_reward_claims", {
   claimedAt:   timestamp("claimed_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── PvP Arena Seasons ─────────────────────────────────────────────────────────
+
+export const arenaSeasons = pgTable("arena_seasons", {
+  id:        uuid("id").defaultRandom().primaryKey(),
+  number:    integer("number").notNull().unique(),
+  name:      varchar("name", { length: 60 }).notNull(),
+  startsAt:  timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt:    timestamp("ends_at", { withTimezone: true }).notNull(),
+  isActive:  boolean("is_active").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ── PvP Ratings (server-authoritative ELO per season) ─────────────────────────
+
+export const pvpRatings = pgTable(
+  "pvp_ratings",
+  {
+    playerId:  uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    seasonId:  uuid("season_id")
+      .notNull()
+      .references(() => arenaSeasons.id, { onDelete: "cascade" }),
+    rating:    integer("rating").notNull().default(1000),
+    wins:      integer("wins").notNull().default(0),
+    losses:    integer("losses").notNull().default(0),
+    kills:     integer("kills").notNull().default(0),
+    deaths:    integer("deaths").notNull().default(0),
+    /** Highest rating achieved this season (used for tier placement on reset). */
+    peakRating: integer("peak_rating").notNull().default(1000),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.seasonId] }),
+  }),
+);
+
+// ── Arena Matches (match history) ─────────────────────────────────────────────
+
+export const arenaMatches = pgTable("arena_matches", {
+  id:           uuid("id").defaultRandom().primaryKey(),
+  seasonId:     uuid("season_id")
+    .notNull()
+    .references(() => arenaSeasons.id, { onDelete: "cascade" }),
+  mode:         varchar("mode", { length: 10 }).notNull().default("1v1"), // '1v1' | '2v2'
+  map:          varchar("map", { length: 40 }).notNull().default("gladiator_pit"),
+  /** JSON array of { playerId, ratingBefore, ratingAfter, won, kills, deaths } */
+  participants: jsonb("participants").notNull().default([]),
+  durationMs:   integer("duration_ms").notNull().default(0),
+  playedAt:     timestamp("played_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ── PvP Season Rewards (end-of-season reward grants) ─────────────────────────
+
+export const arenaSeasonRewards = pgTable(
+  "arena_season_rewards",
+  {
+    playerId:  uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    seasonId:  uuid("season_id")
+      .notNull()
+      .references(() => arenaSeasons.id, { onDelete: "cascade" }),
+    tier:      varchar("tier", { length: 20 }).notNull(), // 'BRONZE' | 'SILVER' | ...
+    pvpCurrencyAwarded: integer("pvp_currency_awarded").notNull().default(0),
+    claimedAt: timestamp("claimed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.seasonId] }),
+  }),
+);
+
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
 export const playerSessions = pgTable("player_sessions", {
@@ -545,6 +617,10 @@ export type PlayerReport = typeof playerReports.$inferSelect;
 export type NpcInteraction = typeof npcInteractions.$inferSelect;
 export type Season = typeof seasons.$inferSelect;
 export type WorldEvent = typeof worldEvents.$inferSelect;
+export type ArenaSeason = typeof arenaSeasons.$inferSelect;
+export type PvpRating = typeof pvpRatings.$inferSelect;
+export type ArenaMatch = typeof arenaMatches.$inferSelect;
+export type ArenaSeasonReward = typeof arenaSeasonRewards.$inferSelect;
 export type QuestChain = typeof questChains.$inferSelect;
 export type PlayerChainProgress = typeof playerChainProgress.$inferSelect;
 export type Friendship = typeof friendships.$inferSelect;

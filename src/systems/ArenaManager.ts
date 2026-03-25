@@ -4,12 +4,14 @@
  * Responsibilities:
  *   - Arena instance lifecycle (create / destroy)
  *   - Matchmaking queue for 1v1 and 2v2 modes
- *   - ELO-style rating updates
+ *   - ELO-style rating updates (client-side optimistic; server is authoritative)
  *   - Tier bracket resolution
  *   - In-memory leaderboard (hydrated from server when available)
  *   - Spectator slot registry
+ *   - Server rating sync: fetches and caches server-authoritative ratings
  *
- * All arena data is persisted in localStorage under the key 'arena_data'.
+ * Local ratings in localStorage are optimistic/display-only.
+ * The canonical rating always comes from GET /arena/rating/:playerId.
  */
 
 import { ARENA, type ArenaMode, type ArenaTier, type ArenaMap } from '../config/constants';
@@ -72,6 +74,7 @@ function makeid(): string {
 
 export function getTier(rating: number): ArenaTier {
   const tiers = ARENA.TIERS;
+  if (rating >= 2200)               return 'CHAMPION' as ArenaTier;
   if (rating >= tiers.DIAMOND.min)  return 'DIAMOND';
   if (rating >= tiers.PLATINUM.min) return 'PLATINUM';
   if (rating >= tiers.GOLD.min)     return 'GOLD';
@@ -313,5 +316,94 @@ export class ArenaManager {
       .sort((a, b) => b.rating - a.rating);
     const idx = sorted.findIndex(p => p.id === id);
     return idx >= 0 ? idx + 1 : 0;
+  }
+
+  // ── Server sync ───────────────────────────────────────────────────────────
+
+  /**
+   * Fetch the server-authoritative rating for a player and update the local
+   * record. Silently ignores errors (network unavailable, no DB).
+   */
+  async syncRatingFromServer(playerId: string, serverBaseUrl: string): Promise<void> {
+    try {
+      const res = await fetch(`${serverBaseUrl}/arena/rating/${encodeURIComponent(playerId)}`);
+      if (!res.ok) return;
+      const data = await res.json() as {
+        rating: number; wins: number; losses: number;
+        kills: number; deaths: number;
+      };
+      const p = this.players[playerId];
+      if (p) {
+        p.rating  = data.rating;
+        p.wins    = data.wins;
+        p.losses  = data.losses;
+        p.kills   = data.kills;
+        p.deaths  = data.deaths;
+        this.save();
+      }
+    } catch { /* network unavailable */ }
+  }
+
+  /**
+   * Fetch the server-side arena leaderboard and merge entries into the local
+   * player registry so the leaderboard panel shows accurate data.
+   */
+  async syncLeaderboardFromServer(serverBaseUrl: string): Promise<void> {
+    try {
+      const res = await fetch(`${serverBaseUrl}/arena/leaderboard?limit=50`);
+      if (!res.ok) return;
+      const data = await res.json() as {
+        seasonNumber: number;
+        seasonName:   string;
+        entries: Array<{
+          playerId: string; username: string; rating: number;
+          wins: number; losses: number;
+        }>;
+      };
+      for (const entry of data.entries) {
+        const existing = this.players[entry.playerId];
+        if (existing) {
+          existing.rating = entry.rating;
+          existing.wins   = entry.wins;
+          existing.losses = entry.losses;
+        } else {
+          this.players[entry.playerId] = {
+            id: entry.playerId, name: entry.username,
+            rating: entry.rating, wins: entry.wins, losses: entry.losses,
+            kills: 0, deaths: 0,
+          };
+        }
+      }
+      this.save();
+    } catch { /* network unavailable */ }
+  }
+
+  /**
+   * Report a completed match to the server for authoritative ELO recording.
+   * Called after resolveMatch() so the local record is also updated optimistically.
+   */
+  async reportMatchToServer(
+    result: ArenaMatchResult,
+    serverBaseUrl: string,
+  ): Promise<Record<string, number>> {
+    try {
+      const res = await fetch(`${serverBaseUrl}/arena/match-result`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          winnerIds:  result.winnerIds,
+          loserIds:   result.loserIds,
+          mode:       result.instance.mode,
+          map:        result.instance.map,
+          kills:      result.kills,
+          durationMs: result.durationMs,
+        }),
+      });
+      if (!res.ok) return {};
+      const data = await res.json() as { ratingDeltas?: Record<string, number> };
+      return data.ratingDeltas ?? {};
+    } catch {
+      return {};
+    }
   }
 }
