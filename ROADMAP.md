@@ -181,12 +181,19 @@ Astral Pinnacle zone implementation (zone 19, level 50 final zone) and final dis
 - [x] PIX-225 — Update roadmap (M20 complete, add M21 final zone milestone)
 - [x] PIX-226 — Rebuild distribution zip as v0.7.0 with zone 19 content
 
-### M22: Pre-Launch QA & Polish — IN PROGRESS
+### M22: Pre-Launch QA & Polish — COMPLETE
 Final quality pass before distribution. Fill test and achievement gaps for late-game zones.
 
 - [x] PIX-232 — Integration tests for zones 16-19 (Ethereal Nexus through Astral Pinnacle)
 - [x] PIX-233 — Update achievement system for zones 14-19
-- [ ] PIX-234 — Rebuild distribution zip as v0.8.0 with achievement and test updates
+- [x] PIX-234 — Rebuild distribution zip as v0.8.0 with achievement and test updates
+
+### M23: Launch Preparation — IN PROGRESS
+Final deployment prep and polish while awaiting distribution unblock (PIX-19).
+
+- [ ] PIX-237 — Prepare itch.io deployment pipeline (butler config, deploy script, dist verification)
+- [ ] PIX-238 — Final v0.8.0 QA (full test suite, lint, typecheck, build verification)
+- [ ] PIX-239 — Create loading screen art and favicon (pixel art splash and browser icons)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -235,5 +242,7 @@ M5 → M6 ──────────────────┘
 - **Twilight Citadel & Oblivion Spire** — M19 completed zone 17 implementation and zone 18 art. All complete as of 2026-03-25.
 - **Oblivion Spire & Final Zone** — M20 completed zone 18 implementation, Astral Pinnacle art (zone 19), and v0.6.0 distribution. All complete as of 2026-03-25.
 - **Astral Pinnacle & Game Completion** — M21 completed zone 19 (level 50 final endgame zone) and final v0.7.0 distribution. All complete as of 2026-03-25. Game content is fully shipped.
-- **Single engineer** — One engineer has shipped M0–M20 solo. Strong velocity.
+- **Pre-Launch QA & Polish** — M22 completed test coverage for zones 16-19, achievements for zones 14-19, and v0.8.0 distribution rebuild. All complete as of 2026-03-25.
+- **Launch Preparation** — M23 prepares deployment pipeline, final QA, and loading screen assets while awaiting board credentials for itch.io distribution.
+- **Single engineer** — One engineer has shipped M0–M22 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
