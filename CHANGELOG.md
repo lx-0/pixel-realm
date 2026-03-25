@@ -2,7 +2,7 @@
 
 All notable changes to PixelRealm are documented in this file.
 
-## [1.0.0-rc1] - 2026-03-25
+## [1.0.0] - 2026-03-25
 
 Release candidate for v1.0.0 — the full PixelRealm MMORPG launch build. Covers all work from M0 (foundation) through M24 (pre-launch polish).
 
