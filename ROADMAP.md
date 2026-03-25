@@ -215,12 +215,18 @@ Final quality sweep and player-facing polish while awaiting board credentials fo
 - [x] PIX-249 — Promote v1.0.0-rc1 to v1.0.0 stable (version bump, full test suite, rebuild dist)
 - [x] PIX-250 — Create itch.io game page content (description, features, controls, screenshot captions)
 
-### M27: Post-Launch Readiness — IN PROGRESS
+### M27: Post-Launch Readiness — COMPLETE
 Server-side observability, seasonal content pipeline, and roadmap housekeeping to keep the live game healthy.
 
 - [x] PIX-253 — Update roadmap (mark M26 complete, add M27 post-launch readiness milestone)
-- [ ] PIX-254 — Add server-side player analytics and telemetry endpoints
-- [ ] PIX-255 — Create spring seasonal event art (event enemies, decorations, reward sprites, event banner)
+- [x] PIX-254 — Add server-side player analytics and telemetry endpoints
+- [x] PIX-255 — Create spring seasonal event art (event enemies, decorations, reward sprites, event banner)
+
+### M28: Post-Launch Improvements — IN PROGRESS
+Player retention features and quality-of-life improvements to deepen engagement after launch.
+
+- [x] PIX-258 — Update roadmap (mark M27 complete, add M28 post-launch improvements milestone)
+- [ ] PIX-259 — Implement daily login rewards and streak system
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -255,6 +261,7 @@ M5 → M6 ──────────────────┘
                                                                                                           M25 (Release Candidate & Launch Assets, parallel to M9)
                                                                                                                 M26 (Post-RC Quality & Launch Readiness, parallel to M9)
                                                                                                                       M27 (Post-Launch Readiness, parallel to M9)
+                                                                                                                                  M28 (Post-Launch Improvements, parallel to M9)
                                                                                                                             M14 (post-launch, independent)
 ```
 
@@ -279,6 +286,7 @@ M5 → M6 ──────────────────┘
 - **Pre-Launch Polish** — M24 completed mobile touch controls, performance optimization, and promotional assets. All complete as of 2026-03-25.
 - **Release Candidate & Launch Assets** — M25 builds v1.0.0 RC, adds social sharing meta tags, and creates launch announcement graphics while awaiting board credentials for itch.io distribution.
 - **Post-RC Quality & Launch Readiness** — M26 promoted v1.0.0-rc1 to stable and created itch.io game page content. All complete as of 2026-03-25.
-- **Post-Launch Readiness** — M27 adds server-side analytics/telemetry (PIX-254) and a spring seasonal event art pass (PIX-255) to keep the live game healthy and content-rich.
+- **Post-Launch Readiness** — M27 adds server-side analytics/telemetry (PIX-254) and a spring seasonal event art pass (PIX-255) to keep the live game healthy and content-rich. All complete as of 2026-03-25.
+- **Post-Launch Improvements** — M28 adds player retention features starting with daily login rewards and a streak system (PIX-259) to deepen long-term engagement.
 - **Single engineer** — One engineer has shipped M0–M24 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
