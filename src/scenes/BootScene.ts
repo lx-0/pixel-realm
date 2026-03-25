@@ -259,6 +259,69 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_primordial_core_mid',  'assets/backgrounds/parallax/bg_parallax_primordial_core_mid.png');
     this.load.image('bg_parallax_primordial_core_near', 'assets/backgrounds/parallax/bg_parallax_primordial_core_near.png');
 
+    // Ethereal Nexus tileset (zone 16)
+    this.load.image('tileset_ethereal_nexus', 'assets/tiles/tilesets/tileset_ethereal_nexus.png');
+
+    // Ethereal Nexus enemies and boss phases
+    this.load.spritesheet('enemy_nexus_guardian', 'assets/sprites/enemies/char_enemy_nexus_guardian.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_phase_strider',  'assets/sprites/enemies/char_enemy_phase_strider.png',  { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_energy_parasite','assets/sprites/enemies/char_enemy_energy_parasite.png',{ frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_nexus_overseer_phase1', 'assets/sprites/enemies/bosses/boss_nexus_overseer_phase1.png');
+    this.load.image('boss_nexus_overseer_phase2', 'assets/sprites/enemies/bosses/boss_nexus_overseer_phase2.png');
+    this.load.image('boss_nexus_overseer_phase3', 'assets/sprites/enemies/bosses/boss_nexus_overseer_phase3.png');
+    this.load.image('boss_nexus_overseer_idle',   'assets/sprites/enemies/bosses/boss_nexus_overseer_idle.png');
+    this.load.image('boss_nexus_overseer_attack', 'assets/sprites/enemies/bosses/boss_nexus_overseer_attack.png');
+
+    // Ethereal Nexus NPC
+    this.load.image('npc_quest_ethereal_nexus', 'assets/sprites/characters/char_npc_quest_ethereal_nexus.png');
+
+    // Ethereal Nexus parallax layers
+    this.load.image('bg_parallax_ethereal_nexus_far',  'assets/backgrounds/parallax/bg_parallax_ethereal_nexus_far.png');
+    this.load.image('bg_parallax_ethereal_nexus_mid',  'assets/backgrounds/parallax/bg_parallax_ethereal_nexus_mid.png');
+    this.load.image('bg_parallax_ethereal_nexus_near', 'assets/backgrounds/parallax/bg_parallax_ethereal_nexus_near.png');
+
+    // Twilight Citadel tileset (zone 17)
+    this.load.image('tileset_twilight_citadel', 'assets/tiles/tilesets/tileset_twilight_citadel.png');
+
+    // Twilight Citadel enemies and boss phases
+    this.load.spritesheet('enemy_twilight_sentinel', 'assets/sprites/enemies/char_enemy_twilight_sentinel.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_rift_stalker',      'assets/sprites/enemies/char_enemy_rift_stalker.png',      { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_echo_wraith',       'assets/sprites/enemies/char_enemy_echo_wraith.png',       { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_twilight_warden_phase1', 'assets/sprites/enemies/bosses/boss_twilight_warden_phase1.png');
+    this.load.image('boss_twilight_warden_phase2', 'assets/sprites/enemies/bosses/boss_twilight_warden_phase2.png');
+    this.load.image('boss_twilight_warden_phase3', 'assets/sprites/enemies/bosses/boss_twilight_warden_phase3.png');
+    this.load.image('boss_twilight_warden_idle',   'assets/sprites/enemies/bosses/boss_twilight_warden_idle.png');
+    this.load.image('boss_twilight_warden_attack', 'assets/sprites/enemies/bosses/boss_twilight_warden_attack.png');
+
+    // Twilight Citadel NPC
+    this.load.image('npc_quest_twilight_citadel', 'assets/sprites/characters/char_npc_quest_twilight_citadel.png');
+
+    // Twilight Citadel parallax layers
+    this.load.image('bg_parallax_twilight_citadel_far',  'assets/backgrounds/parallax/bg_parallax_twilight_citadel_far.png');
+    this.load.image('bg_parallax_twilight_citadel_mid',  'assets/backgrounds/parallax/bg_parallax_twilight_citadel_mid.png');
+    this.load.image('bg_parallax_twilight_citadel_near', 'assets/backgrounds/parallax/bg_parallax_twilight_citadel_near.png');
+
+    // Oblivion Spire tileset (zone 18)
+    this.load.image('tileset_oblivion_spire', 'assets/tiles/tilesets/tileset_oblivion_spire.png');
+
+    // Oblivion Spire enemies and boss phases
+    this.load.spritesheet('enemy_spire_sentinel',  'assets/sprites/enemies/char_enemy_void_sentinel.png',    { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_reality_shard',   'assets/sprites/enemies/char_enemy_reality_shard.png',    { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_oblivion_wraith', 'assets/sprites/enemies/char_enemy_oblivion_wraith.png',  { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_spire_keeper_phase1', 'assets/sprites/enemies/bosses/boss_spire_keeper_phase1.png');
+    this.load.image('boss_spire_keeper_phase2', 'assets/sprites/enemies/bosses/boss_spire_keeper_phase2.png');
+    this.load.image('boss_spire_keeper_phase3', 'assets/sprites/enemies/bosses/boss_spire_keeper_phase3.png');
+    this.load.image('boss_spire_keeper_idle',   'assets/sprites/enemies/bosses/boss_spire_keeper_idle.png');
+    this.load.image('boss_spire_keeper_attack', 'assets/sprites/enemies/bosses/boss_spire_keeper_attack.png');
+
+    // Oblivion Spire NPC
+    this.load.image('npc_quest_oblivion_spire', 'assets/sprites/characters/char_npc_quest_oblivion_spire.png');
+
+    // Oblivion Spire parallax layers
+    this.load.image('bg_parallax_oblivion_spire_far',  'assets/backgrounds/parallax/bg_parallax_oblivion_spire_far.png');
+    this.load.image('bg_parallax_oblivion_spire_mid',  'assets/backgrounds/parallax/bg_parallax_oblivion_spire_mid.png');
+    this.load.image('bg_parallax_oblivion_spire_near', 'assets/backgrounds/parallax/bg_parallax_oblivion_spire_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');
