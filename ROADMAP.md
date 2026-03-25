@@ -232,17 +232,24 @@ Player retention features and quality-of-life improvements to deepen engagement 
 - [x] PIX-263 — Implement global leaderboards and rankings (level, achievements, prestige, guild power)
 - [x] PIX-264 — Create fall seasonal event art pack (Harvest Golem, Scarecrow Shade, autumn decorations)
 
-### M29: Live Events & Competitive Play — IN PROGRESS
+### M29: Live Events & Competitive Play — COMPLETE
 Complete the four-season art cycle, activate live seasonal rotation, and begin PvP arena pipeline.
 
 - [x] PIX-266 — Create winter seasonal event art pack (Frost Wraith, Ice Golem, winter decorations)
 - [x] PIX-267 — Implement seasonal event content rotation system (calendar-based auto-activation, seasonal shop, event UI)
 - [x] PIX-268 — Create PvP arena art assets (arena backgrounds, rank badges, matchmaking UI, arena NPC)
 
-### M30: PvP Arena & Competitive Systems — TODO
+### M30: PvP Arena & Competitive Systems — COMPLETE
 PvP ranked arena implementation and next post-launch competitive features.
 
-- [ ] PIX-271 — Implement PvP ranked arena system (matchmaking, ranked tiers, arena combat, seasonal rewards)
+- [x] PIX-271 — Implement PvP ranked arena system (matchmaking, ranked tiers, ELO, arena combat, seasonal rewards)
+
+### M31: Guild Territory Wars — COMPLETE
+Guild vs guild territory control system to deepen guild engagement and create meaningful PvP objectives beyond 1v1 arena.
+
+- [x] PIX-274 — Add guild territory wars art assets (territory flags, war UI, siege sprites, contested/secured indicators)
+- [x] PIX-272 — Implement guild territory wars (territory map, war declaration, capture mechanics, territory buffs, leaderboard integration)
+- [x] PIX-276 — Update roadmap (mark M29/M30 complete, add M31 guild wars milestone)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -280,6 +287,7 @@ M5 → M6 ──────────────────┘
                                                                                                                                   M28 (Post-Launch Improvements, parallel to M9)
                                                                                                                                         M29 (Live Events & Competitive Play, parallel to M9)
                                                                                                                                               M30 (PvP Arena & Competitive Systems, parallel to M9)
+                                                                                                                                                    M31 (Guild Territory Wars, parallel to M9)
                                                                                                                             M14 (post-launch, independent)
 ```
 
@@ -307,6 +315,7 @@ M5 → M6 ──────────────────┘
 - **Post-Launch Readiness** — M27 adds server-side analytics/telemetry (PIX-254) and a spring seasonal event art pass (PIX-255) to keep the live game healthy and content-rich. All complete as of 2026-03-25.
 - **Post-Launch Improvements** — M28 adds player retention features: daily login rewards (PIX-259), summer seasonal art (PIX-260), friends list and social system (PIX-262), leaderboards (PIX-263), and fall seasonal art (PIX-264). Focus is deepening social engagement and competitive retention loops. All complete as of 2026-03-25.
 - **Live Events & Competitive Play** — M29 completed the four-season art cycle (PIX-266 winter art), activated live seasonal rotation (PIX-267), and shipped PvP arena art assets (PIX-268). Seasonal rotation turns four milestones of art investment into a live engagement loop. In progress as of 2026-03-25.
-- **PvP Arena & Competitive Systems** — M30 implements the PvP ranked arena system (PIX-271) with matchmaking, ranked tiers, arena combat, and seasonal rewards. Builds on the art assets shipped in M29.
-- **Single engineer** — One engineer has shipped M0–M24 solo. Strong velocity.
+- **PvP Arena & Competitive Systems** — M30 implemented the PvP ranked arena system (PIX-271) with matchmaking, ranked tiers (Bronze→Diamond), ELO rating, arena combat, and seasonal rewards. Builds on the art assets shipped in M29. Complete as of 2026-03-25.
+- **Guild Territory Wars** — M31 adds guild vs guild territory control: 6 contestable world zones, scheduled war windows (08:00/16:00/22:00 UTC), capture scoring, territory ownership with XP/drop buffs, and leaderboard integration. Complete as of 2026-03-25.
+- **Single engineer** — One engineer has shipped M0–M31 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
