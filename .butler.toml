@@ -1,0 +1,12 @@
+# Butler deploy configuration for PixelRealm
+# https://itch.io/docs/butler/
+
+[game]
+# itch.io target: <username>/<game-slug>
+# Override at deploy time: export ITCH_GAME=yourusername/pixelrealm
+target = "pixelforgestudios/pixelrealm"
+
+[channels.html5]
+# HTML5 channel pushed via: butler push dist/ <target>:html5
+description = "Browser (HTML5)"
+dir = "dist"
