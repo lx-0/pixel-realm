@@ -567,6 +567,19 @@ export class GameScene extends Phaser.Scene {
     // Tick mobile touch controls so justPressed flags are fresh this frame
     this.touch?.update();
 
+    // Apply pinch-to-zoom gesture to minimap
+    if (this.touch?.pinchDeltaThisFrame) {
+      this.miniMap?.applyPinchDelta(this.touch.pinchDeltaThisFrame);
+    }
+
+    // Touch HUD panel toggles (inventory / quest log)
+    if (this.touch?.inventory.justPressed) {
+      this.inventory?.show();
+    }
+    if (this.touch?.questLog.justPressed) {
+      this.questLog?.show();
+    }
+
     if (Phaser.Input.Keyboard.JustDown(this.escKey) || this.touch?.menu.justPressed) {
       // Escape closes any open panel before pausing
       const panelClosed =
@@ -679,7 +692,7 @@ export class GameScene extends Phaser.Scene {
     const nearTransport = this.transportNpc && this.player
       ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.transportNpc.x, this.transportNpc.y) < 40
       : false;
-    if (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) && this.isMultiplayer && !nearTransport) {
+    if ((this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false)) && this.isMultiplayer && !nearTransport) {
       this.handleNpcInteract();
     }
 
@@ -1852,8 +1865,8 @@ export class GameScene extends Phaser.Scene {
     const near = dist < 40;
     this.transportHint.setVisible(near && !this.fastTravelPanel?.isVisible);
 
-    // E key near Transport NPC opens fast travel
-    if (near && this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey)) {
+    // E key (or touch interact) near Transport NPC opens fast travel
+    if (near && (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false))) {
       if (this.fastTravelPanel) {
         const save = SaveManager.load();
         this.fastTravelPanel.currentZoneId  = this.zone.id;
