@@ -61,7 +61,13 @@ import {
   type FurnitureItem,
   type HousingPermission,
 } from "./db/housing";
-import { config } from "./config";
+import {
+  startSession,
+  endSession,
+  enterZone,
+  exitZone,
+  getAnalyticsSummary,
+} from "./db/analytics";
 import { getUptimeSeconds, recordHttpRequest, renderPrometheusMetrics } from "./metrics";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -733,6 +739,92 @@ app.post("/housing/:userId/upgrade", async (req, res) => {
     }
     console.warn("[REST] housing/upgrade failed:", msg);
     res.status(500).json({ error: "Failed to upgrade house" });
+  }
+});
+
+// ── Analytics REST endpoints ──────────────────────────────────────────────────
+// All write endpoints are best-effort: analytics failures must never block gameplay.
+
+// POST /api/analytics/session/start — record a new play session start
+// Body: { playerId: string }
+app.post("/api/analytics/session/start", async (req, res) => {
+  const { playerId } = req.body as { playerId?: string };
+  if (!playerId || playerId.length > 100) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+  try {
+    const sessionId = await startSession(playerId);
+    res.json({ sessionId });
+  } catch (err) {
+    console.warn("[Analytics] session/start failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to record session start" });
+  }
+});
+
+// POST /api/analytics/session/end — record session end, computes duration
+// Body: { sessionId: string, playerId: string }
+app.post("/api/analytics/session/end", async (req, res) => {
+  const { sessionId, playerId } = req.body as { sessionId?: string; playerId?: string };
+  if (!sessionId || !playerId || sessionId.length > 100 || playerId.length > 100) {
+    res.status(400).json({ error: "Invalid sessionId or playerId" });
+    return;
+  }
+  try {
+    await endSession(sessionId, playerId);
+    res.json({ ok: true });
+  } catch (err) {
+    console.warn("[Analytics] session/end failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to record session end" });
+  }
+});
+
+// POST /api/analytics/zone/enter — record a zone entry
+// Body: { playerId: string, sessionId: string, zoneId: string }
+app.post("/api/analytics/zone/enter", async (req, res) => {
+  const { playerId, sessionId, zoneId } =
+    req.body as { playerId?: string; sessionId?: string; zoneId?: string };
+  if (!playerId || !sessionId || !zoneId
+      || playerId.length > 100 || sessionId.length > 100 || zoneId.length > 50) {
+    res.status(400).json({ error: "Invalid playerId, sessionId, or zoneId" });
+    return;
+  }
+  try {
+    const visitId = await enterZone(playerId, sessionId, zoneId);
+    res.json({ visitId });
+  } catch (err) {
+    console.warn("[Analytics] zone/enter failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to record zone entry" });
+  }
+});
+
+// POST /api/analytics/zone/exit — record a zone exit, computes time-in-zone
+// Body: { visitId: string }
+app.post("/api/analytics/zone/exit", async (req, res) => {
+  const { visitId } = req.body as { visitId?: string };
+  if (!visitId || visitId.length > 100) {
+    res.status(400).json({ error: "Invalid visitId" });
+    return;
+  }
+  try {
+    await exitZone(visitId);
+    res.json({ ok: true });
+  } catch (err) {
+    console.warn("[Analytics] zone/exit failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to record zone exit" });
+  }
+});
+
+// GET /api/analytics/summary — internal dashboard: active players, sessions,
+// zone popularity, level distribution, and return rate (last 7/30 days).
+// Protected by admin auth since it contains aggregated player data.
+app.get("/api/analytics/summary", adminAuth, async (_req: Request, res: Response) => {
+  try {
+    const summary = await getAnalyticsSummary();
+    res.json(summary);
+  } catch (err) {
+    console.warn("[Analytics] summary failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to generate analytics summary" });
   }
 });
 

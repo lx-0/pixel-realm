@@ -471,6 +471,26 @@ export const playerBlocks = pgTable(
   }),
 );
 
+// ── Analytics ─────────────────────────────────────────────────────────────────
+
+export const playerSessions = pgTable("player_sessions", {
+  id:              uuid("id").defaultRandom().primaryKey(),
+  playerId:        uuid("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+  startedAt:       timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+  endedAt:         timestamp("ended_at", { withTimezone: true }),
+  durationSeconds: integer("duration_seconds"),
+});
+
+export const zoneVisits = pgTable("zone_visits", {
+  id:              uuid("id").defaultRandom().primaryKey(),
+  playerId:        uuid("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+  sessionId:       uuid("session_id").notNull().references(() => playerSessions.id, { onDelete: "cascade" }),
+  zoneId:          varchar("zone_id", { length: 50 }).notNull(),
+  enteredAt:       timestamp("entered_at", { withTimezone: true }).notNull().defaultNow(),
+  exitedAt:        timestamp("exited_at", { withTimezone: true }),
+  durationSeconds: integer("duration_seconds"),
+});
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
@@ -503,3 +523,5 @@ export type QuestChain = typeof questChains.$inferSelect;
 export type PlayerChainProgress = typeof playerChainProgress.$inferSelect;
 export type Friendship = typeof friendships.$inferSelect;
 export type PlayerBlock = typeof playerBlocks.$inferSelect;
+export type PlayerSession = typeof playerSessions.$inferSelect;
+export type ZoneVisit = typeof zoneVisits.$inferSelect;
