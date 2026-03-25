@@ -195,12 +195,19 @@ Final deployment prep and polish while awaiting distribution unblock (PIX-19).
 - [x] PIX-238 — Final v0.8.0 QA (full test suite, lint, typecheck, build verification)
 - [x] PIX-239 — Create loading screen art and favicon (pixel art splash and browser icons)
 
-### M24: Pre-Launch Polish — IN PROGRESS
+### M24: Pre-Launch Polish — COMPLETE
 Quality-of-life improvements and expanded platform reach while awaiting distribution unblock (PIX-19).
 
-- [ ] PIX-241 — Add mobile touch controls for browser play (virtual joystick, action buttons, responsive UI)
-- [ ] PIX-242 — Performance audit and optimization for 19-zone game (load times, memory, frame rates)
-- [ ] PIX-243 — Create itch.io store page promotional art (cover image, banner, feature graphics)
+- [x] PIX-241 — Add mobile touch controls for browser play (virtual joystick, action buttons, responsive UI)
+- [x] PIX-242 — Performance audit and optimization for 19-zone game (load times, memory, frame rates)
+- [x] PIX-243 — Create itch.io store page promotional art (cover image, banner, feature graphics)
+
+### M25: Release Candidate & Launch Assets — IN PROGRESS
+Final release candidate build and marketing assets while awaiting board credentials for itch.io distribution (PIX-19).
+
+- [ ] PIX-245 — Build v1.0.0 release candidate distribution package and verify deployment readiness
+- [ ] PIX-246 — Add Open Graph meta tags and social sharing preview for web client
+- [ ] PIX-247 — Create social media launch announcement graphics (Twitter/X cards, gameplay montage screenshots)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -232,7 +239,8 @@ M5 → M6 ──────────────────┘
                                                                                         M22 (Pre-Launch QA & Polish, parallel to M9)
                                                                                               M23 (Launch Preparation, parallel to M9)
                                                                                                     M24 (Pre-Launch Polish, parallel to M9)
-                                                                                                          M14 (post-launch, independent)
+                                                                                                          M25 (Release Candidate & Launch Assets, parallel to M9)
+                                                                                                                M14 (post-launch, independent)
 ```
 
 ## Key Decisions
@@ -253,6 +261,7 @@ M5 → M6 ──────────────────┘
 - **Astral Pinnacle & Game Completion** — M21 completed zone 19 (level 50 final endgame zone) and final v0.7.0 distribution. All complete as of 2026-03-25. Game content is fully shipped.
 - **Pre-Launch QA & Polish** — M22 completed test coverage for zones 16-19, achievements for zones 14-19, and v0.8.0 distribution rebuild. All complete as of 2026-03-25.
 - **Launch Preparation** — M23 completed deployment pipeline, final QA, and loading screen assets. All complete as of 2026-03-25.
-- **Pre-Launch Polish** — M24 adds mobile touch controls, performance optimization, and promotional assets while awaiting board credentials for itch.io distribution.
-- **Single engineer** — One engineer has shipped M0–M22 solo. Strong velocity.
+- **Pre-Launch Polish** — M24 completed mobile touch controls, performance optimization, and promotional assets. All complete as of 2026-03-25.
+- **Release Candidate & Launch Assets** — M25 builds v1.0.0 RC, adds social sharing meta tags, and creates launch announcement graphics while awaiting board credentials for itch.io distribution.
+- **Single engineer** — One engineer has shipped M0–M24 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
