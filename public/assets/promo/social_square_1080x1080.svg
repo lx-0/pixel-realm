@@ -1,0 +1,399 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="50%" stop-color="#0d1028"/>
+      <stop offset="100%" stop-color="#1a0a2e"/>
+    </linearGradient>
+    <clipPath id="frameClip">
+      <rect x="80" y="380" width="920" height="360" rx="4"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1080" height="1080" fill="url(#bgGrad)"/>
+
+  <!-- Star field -->
+  <g fill="#fff8a0" opacity="0.5">
+    <rect x="60" y="30" width="3" height="3"/>
+    <rect x="180" y="70" width="2" height="2"/>
+    <rect x="320" y="25" width="3" height="3"/>
+    <rect x="500" y="50" width="2" height="2"/>
+    <rect x="620" y="40" width="3" height="3"/>
+    <rect x="780" y="65" width="2" height="2"/>
+    <rect x="900" y="30" width="3" height="3"/>
+    <rect x="1020" y="55" width="2" height="2"/>
+    <rect x="140" y="90" width="2" height="2"/>
+    <rect x="400" y="80" width="2" height="2"/>
+    <rect x="700" y="95" width="3" height="3"/>
+    <rect x="850" y="85" width="2" height="2"/>
+  </g>
+
+  <!-- Decorative pixel border -->
+  <rect x="0" y="0" width="1080" height="1080" fill="none" stroke="#ffe040" stroke-width="4" opacity="0.15"/>
+  <rect x="8" y="8" width="1064" height="1064" fill="none" stroke="#ffe040" stroke-width="1" opacity="0.1"/>
+
+  <!-- Corner pixel accents -->
+  <g fill="#ffe040" opacity="0.4">
+    <rect x="16" y="16" width="12" height="12"/>
+    <rect x="32" y="16" width="6" height="6"/>
+    <rect x="16" y="32" width="6" height="6"/>
+    <rect x="1052" y="16" width="12" height="12"/>
+    <rect x="1042" y="16" width="6" height="6"/>
+    <rect x="1052" y="32" width="6" height="6"/>
+    <rect x="16" y="1052" width="12" height="12"/>
+    <rect x="32" y="1052" width="6" height="6"/>
+    <rect x="16" y="1042" width="6" height="6"/>
+    <rect x="1052" y="1052" width="12" height="12"/>
+    <rect x="1042" y="1052" width="6" height="6"/>
+    <rect x="1052" y="1042" width="6" height="6"/>
+  </g>
+
+  <!-- ===== LOGO: "PIXEL" in cyan — larger scale ===== -->
+  <!-- Scale: 12px per pixel unit -->
+
+  <!-- P -->
+  <g fill="#50a8e8">
+    <rect x="168" y="120" width="12" height="84"/>
+    <rect x="180" y="120" width="24" height="12"/>
+    <rect x="204" y="132" width="12" height="24"/>
+    <rect x="180" y="156" width="24" height="12"/>
+  </g>
+
+  <!-- I -->
+  <g fill="#50a8e8">
+    <rect x="240" y="120" width="36" height="12"/>
+    <rect x="252" y="132" width="12" height="60"/>
+    <rect x="240" y="192" width="36" height="12"/>
+  </g>
+
+  <!-- X -->
+  <g fill="#50a8e8">
+    <rect x="300" y="120" width="12" height="12"/>
+    <rect x="336" y="120" width="12" height="12"/>
+    <rect x="312" y="132" width="12" height="12"/>
+    <rect x="324" y="132" width="12" height="12"/>
+    <rect x="318" y="144" width="12" height="24"/>
+    <rect x="312" y="168" width="12" height="12"/>
+    <rect x="324" y="168" width="12" height="12"/>
+    <rect x="300" y="180" width="12" height="24"/>
+    <rect x="336" y="180" width="12" height="24"/>
+  </g>
+
+  <!-- E -->
+  <g fill="#50a8e8">
+    <rect x="372" y="120" width="12" height="84"/>
+    <rect x="384" y="120" width="36" height="12"/>
+    <rect x="384" y="156" width="24" height="12"/>
+    <rect x="384" y="192" width="36" height="12"/>
+  </g>
+
+  <!-- L -->
+  <g fill="#50a8e8">
+    <rect x="444" y="120" width="12" height="84"/>
+    <rect x="456" y="192" width="36" height="12"/>
+  </g>
+
+  <!-- ===== "REALM" in gold ===== -->
+
+  <!-- R -->
+  <g fill="#ffe040">
+    <rect x="528" y="120" width="12" height="84"/>
+    <rect x="540" y="120" width="24" height="12"/>
+    <rect x="564" y="132" width="12" height="24"/>
+    <rect x="540" y="156" width="24" height="12"/>
+    <rect x="552" y="168" width="12" height="12"/>
+    <rect x="564" y="180" width="12" height="24"/>
+  </g>
+
+  <!-- E -->
+  <g fill="#ffe040">
+    <rect x="600" y="120" width="12" height="84"/>
+    <rect x="612" y="120" width="36" height="12"/>
+    <rect x="612" y="156" width="24" height="12"/>
+    <rect x="612" y="192" width="36" height="12"/>
+  </g>
+
+  <!-- A -->
+  <g fill="#ffe040">
+    <rect x="672" y="132" width="12" height="72"/>
+    <rect x="708" y="132" width="12" height="72"/>
+    <rect x="684" y="120" width="24" height="12"/>
+    <rect x="684" y="156" width="24" height="12"/>
+  </g>
+
+  <!-- L -->
+  <g fill="#ffe040">
+    <rect x="744" y="120" width="12" height="84"/>
+    <rect x="756" y="192" width="36" height="12"/>
+  </g>
+
+  <!-- M -->
+  <g fill="#ffe040">
+    <rect x="816" y="120" width="12" height="84"/>
+    <rect x="876" y="120" width="12" height="84"/>
+    <rect x="828" y="132" width="12" height="12"/>
+    <rect x="864" y="132" width="12" height="12"/>
+    <rect x="840" y="144" width="12" height="12"/>
+    <rect x="852" y="144" width="12" height="12"/>
+  </g>
+
+  <!-- Logo sparkles -->
+  <g fill="#fff8a0" filter="url(#glow)">
+    <rect x="155" y="108" width="8" height="8"/>
+    <rect x="500" y="106" width="8" height="8"/>
+    <rect x="900" y="110" width="8" height="8"/>
+    <rect x="325" y="106" width="5" height="5"/>
+    <rect x="720" y="108" width="5" height="5"/>
+  </g>
+
+  <!-- Sword left of logo -->
+  <g fill="#c8c8c8">
+    <rect x="118" y="142" width="6" height="42"/>
+    <rect x="110" y="184" width="22" height="6"/>
+    <rect x="118" y="190" width="6" height="12"/>
+  </g>
+  <rect x="115" y="202" width="12" height="6" fill="#e8b800"/>
+
+  <!-- Shield right of logo -->
+  <g fill="#2a7ac0">
+    <rect x="910" y="136" width="36" height="6"/>
+    <rect x="904" y="142" width="48" height="36"/>
+    <rect x="910" y="178" width="36" height="6"/>
+    <rect x="916" y="184" width="24" height="6"/>
+    <rect x="922" y="190" width="12" height="6"/>
+  </g>
+  <rect x="924" y="156" width="10" height="10" fill="#ffe040"/>
+
+  <!-- Subtitle -->
+  <text x="540" y="240" fill="#969696" font-family="'Courier New', monospace" font-size="16" text-anchor="middle" letter-spacing="6">PIXELATED  MMORPG  ADVENTURE</text>
+
+  <!-- Gold accent line -->
+  <rect x="240" y="258" width="600" height="2" fill="#4a4a4a"/>
+  <rect x="536" y="256" width="8" height="6" fill="#e8b800"/>
+
+  <!-- ===== Screenshot frame area (placeholder for composited screenshots) ===== -->
+  <!-- Three-panel showcase frame -->
+
+  <!-- Panel frame backgrounds -->
+  <rect x="78" y="298" width="296" height="220" fill="#1a1a2e" stroke="#50a8e8" stroke-width="2"/>
+  <rect x="392" y="298" width="296" height="220" fill="#1a1a2e" stroke="#ffe040" stroke-width="2"/>
+  <rect x="706" y="298" width="296" height="220" fill="#1a1a2e" stroke="#d42020" stroke-width="2"/>
+
+  <!-- Panel 1: Forest scene (pixel art) -->
+  <!-- Sky -->
+  <rect x="80" y="300" width="292" height="80" fill="#4a90d0"/>
+  <!-- Clouds -->
+  <g fill="#ffffff" opacity="0.7">
+    <rect x="120" y="320" width="30" height="10"/>
+    <rect x="126" y="314" width="18" height="8"/>
+    <rect x="260" y="330" width="24" height="8"/>
+    <rect x="264" y="324" width="16" height="8"/>
+  </g>
+  <!-- Hills -->
+  <rect x="80" y="370" width="292" height="10" fill="#4c9b4c"/>
+  <rect x="100" y="360" width="60" height="20" fill="#2d6e2d"/>
+  <rect x="110" y="350" width="40" height="14" fill="#2d6e2d"/>
+  <rect x="220" y="356" width="50" height="24" fill="#2d6e2d"/>
+  <rect x="230" y="346" width="30" height="14" fill="#2d6e2d"/>
+  <!-- Ground -->
+  <rect x="80" y="380" width="292" height="100" fill="#78c878"/>
+  <rect x="80" y="420" width="292" height="60" fill="#3b5a2a"/>
+  <rect x="80" y="460" width="292" height="36" fill="#2a3e1e"/>
+  <!-- Trees -->
+  <g fill="#1a4a1a">
+    <rect x="100" y="370" width="20" height="50"/>
+    <rect x="92" y="358" width="36" height="16"/>
+    <rect x="96" y="348" width="28" height="14"/>
+    <rect x="290" y="374" width="18" height="44"/>
+    <rect x="282" y="362" width="34" height="16"/>
+    <rect x="288" y="352" width="22" height="14"/>
+  </g>
+  <!-- Player character -->
+  <g fill="#50a8e8">
+    <rect x="196" y="392" width="12" height="18"/>
+    <rect x="198" y="384" width="8" height="10"/>
+  </g>
+  <rect x="208" y="388" width="10" height="4" fill="#c8c8c8"/>
+  <!-- Enemy slime -->
+  <rect x="260" y="400" width="16" height="12" fill="#4c9b4c"/>
+  <rect x="264" y="396" width="8" height="6" fill="#78c878"/>
+  <!-- Label -->
+  <text x="226" y="510" fill="#50a8e8" font-family="'Courier New', monospace" font-size="11" text-anchor="middle" letter-spacing="2">EXPLORE</text>
+
+  <!-- Panel 2: Dungeon boss scene (pixel art) -->
+  <!-- Dark dungeon bg -->
+  <rect x="394" y="300" width="292" height="216" fill="#1a1a2e"/>
+  <!-- Stone walls -->
+  <g fill="#2b2b2b">
+    <rect x="394" y="300" width="292" height="40"/>
+    <rect x="394" y="300" width="40" height="216"/>
+    <rect x="646" y="300" width="40" height="216"/>
+  </g>
+  <g fill="#3a3a3a">
+    <rect x="394" y="340" width="292" height="4"/>
+  </g>
+  <!-- Purple crystals/torches -->
+  <g fill="#9050e0">
+    <rect x="440" y="310" width="8" height="16"/>
+    <rect x="630" y="310" width="8" height="16"/>
+  </g>
+  <g fill="#b070ff" opacity="0.6">
+    <rect x="442" y="306" width="4" height="6"/>
+    <rect x="632" y="306" width="4" height="6"/>
+  </g>
+  <!-- Floor -->
+  <rect x="434" y="440" width="212" height="60" fill="#2b2b2b"/>
+  <rect x="434" y="440" width="212" height="4" fill="#3a3a3a"/>
+  <!-- Boss enemy -->
+  <g fill="#d42020">
+    <rect x="520" y="370" width="24" height="30"/>
+    <rect x="516" y="360" width="32" height="14"/>
+    <rect x="522" y="352" width="20" height="12"/>
+  </g>
+  <rect x="524" y="346" width="16" height="8" fill="#f06020"/>
+  <text x="540" y="342" fill="#d42020" font-family="'Courier New', monospace" font-size="9" text-anchor="middle">BOSS</text>
+  <!-- Boss HP bar -->
+  <rect x="504" y="400" width="60" height="6" fill="#333333"/>
+  <rect x="504" y="400" width="45" height="6" fill="#d42020"/>
+  <!-- Party members -->
+  <g fill="#50a8e8">
+    <rect x="460" y="420" width="10" height="16"/>
+    <rect x="462" y="412" width="6" height="10"/>
+  </g>
+  <g fill="#9050e0">
+    <rect x="480" y="422" width="10" height="14"/>
+    <rect x="482" y="414" width="6" height="10"/>
+  </g>
+  <g fill="#4c9b4c">
+    <rect x="500" y="420" width="10" height="16"/>
+    <rect x="502" y="412" width="6" height="10"/>
+  </g>
+  <!-- Label -->
+  <text x="540" y="510" fill="#d42020" font-family="'Courier New', monospace" font-size="11" text-anchor="middle" letter-spacing="2">BATTLE</text>
+
+  <!-- Panel 3: Town/social scene (pixel art) -->
+  <!-- Sky -->
+  <rect x="708" y="300" width="292" height="80" fill="#4a90d0"/>
+  <g fill="#ffffff" opacity="0.6">
+    <rect x="740" y="315" width="24" height="8"/>
+    <rect x="746" y="310" width="12" height="7"/>
+    <rect x="880" y="325" width="20" height="8"/>
+  </g>
+  <!-- Buildings -->
+  <rect x="720" y="350" width="60" height="80" fill="#8b5c2a"/>
+  <rect x="722" y="340" width="56" height="14" fill="#a06830"/>
+  <rect x="730" y="370" width="16" height="20" fill="#3a2a10"/>
+  <rect x="758" y="374" width="12" height="12" fill="#50a8e8" opacity="0.5"/>
+  <rect x="830" y="360" width="50" height="70" fill="#8b5c2a"/>
+  <rect x="832" y="350" width="46" height="14" fill="#a06830"/>
+  <rect x="842" y="380" width="12" height="12" fill="#50a8e8" opacity="0.5"/>
+  <rect x="862" y="380" width="12" height="12" fill="#ffe040" opacity="0.4"/>
+  <rect x="940" y="370" width="40" height="60" fill="#7a5020"/>
+  <rect x="942" y="362" width="36" height="12" fill="#8b5c2a"/>
+  <!-- Ground/path -->
+  <rect x="708" y="430" width="292" height="40" fill="#b8843f"/>
+  <rect x="708" y="470" width="292" height="26" fill="#8b5c2a"/>
+  <!-- NPCs and players -->
+  <g fill="#50a8e8">
+    <rect x="780" y="410" width="10" height="16"/>
+    <rect x="782" y="402" width="6" height="10"/>
+  </g>
+  <g fill="#e8b800">
+    <rect x="800" y="412" width="10" height="14"/>
+    <rect x="802" y="404" width="6" height="10"/>
+  </g>
+  <g fill="#9050e0">
+    <rect x="860" y="408" width="10" height="18"/>
+    <rect x="862" y="400" width="6" height="10"/>
+  </g>
+  <!-- Chat bubble -->
+  <rect x="790" y="388" width="40" height="12" fill="#333333" rx="2"/>
+  <text x="810" y="398" fill="#ffffff" font-family="'Courier New', monospace" font-size="8" text-anchor="middle">GG!</text>
+  <!-- Shopkeeper sign -->
+  <rect x="724" y="346" width="24" height="6" fill="#e8b800"/>
+  <!-- Label -->
+  <text x="854" y="510" fill="#ffe040" font-family="'Courier New', monospace" font-size="11" text-anchor="middle" letter-spacing="2">SOCIALIZE</text>
+
+  <!-- ===== Feature list ===== -->
+  <g font-family="'Courier New', monospace" font-size="18" fill="#c8c8c8">
+    <text x="540" y="580" text-anchor="middle">
+      <tspan fill="#50a8e8">+</tspan> Open World  <tspan fill="#ffe040">+</tspan> Boss Raids  <tspan fill="#d42020">+</tspan> PvP Arena
+    </text>
+    <text x="540" y="612" text-anchor="middle">
+      <tspan fill="#4c9b4c">+</tspan> Crafting  <tspan fill="#9050e0">+</tspan> Guilds  <tspan fill="#e8b800">+</tspan> AI Quests
+    </text>
+  </g>
+
+  <!-- Gold separator -->
+  <rect x="240" y="636" width="600" height="2" fill="#4a4a4a"/>
+  <rect x="536" y="634" width="8" height="6" fill="#e8b800"/>
+
+  <!-- CTA -->
+  <rect x="340" y="660" width="400" height="56" fill="none" stroke="#ffe040" stroke-width="3"/>
+  <rect x="344" y="664" width="392" height="48" fill="#ffe040" opacity="0.06"/>
+  <text x="540" y="696" fill="#ffe040" font-family="'Courier New', monospace" font-size="24" font-weight="bold" text-anchor="middle" letter-spacing="8">PLAY NOW FREE</text>
+
+  <!-- Bottom landscape silhouette -->
+  <!-- Forest -->
+  <g fill="#1a4a1a" opacity="0.4">
+    <rect x="0" y="800" width="1080" height="280"/>
+    <rect x="60" y="770" width="40" height="30"/>
+    <rect x="50" y="756" width="60" height="18"/>
+    <rect x="180" y="780" width="30" height="20"/>
+    <rect x="174" y="768" width="42" height="16"/>
+    <rect x="350" y="776" width="36" height="24"/>
+    <rect x="344" y="762" width="48" height="18"/>
+    <rect x="500" y="784" width="30" height="16"/>
+    <rect x="650" y="774" width="40" height="26"/>
+    <rect x="644" y="760" width="52" height="18"/>
+    <rect x="820" y="782" width="32" height="18"/>
+    <rect x="814" y="770" width="44" height="16"/>
+    <rect x="960" y="778" width="36" height="22"/>
+    <rect x="954" y="764" width="48" height="18"/>
+  </g>
+  <g fill="#0d1a0d" opacity="0.3">
+    <rect x="0" y="820" width="1080" height="260"/>
+  </g>
+
+  <!-- Character showcase at bottom -->
+  <!-- Warrior -->
+  <g fill="#50a8e8">
+    <rect x="340" y="858" width="18" height="28"/>
+    <rect x="343" y="846" width="12" height="14"/>
+    <rect x="358" y="854" width="14" height="6"/>
+  </g>
+  <rect x="343" y="840" width="12" height="8" fill="#c8c8c8"/>
+  <text x="349" y="900" fill="#50a8e8" font-family="'Courier New', monospace" font-size="10" text-anchor="middle">WARRIOR</text>
+
+  <!-- Mage -->
+  <g fill="#9050e0">
+    <rect x="520" y="858" width="18" height="28"/>
+    <rect x="523" y="846" width="12" height="14"/>
+    <rect x="538" y="842" width="5" height="30"/>
+  </g>
+  <g fill="#ffe040" filter="url(#glow)">
+    <rect x="539" y="836" width="8" height="8"/>
+  </g>
+  <text x="530" y="900" fill="#9050e0" font-family="'Courier New', monospace" font-size="10" text-anchor="middle">MAGE</text>
+
+  <!-- Ranger -->
+  <g fill="#4c9b4c">
+    <rect x="700" y="858" width="18" height="28"/>
+    <rect x="703" y="846" width="12" height="14"/>
+    <rect x="690" y="852" width="12" height="4"/>
+    <rect x="690" y="858" width="12" height="4"/>
+  </g>
+  <text x="710" y="900" fill="#4c9b4c" font-family="'Courier New', monospace" font-size="10" text-anchor="middle">RANGER</text>
+
+  <!-- Bottom branding -->
+  <rect x="0" y="1040" width="1080" height="40" fill="#0a0a0a" opacity="0.7"/>
+  <text x="540" y="1066" fill="#606060" font-family="'Courier New', monospace" font-size="12" text-anchor="middle" letter-spacing="3">PIXELFORGESTUDIOS.COM</text>
+</svg>

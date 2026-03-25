@@ -1,0 +1,358 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="40%" stop-color="#0d1028"/>
+      <stop offset="100%" stop-color="#1a0a2e"/>
+    </linearGradient>
+    <linearGradient id="groundGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2d6e2d"/>
+      <stop offset="35%" stop-color="#b8843f"/>
+      <stop offset="65%" stop-color="#4a4a4a"/>
+      <stop offset="100%" stop-color="#90d0f8"/>
+    </linearGradient>
+    <linearGradient id="bannerGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e8b800" stop-opacity="0"/>
+      <stop offset="20%" stop-color="#e8b800"/>
+      <stop offset="80%" stop-color="#e8b800"/>
+      <stop offset="100%" stop-color="#e8b800" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="675" fill="url(#bgGrad)"/>
+
+  <!-- Star field -->
+  <g fill="#fff8a0" opacity="0.6">
+    <rect x="80" y="40" width="3" height="3"/>
+    <rect x="200" y="80" width="2" height="2"/>
+    <rect x="350" y="30" width="3" height="3"/>
+    <rect x="500" y="60" width="2" height="2"/>
+    <rect x="650" y="45" width="3" height="3"/>
+    <rect x="780" y="75" width="2" height="2"/>
+    <rect x="900" y="35" width="3" height="3"/>
+    <rect x="1050" y="55" width="2" height="2"/>
+    <rect x="1120" y="85" width="3" height="3"/>
+    <rect x="150" y="100" width="2" height="2"/>
+    <rect x="430" y="95" width="2" height="2"/>
+    <rect x="720" y="110" width="3" height="3"/>
+    <rect x="960" y="90" width="2" height="2"/>
+    <rect x="300" y="120" width="2" height="2"/>
+    <rect x="580" y="130" width="2" height="2"/>
+    <rect x="1080" y="120" width="2" height="2"/>
+  </g>
+
+  <!-- Pixel art ground silhouette — multi-biome landscape -->
+  <!-- Forest zone (left) -->
+  <g fill="#1a4a1a">
+    <rect x="0" y="480" width="300" height="195"/>
+    <!-- Trees -->
+    <rect x="30" y="420" width="40" height="60"/>
+    <rect x="20" y="400" width="60" height="24"/>
+    <rect x="28" y="384" width="44" height="20"/>
+    <rect x="100" y="440" width="36" height="40"/>
+    <rect x="92" y="424" width="52" height="20"/>
+    <rect x="180" y="430" width="44" height="50"/>
+    <rect x="172" y="410" width="60" height="24"/>
+    <rect x="180" y="394" width="44" height="20"/>
+    <rect x="250" y="450" width="36" height="30"/>
+    <rect x="242" y="434" width="52" height="20"/>
+  </g>
+  <g fill="#2d6e2d">
+    <rect x="0" y="490" width="300" height="185"/>
+    <rect x="24" y="406" width="52" height="16"/>
+    <rect x="32" y="390" width="36" height="20"/>
+    <rect x="96" y="430" width="44" height="16"/>
+    <rect x="176" y="416" width="52" height="16"/>
+    <rect x="184" y="400" width="36" height="20"/>
+    <rect x="246" y="440" width="44" height="16"/>
+  </g>
+
+  <!-- Desert zone (center-left) -->
+  <g fill="#8b6530">
+    <rect x="280" y="490" width="280" height="185"/>
+    <!-- Dunes -->
+    <rect x="300" y="470" width="80" height="20"/>
+    <rect x="310" y="458" width="60" height="16"/>
+    <rect x="320" y="448" width="40" height="14"/>
+    <rect x="400" y="475" width="100" height="15"/>
+    <rect x="420" y="462" width="60" height="16"/>
+    <rect x="430" y="450" width="40" height="16"/>
+  </g>
+  <g fill="#b8843f">
+    <rect x="280" y="500" width="280" height="175"/>
+    <rect x="308" y="464" width="64" height="12"/>
+    <rect x="318" y="454" width="44" height="14"/>
+    <rect x="418" y="468" width="64" height="10"/>
+    <rect x="428" y="456" width="44" height="16"/>
+  </g>
+
+  <!-- Dungeon/Volcanic zone (center-right) -->
+  <g fill="#2b1a1a">
+    <rect x="540" y="485" width="260" height="190"/>
+    <!-- Rocky spires -->
+    <rect x="570" y="440" width="30" height="45"/>
+    <rect x="576" y="420" width="18" height="24"/>
+    <rect x="580" y="406" width="10" height="18"/>
+    <rect x="660" y="450" width="40" height="35"/>
+    <rect x="668" y="434" width="24" height="20"/>
+    <rect x="740" y="460" width="28" height="25"/>
+    <rect x="746" y="446" width="16" height="18"/>
+  </g>
+  <g fill="#4a2a2a">
+    <rect x="540" y="495" width="260" height="180"/>
+  </g>
+  <!-- Lava glow -->
+  <g fill="#d42020" opacity="0.5">
+    <rect x="600" y="500" width="40" height="4"/>
+    <rect x="700" y="510" width="30" height="3"/>
+  </g>
+  <g fill="#f06020" opacity="0.4">
+    <rect x="608" y="498" width="24" height="3"/>
+    <rect x="706" y="508" width="18" height="3"/>
+  </g>
+
+  <!-- Ice zone (right) -->
+  <g fill="#4a6a8a">
+    <rect x="780" y="480" width="420" height="195"/>
+    <!-- Ice peaks -->
+    <rect x="820" y="430" width="50" height="50"/>
+    <rect x="830" y="410" width="30" height="24"/>
+    <rect x="836" y="394" width="18" height="20"/>
+    <rect x="840" y="382" width="10" height="16"/>
+    <rect x="930" y="440" width="60" height="40"/>
+    <rect x="942" y="420" width="36" height="24"/>
+    <rect x="950" y="404" width="20" height="20"/>
+    <rect x="1050" y="450" width="44" height="30"/>
+    <rect x="1058" y="434" width="28" height="20"/>
+    <rect x="1064" y="420" width="16" height="18"/>
+    <rect x="1140" y="460" width="60" height="20"/>
+    <rect x="1148" y="446" width="44" height="18"/>
+  </g>
+  <g fill="#90d0f8">
+    <rect x="834" y="398" width="22" height="10"/>
+    <rect x="838" y="386" width="14" height="16"/>
+    <rect x="946" y="408" width="28" height="14"/>
+    <rect x="952" y="396" width="16" height="16"/>
+    <rect x="1062" y="424" width="20" height="14"/>
+    <rect x="1152" y="450" width="36" height="10"/>
+  </g>
+  <g fill="#c8f0ff" opacity="0.5">
+    <rect x="840" y="390" width="10" height="6"/>
+    <rect x="954" y="400" width="12" height="6"/>
+  </g>
+
+  <!-- Ground line accent -->
+  <rect x="0" y="478" width="1200" height="3" fill="url(#groundGrad)" opacity="0.6"/>
+
+  <!-- ===== Character silhouettes on the landscape ===== -->
+  <!-- Warrior (forest) -->
+  <g fill="#50a8e8">
+    <rect x="140" y="456" width="12" height="18"/><!-- body -->
+    <rect x="142" y="448" width="8" height="10"/><!-- head -->
+    <rect x="153" y="460" width="10" height="4"/><!-- sword -->
+    <rect x="153" y="456" width="4" height="8"/><!-- arm -->
+  </g>
+
+  <!-- Mage (desert) -->
+  <g fill="#9050e0">
+    <rect x="450" y="428" width="12" height="18"/><!-- body -->
+    <rect x="452" y="420" width="8" height="10"/><!-- head -->
+    <rect x="462" y="418" width="4" height="16"/><!-- staff -->
+  </g>
+  <!-- Spell effect -->
+  <g fill="#ffe040" filter="url(#glow)" opacity="0.8">
+    <rect x="464" y="414" width="6" height="6"/>
+  </g>
+
+  <!-- Ranger (ice) -->
+  <g fill="#4c9b4c">
+    <rect x="960" y="418" width="12" height="18"/><!-- body -->
+    <rect x="962" y="410" width="8" height="10"/><!-- head -->
+    <rect x="952" y="416" width="10" height="3"/><!-- bow -->
+    <rect x="952" y="420" width="10" height="3"/>
+  </g>
+
+  <!-- Enemy (volcanic) -->
+  <g fill="#d42020">
+    <rect x="680" y="420" width="16" height="20"/><!-- body -->
+    <rect x="682" y="410" width="12" height="12"/><!-- head -->
+  </g>
+
+  <!-- ===== LOGO: "PIXEL" in cyan ===== -->
+  <!-- Scale: 10px per pixel unit, letters on 5x7 grid -->
+  <!-- Centered at x=600, logo total width ~520px -->
+
+  <!-- P -->
+  <g fill="#50a8e8">
+    <rect x="220" y="140" width="10" height="70"/>
+    <rect x="230" y="140" width="20" height="10"/>
+    <rect x="250" y="150" width="10" height="20"/>
+    <rect x="230" y="170" width="20" height="10"/>
+  </g>
+
+  <!-- I -->
+  <g fill="#50a8e8">
+    <rect x="280" y="140" width="30" height="10"/>
+    <rect x="290" y="150" width="10" height="50"/>
+    <rect x="280" y="200" width="30" height="10"/>
+  </g>
+
+  <!-- X -->
+  <g fill="#50a8e8">
+    <rect x="330" y="140" width="10" height="10"/>
+    <rect x="360" y="140" width="10" height="10"/>
+    <rect x="340" y="150" width="10" height="10"/>
+    <rect x="350" y="150" width="10" height="10"/>
+    <rect x="345" y="160" width="10" height="20"/>
+    <rect x="340" y="180" width="10" height="10"/>
+    <rect x="350" y="180" width="10" height="10"/>
+    <rect x="330" y="190" width="10" height="20"/>
+    <rect x="360" y="190" width="10" height="20"/>
+  </g>
+
+  <!-- E -->
+  <g fill="#50a8e8">
+    <rect x="390" y="140" width="10" height="70"/>
+    <rect x="400" y="140" width="30" height="10"/>
+    <rect x="400" y="170" width="20" height="10"/>
+    <rect x="400" y="200" width="30" height="10"/>
+  </g>
+
+  <!-- L -->
+  <g fill="#50a8e8">
+    <rect x="450" y="140" width="10" height="70"/>
+    <rect x="460" y="200" width="30" height="10"/>
+  </g>
+
+  <!-- ===== "REALM" in gold ===== -->
+
+  <!-- R -->
+  <g fill="#ffe040">
+    <rect x="520" y="140" width="10" height="70"/>
+    <rect x="530" y="140" width="20" height="10"/>
+    <rect x="550" y="150" width="10" height="20"/>
+    <rect x="530" y="170" width="20" height="10"/>
+    <rect x="540" y="180" width="10" height="10"/>
+    <rect x="550" y="190" width="10" height="20"/>
+  </g>
+
+  <!-- E -->
+  <g fill="#ffe040">
+    <rect x="580" y="140" width="10" height="70"/>
+    <rect x="590" y="140" width="30" height="10"/>
+    <rect x="590" y="170" width="20" height="10"/>
+    <rect x="590" y="200" width="30" height="10"/>
+  </g>
+
+  <!-- A -->
+  <g fill="#ffe040">
+    <rect x="640" y="150" width="10" height="60"/>
+    <rect x="670" y="150" width="10" height="60"/>
+    <rect x="650" y="140" width="20" height="10"/>
+    <rect x="650" y="170" width="20" height="10"/>
+  </g>
+
+  <!-- L -->
+  <g fill="#ffe040">
+    <rect x="700" y="140" width="10" height="70"/>
+    <rect x="710" y="200" width="30" height="10"/>
+  </g>
+
+  <!-- M -->
+  <g fill="#ffe040">
+    <rect x="760" y="140" width="10" height="70"/>
+    <rect x="810" y="140" width="10" height="70"/>
+    <rect x="770" y="150" width="10" height="10"/>
+    <rect x="800" y="150" width="10" height="10"/>
+    <rect x="780" y="160" width="10" height="10"/>
+    <rect x="790" y="160" width="10" height="10"/>
+  </g>
+
+  <!-- Sparkle accents around logo -->
+  <g fill="#fff8a0" filter="url(#glow)">
+    <rect x="210" y="130" width="6" height="6"/>
+    <rect x="500" y="126" width="6" height="6"/>
+    <rect x="830" y="132" width="6" height="6"/>
+    <rect x="350" y="126" width="4" height="4"/>
+    <rect x="680" y="128" width="4" height="4"/>
+  </g>
+
+  <!-- Sword icon left -->
+  <g fill="#c8c8c8">
+    <rect x="180" y="160" width="5" height="35"/>
+    <rect x="173" y="195" width="19" height="5"/>
+    <rect x="180" y="200" width="5" height="10"/>
+  </g>
+  <rect x="178" y="210" width="9" height="5" fill="#e8b800"/>
+
+  <!-- Shield icon right -->
+  <g fill="#2a7ac0">
+    <rect x="845" y="155" width="30" height="5"/>
+    <rect x="840" y="160" width="40" height="30"/>
+    <rect x="845" y="190" width="30" height="5"/>
+    <rect x="850" y="195" width="20" height="5"/>
+    <rect x="855" y="200" width="10" height="5"/>
+  </g>
+  <rect x="856" y="172" width="8" height="8" fill="#ffe040"/>
+
+  <!-- Subtitle -->
+  <text x="600" y="245" fill="#969696" font-family="'Courier New', monospace" font-size="16" text-anchor="middle" letter-spacing="6">PIXELATED  MMORPG  ADVENTURE</text>
+
+  <!-- Gold accent line -->
+  <rect x="300" y="260" width="600" height="2" fill="#4a4a4a"/>
+  <rect x="596" y="258" width="8" height="6" fill="#e8b800"/>
+
+  <!-- Feature callouts -->
+  <g fill="#50a8e8" font-family="'Courier New', monospace" font-size="13" text-anchor="middle">
+    <text x="240" y="310">EXPLORE</text>
+    <text x="440" y="310">BATTLE</text>
+    <text x="600" y="310">CRAFT</text>
+    <text x="760" y="310">QUEST</text>
+    <text x="960" y="310">CONQUER</text>
+  </g>
+
+  <!-- Pixel dot separators -->
+  <g fill="#ffe040">
+    <rect x="337" y="304" width="6" height="6"/>
+    <rect x="517" y="304" width="6" height="6"/>
+    <rect x="677" y="304" width="6" height="6"/>
+    <rect x="857" y="304" width="6" height="6"/>
+  </g>
+
+  <!-- Call to Action -->
+  <!-- CTA border -->
+  <rect x="430" y="340" width="340" height="50" fill="none" stroke="#ffe040" stroke-width="3"/>
+  <rect x="434" y="344" width="332" height="42" fill="#ffe040" opacity="0.08"/>
+  <text x="600" y="372" fill="#ffe040" font-family="'Courier New', monospace" font-size="22" font-weight="bold" text-anchor="middle" letter-spacing="8">PLAY NOW FREE</text>
+
+  <!-- Bottom branding bar -->
+  <rect x="0" y="640" width="1200" height="35" fill="#0a0a0a" opacity="0.7"/>
+  <text x="600" y="663" fill="#606060" font-family="'Courier New', monospace" font-size="12" text-anchor="middle" letter-spacing="3">PIXELFORGESTUDIOS.COM</text>
+
+  <!-- Corner pixel accents -->
+  <g fill="#ffe040" opacity="0.3">
+    <rect x="10" y="10" width="8" height="8"/>
+    <rect x="22" y="10" width="4" height="4"/>
+    <rect x="10" y="22" width="4" height="4"/>
+    <rect x="1182" y="10" width="8" height="8"/>
+    <rect x="1174" y="10" width="4" height="4"/>
+    <rect x="1182" y="22" width="4" height="4"/>
+    <rect x="10" y="628" width="8" height="8"/>
+    <rect x="22" y="628" width="4" height="4"/>
+    <rect x="10" y="624" width="4" height="4"/>
+    <rect x="1182" y="628" width="8" height="8"/>
+    <rect x="1174" y="628" width="4" height="4"/>
+    <rect x="1182" y="624" width="4" height="4"/>
+  </g>
+
+  <!-- Thin border -->
+  <rect x="0" y="0" width="1200" height="675" fill="none" stroke="#ffe040" stroke-width="2" opacity="0.2"/>
+</svg>
