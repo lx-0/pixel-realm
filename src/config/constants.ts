@@ -249,9 +249,10 @@ export type EnemyTypeName =
   | 'elemental_amalgam' | 'primordial_shard' | 'core_sentinel'
   | 'nexus_guardian' | 'phase_strider' | 'energy_parasite'
   | 'twilight_sentinel' | 'rift_stalker' | 'echo_wraith'
-  | 'spire_sentinel' | 'reality_shard' | 'oblivion_wraith';
+  | 'spire_sentinel' | 'reality_shard' | 'oblivion_wraith'
+  | 'astral_warden' | 'cosmic_devourer' | 'nebula_wisp';
 
-export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame' | 'nexus_overseer' | 'twilight_warden' | 'spire_keeper';
+export type BossTypeName = 'slime_king' | 'bandit_chief' | 'archon' | 'kraken' | 'glacial_wyrm' | 'infernal_warden' | 'mire_queen' | 'frost_titan' | 'celestial_arbiter' | 'abyssal_kraken_lord' | 'ancient_dracolich' | 'void_architect' | 'eclipsed_king' | 'the_unmaker' | 'genesis_flame' | 'nexus_overseer' | 'twilight_warden' | 'spire_keeper' | 'astral_sovereign';
 
 export interface EnemyTypeDef {
   color: number;
@@ -335,6 +336,10 @@ export const ENEMY_TYPES: Record<EnemyTypeName, EnemyTypeDef> = {
   spire_sentinel:  { color: 0x3322aa, size: 12, baseHp: 580, baseDmg: 138, speed: 28,  aggroRange: 92,  xpValue: 345, knockbackMultiplier: 0.0, behaviour: 'block' },
   reality_shard:   { color: 0x88ccff, size: 8,  baseHp: 430, baseDmg: 148, speed: 115, aggroRange: 200, xpValue: 360, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0xffd040 },
   oblivion_wraith: { color: 0x6622bb, size: 9,  baseHp: 470, baseDmg: 158, speed: 110, aggroRange: 195, xpValue: 375, knockbackMultiplier: 0.8, behaviour: 'phase' },
+  // Astral Pinnacle enemies
+  astral_warden:   { color: 0x2244cc, size: 13, baseHp: 640, baseDmg: 158, speed: 26,  aggroRange: 95,  xpValue: 395, knockbackMultiplier: 0.0, behaviour: 'block' },
+  cosmic_devourer: { color: 0x9922ff, size: 9,  baseHp: 510, baseDmg: 172, speed: 115, aggroRange: 200, xpValue: 420, knockbackMultiplier: 0.8, behaviour: 'phase' },
+  nebula_wisp:     { color: 0x44eeff, size: 8,  baseHp: 480, baseDmg: 165, speed: 108, aggroRange: 205, xpValue: 405, knockbackMultiplier: 0.7, behaviour: 'ranged_flee', projectileColor: 0xaaffee },
 };
 
 export interface BossTypeDef {
@@ -366,6 +371,7 @@ export const BOSS_TYPES: Record<BossTypeName, BossTypeDef> = {
   nexus_overseer:      { color: 0x0044cc, size: 42, baseHp: 88000, baseDmg: 205, speed: 20, xpValue: 20000, name: 'The Nexus Overseer' },
   twilight_warden:     { color: 0xaa55ff, size: 44, baseHp: 108000, baseDmg: 225, speed: 18, xpValue: 24000, name: 'The Twilight Warden' },
   spire_keeper:        { color: 0xffd040, size: 46, baseHp: 130000, baseDmg: 248, speed: 16, xpValue: 30000, name: 'The Spire Keeper' },
+  astral_sovereign:    { color: 0x88ccff, size: 48, baseHp: 155000, baseDmg: 275, speed: 14, xpValue: 36000, name: 'The Astral Sovereign' },
 };
 
 // ── Zone Configurations ───────────────────────────────────────────────────────
@@ -434,6 +440,8 @@ export const MELEE_STATUS_ON_HIT: Partial<Record<EnemyTypeName, EffectKey>> = {
   rift_stalker:      'stun',
   spire_sentinel:    'freeze',
   oblivion_wraith:   'stun',
+  astral_warden:     'freeze',
+  cosmic_devourer:   'stun',
 };
 
 /** Which enemy projectile applies a status effect to the player. */
@@ -465,6 +473,8 @@ export const PROJECTILE_STATUS_ON_HIT: Partial<Record<EnemyTypeName | BossTypeNa
   twilight_warden:     'stun',
   reality_shard:       'burn',
   spire_keeper:        'freeze',
+  nebula_wisp:         'burn',
+  astral_sovereign:    'stun',
 };
 
 export const ZONES: ZoneConfig[] = [
@@ -773,5 +783,22 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 33000,
     unlockRequirement: 'zone17',
     difficultyMult: 9.5,
+  },
+  {
+    id: 'zone19',
+    name: 'Astral Pinnacle',
+    biome: 'astral-pinnacle',
+    description: 'The Astral Pinnacle crowns the cosmos — crystalline platforms suspended in deep space among nebulae and star clusters. Astral wardens, cosmic devourers, and nebula wisps defend the apex where The Astral Sovereign weaves the fundamental fabric of existence itself.',
+    bgColor: 0x020212,
+    groundColor: 0x0a0835,
+    wallColor: 0x010108,
+    accentColor: 0x88ccff,
+    waves: 3,
+    enemyTypes: ['astral_warden', 'cosmic_devourer', 'nebula_wisp'],
+    bossType: 'astral_sovereign',
+    minPlayerLevel: 50,
+    xpReward: 36500,
+    unlockRequirement: 'zone18',
+    difficultyMult: 10.0,
   },
 ];

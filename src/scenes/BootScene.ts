@@ -322,6 +322,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_parallax_oblivion_spire_mid',  'assets/backgrounds/parallax/bg_parallax_oblivion_spire_mid.png');
     this.load.image('bg_parallax_oblivion_spire_near', 'assets/backgrounds/parallax/bg_parallax_oblivion_spire_near.png');
 
+    // Astral Pinnacle tileset (zone 19)
+    this.load.image('tileset_astral_pinnacle', 'assets/tiles/tilesets/tileset_astral_pinnacle.png');
+
+    // Astral Pinnacle enemies and boss phases
+    this.load.spritesheet('enemy_astral_warden',   'assets/sprites/enemies/char_enemy_astral_warden.png',   { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_cosmic_devourer', 'assets/sprites/enemies/char_enemy_cosmic_devourer.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy_nebula_wisp',     'assets/sprites/enemies/char_enemy_nebula_wisp.png',     { frameWidth: 16, frameHeight: 24 });
+    this.load.image('boss_astral_sovereign_phase1', 'assets/sprites/enemies/bosses/boss_astral_sovereign_phase1.png');
+    this.load.image('boss_astral_sovereign_phase2', 'assets/sprites/enemies/bosses/boss_astral_sovereign_phase2.png');
+    this.load.image('boss_astral_sovereign_phase3', 'assets/sprites/enemies/bosses/boss_astral_sovereign_phase3.png');
+    this.load.image('boss_astral_sovereign_idle',   'assets/sprites/enemies/bosses/boss_astral_sovereign_idle.png');
+    this.load.image('boss_astral_sovereign_attack', 'assets/sprites/enemies/bosses/boss_astral_sovereign_attack.png');
+
+    // Astral Pinnacle NPC
+    this.load.image('npc_quest_astral_pinnacle', 'assets/sprites/characters/char_npc_quest_astral_pinnacle.png');
+
+    // Astral Pinnacle parallax layers
+    this.load.image('bg_parallax_astral_pinnacle_far',  'assets/backgrounds/parallax/bg_parallax_astral_pinnacle_far.png');
+    this.load.image('bg_parallax_astral_pinnacle_mid',  'assets/backgrounds/parallax/bg_parallax_astral_pinnacle_mid.png');
+    this.load.image('bg_parallax_astral_pinnacle_near', 'assets/backgrounds/parallax/bg_parallax_astral_pinnacle_near.png');
+
     // Pickups & collectibles
     this.load.image('pickup_health', 'assets/icon_pickup_health.png');
     this.load.image('pickup_mana',   'assets/icon_pickup_mana.png');

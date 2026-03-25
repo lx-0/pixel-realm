@@ -1097,6 +1097,98 @@ const FALLBACKS: FallbackRecord[] = [
     },
     completionConditions: { type: "puzzle", target: "void-gold seal" },
   },
+
+  // ── Zone 19 — Astral Pinnacle ─────────────────────────────────────────────
+  {
+    zoneId: "zone19",
+    questType: "kill",
+    title: "Astral Warden Breach",
+    description: "Astral wardens have sealed every approach to the Sovereign's apex with impenetrable stellar wards. Destroy enough of them to break the Sovereign's lock on the pinnacle before the cosmic fabric closes forever.",
+    objectives: [{ type: "kill", target: "astral_warden", count: 5, description: "Destroy 5 astral wardens on the Astral Pinnacle platforms" }],
+    dialogue: {
+      greeting: "Those wardens materialized at every ascent point the moment the Sovereign sensed your presence. They freeze anything that touches them — the entire pinnacle will be sealed if you don't act now.",
+      acceptance: "Strike at their crystalline cores — they block rather than evade. The stellar wards regenerate over time, so move fast and don't give them a moment to rebuild.",
+      completion: "The wardens are broken! The ascent paths are open. The Sovereign's seal is fracturing — press upward before it reseals around you.",
+      choices: [
+        { id: "accept", label: "I'll destroy the astral wardens.", response: "Their stellar plating is dense but brittle at the joints. Find the fracture lines and hammer them — a frozen fighter never reaches the apex.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who commands these wardens?", response: "The Astral Sovereign. They are crystallized extensions of her will — star-forged constructs shaped to guard the pinnacle. Break enough and her hold on the ascent collapses.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The pinnacle is too dangerous right now.", response: "The ascent will remain sealed then. Return when you are prepared to shatter them.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "kill", target: "astral_warden", count: 5 },
+  },
+  {
+    zoneId: "zone19",
+    questType: "fetch",
+    title: "Stellar Essence Fragments",
+    description: "A Star Weaver scholar needs stellar essence fragments from the pinnacle's core clusters to calibrate a cosmic anchor array. Retrieve them before the nebula wisps drain the last of their radiance.",
+    objectives: [{ type: "fetch", target: "stellar essence fragment", count: 4, description: "Collect 4 stellar essence fragments from the Astral Pinnacle core clusters" }],
+    dialogue: {
+      greeting: "Stellar essence — crystallized where cosmic and astral energies converge at the pinnacle's core — is the only material that can anchor my array against the Sovereign's weave. I need four fragments before the wisps drain them.",
+      acceptance: "They pulse with cold blue light at the cluster cores. Move fast — nebula wisps feed on them to sustain their existence, and every moment the fragments lose their coherence.",
+      completion: "Magnificent specimens. Still resonating at full stellar amplitude. With these I can begin anchoring the Sovereign's weave from within and unravel her control over the cosmic fabric.",
+      choices: [
+        { id: "accept", label: "I'll retrieve those stellar fragments.", response: "They cluster near the core fractures — look for the cold blue glow against the deep space dark. Nebula wisps patrol there and will burn you from range if you linger.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Why are nebula wisps so dangerous?", response: "They fire condensed nebula energy that burns on contact. If one pins you down, the cosmic devourers phase in around you — break free immediately.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The core clusters are too dangerous.", response: "The fragments will keep degrading. Come back when you are strong enough to hold the wisps at bay.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "fetch", target: "stellar essence fragment", count: 4 },
+  },
+  {
+    zoneId: "zone19",
+    questType: "explore",
+    title: "The Sovereign's Apex",
+    description: "At the very crown of the Astral Pinnacle lies the Sovereign's apex sanctum — the focal point of her cosmic weave and the source of her power over the fabric of existence. Locate it before the weave completes and reality is remade in her image.",
+    objectives: [{ type: "explore", target: "sovereign apex", description: "Discover the Astral Sovereign's apex sanctum at the crown of the Astral Pinnacle" }],
+    dialogue: {
+      greeting: "My readings converge on a focal sanctum at the pinnacle's very crown — a convergence point where stellar and cosmic energies collapse into pure creation. It must still be active or existence here would already be rewritten.",
+      acceptance: "Follow the cosmic devourers — they phase toward the apex to recharge. Look for where the stellar glow intensifies and the fabric of space itself visibly bends.",
+      completion: "You found it! The apex is even grander than I calculated. The Sovereign's weave is fully exposed — if we can collapse it, her power over cosmic creation ends here.",
+      choices: [
+        { id: "accept", label: "I'll find the Sovereign's apex.", response: "Cosmic devourers orbit the apex on phase cycles. Track their movement inward — the bending of space itself will guide you when you are near.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What happens if the apex isn't destroyed?", response: "The Sovereign remakes this entire plane — every thread of existence rewoven into her vision of the cosmos. It cannot be allowed.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "The apex crown is beyond my reach.", response: "The weave has been building for eons. It can endure a little longer.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "explore", target: "sovereign apex" },
+  },
+  {
+    zoneId: "zone19",
+    questType: "escort",
+    title: "The Star Weaver Cartographer",
+    description: "A Star Weaver cartographer mapping the pinnacle's platform topology was cut off when a nebula wisp barrage collapsed the path behind them. Escort them to a stable stellar anchor before the cosmic current claims the platform.",
+    objectives: [{ type: "escort", target: "Star Weaver Cartographer", description: "Escort the Star Weaver Cartographer safely to a stable stellar anchor on the Astral Pinnacle" }],
+    dialogue: {
+      greeting: "A nebula wisp volley took out the platform behind me — I barely reached this outcrop. I've been watching the stellar current advance for what feels like an eternity. Please, I need to reach a stable anchor.",
+      acceptance: "I'll keep mapping the platform resonance patterns as we move — the cosmic current advances in cycles tied to the Sovereign's weave pulses. My notes could be the key to predicting where she reshapes the pinnacle next.",
+      completion: "Solid stellar lattice beneath me. Finally. My survey data survived — the platform resonance patterns I recorded will help the Star Weavers understand how the Sovereign is accelerating the cosmic rewrite.",
+      choices: [
+        { id: "accept", label: "Stay close — I'll get you to a stable anchor.", response: "Thank you. I've mapped two weave cycles already — I can guide us between nebula wisp patrols if you handle the cosmic devourers ahead.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "What were you mapping?", response: "The platform resonance cycles — the cosmic current advances each time the Sovereign completes a weave pulse. Understanding the rhythm is the key to disrupting her creation sequence.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "I can't spare the time right now.", response: "I'll hold this outcrop as long as I can. If you find another route, please send help.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "escort", target: "Star Weaver Cartographer" },
+  },
+  {
+    zoneId: "zone19",
+    questType: "puzzle",
+    title: "The Stellar Seal",
+    description: "An ancient stellar seal bars the inner apex where the Astral Sovereign performs her cosmic weave ritual. Align the star and nebula rune sequence to shatter it and force a confrontation.",
+    objectives: [{ type: "puzzle", target: "stellar seal", description: "Solve the stellar rune sequence to open the path to the Astral Sovereign" }],
+    dialogue: {
+      greeting: "The Sovereign's seal is woven from stellar runes — crystallized cosmic energy bound into astral architecture that no force alone can break. Only the correct resonance sequence will open the apex.",
+      acceptance: "The stellar runes must align: cosmic anchor, nebula pulse, astral convergence, then the null radiance — stellar and cosmic simultaneously, or the seal resets and the weave expands.",
+      completion: "The seal shatters! The inner apex lies open. The Astral Sovereign cannot complete her cosmic weave ritual behind her stellar wards any longer.",
+      choices: [
+        { id: "accept", label: "I'll break the Stellar Seal.", response: "The sequence mirrors the weave resonance cycle: cosmic anchor, nebula pulse, astral convergence, null radiance. You must hold both stellar and cosmic energies at the final step — do not let one overwhelm the other.", outcome: "accept", repDelta: 0 },
+        { id: "ask_more", label: "Who created this seal?", response: "The Sovereign herself — it is a fragment of the cosmic fabric shaped into a ward using stellar energy. That it can be solved at all is because all creation constructs must be passable from both sides, if you know the resonance key.", outcome: "neutral", repDelta: 0 },
+        { id: "decline", label: "Stellar rune puzzles are beyond me.", response: "The seal will hold until you understand the weave resonance. Return when you do.", outcome: "decline", repDelta: 0 },
+      ],
+    },
+    completionConditions: { type: "puzzle", target: "stellar seal" },
+  },
   {
     zoneId: "zone16",
     questType: "puzzle",

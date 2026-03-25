@@ -102,6 +102,12 @@ const ZONE_META: Record<string, { name: string; biome: string; description: stri
     description: "The Oblivion Spire rises at the edge of reality — fractured celestial architecture suspended over absolute void. Spire sentinels, reality shards, and oblivion wraiths guard the crystallized platforms where The Spire Keeper channels void-gold energy to unmake the boundaries of existence.",
     enemyTypes: ["spire_sentinel", "reality_shard", "oblivion_wraith"],
   },
+  zone19: {
+    name: "Astral Pinnacle",
+    biome: "astral-pinnacle",
+    description: "The Astral Pinnacle crowns the cosmos — crystalline platforms suspended in deep space among nebulae and star clusters. Astral wardens, cosmic devourers, and nebula wisps defend the apex where The Astral Sovereign weaves the fundamental fabric of existence itself.",
+    enemyTypes: ["astral_warden", "cosmic_devourer", "nebula_wisp"],
+  },
 };
 
 const QUEST_TYPES: QuestType[] = ["kill", "fetch", "explore", "escort", "puzzle"];

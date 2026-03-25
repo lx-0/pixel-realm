@@ -166,6 +166,12 @@ const ZONE_LOOT: Record<string, Array<{ itemId: string; chance: number }>> = {
     { itemId: "mat_void_gold",        chance: 0.36 },
     { itemId: "mat_celestial_dust",   chance: 0.29 },
   ],
+  zone19: [
+    { itemId: "mat_astral_crystal",   chance: 0.56 },
+    { itemId: "mat_pinnacle_shard",   chance: 0.46 },
+    { itemId: "mat_cosmic_dust",      chance: 0.38 },
+    { itemId: "mat_stellar_essence",  chance: 0.30 },
+  ],
 };
 
 // Zone → enemy type tables
@@ -238,6 +244,11 @@ const ZONE_ENEMIES: Record<string, EnemyDef[]> = {
     { type: "spire_sentinel",  hp: 760, dmg: 178, speed: 28,  aggroRange: 92,  xp: 345 },
     { type: "reality_shard",   hp: 560, dmg: 192, speed: 115, aggroRange: 200, xp: 360, ranged: true },
     { type: "oblivion_wraith", hp: 615, dmg: 205, speed: 110, aggroRange: 195, xp: 375 },
+  ],
+  zone19: [
+    { type: "astral_warden",   hp: 840, dmg: 205, speed: 26,  aggroRange: 95,  xp: 395 },
+    { type: "cosmic_devourer", hp: 665, dmg: 225, speed: 115, aggroRange: 200, xp: 420 },
+    { type: "nebula_wisp",     hp: 620, dmg: 215, speed: 108, aggroRange: 205, xp: 405, ranged: true },
   ],
 };
 

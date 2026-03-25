@@ -39,9 +39,9 @@ const DEFS: LocalAchievementDef[] = [
   // Exploration
   { id: 'wanderer',      title: 'Wanderer',           description: 'Visit 2 different zones.',    icon: '🗺', category: 'exploration', points: 2, goal: 2   },
   { id: 'explorer',      title: 'Explorer',           description: 'Visit 4 different zones.',    icon: '🗺', category: 'exploration', points: 3, goal: 4   },
-  { id: 'world_traveler',title: 'World Traveler',     description: 'Visit all 14 zones.',         icon: '🌍', category: 'exploration', points: 5, goal: 14  },
+  { id: 'world_traveler',title: 'World Traveler',     description: 'Visit all 19 zones.',         icon: '🌍', category: 'exploration', points: 5, goal: 19  },
   { id: 'zone_clearer',  title: 'Zone Clearer',       description: 'Complete 3 different zones.', icon: '✓', category: 'exploration', points: 3, goal: 3   },
-  { id: 'completionist', title: 'Completionist',      description: 'Complete all 14 zones.',      icon: '🏆', category: 'exploration', points: 7, goal: 14  },
+  { id: 'completionist', title: 'Completionist',      description: 'Complete all 19 zones.',      icon: '🏆', category: 'exploration', points: 7, goal: 19  },
   // Crafting
   { id: 'tinkerer',      title: 'Tinkerer',           description: 'Craft your first item.',      icon: '🔨', category: 'crafting',    points: 1, goal: 1   },
   { id: 'artisan',       title: 'Artisan',            description: 'Craft 10 items total.',       icon: '🔨', category: 'crafting',    points: 3, goal: 10  },
