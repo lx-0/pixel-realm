@@ -124,7 +124,7 @@ export class CreditsScene extends Phaser.Scene {
       '',
       'Thank you for playing!',
       '',
-      '✦  PixelRealm v0.8.0  ✦',
+      '✦  PixelRealm v1.0.0-rc1  ✦',
       '',
       '',
     ];
@@ -146,7 +146,7 @@ export class CreditsScene extends Phaser.Scene {
       const isZone   = line.startsWith('Zone');
       const isBoss   = BOSS_NAMES.has(line);
       const isThank  = line.includes('Thank');
-      const isVersion= line.includes('v0.8.0');
+      const isVersion= line.includes('v1.0.0-rc1');
 
       let color = '#888899';
       let size  = '5px';

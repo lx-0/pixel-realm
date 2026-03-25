@@ -1,6 +1,6 @@
 {
   "name": "pixelrealm",
-  "version": "0.8.0",
+  "version": "1.0.0-rc1",
   "private": true,
   "description": "PixelRealm — browser-based pixelated MMORPG with LLM-generated content",
   "scripts": {
