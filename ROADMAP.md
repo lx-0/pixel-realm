@@ -181,6 +181,13 @@ Astral Pinnacle zone implementation (zone 19, level 50 final zone) and final dis
 - [x] PIX-225 — Update roadmap (M20 complete, add M21 final zone milestone)
 - [x] PIX-226 — Rebuild distribution zip as v0.7.0 with zone 19 content
 
+### M22: Pre-Launch QA & Polish — IN PROGRESS
+Final quality pass before distribution. Fill test and achievement gaps for late-game zones.
+
+- [x] PIX-232 — Integration tests for zones 16-19 (Ethereal Nexus through Astral Pinnacle)
+- [x] PIX-233 — Update achievement system for zones 14-19
+- [ ] PIX-234 — Rebuild distribution zip as v0.8.0 with achievement and test updates
+
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
 - Wallet connection (MetaMask / WalletConnect)
@@ -208,7 +215,8 @@ M5 → M6 ──────────────────┘
                                                                       M19 (Twilight Citadel + Oblivion Spire, parallel to M9)
                                                                             M20 (Oblivion Spire + Astral Pinnacle, parallel to M9)
                                                                                   M21 (Astral Pinnacle + Game Completion, parallel to M9)
-                                                                                        M14 (post-launch, independent)
+                                                                                        M22 (Pre-Launch QA & Polish, parallel to M9)
+                                                                                              M14 (post-launch, independent)
 ```
 
 ## Key Decisions

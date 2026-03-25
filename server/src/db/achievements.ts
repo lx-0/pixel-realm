@@ -105,11 +105,11 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: "world_traveler",
     title: "World Traveler",
-    description: "Visit all 6 zones.",
+    description: "Visit all 19 zones.",
     icon: "🌍",
     category: "exploration",
     points: 5,
-    goal: 6,
+    goal: 19,
   },
   {
     id: "zone_clearer",
@@ -123,12 +123,39 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: "completionist",
     title: "Completionist",
-    description: "Complete all 6 zones.",
+    description: "Complete all 19 zones.",
     icon: "🏆",
     category: "exploration",
     points: 7,
-    goal: 6,
+    goal: 19,
   },
+
+  // ── Zone 14–19 per-zone achievements ─────────────────────────────────────────
+  // Zone 14: Shattered Dominion
+  { id: "zone14_discovered", title: "Into the Shattered Dominion", description: "Discover the Shattered Dominion (zone 14).", icon: "🗺", category: "exploration", points: 2, goal: 1 },
+  { id: "zone14_boss_slain", title: "The Unmaker Unmade",          description: "Defeat The Unmaker in the Shattered Dominion.", icon: "👑", category: "combat",      points: 4, goal: 1 },
+  { id: "zone14_completed",  title: "Dominion Conquered",          description: "Complete all quests in the Shattered Dominion.", icon: "✓", category: "questing",    points: 3, goal: 1 },
+  // Zone 15: Primordial Core
+  { id: "zone15_discovered", title: "Into the Primordial Core",    description: "Discover the Primordial Core (zone 15).", icon: "🗺", category: "exploration", points: 2, goal: 1 },
+  { id: "zone15_boss_slain", title: "Genesis Flame Extinguished",  description: "Defeat The Genesis Flame in the Primordial Core.", icon: "👑", category: "combat",      points: 4, goal: 1 },
+  { id: "zone15_completed",  title: "Core Purged",                 description: "Complete all quests in the Primordial Core.", icon: "✓", category: "questing",    points: 3, goal: 1 },
+  // Zone 16: Ethereal Nexus
+  { id: "zone16_discovered", title: "Into the Ethereal Nexus",     description: "Discover the Ethereal Nexus (zone 16).", icon: "🗺", category: "exploration", points: 2, goal: 1 },
+  { id: "zone16_boss_slain", title: "Nexus Overseer Defeated",     description: "Defeat The Nexus Overseer in the Ethereal Nexus.", icon: "👑", category: "combat",      points: 4, goal: 1 },
+  { id: "zone16_completed",  title: "Nexus Severed",               description: "Complete all quests in the Ethereal Nexus.", icon: "✓", category: "questing",    points: 3, goal: 1 },
+  // Zone 17: Twilight Citadel
+  { id: "zone17_discovered", title: "Into the Twilight Citadel",   description: "Discover the Twilight Citadel (zone 17).", icon: "🗺", category: "exploration", points: 2, goal: 1 },
+  { id: "zone17_boss_slain", title: "Twilight Warden Vanquished",  description: "Defeat The Twilight Warden in the Twilight Citadel.", icon: "👑", category: "combat",      points: 4, goal: 1 },
+  { id: "zone17_completed",  title: "Citadel Liberated",           description: "Complete all quests in the Twilight Citadel.", icon: "✓", category: "questing",    points: 3, goal: 1 },
+  // Zone 18: Oblivion Spire
+  { id: "zone18_discovered", title: "Into the Oblivion Spire",     description: "Discover the Oblivion Spire (zone 18).", icon: "🗺", category: "exploration", points: 2, goal: 1 },
+  { id: "zone18_boss_slain", title: "Spire Keeper Slain",          description: "Defeat The Spire Keeper in the Oblivion Spire.", icon: "👑", category: "combat",      points: 4, goal: 1 },
+  { id: "zone18_completed",  title: "Oblivion Silenced",           description: "Complete all quests in the Oblivion Spire.", icon: "✓", category: "questing",    points: 3, goal: 1 },
+  // Zone 19: Astral Pinnacle (final zone)
+  { id: "zone19_discovered", title: "Into the Astral Pinnacle",    description: "Discover the Astral Pinnacle (zone 19, final zone).", icon: "🗺", category: "exploration", points: 2, goal: 1 },
+  { id: "zone19_boss_slain", title: "Astral Sovereign Dethroned",  description: "Defeat The Astral Sovereign in the Astral Pinnacle.", icon: "👑", category: "combat",      points: 5, goal: 1 },
+  { id: "zone19_completed",  title: "Pinnacle Reached",            description: "Complete all quests in the Astral Pinnacle.", icon: "✓", category: "questing",    points: 4, goal: 1 },
+  { id: "game_complete",     title: "Conqueror of PixelRealm",     description: "Complete the entire PixelRealm journey — all 19 zones cleared.", icon: "🌟", category: "exploration", points: 10, goal: 1 },
 
   // ── Crafting ──────────────────────────────────────────────────────────────────
   {
@@ -271,14 +298,14 @@ export const ACHIEVEMENT_MAP = new Map<string, AchievementDef>(
 // ── Event types ───────────────────────────────────────────────────────────────
 
 export type AchievementEventType =
-  | "enemy_killed"      // data: { isBoss?: boolean }
-  | "zone_visited"      // data: { distinctZones: number }
-  | "zone_completed"    // data: { distinctZones: number }
+  | "enemy_killed"      // data: { isBoss?: boolean; zoneId?: string }
+  | "zone_visited"      // data: { distinctZones: number; zoneId?: string }
+  | "zone_completed"    // data: { distinctZones: number; zoneId?: string }
   | "item_crafted"      // data: { totalCrafts: number; distinctRecipes: number }
   | "guild_created"
   | "guild_joined"
   | "player_invited"    // data: { totalInvited: number }
-  | "quest_completed"   // data: { totalQuests: number; distinctTypes: number }
+  | "quest_completed"   // data: { totalQuests: number; distinctTypes: number; zoneId?: string }
   | "tutorial_complete" // no extra data — just completion
   | "level_up";         // data: { level: number }
 
@@ -376,6 +403,13 @@ export async function processAchievementEvent(
         if (data.isBoss) {
           const bossRow = rows.get("boss_slayer");
           updates.push({ id: "boss_slayer", progress: (bossRow?.progress ?? 0) + 1 });
+          const zoneId = String(data.zoneId ?? "");
+          if (zoneId) {
+            updates.push({ id: `${zoneId}_boss_slain`, progress: 1 });
+            if (zoneId === "zone19") {
+              updates.push({ id: "game_complete", progress: 1 });
+            }
+          }
         }
         break;
       }
@@ -384,12 +418,20 @@ export async function processAchievementEvent(
         updates.push({ id: "wanderer", progress: v });
         updates.push({ id: "explorer", progress: v });
         updates.push({ id: "world_traveler", progress: v });
+        const zoneId = String(data.zoneId ?? "");
+        if (zoneId) {
+          updates.push({ id: `${zoneId}_discovered`, progress: 1 });
+        }
         break;
       }
       case "zone_completed": {
         const c = Number(data.distinctZones ?? 0);
         updates.push({ id: "zone_clearer", progress: c });
         updates.push({ id: "completionist", progress: c });
+        const zoneId = String(data.zoneId ?? "");
+        if (zoneId) {
+          updates.push({ id: `${zoneId}_completed`, progress: 1 });
+        }
         break;
       }
       case "item_crafted": {
