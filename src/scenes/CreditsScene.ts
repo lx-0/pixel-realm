@@ -83,6 +83,21 @@ export class CreditsScene extends Phaser.Scene {
       'Zone 2: Dusty Trail',
       'Zone 3: Ironveil Ruins',
       'Zone 4: Saltmarsh Harbor',
+      'Zone 5: Ice Caverns',
+      'Zone 6: Volcanic Highlands',
+      'Zone 7: Shadowmire Swamp',
+      'Zone 8: Frostpeak Highlands',
+      'Zone 9: Celestial Spire',
+      'Zone 10: Abyssal Depths',
+      'Zone 11: Dragonbone Wastes',
+      'Zone 12: Void Sanctum',
+      'Zone 13: Eclipsed Throne',
+      'Zone 14: Shattered Dominion',
+      'Zone 15: Primordial Core',
+      'Zone 16: Ethereal Nexus',
+      'Zone 17: Twilight Citadel',
+      'Zone 18: Oblivion Spire',
+      'Zone 19: Astral Pinnacle',
       '',
       '— BOSSES —',
       '',
@@ -90,11 +105,26 @@ export class CreditsScene extends Phaser.Scene {
       'Bandit Chief Korran',
       'Archon Thessar',
       'Maw of the Deep',
+      'Glacial Wyrm Vorthex',
+      'Infernal Warden',
+      'Mire Queen',
+      'Frost Titan',
+      'Celestial Arbiter',
+      'Abyssal Kraken Lord',
+      'Ancient Dracolich',
+      'Void Architect',
+      'The Eclipsed King',
+      'The Unmaker',
+      'The Genesis Flame',
+      'The Nexus Overseer',
+      'The Twilight Warden',
+      'The Spire Keeper',
+      'The Astral Sovereign',
       '',
       '',
       'Thank you for playing!',
       '',
-      '✦  PixelRealm v1.0  ✦',
+      '✦  PixelRealm v0.7.0  ✦',
       '',
       '',
     ];
@@ -103,13 +133,20 @@ export class CreditsScene extends Phaser.Scene {
     const startY = cy + 20;
     const endY = startY - creditsLines.length * lineH - 60;
 
+    const BOSS_NAMES = new Set([
+      'Slime King', 'Bandit Chief Korran', 'Archon Thessar', 'Maw of the Deep',
+      'Glacial Wyrm Vorthex', 'Infernal Warden', 'Mire Queen', 'Frost Titan',
+      'Celestial Arbiter', 'Abyssal Kraken Lord', 'Ancient Dracolich', 'Void Architect',
+      'The Eclipsed King', 'The Unmaker', 'The Genesis Flame', 'The Nexus Overseer',
+      'The Twilight Warden', 'The Spire Keeper', 'The Astral Sovereign',
+    ]);
     const creditsContainer = this.add.container(cx, startY);
     creditsLines.forEach((line, i) => {
       const isHeader = line.startsWith('—');
       const isZone   = line.startsWith('Zone');
-      const isBoss   = line === 'Slime King' || line === 'Bandit Chief Korran' || line === 'Archon Thessar' || line === 'Maw of the Deep';
+      const isBoss   = BOSS_NAMES.has(line);
       const isThank  = line.includes('Thank');
-      const isVersion= line.includes('v1.0');
+      const isVersion= line.includes('v0.7.0');
 
       let color = '#888899';
       let size  = '5px';
