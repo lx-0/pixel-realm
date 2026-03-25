@@ -167,12 +167,18 @@ Twilight Citadel zone implementation (zone 17, level 44+) and Oblivion Spire art
 - [x] PIX-217 — Implement Twilight Citadel zone (zone 17, level 44+)
 - [x] PIX-218 — Create Oblivion Spire zone art (zone 18, level 47+)
 
-### M20: Oblivion Spire & Final Zone — IN PROGRESS
+### M20: Oblivion Spire & Final Zone — COMPLETE
 Oblivion Spire zone implementation (zone 18, level 47+), Astral Pinnacle art pipeline (zone 19, level 50 final zone), roadmap update, and distribution rebuild.
 
-- [ ] PIX-220 — Implement Oblivion Spire zone (zone 18, level 47+)
-- [ ] PIX-221 — Create Astral Pinnacle zone art (zone 19, level 50 final endgame zone)
-- [ ] PIX-222 — Rebuild distribution zip as v0.6.0 with zone 17-18 content
+- [x] PIX-220 — Implement Oblivion Spire zone (zone 18, level 47+)
+- [x] PIX-221 — Create Astral Pinnacle zone art (zone 19, level 50 final endgame zone)
+- [x] PIX-222 — Rebuild distribution zip as v0.6.0 with zone 17-18 content
+
+### M21: Astral Pinnacle & Game Completion — IN PROGRESS
+Astral Pinnacle zone implementation (zone 19, level 50 final zone) and final distribution rebuild as v0.7.0.
+
+- [x] PIX-224 — Implement Astral Pinnacle zone (zone 19, level 50 final endgame zone)
+- [ ] PIX-226 — Rebuild distribution zip as v0.7.0 with zone 19 content
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -200,7 +206,8 @@ M5 → M6 ──────────────────┘
                                                                 M18 (Ethereal Nexus + Twilight Citadel, parallel to M9)
                                                                       M19 (Twilight Citadel + Oblivion Spire, parallel to M9)
                                                                             M20 (Oblivion Spire + Astral Pinnacle, parallel to M9)
-                                                                                  M14 (post-launch, independent)
+                                                                                  M21 (Astral Pinnacle + Game Completion, parallel to M9)
+                                                                                        M14 (post-launch, independent)
 ```
 
 ## Key Decisions
@@ -217,6 +224,7 @@ M5 → M6 ──────────────────┘
 - **Primordial Core & Ethereal Nexus** — M17 completed zone 15 implementation, zone 16 art, and v0.4.0 distribution. All complete as of 2026-03-25.
 - **Ethereal Nexus & Twilight Citadel** — M18 completed zone 16 implementation, zone 17 art, and v0.5.0 distribution. All complete as of 2026-03-25.
 - **Twilight Citadel & Oblivion Spire** — M19 completed zone 17 implementation and zone 18 art. All complete as of 2026-03-25.
-- **Oblivion Spire & Final Zone** — M20 implements zone 18 (level 47+) and begins Astral Pinnacle art pipeline (zone 19, level 50 final zone). In progress as of 2026-03-25.
-- **Single engineer** — One engineer has shipped M0–M18 solo. Strong velocity.
-- **Game Artist** — Completed art through zone 17 (Twilight Citadel). Starting zone 18 (Oblivion Spire) art pipeline for M19.
+- **Oblivion Spire & Final Zone** — M20 completed zone 18 implementation, Astral Pinnacle art (zone 19), and v0.6.0 distribution. All complete as of 2026-03-25.
+- **Astral Pinnacle & Game Completion** — M21 implements zone 19 (level 50 final endgame zone) and builds final v0.7.0 distribution. In progress as of 2026-03-25.
+- **Single engineer** — One engineer has shipped M0–M20 solo. Strong velocity.
+- **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
