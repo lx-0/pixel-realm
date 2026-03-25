@@ -145,13 +145,21 @@ Shattered Dominion zone art and implementation pipeline (zone 14, level 35+).
 - [x] PIX-203 — Character stat sheet with damage formula breakdown and passive bonuses
 - [x] PIX-200 — Achievement system update for zones 7–13
 
-### M17: Primordial Core & Ethereal Nexus — IN PROGRESS
+### M17: Primordial Core & Ethereal Nexus — COMPLETE
 Primordial Core zone implementation (zone 15, level 38+) and Ethereal Nexus art pipeline (zone 16, level 41+).
 
 - [x] PIX-205 — Create Primordial Core zone art (zone 15, level 38+)
-- [ ] PIX-207 — Implement Primordial Core zone (zone 15, level 38+)
-- [ ] PIX-209 — Create Ethereal Nexus zone art (zone 16, level 41+)
-- [ ] PIX-206 — Rebuild distribution zip as v0.4.0 with zone 15 content
+- [x] PIX-207 — Implement Primordial Core zone (zone 15, level 38+)
+- [x] PIX-209 — Create Ethereal Nexus zone art (zone 16, level 41+)
+- [x] PIX-206 — Rebuild distribution zip as v0.4.0 with zone 15 content
+
+### M18: Ethereal Nexus & Twilight Citadel — IN PROGRESS
+Ethereal Nexus zone implementation (zone 16, level 41+) and Twilight Citadel art pipeline (zone 17, level 44+).
+
+- [x] PIX-212 — Implement Ethereal Nexus zone (zone 16, level 41+)
+- [x] PIX-213 — Create Twilight Citadel zone art (zone 17, level 44+)
+- [ ] PIX-214 — Update roadmap (M17 complete, add M18 milestone)
+- [ ] PIX-215 — Rebuild distribution zip as v0.5.0 with zone 16 content
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -176,7 +184,8 @@ M5 → M6 ──────────────────┘
                                               M15 (endgame world expansion, parallel to M9)
                                                     M16 (Shattered Dominion, parallel to M9)
                                                           M17 (Primordial Core + Ethereal Nexus, parallel to M9)
-                                                                M14 (post-launch, independent)
+                                                                M18 (Ethereal Nexus + Twilight Citadel, parallel to M9)
+                                                                      M14 (post-launch, independent)
 ```
 
 ## Key Decisions
@@ -190,6 +199,7 @@ M5 → M6 ──────────────────┘
 - **Deep world expansion** — M14a completed zones 9–12 (Celestial Spire through Void Sanctum). All complete as of 2026-03-24.
 - **Endgame world expansion** — M15 completed Void Sanctum zone and Eclipsed Throne art. Implementation in progress.
 - **Shattered Dominion** — M16 completed zone 14 (level 35+), plus combat stats, stat sheet, and achievement updates.
-- **Primordial Core & Ethereal Nexus** — M17 implements zone 15 and begins zone 16 art pipeline. In progress as of 2026-03-24.
-- **Single engineer** — One engineer has shipped M0–M16 solo. Strong velocity.
-- **Game Artist** — Completed all art through zone 15 (Primordial Core). Now on Ethereal Nexus zone art for M17.
+- **Primordial Core & Ethereal Nexus** — M17 completed zone 15 implementation, zone 16 art, and v0.4.0 distribution. All complete as of 2026-03-25.
+- **Ethereal Nexus & Twilight Citadel** — M18 implements zone 16 (level 41+) and begins Twilight Citadel art pipeline (zone 17, level 44+). In progress as of 2026-03-25.
+- **Single engineer** — One engineer has shipped M0–M17 solo. Strong velocity.
+- **Game Artist** — Completed art through zone 17 (Twilight Citadel). Zone 16 implementation done; zone 17 art pipeline ready for M18 completion.
