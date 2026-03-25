@@ -68,6 +68,7 @@ import {
   exitZone,
   getAnalyticsSummary,
 } from "./db/analytics";
+import { claimDailyReward, getStreakStatus } from "./db/dailyRewards";
 import { getUptimeSeconds, recordHttpRequest, renderPrometheusMetrics } from "./metrics";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -825,6 +826,54 @@ app.get("/api/analytics/summary", adminAuth, async (_req: Request, res: Response
   } catch (err) {
     console.warn("[Analytics] summary failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to generate analytics summary" });
+  }
+});
+
+// ── Daily reward endpoints ─────────────────────────────────────────────────────
+
+const verifyPlayerJwt = createVerifier({ key: config.jwtSecret });
+
+/** Middleware: verifies any valid Bearer JWT and attaches the payload to req. */
+function playerAuth(req: Request, res: Response, next: NextFunction): void {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith("Bearer ")) {
+    res.status(401).json({ error: "Missing authorization header" });
+    return;
+  }
+  try {
+    const payload = verifyPlayerJwt(auth.slice(7)) as AccessTokenPayload;
+    (req as Request & { playerPayload: AccessTokenPayload }).playerPayload = payload;
+    next();
+  } catch {
+    res.status(401).json({ error: "Invalid or expired token" });
+  }
+}
+
+// GET /daily-reward/status — returns streak state and whether a reward is available today
+app.get("/daily-reward/status", playerAuth, async (req: Request, res: Response) => {
+  const playerId = (req as Request & { playerPayload: AccessTokenPayload }).playerPayload.sub;
+  try {
+    const status = await getStreakStatus(playerId);
+    res.json(status);
+  } catch (err) {
+    console.warn("[DailyReward] status failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch streak status" });
+  }
+});
+
+// POST /daily-reward/claim — claim today's reward (idempotent per day)
+app.post("/daily-reward/claim", playerAuth, async (req: Request, res: Response) => {
+  const playerId = (req as Request & { playerPayload: AccessTokenPayload }).playerPayload.sub;
+  try {
+    const result = await claimDailyReward(playerId);
+    if (!result.claimed) {
+      res.status(409).json({ error: "Already claimed today", ...result });
+      return;
+    }
+    res.json(result);
+  } catch (err) {
+    console.warn("[DailyReward] claim failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to claim daily reward" });
   }
 });
 

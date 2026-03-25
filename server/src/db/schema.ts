@@ -471,6 +471,31 @@ export const playerBlocks = pgTable(
   }),
 );
 
+// ── Daily Login Rewards ───────────────────────────────────────────────────────
+
+export const playerLoginStreaks = pgTable("player_login_streaks", {
+  playerId:       uuid("player_id")
+    .primaryKey()
+    .references(() => players.id, { onDelete: "cascade" }),
+  currentStreak:  integer("current_streak").notNull().default(0),
+  longestStreak:  integer("longest_streak").notNull().default(0),
+  lastClaimDate:  text("last_claim_date"),  // "YYYY-MM-DD" UTC, or null
+  createdAt:      timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt:      timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const dailyRewardClaims = pgTable("daily_reward_claims", {
+  id:          uuid("id").defaultRandom().primaryKey(),
+  playerId:    uuid("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  streakDay:   integer("streak_day").notNull(),
+  goldAwarded: integer("gold_awarded").notNull().default(0),
+  xpAwarded:   integer("xp_awarded").notNull().default(0),
+  bonusItem:   boolean("bonus_item").notNull().default(false),
+  claimedAt:   timestamp("claimed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
 export const playerSessions = pgTable("player_sessions", {
@@ -525,3 +550,5 @@ export type Friendship = typeof friendships.$inferSelect;
 export type PlayerBlock = typeof playerBlocks.$inferSelect;
 export type PlayerSession = typeof playerSessions.$inferSelect;
 export type ZoneVisit = typeof zoneVisits.$inferSelect;
+export type PlayerLoginStreak = typeof playerLoginStreaks.$inferSelect;
+export type DailyRewardClaim = typeof dailyRewardClaims.$inferSelect;
