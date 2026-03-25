@@ -174,11 +174,12 @@ Oblivion Spire zone implementation (zone 18, level 47+), Astral Pinnacle art pip
 - [x] PIX-221 — Create Astral Pinnacle zone art (zone 19, level 50 final endgame zone)
 - [x] PIX-222 — Rebuild distribution zip as v0.6.0 with zone 17-18 content
 
-### M21: Astral Pinnacle & Game Completion — IN PROGRESS
+### M21: Astral Pinnacle & Game Completion — COMPLETE
 Astral Pinnacle zone implementation (zone 19, level 50 final zone) and final distribution rebuild as v0.7.0.
 
 - [x] PIX-224 — Implement Astral Pinnacle zone (zone 19, level 50 final endgame zone)
-- [ ] PIX-226 — Rebuild distribution zip as v0.7.0 with zone 19 content
+- [x] PIX-225 — Update roadmap (M20 complete, add M21 final zone milestone)
+- [x] PIX-226 — Rebuild distribution zip as v0.7.0 with zone 19 content
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -225,6 +226,6 @@ M5 → M6 ──────────────────┘
 - **Ethereal Nexus & Twilight Citadel** — M18 completed zone 16 implementation, zone 17 art, and v0.5.0 distribution. All complete as of 2026-03-25.
 - **Twilight Citadel & Oblivion Spire** — M19 completed zone 17 implementation and zone 18 art. All complete as of 2026-03-25.
 - **Oblivion Spire & Final Zone** — M20 completed zone 18 implementation, Astral Pinnacle art (zone 19), and v0.6.0 distribution. All complete as of 2026-03-25.
-- **Astral Pinnacle & Game Completion** — M21 implements zone 19 (level 50 final endgame zone) and builds final v0.7.0 distribution. In progress as of 2026-03-25.
+- **Astral Pinnacle & Game Completion** — M21 completed zone 19 (level 50 final endgame zone) and final v0.7.0 distribution. All complete as of 2026-03-25. Game content is fully shipped.
 - **Single engineer** — One engineer has shipped M0–M20 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
