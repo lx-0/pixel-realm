@@ -606,6 +606,24 @@ export const warCapturePoints = pgTable("war_capture_points", {
   earnedAt:  timestamp("earned_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Companion Pets ────────────────────────────────────────────────────────────
+
+export const playerPets = pgTable("player_pets", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  playerId: uuid("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  /** 'wolf' | 'hawk' | 'cat' | 'dragon_whelp' | 'wisp' | 'golem' */
+  petType: varchar("pet_type", { length: 30 }).notNull(),
+  level: integer("level").notNull().default(1),
+  xp: integer("xp").notNull().default(0),
+  /** 0-100; passive bonus disabled at 0 */
+  happiness: integer("happiness").notNull().default(100),
+  lastFedAt: timestamp("last_fed_at", { withTimezone: true }).notNull().defaultNow(),
+  isEquipped: boolean("is_equipped").notNull().default(false),
+  acquiredAt: timestamp("acquired_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
 export const playerSessions = pgTable("player_sessions", {
@@ -669,3 +687,4 @@ export type DailyRewardClaim = typeof dailyRewardClaims.$inferSelect;
 export type GuildTerritory = typeof guildTerritories.$inferSelect;
 export type GuildWar = typeof guildWars.$inferSelect;
 export type WarCapturePoint = typeof warCapturePoints.$inferSelect;
+export type PlayerPet = typeof playerPets.$inferSelect;

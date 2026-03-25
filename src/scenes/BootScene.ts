@@ -64,6 +64,14 @@ export class BootScene extends Phaser.Scene {
     this.load.image('decor_banner',   'assets/sprite_decor_banner.png');
     this.load.image('decor_candles',  'assets/sprite_decor_candles.png');
 
+    // ── Companion pet sprites (12×12 each) ───────────────────────────────────
+    this.load.image('pet_wolf',         'assets/pets/pet_wolf.png');
+    this.load.image('pet_hawk',         'assets/pets/pet_hawk.png');
+    this.load.image('pet_cat',          'assets/pets/pet_cat.png');
+    this.load.image('pet_dragon_whelp', 'assets/pets/pet_dragon_whelp.png');
+    this.load.image('pet_wisp',         'assets/pets/pet_wisp.png');
+    this.load.image('pet_golem',        'assets/pets/pet_golem.png');
+
     // ── Day/night cycle HUD icon sheet ────────────────────────────────────────
     DayNightSystem.preload(this);
 
@@ -192,6 +200,25 @@ export class BootScene extends Phaser.Scene {
       g.fillStyle(0xffffff); g.fillRect(5, 5, 1, 1);
       g.generateTexture('pickup', 16, 16);
       g.destroy();
+    }
+
+    // Pet fallback textures (colored circles used when PNG assets are missing)
+    const petFallbacks: Array<[string, number]> = [
+      ['pet_wolf',         0xd4a860],
+      ['pet_hawk',         0xa0c0f0],
+      ['pet_cat',          0xf0c0a0],
+      ['pet_dragon_whelp', 0xff6060],
+      ['pet_wisp',         0x80ffff],
+      ['pet_golem',        0xa0a0a0],
+    ];
+    for (const [key, color] of petFallbacks) {
+      if (!this.textures.exists(key)) {
+        const g = this.make.graphics({ x: 0, y: 0 });
+        g.fillStyle(color); g.fillCircle(6, 6, 5);
+        g.fillStyle(0xffffff, 0.3); g.fillCircle(4, 4, 2);
+        g.generateTexture(key, 12, 12);
+        g.destroy();
+      }
     }
 
     if (!this.textures.exists('hazard')) {

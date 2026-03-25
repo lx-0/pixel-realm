@@ -8,7 +8,8 @@ import {
 import { SoundManager } from '../systems/SoundManager';
 import { SettingsManager } from '../systems/SettingsManager';
 import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData }  from '../systems/SaveManager';
-import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FriendEntry, type EmoteEvent, type WorldEventEntry, type EmoteId } from '../systems/MultiplayerClient';
+import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FriendEntry, type EmoteEvent, type WorldEventEntry, type EmoteId, type PetData } from '../systems/MultiplayerClient';
+import { PetPanel } from '../ui/PetPanel';
 import { FactionReputationPanel } from '../ui/FactionReputationPanel';
 import { ChatOverlay }        from '../ui/ChatOverlay';
 import { PlayerListPanel }    from '../ui/PlayerListPanel';
@@ -327,6 +328,20 @@ export class GameScene extends Phaser.Scene {
   /** Season name HUD label (top-center). */
   private seasonLabel?: Phaser.GameObjects.Text;
 
+  // ── Companion pet ─────────────────────────────────────────────────────────
+  /** Pet management panel (always present in multiplayer, J to open). */
+  private petPanel?: PetPanel;
+  /** Local player's pet sprite (follows the player). */
+  private localPetSprite?: Phaser.GameObjects.Image;
+  /** Remote player pet sprites: sessionId → sprite. */
+  private remotePetSprites = new Map<string, Phaser.GameObjects.Image>();
+  /** Currently owned pets list (updated from server). */
+  private ownedPets: PetData[] = [];
+  /** Equipped pet type key for local player (empty = no pet). */
+  private equippedPetType = '';
+  /** Pet XP bonus multiplier (e.g. 0.10 = +10%). */
+  private petXpBonus = 0;
+
   /** Session IDs of current party members (for mini-map highlight). */
   private partySessionIds = new Set<string>();
 
@@ -598,6 +613,7 @@ export class GameScene extends Phaser.Scene {
         this.marketplace?.closeIfOpen()       ||
         this.guildPanel?.closeIfOpen()        ||
         this.partyPanel?.closeIfOpen()        ||
+        this.petPanel?.closeIfOpen()          ||
         this.socialPanel?.closeIfOpen()       ||
         this.achievementPanel?.closeIfOpen()  ||
         this.leaderboardPanel?.closeIfOpen()  ||
@@ -714,6 +730,7 @@ export class GameScene extends Phaser.Scene {
     this.playerList?.update();
     this.guildPanel?.update();
     this.partyPanel?.update();
+    this.petPanel?.update();
     this.socialPanel?.update();
     this.achievementPanel?.update();
     this.leaderboardPanel?.update();
@@ -790,6 +807,15 @@ export class GameScene extends Phaser.Scene {
     this.regenMana(delta);
     this.updateDodgeCooldownHUD(time);
     this.updateHotbarHUD();
+
+    // Update local pet sprite following
+    if (this.localPetSprite && this.equippedPetType) {
+      const targetX = this.player.x - 14;
+      const targetY = this.player.y + 4;
+      this.localPetSprite.x = Phaser.Math.Linear(this.localPetSprite.x, targetX, 0.12);
+      this.localPetSprite.y = Phaser.Math.Linear(this.localPetSprite.y, targetY, 0.12);
+      this.localPetSprite.setVisible(true);
+    }
 
     if (this.isMultiplayer) {
       this.syncRemoteEnemies();
@@ -1130,6 +1156,65 @@ export class GameScene extends Phaser.Scene {
     };
     // Load initial guild state
     this.guildPanel.refresh().catch(() => {/* non-fatal */});
+
+    // Pet panel (J key — always present in multiplayer)
+    this.petPanel = new PetPanel(this);
+    this.petPanel.setStatusBarVisible(true);
+    this.petPanel.onEquip = (petId) => {
+      client.sendPetEquip(petId);
+    };
+    this.petPanel.onFeed = (petId) => {
+      client.sendPetFeed(petId);
+    };
+    this.petPanel.onDismiss = () => {
+      client.sendPetDismiss();
+    };
+
+    // Pet server callbacks
+    client.onPetList = (pets) => {
+      this.ownedPets = pets;
+      this.petPanel?.setPets(pets);
+      const equipped = pets.find(p => p.isEquipped);
+      this.equippedPetType = equipped?.petType ?? '';
+      this.petXpBonus = this.computePetXpBonus(equipped);
+      this.updateLocalPetSprite();
+    };
+    client.onPetAcquired = (pet) => {
+      this.ownedPets.push(pet);
+      this.petPanel?.setPets([...this.ownedPets]);
+      this.chat?.addMessage(`★ New companion acquired: ${pet.petType}!`, '#ffcc44');
+    };
+    client.onPetEquipped = (pet) => {
+      this.ownedPets = this.ownedPets.map(p => ({ ...p, isEquipped: p.id === pet.id }));
+      this.petPanel?.setPets([...this.ownedPets]);
+      this.equippedPetType = pet.petType;
+      this.petXpBonus = this.computePetXpBonus(pet);
+      this.updateLocalPetSprite();
+      this.petPanel?.refreshStatusBar();
+    };
+    client.onPetFed = (_petId, happiness) => {
+      this.petPanel?.setHappiness(happiness);
+      this.petPanel?.refreshStatusBar();
+      const pet = this.ownedPets.find(p => p.isEquipped);
+      if (pet) { pet.happiness = happiness; this.petXpBonus = this.computePetXpBonus(pet); }
+    };
+    client.onPetDismissed = () => {
+      this.ownedPets = this.ownedPets.map(p => ({ ...p, isEquipped: false }));
+      this.petPanel?.setPets([...this.ownedPets]);
+      this.equippedPetType = '';
+      this.petXpBonus = 0;
+      this.updateLocalPetSprite();
+      this.petPanel?.refreshStatusBar();
+    };
+    client.onPetHappiness = (_petId, happiness) => {
+      this.petPanel?.setHappiness(happiness);
+      this.petPanel?.refreshStatusBar();
+      const pet = this.ownedPets.find(p => p.isEquipped);
+      if (pet) { pet.happiness = happiness; this.petXpBonus = this.computePetXpBonus(pet); }
+    };
+    client.onPetError = (msg) => {
+      this.chat?.addMessage(`[Pet] Error: ${msg}`, '#ff8888');
+    };
 
     // Achievement panel (H key — always present in solo and multiplayer)
     this.achievementPanel = new AchievementPanel(this);
@@ -1673,6 +1758,9 @@ export class GameScene extends Phaser.Scene {
           prestigeBorder.setVisible(false);
         }
       }
+
+      // Remote player pet sprite
+      this.updateRemotePetSprite(rp.sessionId, rp.equippedPetType, s.x, s.y);
     });
 
     // Remove sprites for players who left
@@ -1686,6 +1774,9 @@ export class GameScene extends Phaser.Scene {
         this.remotePlayerLabels.delete(sid);
         this.remotePlayerHpBars.delete(sid);
         this.remotePlayerPrestigeBorders.delete(sid);
+        // Also remove remote pet sprite
+        this.remotePetSprites.get(sid)?.destroy();
+        this.remotePetSprites.delete(sid);
       }
     });
 
@@ -1708,6 +1799,57 @@ export class GameScene extends Phaser.Scene {
 
     this.remoteEnemySprites.forEach(s => s.destroy());
     this.remoteEnemySprites.clear();
+
+    // Clear remote pet sprites
+    this.remotePetSprites.forEach(s => s.destroy());
+    this.remotePetSprites.clear();
+  }
+
+  // ── Pet helpers ───────────────────────────────────────────────────────────
+
+  /** Show/create/move the local player's pet sprite to follow the player. */
+  private updateLocalPetSprite(): void {
+    if (!this.equippedPetType) {
+      this.localPetSprite?.setVisible(false);
+      return;
+    }
+    const textureKey = `pet_${this.equippedPetType}`;
+    if (!this.localPetSprite) {
+      this.localPetSprite = this.add.image(this.player.x - 14, this.player.y + 4, textureKey)
+        .setDepth(9).setScale(0.9);
+    } else {
+      this.localPetSprite.setTexture(textureKey).setVisible(true);
+    }
+  }
+
+  /** Create/update a remote player's pet sprite. */
+  private updateRemotePetSprite(sessionId: string, petType: string, ownerX: number, ownerY: number): void {
+    if (!petType) {
+      const existing = this.remotePetSprites.get(sessionId);
+      if (existing) existing.setVisible(false);
+      return;
+    }
+    const textureKey = `pet_${petType}`;
+    let petSprite = this.remotePetSprites.get(sessionId);
+    if (!petSprite) {
+      petSprite = this.add.image(ownerX - 14, ownerY + 4, textureKey).setDepth(9).setScale(0.9);
+      this.remotePetSprites.set(sessionId, petSprite);
+    } else {
+      petSprite.setTexture(textureKey).setVisible(true);
+      // Lerp pet to follow owner
+      petSprite.x = Phaser.Math.Linear(petSprite.x, ownerX - 14, 0.15);
+      petSprite.y = Phaser.Math.Linear(petSprite.y, ownerY + 4,  0.15);
+    }
+  }
+
+  /** Compute XP bonus multiplier from the given equipped pet (0 if none/unhappy). */
+  private computePetXpBonus(pet: PetData | undefined): number {
+    if (!pet || pet.happiness <= 0) return 0;
+    const xpBonusPets: Record<string, number> = {
+      wisp: 0.10 * (1 + (Math.min(pet.level, 20) - 1) * 0.01),
+    };
+    // dragon_whelp gives 3% to all stats (xp not included server-side but bonus for client display)
+    return xpBonusPets[pet.petType] ?? 0;
   }
 
   // ── Day/night helpers ─────────────────────────────────────────────────────
@@ -2887,7 +3029,7 @@ export class GameScene extends Phaser.Scene {
     const baseXp  = isBoss
       ? BOSS_TYPES[extra.bossType!].xpValue
       : (ENEMY_TYPES[extra.typeName as EnemyTypeName]?.xpValue ?? 10);
-    const xpGain  = Math.floor(baseXp * this.zone.difficultyMult);
+    const xpGain  = Math.floor(baseXp * this.zone.difficultyMult * (1 + this.petXpBonus));
 
     this.kills++;
     this.xp    += xpGain;

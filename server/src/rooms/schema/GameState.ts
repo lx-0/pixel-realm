@@ -61,6 +61,12 @@ export class Player extends Schema {
 
   // Prestige (0 = never prestiged)
   @type("int8")    prestigeLevel: number = 0;
+
+  // Companion pet (empty string = no pet equipped)
+  @type("string")  equippedPetType: string = "";
+  /** 0 = no pet / unhappy (bonus disabled); 1-100 = happy */
+  @type("int8")    petHappiness: number = 0;
+  @type("int8")    petLevel: number = 1;
 }
 
 // ── Enemy ─────────────────────────────────────────────────────────────────────

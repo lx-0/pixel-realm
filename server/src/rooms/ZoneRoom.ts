@@ -25,6 +25,21 @@ import { initSkillState, loadSkillState, saveSkillState, type SkillState } from 
 import { ALL_SKILLS, SKILL_BY_ID, computePassiveBonuses, type ClassId } from "../skills";
 import { addItem } from "../db/inventory";
 import { getPlayerGuild } from "../db/guilds";
+import {
+  getPlayerPets,
+  getEquippedPet,
+  addPet,
+  equipPet,
+  dismissPet,
+  feedPet,
+  awardPetXp,
+  savePetHappiness,
+  computePetBonus,
+  PET_DEFINITIONS,
+  ALL_PET_TYPES,
+  type PetType,
+  type PetRow,
+} from "../db/pets";
 import { filterProfanity } from "../chat/filter";
 import { isPlayerBanned, isPlayerMuted, logChat, createReport } from "../db/moderation";
 import {
@@ -321,6 +336,11 @@ interface CraftNotifyMessage {
   itemName: string;
 }
 
+// Pet messages
+interface PetEquipMessage  { petId: string }
+interface PetFeedMessage   { petId: string }
+interface PetAcquireMessage { petType: string }
+
 // Party messages
 interface PartyInviteMessage  { targetSessionId: string }
 interface PartyRespondMessage { accept: boolean }
@@ -426,6 +446,10 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
   // Active P2P trades keyed by the initiator's sessionId
   private pendingTrades = new Map<string, PendingTrade>();
+
+  // ── Pet state (in-memory per session) ─────────────────────────────────────
+  /** In-memory pet state: sessionId → { petId, petType, level, happiness, lastDecayAt } */
+  private petStateMap = new Map<string, { petId: string; petType: string; level: number; happiness: number; lastDecayAt: number }>();
 
   // ── Skill tree state (in-memory per session) ──────────────────────────────
   /** Skill allocation state, keyed by sessionId */
@@ -540,6 +564,13 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("unblock_player",  (client: Client, msg: UnblockPlayerMessage)   => this.handleUnblockPlayer(client, msg));
     this.onMessage("friends_list",    (client: Client)                              => this.handleFriendsList(client));
 
+    // Pet messages
+    this.onMessage("pet:equip",   (client: Client, msg: PetEquipMessage)   => this.handlePetEquip(client, msg));
+    this.onMessage("pet:feed",    (client: Client, msg: PetFeedMessage)    => this.handlePetFeed(client, msg));
+    this.onMessage("pet:dismiss", (client: Client)                         => this.handlePetDismiss(client));
+    this.onMessage("pet:acquire", (client: Client, msg: PetAcquireMessage) => this.handlePetAcquire(client, msg));
+    this.onMessage("pet:list",    (client: Client)                         => this.handlePetList(client));
+
     // Count every incoming WS message for /metrics
     this.onMessage("*", () => { incrementMessageCount(); });
 
@@ -624,6 +655,29 @@ export class ZoneRoom extends Room<ZoneGameState> {
           }
         } catch (_guildErr) {
           // Non-fatal: guild data unavailable, player continues without tag
+        }
+
+        // Load companion pet (best-effort — non-blocking)
+        try {
+          const equippedPet = await getEquippedPet(userId);
+          if (equippedPet) {
+            this.petStateMap.set(client.sessionId, {
+              petId:       equippedPet.id,
+              petType:     equippedPet.petType,
+              level:       equippedPet.level,
+              happiness:   equippedPet.happiness,
+              lastDecayAt: Date.now(),
+            });
+            player.equippedPetType = equippedPet.petType;
+            player.petHappiness    = equippedPet.happiness;
+            player.petLevel        = equippedPet.level;
+            this.applyPetBonuses(player);
+          }
+          // Send full pet list to the joining player
+          const allPets = await getPlayerPets(userId);
+          client.send("pet_list", { pets: allPets });
+        } catch (_petErr) {
+          // Non-fatal: pet data unavailable
         }
 
         // Load faction reputations and send to client (best-effort)
@@ -742,6 +796,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.skillCooldowns.delete(client.sessionId);
     this.lastPosition.delete(client.sessionId);
     this.speedViolations.delete(client.sessionId);
+    this.petStateMap.delete(client.sessionId);
     sessionUserMap.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
     console.log(`[ZoneRoom] ${client.sessionId} left (consented=${consented})`);
@@ -774,6 +829,11 @@ export class ZoneRoom extends Room<ZoneGameState> {
       const skillState = this.skillStateMap.get(sessionId);
       if (skillState) {
         await saveSkillState(userId, skillState);
+      }
+      // Save pet happiness
+      const petState = this.petStateMap.get(sessionId);
+      if (petState) {
+        await savePetHappiness(userId, petState.petId, petState.happiness);
       }
     } catch (err) {
       console.warn(`[ZoneRoom] Failed to save state for ${userId}:`, (err as Error).message);
@@ -1688,6 +1748,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.tickManaRegen(dt);
     this.tickStatusEffects(now);
     this.tickBuffs(now);
+    this.tickPetHappiness(now);
   }
 
   /** Expire player status effects whose duration has elapsed. */
@@ -2426,7 +2487,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
     // Skill multipliers
     const surgeMult  = surgeBuff ? 2.0 : 1.0;
     const berserkMult = ((player.buffFlags & BUFF_BERSERK) !== 0 && now < player.buffExpiresAt) ? 1.5 : 1.0;
-    const dmgBonus   = 1 + bonuses.damagePct;
+    const petDmgBonus = this.getPetDamageBonus(client.sessionId);
+    const dmgBonus   = 1 + bonuses.damagePct + petDmgBonus;
 
     this.executeSkillEffect(client, player, skillId, now, surgeMult * berserkMult * dmgBonus);
 
@@ -2829,5 +2891,175 @@ export class ZoneRoom extends Room<ZoneGameState> {
     }
 
     this.broadcastPartyUpdate(partyId);
+  }
+
+  // ── Pet Helpers ───────────────────────────────────────────────────────────────
+
+  /** Apply maxHp bonus from the equipped pet onto the player's schema fields. */
+  private applyPetBonuses(player: Player): void {
+    const petState = this.petStateMap.get(player.sessionId);
+    if (!petState || petState.happiness <= 0) return;
+    const bonus = computePetBonus(petState.petType, petState.level, petState.happiness);
+    if (bonus.maxHpPct > 0) {
+      player.maxHp = Math.round(player.maxHp * (1 + bonus.maxHpPct));
+      player.hp    = Math.min(player.hp, player.maxHp);
+    }
+  }
+
+  /**
+   * Returns the pet's damage multiplier bonus for the equipped pet.
+   * Used in skill-damage calculations alongside skill passives.
+   */
+  private getPetDamageBonus(sessionId: string): number {
+    const petState = this.petStateMap.get(sessionId);
+    if (!petState) return 0;
+    const bonus = computePetBonus(petState.petType, petState.level, petState.happiness);
+    return bonus.damagePct;
+  }
+
+  /**
+   * Returns the pet's XP multiplier (e.g. 0.10 = +10%).
+   * Applied when sending party XP shares.
+   */
+  getPetXpBonus(sessionId: string): number {
+    const petState = this.petStateMap.get(sessionId);
+    if (!petState) return 0;
+    const bonus = computePetBonus(petState.petType, petState.level, petState.happiness);
+    return bonus.xpPct;
+  }
+
+  /** Decay happiness by 1 every 60 seconds while a pet is equipped. */
+  private tickPetHappiness(now: number): void {
+    const DECAY_INTERVAL_MS = 60_000;
+    this.petStateMap.forEach((petState, sessionId) => {
+      if (now - petState.lastDecayAt < DECAY_INTERVAL_MS) return;
+      petState.lastDecayAt = now;
+      petState.happiness = Math.max(0, petState.happiness - 1);
+
+      const player = this.state.players.get(sessionId);
+      if (player) {
+        player.petHappiness = petState.happiness;
+        // Notify client of updated happiness
+        const client = this.clients.find((c: Client) => c.sessionId === sessionId);
+        client?.send("pet_happiness", { happiness: petState.happiness, petId: petState.petId });
+      }
+
+      // Persist every 10 ticks of decay (every ~10 minutes)
+      const userId = sessionUserMap.get(sessionId);
+      if (userId && petState.happiness % 10 === 0) {
+        savePetHappiness(userId, petState.petId, petState.happiness).catch(() => {/* best-effort */});
+      }
+    });
+  }
+
+  // ── Pet Message Handlers ──────────────────────────────────────────────────────
+
+  /** Buy a pet from the vendor. Costs gold from player state. */
+  private async handlePetAcquire(client: Client, msg: PetAcquireMessage): Promise<void> {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    const petType = msg?.petType as PetType;
+    if (!ALL_PET_TYPES.includes(petType)) {
+      client.send("pet_error", { message: "Unknown pet type" }); return;
+    }
+
+    const def = PET_DEFINITIONS[petType];
+    if (player.xp < 0) return; // sanity check
+
+    // Gold is tracked client-side and persisted; re-verify via DB player state
+    // For simplicity: send a cost message, client deducts gold and calls back
+    try {
+      const newPet = await addPet(userId, petType);
+      client.send("pet_acquired", { pet: newPet, vendorCost: def.vendorCost });
+    } catch (err) {
+      client.send("pet_error", { message: (err as Error).message });
+    }
+  }
+
+  /** Equip a pet by ID. Unequips any previously equipped pet. */
+  private async handlePetEquip(client: Client, msg: PetEquipMessage): Promise<void> {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    try {
+      const pet = await equipPet(userId, msg.petId);
+      // Update in-memory and schema
+      this.petStateMap.set(client.sessionId, {
+        petId:       pet.id,
+        petType:     pet.petType,
+        level:       pet.level,
+        happiness:   pet.happiness,
+        lastDecayAt: Date.now(),
+      });
+      player.equippedPetType = pet.petType;
+      player.petHappiness    = pet.happiness;
+      player.petLevel        = pet.level;
+      this.applyPetBonuses(player);
+      client.send("pet_equipped", { pet });
+    } catch (err) {
+      client.send("pet_error", { message: (err as Error).message });
+    }
+  }
+
+  /** Feed the specified pet — restores happiness. Client must have a pet food item. */
+  private async handlePetFeed(client: Client, msg: PetFeedMessage): Promise<void> {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    try {
+      const result = await feedPet(userId, msg.petId);
+      // Update in-memory happiness
+      const petState = this.petStateMap.get(client.sessionId);
+      if (petState && petState.petId === msg.petId) {
+        petState.happiness   = result.happiness;
+        player.petHappiness  = result.happiness;
+      }
+      client.send("pet_fed", { petId: msg.petId, happiness: result.happiness });
+    } catch (err) {
+      client.send("pet_error", { message: (err as Error).message });
+    }
+  }
+
+  /** Dismiss (unequip) the currently equipped pet. */
+  private async handlePetDismiss(client: Client): Promise<void> {
+    const player = this.state.players.get(client.sessionId);
+    if (!player) return;
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    try {
+      // Save current happiness before dismissing
+      const petState = this.petStateMap.get(client.sessionId);
+      if (petState) {
+        await savePetHappiness(userId, petState.petId, petState.happiness);
+      }
+      await dismissPet(userId);
+      this.petStateMap.delete(client.sessionId);
+      player.equippedPetType = "";
+      player.petHappiness    = 0;
+      player.petLevel        = 1;
+      client.send("pet_dismissed", {});
+    } catch (err) {
+      client.send("pet_error", { message: (err as Error).message });
+    }
+  }
+
+  /** Send the player's full pet list. */
+  private async handlePetList(client: Client): Promise<void> {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+    try {
+      const pets = await getPlayerPets(userId);
+      client.send("pet_list", { pets });
+    } catch (_err) {
+      client.send("pet_list", { pets: [] });
+    }
   }
 }

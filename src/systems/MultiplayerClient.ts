@@ -39,6 +39,21 @@ export interface RemotePlayer {
   guildTag: string;    // e.g. "[PFG]" or empty string
   partyId: string;     // empty string = no party
   prestigeLevel: number; // 0 = never prestiged
+  /** Equipped pet type ('wolf', 'hawk', etc.), empty string = no pet */
+  equippedPetType: string;
+  petHappiness: number;
+  petLevel: number;
+}
+
+// ── Pet data shapes ───────────────────────────────────────────────────────────
+
+export interface PetData {
+  id:         string;
+  petType:    string;
+  level:      number;
+  xp:         number;
+  happiness:  number;
+  isEquipped: boolean;
 }
 
 // ── Party data shapes ─────────────────────────────────────────────────────────
@@ -317,6 +332,15 @@ export class MultiplayerClient {
   onSocialInfo?: (message: string) => void;
   onSocialError?: (message: string) => void;
 
+  // Pet callbacks
+  onPetList?:      (pets: PetData[]) => void;
+  onPetAcquired?:  (pet: PetData, vendorCost: number) => void;
+  onPetEquipped?:  (pet: PetData) => void;
+  onPetFed?:       (petId: string, happiness: number) => void;
+  onPetDismissed?: () => void;
+  onPetHappiness?: (petId: string, happiness: number) => void;
+  onPetError?:     (message: string) => void;
+
   // Trade callbacks
   onTradeInvited?: (fromSessionId: string, fromName: string) => void;
   onTradePending?: (withSessionId: string) => void;
@@ -437,6 +461,29 @@ export class MultiplayerClient {
 
     room.onMessage('quest_completed', (msg: { questId: string }) => {
       this.onQuestCompleted?.(msg.questId);
+    });
+
+    // ── Pet messages ──────────────────────────────────────────────────────
+    room.onMessage('pet_list', (msg: { pets: PetData[] }) => {
+      this.onPetList?.(msg.pets);
+    });
+    room.onMessage('pet_acquired', (msg: { pet: PetData; vendorCost: number }) => {
+      this.onPetAcquired?.(msg.pet, msg.vendorCost);
+    });
+    room.onMessage('pet_equipped', (msg: { pet: PetData }) => {
+      this.onPetEquipped?.(msg.pet);
+    });
+    room.onMessage('pet_fed', (msg: { petId: string; happiness: number }) => {
+      this.onPetFed?.(msg.petId, msg.happiness);
+    });
+    room.onMessage('pet_dismissed', () => {
+      this.onPetDismissed?.();
+    });
+    room.onMessage('pet_happiness', (msg: { petId: string; happiness: number }) => {
+      this.onPetHappiness?.(msg.petId, msg.happiness);
+    });
+    room.onMessage('pet_error', (msg: { message: string }) => {
+      this.onPetError?.(msg.message);
     });
 
     // ── Trade messages ────────────────────────────────────────────────────
@@ -673,6 +720,9 @@ export class MultiplayerClient {
       guildTag: (p.guildTag as string) ?? '',
       partyId: (p.partyId as string) ?? '',
       prestigeLevel: (p.prestigeLevel as number) ?? 0,
+      equippedPetType: (p.equippedPetType as string) ?? '',
+      petHappiness: (p.petHappiness as number) ?? 0,
+      petLevel: (p.petLevel as number) ?? 1,
     };
   }
 
@@ -795,6 +845,28 @@ export class MultiplayerClient {
 
   sendSkillRespec(): void {
     this.room?.send('skill_respec', { confirm: true });
+  }
+
+  // ── Pet messages ──────────────────────────────────────────────────────────
+
+  sendPetEquip(petId: string): void {
+    this.room?.send('pet:equip', { petId });
+  }
+
+  sendPetFeed(petId: string): void {
+    this.room?.send('pet:feed', { petId });
+  }
+
+  sendPetDismiss(): void {
+    this.room?.send('pet:dismiss');
+  }
+
+  sendPetAcquire(petType: string): void {
+    this.room?.send('pet:acquire', { petType });
+  }
+
+  sendPetList(): void {
+    this.room?.send('pet:list');
   }
 
   // ── Guild messages ────────────────────────────────────────────────────────
