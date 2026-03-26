@@ -243,9 +243,9 @@ const FROSTBINDER: SkillDef[] = [
     id: 'biting_cold',
     classId: 'mage', archetypeId: 'frostbinder',
     name: 'Biting Cold',
-    description: '+25 max mana. Frozen enemies take 20% extra damage.',
+    description: '+15 max HP, +25 max mana. Frozen enemies take 20% extra damage.',
     type: 'passive', tier: 2, prerequisiteId: 'ice_lance',
-    passiveBonus: { maxManaFlat: 25 },
+    passiveBonus: { maxHpFlat: 15, maxManaFlat: 25 },
   },
   {
     id: 'blizzard',
@@ -296,7 +296,7 @@ const ARCANIST: SkillDef[] = [
     id: 'arcane_shield',
     classId: 'mage', archetypeId: 'arcanist',
     name: 'Arcane Shield',
-    description: 'Absorb the next 80 incoming damage. 15s cooldown.',
+    description: 'Absorb the next 120 incoming damage. 15s cooldown.',
     type: 'active', tier: 3, prerequisiteId: 'mana_flow',
     cooldownMs: 15000, manaCost: 22,
   },
@@ -681,5 +681,5 @@ export function computePassiveBonuses(unlockedIds: string[]): Required<PassiveBo
   return total;
 }
 
-/** Maximum skill points available at max level (1 per level from lv2). */
-export const MAX_SKILL_POINTS = 49; // levels 2–50
+/** Maximum skill points available (1 per level from lv2–lv10). */
+export const MAX_SKILL_POINTS = 9; // levels 2–10

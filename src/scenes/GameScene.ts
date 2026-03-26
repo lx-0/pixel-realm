@@ -4431,9 +4431,9 @@ export class GameScene extends Phaser.Scene {
         break;
       }
       case 'arcane_shield': {
-        this.shieldAbsorb = 80;
+        this.shieldAbsorb = 120;
         this.screenFlash(0x8844ff, 0.2);
-        this.floatingText(this.player.x, this.player.y - 14, '✦ Arcane Shield (80)', '#cc88ff');
+        this.floatingText(this.player.x, this.player.y - 14, '✦ Arcane Shield (120)', '#cc88ff');
         break;
       }
       case 'arcane_surge': {

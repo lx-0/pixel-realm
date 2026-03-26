@@ -459,6 +459,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
   private skillStateMap = new Map<string, SkillState>();
   /** Per-player skill cooldowns: sessionId → skillId → expiresAtMs */
   private skillCooldowns = new Map<string, Record<string, number>>();
+  /** Cached passive bonuses per session — updated when skills change. */
+  private passiveBonusCache = new Map<string, ReturnType<typeof computePassiveBonuses>>();
 
   // ── Party state (in-memory per room) ──────────────────────────────────────
   /** Parties keyed by partyId. */
@@ -797,6 +799,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
     this.skillStateMap.delete(client.sessionId);
     this.skillCooldowns.delete(client.sessionId);
+    this.passiveBonusCache.delete(client.sessionId);
     this.lastPosition.delete(client.sessionId);
     this.speedViolations.delete(client.sessionId);
     this.petStateMap.delete(client.sessionId);
@@ -893,19 +896,41 @@ export class ZoneRoom extends Room<ZoneGameState> {
     if (!player) return;
 
     const now = Date.now();
-    if (now - player.lastAttackAt < ATTACK_COOLDOWN_MS) return;
+    const bonuses = this.getPassiveBonuses(client.sessionId);
+
+    // Apply attackCdReductionPct to attack cooldown
+    const effectiveAttackCd = Math.round(ATTACK_COOLDOWN_MS * Math.max(0.2, 1 - bonuses.attackCdReductionPct));
+    if (now - player.lastAttackAt < effectiveAttackCd) return;
     if (player.mana < MANA_ATTACK_COST) return;
 
     player.lastAttackAt = now;
     player.mana = Math.max(0, player.mana - MANA_ATTACK_COST);
     player.isAttacking = true;
 
+    // Compute damage with level scaling, passive damagePct, and active buffs
+    const baseDmg = ATTACK_DAMAGE + (player.level - 1) * 5;
+    const berserkMult = ((player.buffFlags & BUFF_BERSERK) !== 0 && now < player.buffExpiresAt) ? 1.5 : 1.0;
+    const craftMult   = ((player.buffFlags & BUFF_MASTER_CRAFT) !== 0 && now < player.buffExpiresAt) ? 1.4 : 1.0;
+    const enchantMult = ((player.buffFlags & BUFF_ENCHANT) !== 0 && now < player.buffExpiresAt) ? 1.35 : 1.0;
+    const petDmgBonus = this.getPetDamageBonus(client.sessionId);
+    let dmg = Math.round(baseDmg * (1 + bonuses.damagePct + petDmgBonus) * berserkMult * craftMult * enchantMult);
+
+    // Apply critChancePct (base 5% crit + passive bonus, crit = 2× damage)
+    const critChance = 0.05 + bonuses.critChancePct;
+    const isCrit = Math.random() < critChance;
+    if (isCrit) dmg = dmg * 2;
+
+    // Eagle Eye buff: next 3 attacks deal 3× damage
+    if ((player.buffFlags & BUFF_EAGLE_EYE) !== 0 && now < player.buffExpiresAt) {
+      dmg = dmg * 3;
+    }
+
     // Resolve melee hits against enemies in range
     this.state.enemies.forEach((enemy: Enemy) => {
       if (enemy.aiState === "dead") return;
       if (dist(player.x, player.y, enemy.x, enemy.y) > ATTACK_RANGE_PX) return;
 
-      enemy.hp = Math.max(0, enemy.hp - ATTACK_DAMAGE);
+      enemy.hp = Math.max(0, enemy.hp - dmg);
       if (enemy.hp === 0) {
         this.killEnemy(enemy, client.sessionId);
       }
@@ -1484,6 +1509,15 @@ export class ZoneRoom extends Room<ZoneGameState> {
       this.shareXpWithParty(killerSessionId, enemy);
       this.incrementPveKills(killerSessionId).catch(() => {/* best-effort */});
       this.awardKillFactionRep(killerSessionId, enemy.type).catch(() => {/* best-effort */});
+
+      // Apply healOnKill passive bonus
+      const bonuses = this.getPassiveBonuses(killerSessionId);
+      if (bonuses.healOnKill > 0) {
+        const player = this.state.players.get(killerSessionId);
+        if (player && player.hp > 0) {
+          player.hp = Math.min(player.maxHp, player.hp + bonuses.healOnKill);
+        }
+      }
     }
     // Remove from state after a short delay (so clients can play death animation)
     this.clock.setTimeout(() => {
@@ -1822,8 +1856,11 @@ export class ZoneRoom extends Room<ZoneGameState> {
     if (now < player.invincibleUntil) return;
     if (dist(enemy.x, enemy.y, player.x, player.y) > 12) return;
 
+    // Apply damageReductionPct from passive bonuses
+    const bonuses = this.getPassiveBonuses(player.sessionId);
+    let dmgToApply = Math.round(PLAYER_HIT_DAMAGE * Math.max(0, 1 - bonuses.damageReductionPct));
+
     // Arcane shield absorb
-    let dmgToApply = PLAYER_HIT_DAMAGE;
     if (player.shieldAbsorb > 0) {
       const absorbed = Math.min(player.shieldAbsorb, dmgToApply);
       player.shieldAbsorb -= absorbed;
@@ -1868,7 +1905,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
         if (now < player.invincibleUntil) return;
         if (dist(proj.x, proj.y, player.x, player.y) > 8) return;
 
-        let projDmg = proj.damage;
+        // Apply damageReductionPct from passive bonuses
+        const pBonuses = this.getPassiveBonuses(player.sessionId);
+        let projDmg = Math.round(proj.damage * Math.max(0, 1 - pBonuses.damageReductionPct));
         if (player.shieldAbsorb > 0) {
           const absorbed = Math.min(player.shieldAbsorb, projDmg);
           player.shieldAbsorb -= absorbed;
@@ -1888,7 +1927,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
   private tickManaRegen(dt: number) {
     this.state.players.forEach((player: Player) => {
       if (player.mana < player.maxMana) {
-        player.mana = Math.min(player.maxMana, player.mana + MANA_REGEN_PER_SEC * dt);
+        const bonuses = this.getPassiveBonuses(player.sessionId);
+        const totalRegen = MANA_REGEN_PER_SEC + bonuses.manaRegenFlat;
+        player.mana = Math.min(player.maxMana, player.mana + totalRegen * dt);
       }
     });
   }
@@ -2143,6 +2184,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
   /** Apply all passive bonuses from unlocked skills to the Colyseus Player schema. */
   private applySkillPassives(player: Player, skillState: SkillState): void {
     const bonuses = computePassiveBonuses(Object.keys(skillState.unlockedSkills));
+    this.passiveBonusCache.set(player.sessionId, bonuses);
     const baseHp   = 100 + (player.level - 1) * 20;
     const baseMana =  50;
     player.maxHp   = baseHp   + bonuses.maxHpFlat;
@@ -2150,6 +2192,11 @@ export class ZoneRoom extends Room<ZoneGameState> {
     // Clamp current values to new maxes
     player.hp   = Math.min(player.hp,   player.maxHp);
     player.mana = Math.min(player.mana, player.maxMana);
+  }
+
+  /** Get cached passive bonuses for a session, falling back to zero bonuses. */
+  private getPassiveBonuses(sessionId: string): ReturnType<typeof computePassiveBonuses> {
+    return this.passiveBonusCache.get(sessionId) ?? computePassiveBonuses([]);
   }
 
   /** Push skill state into the Colyseus-synced Player fields. */
@@ -2629,7 +2676,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
         break;
       }
       case "arcane_shield": {
-        player.shieldAbsorb = 80;
+        player.shieldAbsorb = 120;
         break;
       }
       case "arcane_surge": {
