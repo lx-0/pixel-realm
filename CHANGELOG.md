@@ -2,6 +2,30 @@
 
 All notable changes to PixelRealm are documented in this file.
 
+## [1.1.0] - 2026-03-26
+
+Ranger and Artisan class expansion — completes the full 4-class roster from the GDD.
+
+### M33: Ranger & Artisan Classes
+- Ranger class with 3 archetype skill trees: Sharpshooter, Shadowstalker, Beastmaster (PIX-284).
+- Artisan class with 3 archetype skill trees: Blacksmith, Alchemist, Enchanter (PIX-288).
+- Ranger class art assets: character sprites, skill effects, archetype badges (PIX-285).
+- Artisan class art assets: character sprites, skill effects, archetype badges (PIX-287).
+
+### M34: Class Integration & Balance
+- Class selection screen and 4-class character creation art (PIX-290).
+- M33 integration tests for Ranger and Artisan classes (PIX-291).
+- 4-class balance pass: passive bonuses, skill scaling, roster equilibrium (PIX-292).
+- Champion arena tier (2200+ ELO) added to ranked PvP.
+
+### Technical
+- 1026 server-side tests passing across all zones, classes, and systems.
+- Lint: 0 errors.
+- TypeScript: no type errors.
+- Build: clean Vite production build.
+
+---
+
 ## [1.0.0] - 2026-03-25
 
 Release candidate for v1.0.0 — the full PixelRealm MMORPG launch build. Covers all work from M0 (foundation) through M24 (pre-launch polish).

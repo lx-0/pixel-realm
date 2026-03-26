@@ -74,7 +74,7 @@ function makeid(): string {
 
 export function getTier(rating: number): ArenaTier {
   const tiers = ARENA.TIERS;
-  if (rating >= 2200)               return 'CHAMPION' as ArenaTier;
+  if (rating >= tiers.CHAMPION.min)  return 'CHAMPION';
   if (rating >= tiers.DIAMOND.min)  return 'DIAMOND';
   if (rating >= tiers.PLATINUM.min) return 'PLATINUM';
   if (rating >= tiers.GOLD.min)     return 'GOLD';

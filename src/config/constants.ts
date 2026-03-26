@@ -222,12 +222,13 @@ export const ARENA = {
     SILVER:   { min: 1200, max: 1399, label: 'Silver',   icon: 'icon_rank_arena_silver' },
     GOLD:     { min: 1400, max: 1599, label: 'Gold',     icon: 'icon_rank_arena_gold' },
     PLATINUM: { min: 1600, max: 1799, label: 'Platinum', icon: 'icon_rank_arena_platinum' },
-    DIAMOND:  { min: 1800, max: Infinity, label: 'Diamond', icon: 'icon_rank_arena_diamond' },
+    DIAMOND:  { min: 1800, max: 2199, label: 'Diamond',  icon: 'icon_rank_arena_diamond' },
+    CHAMPION: { min: 2200, max: Infinity, label: 'Champion', icon: 'icon_rank_arena_champion' },
   },
 } as const;
 
 export type ArenaMode = '1v1' | '2v2';
-export type ArenaTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
+export type ArenaTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND' | 'CHAMPION';
 export type ArenaMap  = 'gladiator_pit' | 'shadow_sanctum';
 
 // ── Enemy Type Definitions ────────────────────────────────────────────────────

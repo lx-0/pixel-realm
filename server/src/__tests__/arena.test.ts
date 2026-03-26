@@ -72,9 +72,14 @@ describe("getTier()", () => {
     expect(getTier(1799)).toBe("PLATINUM");
   });
 
-  it("returns DIAMOND at 1800+", () => {
+  it("returns DIAMOND at 1800-2199", () => {
     expect(getTier(1800)).toBe("DIAMOND");
-    expect(getTier(9999)).toBe("DIAMOND");
+    expect(getTier(2199)).toBe("DIAMOND");
+  });
+
+  it("returns CHAMPION at 2200+", () => {
+    expect(getTier(2200)).toBe("CHAMPION");
+    expect(getTier(9999)).toBe("CHAMPION");
   });
 
   it("uses the ARENA.TIERS config for boundaries", () => {
@@ -82,6 +87,7 @@ describe("getTier()", () => {
     expect(getTier(ARENA.TIERS.GOLD.min)).toBe("GOLD");
     expect(getTier(ARENA.TIERS.PLATINUM.min)).toBe("PLATINUM");
     expect(getTier(ARENA.TIERS.DIAMOND.min)).toBe("DIAMOND");
+    expect(getTier(ARENA.TIERS.CHAMPION.min)).toBe("CHAMPION");
   });
 });
 
@@ -92,10 +98,11 @@ describe("getTierLabel() / getTierIcon()", () => {
     expect(getTierLabel("GOLD")).toBe("Gold");
     expect(getTierLabel("PLATINUM")).toBe("Platinum");
     expect(getTierLabel("DIAMOND")).toBe("Diamond");
+    expect(getTierLabel("CHAMPION")).toBe("Champion");
   });
 
   it("returns non-empty icon strings for each tier", () => {
-    const tiers = ["BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND"] as const;
+    const tiers = ["BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "CHAMPION"] as const;
     for (const tier of tiers) {
       expect(getTierIcon(tier)).toBeTruthy();
     }
@@ -647,8 +654,8 @@ describe("ARENA constants", () => {
     expect(ARENA.ROUND_HP).toBe(100);
   });
 
-  it("all five tiers are defined with min/max/label/icon", () => {
-    const tiers = ["BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND"] as const;
+  it("all six tiers are defined with min/max/label/icon", () => {
+    const tiers = ["BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "CHAMPION"] as const;
     for (const tier of tiers) {
       const t = ARENA.TIERS[tier];
       expect(t.min).toBeGreaterThanOrEqual(0);
@@ -664,6 +671,7 @@ describe("ARENA constants", () => {
       ARENA.TIERS.GOLD.min,
       ARENA.TIERS.PLATINUM.min,
       ARENA.TIERS.DIAMOND.min,
+      ARENA.TIERS.CHAMPION.min,
     ];
     for (let i = 1; i < ordered.length; i++) {
       expect(ordered[i]).toBeGreaterThan(ordered[i - 1]);

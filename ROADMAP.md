@@ -272,6 +272,14 @@ Implement the remaining 2 of 4 GDD classes (Ranger, Artisan) with full archetype
 - [x] PIX-287 — Create Artisan class art assets (character sprites, skill effects, archetype badges)
 - [x] PIX-288 — Implement Artisan class with 3 archetype skill trees (Blacksmith, Alchemist, Enchanter)
 
+### M34: Class Integration & Balance — COMPLETE
+Integration testing, balance pass, and distribution rebuild for the 4-class roster.
+
+- [x] PIX-290 — Class selection screen and 4-class character creation art
+- [x] PIX-291 — M33 integration tests for Ranger and Artisan classes
+- [x] PIX-292 — 4-class balance pass (passive bonuses, skill scaling, roster equilibrium)
+- [x] PIX-293 — Rebuild distribution as v1.1.0 with Ranger and Artisan class content
+
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
 - Wallet connection (MetaMask / WalletConnect)
@@ -312,6 +320,7 @@ M5 → M6 ──────────────────┘
                                                                                                                                                           M31b (Companion Pets, parallel to M9)
                                                                                                                                                                 M32 (Hardcore Mode & Adaptive Audio, parallel to M9)
                                                                                                                                                                       M33 (Ranger & Artisan Classes, parallel to M9)
+                                                                                                                                                                            M34 (Class Integration & Balance, parallel to M9)
                                                                                                                             M14 (post-launch, independent)
 ```
 
@@ -344,5 +353,6 @@ M5 → M6 ──────────────────┘
 - **Companion Pets** — M31b added companion pet collection, stat bonuses, XP, and evolution system. Complete as of 2026-03-25.
 - **Hardcore Mode & Adaptive Audio** — M32 shipped hardcore permadeath mode (PIX-280) and adaptive music system (PIX-282). Art assets (PIX-281) in progress with Game Artist. Complete (code) as of 2026-03-26.
 - **Ranger & Artisan Classes** — M33 implements the remaining 2 of 4 GDD classes. All 4 GDD classes now fully implemented with 12 archetype skill trees (60 total skills). Complete as of 2026-03-26.
+- **Class Integration & Balance** — M34 adds integration tests, 4-class balance pass, class selection art, and v1.1.0 distribution rebuild. Complete as of 2026-03-26.
 - **Single engineer** — One engineer has shipped M0–M32 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
