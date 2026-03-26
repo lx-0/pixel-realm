@@ -113,7 +113,6 @@ export function nextWarWindow(now: Date = new Date()): { start: Date; end: Date 
   for (let day = 0; day <= 1; day++) {
     for (const hour of WAR_WINDOW_HOURS_UTC) {
       const start = new Date(todayMidnight + day * 86_400_000 + hour * 3_600_000);
-      const end   = new Date(start.getTime() + WAR_WINDOW_DURATION_MS);
       // Only include windows that haven't started yet (skip the currently open window)
       if (start.getTime() > ms) {
         candidates.push(start);

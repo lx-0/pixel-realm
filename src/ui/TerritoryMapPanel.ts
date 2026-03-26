@@ -53,7 +53,6 @@ export class TerritoryMapPanel {
   private zoneObjects: Phaser.GameObjects.Container[] = [];
 
   // Context
-  private playerId  = "";
   private guildId   = "";
   private guildRole = "";
   private mgr!:     TerritoryManager;
@@ -131,7 +130,6 @@ export class TerritoryMapPanel {
   }
 
   setContext(playerId: string, guildId: string, guildRole: string): void {
-    this.playerId  = playerId;
     this.guildId   = guildId;
     this.guildRole = guildRole;
     this.mgr.setPlayer(playerId, guildId);

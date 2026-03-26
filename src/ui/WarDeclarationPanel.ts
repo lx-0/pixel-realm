@@ -68,8 +68,6 @@ export class WarDeclarationPanel {
   private cancelBtn!:  Phaser.GameObjects.Text;
 
   private pendingTerritoryId   = "";
-  private pendingTerritoryName = "";
-  private pendingOwner: string | null = null;
 
   onClosed?: () => void;
 
@@ -149,8 +147,6 @@ export class WarDeclarationPanel {
 
   showForTerritory(territoryId: string, territoryName: string, ownerName: string | null): void {
     this.pendingTerritoryId   = territoryId;
-    this.pendingTerritoryName = territoryName;
-    this.pendingOwner         = ownerName;
 
     const ownerLine = ownerName ? `Currently held by: ${ownerName}` : `Territory is Unclaimed`;
     this.bodyText.setText(`Target: ${territoryName}\n${ownerLine}`);
