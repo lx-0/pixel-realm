@@ -25,7 +25,7 @@ export class GameOverScene extends Phaser.Scene {
     const {
       kills = 0, level = 1, timeSecs = 0,
       zoneName = '', victory = false, score = 0, zoneId = '',
-      sessionStats,
+      sessionStats, hardcore = false, causeOfDeath = '',
     } = data ?? {};
 
     const cx = CANVAS.WIDTH / 2;
@@ -52,8 +52,12 @@ export class GameOverScene extends Phaser.Scene {
     }).setDepth(1);
 
     // ── Title ─────────────────────────────────────────────────────────────────
-    const titleStr = victory ? 'ZONE CLEARED!' : 'GAME OVER';
-    const titleCol = victory ? '#ffd700'       : '#d42020';
+    const titleStr = victory ? 'ZONE CLEARED!'
+      : hardcore             ? '⚠ PERMADEATH'
+      :                        'GAME OVER';
+    const titleCol = victory ? '#ffd700'
+      : hardcore             ? '#cc44ff'
+      :                        '#d42020';
 
     const title = this.add.text(cx, cy - 72, titleStr, {
       fontSize: '16px', color: titleCol, fontFamily: 'monospace',
@@ -61,7 +65,18 @@ export class GameOverScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(10).setAlpha(0);
     this.tweens.add({ targets: title, alpha: 1, duration: 600, ease: 'Power2' });
 
-    if (zoneName) {
+    if (hardcore && !victory) {
+      // Hardcore: show archive notice instead of zone name
+      this.add.text(cx, cy - 57, 'CHARACTER ARCHIVED', {
+        fontSize: '6px', color: '#cc44ff', fontFamily: 'monospace',
+        stroke: '#000', strokeThickness: 1,
+      }).setOrigin(0.5).setDepth(10);
+      if (causeOfDeath) {
+        this.add.text(cx, cy - 49, `Slain in ${zoneName}${causeOfDeath ? ` — ${causeOfDeath}` : ''}`, {
+          fontSize: '4px', color: '#888899', fontFamily: 'monospace',
+        }).setOrigin(0.5).setDepth(10);
+      }
+    } else if (zoneName) {
       this.add.text(cx, cy - 57, zoneName, {
         fontSize: '6px', color: '#aaaacc', fontFamily: 'monospace',
       }).setOrigin(0.5).setDepth(10);
@@ -110,23 +125,33 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     // ── Buttons ───────────────────────────────────────────────────────────────
-    const primaryLabel = victory ? '▶  Level Select' : '▶  Try Again';
-    const primaryColor = victory ? '#44ff88'         : '#ffe040';
+    // Hardcore permadeath: no retry — character is permanently archived
+    if (hardcore && !victory) {
+      const selectBtn = this.makeButton(cx, cy + 80, '▶  Level Select', '#cc44ff');
+      const menuBtn2  = this.makeButton(cx, cy + 94, 'Main Menu', '#90d0f8');
+      selectBtn.on('pointerdown', () => this.goLevelSelect());
+      menuBtn2.on('pointerdown',  () => this.goMenu());
+      this.input.keyboard?.once('keydown-SPACE', () => this.goLevelSelect());
+      this.input.keyboard?.once('keydown-ESC',   () => this.goLevelSelect());
+    } else {
+      const primaryLabel = victory ? '▶  Level Select' : '▶  Try Again';
+      const primaryColor = victory ? '#44ff88'         : '#ffe040';
 
-    const primaryBtn = this.makeButton(cx, cy + 80, primaryLabel, primaryColor);
-    const menuBtn    = this.makeButton(cx, cy + 94, 'Main Menu', '#90d0f8');
+      const primaryBtn = this.makeButton(cx, cy + 80, primaryLabel, primaryColor);
+      const menuBtn    = this.makeButton(cx, cy + 94, 'Main Menu', '#90d0f8');
 
-    primaryBtn.on('pointerdown', () => {
-      if (victory) this.goLevelSelect();
-      else this.retry(zoneId);
-    });
-    menuBtn.on('pointerdown', () => this.goMenu());
+      primaryBtn.on('pointerdown', () => {
+        if (victory) this.goLevelSelect();
+        else this.retry(zoneId);
+      });
+      menuBtn.on('pointerdown', () => this.goMenu());
 
-    this.input.keyboard?.once('keydown-SPACE', () => {
-      if (victory) this.goLevelSelect();
-      else this.retry(zoneId);
-    });
-    this.input.keyboard?.once('keydown-ESC', () => this.goLevelSelect());
+      this.input.keyboard?.once('keydown-SPACE', () => {
+        if (victory) this.goLevelSelect();
+        else this.retry(zoneId);
+      });
+      this.input.keyboard?.once('keydown-ESC', () => this.goLevelSelect());
+    }
 
     this.cameras.main.fadeIn(500, 0, 0, 0);
   }

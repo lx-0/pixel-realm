@@ -7,7 +7,7 @@ import {
 } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
 import { SettingsManager } from '../systems/SettingsManager';
-import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData }  from '../systems/SaveManager';
+import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData, HARDCORE_UNLOCK_LEVEL }  from '../systems/SaveManager';
 import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FriendEntry, type EmoteEvent, type WorldEventEntry, type EmoteId, type PetData } from '../systems/MultiplayerClient';
 import { PetPanel } from '../ui/PetPanel';
 import { FactionReputationPanel } from '../ui/FactionReputationPanel';
@@ -77,7 +77,9 @@ interface EnemyExtra {
 }
 
 export interface GameSceneData {
-  zoneId: string;
+  zoneId:     string;
+  /** When true, death is permanent — no respawn and character is archived. */
+  hardcore?:  boolean;
 }
 
 /** Per-session combat statistics accumulated during a zone run. */
@@ -97,15 +99,19 @@ export interface SessionStats {
 }
 
 export interface GameOverData {
-  wave:         number;
-  kills:        number;
-  level:        number;
-  timeSecs:     number;
-  zoneId:       string;
-  zoneName:     string;
-  victory:      boolean;
-  score:        number;
-  sessionStats: SessionStats;
+  wave:          number;
+  kills:         number;
+  level:         number;
+  timeSecs:      number;
+  zoneId:        string;
+  zoneName:      string;
+  victory:       boolean;
+  score:         number;
+  sessionStats:  SessionStats;
+  /** True when this was a hardcore permadeath run — disables retry. */
+  hardcore?:     boolean;
+  /** Human-readable cause of death for the death recap screen. */
+  causeOfDeath?: string;
 }
 
 /**
@@ -381,6 +387,12 @@ export class GameScene extends Phaser.Scene {
   /** Whether boss phase 2 has been triggered this encounter. */
   private _bossPhase2Triggered = false;
 
+  /** True if this session was started in hardcore (permadeath) mode. */
+  private isHardcore = false;
+
+  /** Zone-clears accumulated in this hardcore run (for death record). */
+  private _hardcoreZonesCleared = 0;
+
   // ── Death/respawn HUD ─────────────────────────────────────────────────────
   private goldText?:   Phaser.GameObjects.Text;
   private scrollText?: Phaser.GameObjects.Text;
@@ -468,6 +480,9 @@ export class GameScene extends Phaser.Scene {
     this.zoneIdx = ZONES.indexOf(this.zone);
 
     const save   = SaveManager.load();
+    // Enforce server-side rule: hardcore only allowed at HARDCORE_UNLOCK_LEVEL+
+    this.isHardcore = (data?.hardcore === true) && (save.playerLevel >= HARDCORE_UNLOCK_LEVEL);
+    this._hardcoreZonesCleared = 0;
     this.level   = save.playerLevel;
     this.hp      = (PLAYER.BASE_HP as number) + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL;
     this.mana    = PLAYER.BASE_MANA as number;
@@ -2064,7 +2079,7 @@ export class GameScene extends Phaser.Scene {
       this.gold = Math.max(0, this.gold - cost);
       this.updateHUD();
       this.cameras.main.fadeOut(400, 0, 0, 0, () => {
-        this.scene.start(SCENES.GAME, { zoneId });
+        this.scene.start(SCENES.GAME, { zoneId, hardcore: this.isHardcore });
       });
     };
   }
@@ -3271,6 +3286,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private zoneCleared(): void {
+    if (this.isHardcore) this._hardcoreZonesCleared++;
     const nextIdx   = this.zoneIdx + 1;
     const nextZone  = ZONES[nextIdx] ?? null;
     const isLastZone = nextZone === null;
@@ -3323,6 +3339,7 @@ export class GameScene extends Phaser.Scene {
         victory:      true,
         score:        this.score,
         sessionStats: this.sessionStats,
+        hardcore:     this.isHardcore,
       } satisfies GameOverData);
     });
   }
@@ -3398,6 +3415,11 @@ export class GameScene extends Phaser.Scene {
 
   /** Full-screen death overlay with countdown, then triggers respawn. */
   private showDeathScreen(): void {
+    if (this.isHardcore) {
+      this.showHardcoreDeathScreen();
+      return;
+    }
+
     const W = CANVAS.WIDTH;
     const H = CANVAS.HEIGHT;
     const Z = 100;
@@ -3434,6 +3456,66 @@ export class GameScene extends Phaser.Scene {
           this.respawnPlayer();
         }
       },
+    });
+  }
+
+  /** Hardcore permadeath screen — no respawn, archives character and exits. */
+  private showHardcoreDeathScreen(): void {
+    const W = CANVAS.WIDTH;
+    const H = CANVAS.HEIGHT;
+    const Z = 100;
+
+    this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.88)
+      .setScrollFactor(0).setDepth(Z);
+
+    this.add.text(W / 2, H / 2 - 30, '⚠ PERMADEATH', {
+      fontSize: '14px', color: '#cc44ff', fontFamily: 'monospace',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(Z + 1);
+
+    this.add.text(W / 2, H / 2 - 14, 'Your character has been archived.', {
+      fontSize: '5px', color: '#cc44ff', fontFamily: 'monospace',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(Z + 1);
+
+    this.add.text(W / 2, H / 2 - 6, `Level ${this.level} · ${this.kills} kills · ${this._hardcoreZonesCleared} zones cleared`, {
+      fontSize: '5px', color: '#aaaacc', fontFamily: 'monospace',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(Z + 1);
+
+    this.add.text(W / 2, H / 2 + 4, 'Fading to results...', {
+      fontSize: '4px', color: '#666677', fontFamily: 'monospace',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(Z + 1);
+
+    // Archive this run
+    const timeSecs = Math.floor((this.time.now - this.gameStartTime) / 1000);
+    SaveManager.recordHardcoreDeath({
+      level:        this.level,
+      kills:        this.kills,
+      zonesCleared: this._hardcoreZonesCleared,
+      deathZone:    this.zone.name,
+      causeOfDeath: 'Slain by enemies',
+      timeSecs,
+    });
+
+    this.adaptive?.destroy();
+    this.sfx.stopMusic();
+
+    this.time.delayedCall(2800, () => {
+      this.cameras.main.fadeOut(600, 0, 0, 0);
+      this.time.delayedCall(600, () => {
+        this.scene.start(SCENES.GAME_OVER, {
+          wave:         this.wave,
+          kills:        this.kills,
+          level:        this.level,
+          timeSecs,
+          zoneId:       this.zone.id,
+          zoneName:     this.zone.name,
+          victory:      false,
+          score:        this.score,
+          sessionStats: this.sessionStats,
+          hardcore:     true,
+          causeOfDeath: 'Slain by enemies',
+        } satisfies GameOverData);
+      });
     });
   }
 

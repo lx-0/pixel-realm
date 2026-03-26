@@ -25,7 +25,7 @@ const SERVER_HTTP: string = (() => {
   return wsUrl.replace('ws://', 'http://').replace('wss://', 'https://');
 })();
 
-export type LeaderboardCategory = 'xp' | 'achievements' | 'prestige' | 'pvp_wins' | 'guild';
+export type LeaderboardCategory = 'xp' | 'achievements' | 'prestige' | 'pvp_wins' | 'guild' | 'hardcore';
 export type LeaderboardPeriod   = 'all' | 'weekly' | 'daily';
 
 export interface LeaderboardEntry {
@@ -41,6 +41,7 @@ const CATEGORY_LABELS: Record<LeaderboardCategory, string> = {
   prestige:     'Prestige',
   pvp_wins:     'PvP',
   guild:        'Guild',
+  hardcore:     'HC Level',
 };
 
 const CATEGORY_ICONS: Record<LeaderboardCategory, string> = {
@@ -49,6 +50,7 @@ const CATEGORY_ICONS: Record<LeaderboardCategory, string> = {
   prestige:     '♦',
   pvp_wins:     '⚔',
   guild:        '🛡',
+  hardcore:     '☠',
 };
 
 const PERIOD_LABELS: Record<LeaderboardPeriod, string> = {
@@ -57,7 +59,7 @@ const PERIOD_LABELS: Record<LeaderboardPeriod, string> = {
   daily:  'Daily',
 };
 
-const CATEGORIES: LeaderboardCategory[] = ['xp', 'achievements', 'prestige', 'pvp_wins', 'guild'];
+const CATEGORIES: LeaderboardCategory[] = ['xp', 'achievements', 'prestige', 'pvp_wins', 'guild', 'hardcore'];
 const PERIODS:    LeaderboardPeriod[]   = ['all', 'weekly', 'daily'];
 
 export class LeaderboardPanel {

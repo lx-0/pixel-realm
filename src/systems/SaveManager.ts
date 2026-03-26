@@ -7,11 +7,15 @@
  */
 import { LEVELS } from '../config/constants';
 
-const SAVE_KEY       = 'pixelrealm_save_v1';
+const SAVE_KEY              = 'pixelrealm_save_v1';
 export const SKILL_SAVE_KEY = 'pixelrealm_skills_v1';
-const SLOT_KEY_PREFIX = 'pixelrealm_slot_v1_';
-export const NUM_SLOTS   = 3;
-const CURRENT_SCHEMA = 1;
+const SLOT_KEY_PREFIX       = 'pixelrealm_slot_v1_';
+const HC_RECORDS_KEY        = 'pixelrealm_hardcore_v1';
+export const NUM_SLOTS      = 3;
+const CURRENT_SCHEMA        = 1;
+
+/** Minimum normal-mode level required to unlock hardcore mode. */
+export const HARDCORE_UNLOCK_LEVEL = 45;
 
 /** Personal-best stats recorded per zone. */
 export interface ZoneBest {
@@ -30,6 +34,24 @@ export interface SaveData {
   zoneBests: Record<string, ZoneBest>;
   completedGame: boolean;
   tutorialCompleted: boolean;
+  /** Highest level reached on a hardcore character (0 = never played HC). */
+  hardcoreHighestLevel: number;
+  /** Total zones cleared across all hardcore runs. */
+  hardcoreZonesCleared: number;
+}
+
+/**
+ * Archived record from a single hardcore character run.
+ * Written to localStorage on permadeath; never deleted.
+ */
+export interface HardcoreDeathRecord {
+  timestamp:    number;
+  level:        number;
+  kills:        number;
+  zonesCleared: number;
+  deathZone:    string;
+  causeOfDeath: string;
+  timeSecs:     number;
 }
 
 export interface SkillSaveData {
@@ -67,6 +89,8 @@ const DEFAULT_SAVE: SaveData = {
   zoneBests: {},
   completedGame: false,
   tutorialCompleted: false,
+  hardcoreHighestLevel: 0,
+  hardcoreZonesCleared: 0,
 };
 
 export class SaveManager {
@@ -84,9 +108,11 @@ export class SaveManager {
         totalKills:        p.totalKills        ?? 0,
         totalDeaths:       p.totalDeaths       ?? 0,
         highScores:        p.highScores        ?? {},
-        zoneBests:         p.zoneBests         ?? {},
-        completedGame:     p.completedGame     ?? false,
-        tutorialCompleted: p.tutorialCompleted ?? false,
+        zoneBests:            p.zoneBests            ?? {},
+        completedGame:        p.completedGame        ?? false,
+        tutorialCompleted:    p.tutorialCompleted    ?? false,
+        hardcoreHighestLevel: p.hardcoreHighestLevel ?? 0,
+        hardcoreZonesCleared: p.hardcoreZonesCleared ?? 0,
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
@@ -208,8 +234,10 @@ export class SaveManager {
         totalDeaths:       p.totalDeaths       ?? 0,
         highScores:        p.highScores        ?? {},
         zoneBests:         p.zoneBests         ?? {},
-        completedGame:     p.completedGame     ?? false,
-        tutorialCompleted: p.tutorialCompleted ?? false,
+        completedGame:        p.completedGame        ?? false,
+        tutorialCompleted:    p.tutorialCompleted    ?? false,
+        hardcoreHighestLevel: p.hardcoreHighestLevel ?? 0,
+        hardcoreZonesCleared: p.hardcoreZonesCleared ?? 0,
         // SkillSaveData
         classId:        (p.classId as string)  ?? 'warrior',
         unlockedSkills: p.unlockedSkills       ?? [],
@@ -259,15 +287,17 @@ export class SaveManager {
 
     // Overwrite live save
     SaveManager.save({
-      unlockedZones:     slot.unlockedZones,
-      playerLevel:       slot.playerLevel,
-      playerXP:          slot.playerXP,
-      totalKills:        slot.totalKills,
-      totalDeaths:       slot.totalDeaths ?? 0,
-      highScores:        slot.highScores,
-      zoneBests:         slot.zoneBests ?? {},
-      completedGame:     slot.completedGame,
-      tutorialCompleted: slot.tutorialCompleted,
+      unlockedZones:        slot.unlockedZones,
+      playerLevel:          slot.playerLevel,
+      playerXP:             slot.playerXP,
+      totalKills:           slot.totalKills,
+      totalDeaths:          slot.totalDeaths ?? 0,
+      highScores:           slot.highScores,
+      zoneBests:            slot.zoneBests ?? {},
+      completedGame:        slot.completedGame,
+      tutorialCompleted:    slot.tutorialCompleted,
+      hardcoreHighestLevel: slot.hardcoreHighestLevel ?? 0,
+      hardcoreZonesCleared: slot.hardcoreZonesCleared ?? 0,
     });
 
     // Overwrite skill save
@@ -298,5 +328,43 @@ export class SaveManager {
       currentZoneId,
       currentZoneName,
     };
+  }
+
+  // ── Hardcore mode ─────────────────────────────────────────────────────────
+
+  /**
+   * Archive a completed hardcore run on permadeath.
+   * Updates the player's all-time hardcore bests and appends a death record.
+   */
+  static recordHardcoreDeath(record: Omit<HardcoreDeathRecord, 'timestamp'>): void {
+    // Update persistent bests
+    const data = SaveManager.load();
+    if (record.level > data.hardcoreHighestLevel) {
+      data.hardcoreHighestLevel = record.level;
+    }
+    data.hardcoreZonesCleared += record.zonesCleared;
+    SaveManager.save(data);
+
+    // Append to graveyard log
+    try {
+      const raw      = localStorage.getItem(HC_RECORDS_KEY);
+      const existing = raw ? (JSON.parse(raw) as HardcoreDeathRecord[]) : [];
+      existing.push({ ...record, timestamp: Date.now() });
+      // Keep last 50 records
+      if (existing.length > 50) existing.splice(0, existing.length - 50);
+      localStorage.setItem(HC_RECORDS_KEY, JSON.stringify(existing));
+    } catch { /* quota / SSR */ }
+  }
+
+  /** Return all stored hardcore death records, most recent first. */
+  static getHardcoreDeathRecords(): HardcoreDeathRecord[] {
+    try {
+      const raw = localStorage.getItem(HC_RECORDS_KEY);
+      if (!raw) return [];
+      const records = JSON.parse(raw) as HardcoreDeathRecord[];
+      return records.slice().sort((a, b) => b.timestamp - a.timestamp);
+    } catch {
+      return [];
+    }
   }
 }

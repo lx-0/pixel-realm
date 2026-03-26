@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { CANVAS, SCENES, ZONES, ZoneConfig } from '../config/constants';
-import { SaveManager } from '../systems/SaveManager';
+import { SaveManager, HARDCORE_UNLOCK_LEVEL } from '../systems/SaveManager';
 import { SoundManager } from '../systems/SoundManager';
 
 /**
@@ -9,6 +9,8 @@ import { SoundManager } from '../systems/SoundManager';
  */
 export class LevelSelectScene extends Phaser.Scene {
   private sfx!: SoundManager;
+  /** Whether the player has toggled on hardcore mode for the next zone run. */
+  private _hardcoreMode = false;
 
   constructor() {
     super(SCENES.LEVEL_SELECT);
@@ -73,6 +75,46 @@ export class LevelSelectScene extends Phaser.Scene {
       const unlocked = save.unlockedZones.includes(zone.id);
       this.buildZoneCard(x, y, cardW, cardH, zone, unlocked, save.highScores[zone.id] ?? 0);
     });
+
+    // ── Hardcore mode toggle (unlocked at HARDCORE_UNLOCK_LEVEL) ────────────
+    if (save.playerLevel >= HARDCORE_UNLOCK_LEVEL) {
+      this._hardcoreMode = false;
+
+      const hcBg = this.add.rectangle(cx, CANVAS.HEIGHT - 18, 120, 12, 0x1a001a, 0.9)
+        .setDepth(10).setInteractive({ useHandCursor: true });
+      const hcBorder = this.add.graphics().setDepth(11);
+
+      const updateHcVisual = (): void => {
+        hcBorder.clear();
+        hcBorder.lineStyle(1, this._hardcoreMode ? 0xcc44ff : 0x554466, 0.9);
+        hcBorder.strokeRect(cx - 60, CANVAS.HEIGHT - 24, 120, 12);
+        hcBg.setFillStyle(this._hardcoreMode ? 0x330044 : 0x1a001a);
+        hcLabel.setColor(this._hardcoreMode ? '#cc44ff' : '#776688');
+      };
+
+      const hcLabel = this.add.text(cx, CANVAS.HEIGHT - 18,
+        `⚠ HARDCORE MODE ${this._hardcoreMode ? 'ON' : 'OFF'} — Permadeath`, {
+          fontSize: '4px', fontFamily: 'monospace', color: '#776688',
+        }).setOrigin(0.5).setDepth(12);
+
+      hcBg.on('pointerdown', () => {
+        this._hardcoreMode = !this._hardcoreMode;
+        hcLabel.setText(`⚠ HARDCORE MODE ${this._hardcoreMode ? 'ON' : 'OFF'} — Permadeath`);
+        this.sfx.playMenuClick();
+        updateHcVisual();
+      });
+      hcBg.on('pointerover', () => hcBorder.setAlpha(1.0));
+      hcBg.on('pointerout',  () => hcBorder.setAlpha(0.9));
+      updateHcVisual();
+
+      // Show best hardcore stats if any
+      if (save.hardcoreHighestLevel > 0) {
+        this.add.text(cx, CANVAS.HEIGHT - 9,
+          `Best HC: Lv.${save.hardcoreHighestLevel} · ${save.hardcoreZonesCleared} zones`, {
+            fontSize: '4px', color: '#996688', fontFamily: 'monospace',
+          }).setOrigin(0.5, 1).setDepth(10);
+      }
+    }
 
     // ── Footer ──────────────────────────────────────────────────────────────
     this.add.text(cx, CANVAS.HEIGHT - 4, 'ESC — Back to Menu', {
@@ -175,7 +217,9 @@ export class LevelSelectScene extends Phaser.Scene {
   private startZone(zoneId: string): void {
     this.sfx.playMenuClick();
     this.cameras.main.fadeOut(250, 0, 0, 0);
-    this.time.delayedCall(250, () => this.scene.start(SCENES.GAME, { zoneId }));
+    this.time.delayedCall(250, () =>
+      this.scene.start(SCENES.GAME, { zoneId, hardcore: this._hardcoreMode }),
+    );
   }
 
   private goMenu(): void {
