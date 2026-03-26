@@ -168,6 +168,42 @@ const ZONE_AMBIENTS: Record<string, AmbientVoice[]> = {
     { type: 'square',   freq: 2800, gain: 0.003, freqLFO: 3.5, lfoDepth: 600, pan: 0.4 }, // bone creak R
     { type: 'square',   freq: 2400, gain: 0.003, freqLFO: 2.8, lfoDepth: 500, pan: -0.5 }, // bone creak L
   ],
+  zone6: [ // Volcanic: deep magma rumble, ash wind, heat shimmer
+    { type: 'sawtooth', freq: 45,   gain: 0.045, freqLFO: 0.06, lfoDepth: 4 },   // deep magma pulse
+    { type: 'sine',     freq: 90,   gain: 0.028, freqLFO: 0.10, lfoDepth: 8 },   // volcanic drone
+    { type: 'square',   freq: 55,   gain: 0.018, freqLFO: 0.18, lfoDepth: 6 },   // low rumble variation
+    { type: 'triangle', freq: 3600, gain: 0.004, freqLFO: 4.2, lfoDepth: 700, pan: 0.3 }, // heat shimmer R
+  ],
+  zone7: [ // Swamp: murky drone, insects, frogs, bubbling
+    { type: 'sine',     freq: 75,   gain: 0.035, freqLFO: 0.09, lfoDepth: 5 },   // murky low drone
+    { type: 'triangle', freq: 600,  gain: 0.006, freqLFO: 6.0, lfoDepth: 120, pan: 0.5 }, // insect chirp R
+    { type: 'triangle', freq: 520,  gain: 0.005, freqLFO: 5.2, lfoDepth: 100, pan: -0.6 }, // insect chirp L
+    { type: 'sine',     freq: 200,  gain: 0.012, freqLFO: 1.2, lfoDepth: 30 },  // frog drone
+  ],
+  zone8: [ // Ice Mountain: howling wind, cracking ice, deep echo
+    { type: 'sine',     freq: 70,   gain: 0.035, freqLFO: 0.04, lfoDepth: 3 },   // deep mountain resonance
+    { type: 'sine',     freq: 280,  gain: 0.022, freqLFO: 0.20, lfoDepth: 25 },  // howling wind
+    { type: 'triangle', freq: 4000, gain: 0.004, freqLFO: 7.0, lfoDepth: 1000, pan: 0.4 }, // ice crack R
+    { type: 'triangle', freq: 3600, gain: 0.003, freqLFO: 5.5, lfoDepth: 800, pan: -0.5 }, // ice crack L
+  ],
+  zone9: [ // Celestial Sky: ethereal high tones, wind, crystal hum
+    { type: 'sine',     freq: 220,  gain: 0.020, freqLFO: 0.06, lfoDepth: 8 },   // celestial drone
+    { type: 'sine',     freq: 440,  gain: 0.012, freqLFO: 0.04, lfoDepth: 5 },   // upper harmonic
+    { type: 'triangle', freq: 3200, gain: 0.006, freqLFO: 2.0, lfoDepth: 300, pan: 0.6 }, // crystal tone R
+    { type: 'triangle', freq: 4800, gain: 0.004, freqLFO: 1.5, lfoDepth: 400, pan: -0.5 }, // star shimmer L
+  ],
+  zone10: [ // Deep Sea: low pressure hum, bubble stream, distant whale-like
+    { type: 'sine',     freq: 55,   gain: 0.040, freqLFO: 0.03, lfoDepth: 2 },   // deep water pressure
+    { type: 'sine',     freq: 110,  gain: 0.020, freqLFO: 0.05, lfoDepth: 4 },   // pressure harmonic
+    { type: 'triangle', freq: 1800, gain: 0.005, freqLFO: 8.0, lfoDepth: 400, pan: 0.4 }, // bubble stream R
+    { type: 'sine',     freq: 88,   gain: 0.015, freqLFO: 0.15, lfoDepth: 12, pan: -0.3 }, // whale-like moan
+  ],
+  zone12: [ // Void Sanctum: distorted drone, dimensional tear, glitch pulse
+    { type: 'sawtooth', freq: 40,   gain: 0.030, freqLFO: 0.35, lfoDepth: 8 },   // void bass drone
+    { type: 'square',   freq: 80,   gain: 0.018, freqLFO: 0.50, lfoDepth: 12 },  // dimensional distortion
+    { type: 'square',   freq: 3000, gain: 0.004, freqLFO: 7.0, lfoDepth: 1200, pan: 0.5 }, // glitch pulse R
+    { type: 'square',   freq: 2200, gain: 0.003, freqLFO: 5.5, lfoDepth: 900, pan: -0.4 }, // void rift L
+  ],
 };
 
 export class SoundManager {
@@ -567,6 +603,43 @@ export class SoundManager {
   // ── Mute ───────────────────────────────────────────────────────────────────
 
   get isMuted(): boolean { return this._muted; }
+
+  // ── Audio context / bus access ────────────────────────────────────────────
+
+  /** Expose the AudioContext for external systems (e.g. AdaptiveMusicSystem). */
+  getAudioContext(): AudioContext | null {
+    return this.getCtx();
+  }
+
+  /** Connect an external AudioNode to the music gain bus. */
+  connectToMusicBus(node: AudioNode): void {
+    const ctx = this.getCtx();
+    if (!ctx) return;
+    if (this.musicGain) {
+      node.connect(this.musicGain);
+    } else {
+      node.connect(ctx.destination);
+    }
+  }
+
+  /**
+   * Briefly duck music volume to ~18% for the given duration (ms), then fade back.
+   * Use for priority SFX moments: level up, death, wave clear, achievements.
+   */
+  duckMusic(durationMs = 1800): void {
+    const ctx = this.getCtx();
+    if (!ctx || !this.musicGain || this._muted) return;
+    const t = ctx.currentTime;
+    const duckLevel  = this._musicVolume * 0.18;
+    const fadeInMs   = 0.05;
+    const fadeOutMs  = 0.4;
+    const holdEnd    = t + fadeInMs + durationMs / 1000;
+    this.musicGain.gain.cancelScheduledValues(t);
+    this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
+    this.musicGain.gain.linearRampToValueAtTime(duckLevel, t + fadeInMs);
+    this.musicGain.gain.setValueAtTime(duckLevel, holdEnd);
+    this.musicGain.gain.linearRampToValueAtTime(this._musicVolume, holdEnd + fadeOutMs);
+  }
 
   /** Toggle master mute. Preserves volume settings for when unmuted. */
   toggleMute(): boolean {

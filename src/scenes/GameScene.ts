@@ -38,6 +38,7 @@ import { LootRollPanel } from '../ui/LootRollPanel';
 import { DayNightSystem } from '../systems/DayNightSystem';
 import { WeatherSystem }   from '../systems/WeatherSystem';
 import { type BiomeKey }   from '../config/dayNightPalette';
+import { AdaptiveMusicSystem } from '../systems/AdaptiveMusicSystem';
 import { MobileTouchControls } from '../systems/MobileTouchControls';
 import {
   SKILL_BY_ID, computePassiveBonuses,
@@ -371,6 +372,15 @@ export class GameScene extends Phaser.Scene {
   /** Weather system — precipitation particles, fog overlay, speed modifiers. */
   private weather?: WeatherSystem;
 
+  /** Adaptive music system — percussion layers, time-of-day transitions, events. */
+  private adaptive?: AdaptiveMusicSystem;
+
+  /** Max enemies spawned this wave (for combat intensity calculation). */
+  private _waveMaxEnemies = 0;
+
+  /** Whether boss phase 2 has been triggered this encounter. */
+  private _bossPhase2Triggered = false;
+
   // ── Death/respawn HUD ─────────────────────────────────────────────────────
   private goldText?:   Phaser.GameObjects.Text;
   private scrollText?: Phaser.GameObjects.Text;
@@ -512,6 +522,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.sfx = SoundManager.getInstance();
+    this.adaptive = new AdaptiveMusicSystem(this.sfx);
 
     // Unlock audio + start zone music on first user interaction (autoplay policy)
     const unlockAudio = (): void => { this.sfx.unlock(); };
@@ -866,6 +877,29 @@ export class GameScene extends Phaser.Scene {
     this.tutorial?.update(time, delta);
     this.dayNight?.update(delta);
     this.weather?.update(delta);
+
+    // Adaptive music: time-of-day transitions + combat intensity
+    if (this.adaptive && this.dayNight) {
+      this.adaptive.updateTimeOfDay(this.dayNight.hourOfDay);
+    }
+    if (this.adaptive) {
+      const alive = this.mp
+        ? (this.mp.zoneState.enemiesAlive ?? 0)
+        : (this.enemies?.countActive(true) ?? 0);
+      const intensity = this._waveMaxEnemies > 0
+        ? alive / this._waveMaxEnemies
+        : 0;
+      this.adaptive.setCombatIntensity(intensity);
+
+      // Boss phase 2 when boss drops below 50% HP
+      if (this.bossAlive && this.bossSprite?.active && !this._bossPhase2Triggered) {
+        const extra = this.bossSprite.getData('extra') as EnemyExtra | undefined;
+        if (extra && extra.hp / extra.maxHp < 0.5) {
+          this._bossPhase2Triggered = true;
+          this.adaptive.notifyBossPhase(2);
+        }
+      }
+    }
   }
 
   // ── Multiplayer init ──────────────────────────────────────────────────────
@@ -2423,6 +2457,9 @@ export class GameScene extends Phaser.Scene {
     const totalWaves = this.zone.waves;
     this.isBossWave  = this.wave > totalWaves;
 
+    this._bossPhase2Triggered = false;
+    this.adaptive?.resetBossPhase();
+
     if (this.isBossWave) {
       this.spawnBossWave();
       this.sfx.startBossMusic(this.zone.bossType);
@@ -2430,6 +2467,10 @@ export class GameScene extends Phaser.Scene {
       this.spawnNormalWave();
       this.sfx.startCombatMusic();
     }
+
+    // Snapshot enemy count for combat intensity calculation
+    this._waveMaxEnemies = this.enemies.countActive(true);
+
     this.physics.add.collider(this.enemies, this.enemies);
     this.updateHUD();
   }
@@ -3080,6 +3121,7 @@ export class GameScene extends Phaser.Scene {
       this.bossSprite   = undefined;
       this.bossHudVisible = false;
       this.sfx.stopBossMusic();
+      this.adaptive?.resetBossPhase();
     }
 
     e.destroy();
@@ -3208,7 +3250,10 @@ export class GameScene extends Phaser.Scene {
     const cleared = this.wave;
     this.wave++;
     this.sfx.playWaveClear();
+    this.sfx.duckMusic(1500);
     this.sfx.stopCombatMusic();
+    this.adaptive?.setCombatIntensity(0);
+    this._waveMaxEnemies = 0;
     this.screenFlash(0xffe040, 0.12);
 
     const cx    = CANVAS.WIDTH / 2;
@@ -3260,6 +3305,7 @@ export class GameScene extends Phaser.Scene {
     this.mp?.disconnect().catch(() => {});
     this.chat?.destroy();
     this.playerList?.destroy();
+    this.adaptive?.destroy();
     this.sfx.stopMusic();
 
     // Record personal bests for this zone
@@ -3287,6 +3333,9 @@ export class GameScene extends Phaser.Scene {
     SaveManager.recordDeath();
 
     this.sfx.playDeath();
+    this.sfx.duckMusic(2200);
+    this.adaptive?.setCombatIntensity(0);
+    this._waveMaxEnemies = 0;
     this.cameras.main.shake(350, 0.02);
     this.screenFlash(0xff0000, 0.55);
     this.spawnBurst(this.player.x, this.player.y, [0x888888, 0x444444, 0x0d0d0d], 16, 110);
@@ -3490,6 +3539,7 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.shake(280, 0.016);
     this.screenFlash(0xffe040, 0.4);
     this.sfx.playLevelUp();
+    this.sfx.duckMusic(1800);
 
     const cx    = CANVAS.WIDTH / 2;
     const cy    = CANVAS.HEIGHT / 2;
