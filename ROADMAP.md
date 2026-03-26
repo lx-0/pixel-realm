@@ -257,12 +257,18 @@ Companion pet system adding collectible pets with stat bonuses and XP progressio
 - [x] PIX-277 — Create companion pet system art assets (pet sprites, UI panels, evolution effects)
 - [x] PIX-278 — Implement companion pet system (pet collection, bonuses, XP, evolution)
 
-### M32: Hardcore Mode & Adaptive Audio — IN PROGRESS
+### M32: Hardcore Mode & Adaptive Audio — COMPLETE
 Remaining GDD features: optional permadeath mode and dynamic music system.
 
-- [ ] PIX-280 — Implement hardcore permadeath mode (permadeath toggle, separate leaderboard, cosmetic rewards)
-- [ ] PIX-281 — Create hardcore mode art assets (death effects, leaderboard UI, permadeath badges)
-- [ ] PIX-282 — Implement adaptive music system (biome themes, combat intensity layers, time-of-day transitions)
+- [x] PIX-280 — Implement hardcore permadeath mode (permadeath toggle, separate leaderboard, cosmetic rewards)
+- [ ] PIX-281 — Create hardcore mode art assets (death effects, leaderboard UI, permadeath badges) — in progress (Game Artist)
+- [x] PIX-282 — Implement adaptive music system (biome themes, combat intensity layers, time-of-day transitions)
+
+### M33: Ranger & Artisan Classes — IN PROGRESS
+Implement the remaining 2 of 4 GDD classes (Ranger, Artisan) with full archetype skill trees.
+
+- [ ] PIX-284 — Implement Ranger class with 3 archetype skill trees (Sharpshooter, Shadowstalker, Beastmaster)
+- [ ] PIX-285 — Create Ranger class art assets (character sprites, skill effects, archetype badges)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -303,6 +309,7 @@ M5 → M6 ──────────────────┘
                                                                                                                                                     M31 (Guild Territory Wars, parallel to M9)
                                                                                                                                                           M31b (Companion Pets, parallel to M9)
                                                                                                                                                                 M32 (Hardcore Mode & Adaptive Audio, parallel to M9)
+                                                                                                                                                                      M33 (Ranger & Artisan Classes, parallel to M9)
                                                                                                                             M14 (post-launch, independent)
 ```
 
@@ -333,6 +340,7 @@ M5 → M6 ──────────────────┘
 - **PvP Arena & Competitive Systems** — M30 implemented the PvP ranked arena system (PIX-271) with matchmaking, ranked tiers (Bronze→Diamond), ELO rating, arena combat, and seasonal rewards. Builds on the art assets shipped in M29. Complete as of 2026-03-25.
 - **Guild Territory Wars** — M31 adds guild vs guild territory control: 6 contestable world zones, scheduled war windows (08:00/16:00/22:00 UTC), capture scoring, territory ownership with XP/drop buffs, and leaderboard integration. Complete as of 2026-03-25.
 - **Companion Pets** — M31b added companion pet collection, stat bonuses, XP, and evolution system. Complete as of 2026-03-25.
-- **Hardcore Mode & Adaptive Audio** — M32 tackles the two remaining GDD features: optional permadeath mode with separate leaderboard (PIX-280/PIX-281) and adaptive music system with biome/combat/time-of-day layering (PIX-282). In progress as of 2026-03-26.
-- **Single engineer** — One engineer has shipped M0–M31b solo. Strong velocity.
+- **Hardcore Mode & Adaptive Audio** — M32 shipped hardcore permadeath mode (PIX-280) and adaptive music system (PIX-282). Art assets (PIX-281) in progress with Game Artist. Complete (code) as of 2026-03-26.
+- **Ranger & Artisan Classes** — M33 implements the remaining 2 of 4 GDD classes. Ranger class (PIX-284) and art (PIX-285) queued. Artisan class to follow. In progress as of 2026-03-26.
+- **Single engineer** — One engineer has shipped M0–M32 solo. Strong velocity.
 - **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
