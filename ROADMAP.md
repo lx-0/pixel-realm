@@ -269,7 +269,7 @@ Implement the remaining 2 of 4 GDD classes (Ranger, Artisan) with full archetype
 
 - [ ] PIX-284 — Implement Ranger class with 3 archetype skill trees (Sharpshooter, Shadowstalker, Beastmaster)
 - [x] PIX-285 — Create Ranger class art assets (character sprites, skill effects, archetype badges)
-- [ ] PIX-287 — Create Artisan class art assets (character sprites, skill effects, archetype badges)
+- [x] PIX-287 — Create Artisan class art assets (character sprites, skill effects, archetype badges)
 - [ ] PIX-288 — Implement Artisan class with 3 archetype skill trees (Blacksmith, Alchemist, Enchanter)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
