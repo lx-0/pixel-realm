@@ -35,6 +35,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('ui_archetype_badge_warrior', 'assets/ui/skill_tree/ui_archetype_badge_warrior.png');
     this.load.image('ui_archetype_badge_mage',    'assets/ui/skill_tree/ui_archetype_badge_mage.png');
     this.load.image('ui_archetype_badge_ranger',  'assets/ui/skill_tree/ui_archetype_badge_ranger.png');
+    this.load.image('ui_archetype_badge_artisan', 'assets/ui/skill_tree/ui_class_emblem_artisan.png');
 
     // ── PvP Arena ─────────────────────────────────────────────────────────────
     this.load.image('tileset_arena_gladiator',    'assets/tileset_arena_gladiator.png');

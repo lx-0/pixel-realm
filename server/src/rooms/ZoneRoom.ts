@@ -97,9 +97,12 @@ const WAVE_PREP_MS = 5000;        // 5 s between waves
 const BASE_ENEMY_COUNT = 4;       // enemies in wave 1; +2 per additional wave
 
 // ── Skill buff flags (bitmask, synced to player.buffFlags) ───────────────────
-const BUFF_BERSERK      = 1; // +50% dmg, +20% spd for 6 s
-const BUFF_DIVINE_SHIELD = 2; // invulnerable for 3 s
-const BUFF_ARCANE_SURGE = 4; // 2× skill dmg, no mana cost for 10 s
+const BUFF_BERSERK       = 1;  // +50% dmg, +20% spd for 6 s
+const BUFF_DIVINE_SHIELD = 2;  // invulnerable for 3 s
+const BUFF_ARCANE_SURGE  = 4;  // 2× skill dmg, no mana cost for 10 s
+const BUFF_EAGLE_EYE     = 8;  // next 3 attacks deal 3× damage
+const BUFF_MASTER_CRAFT  = 16; // +40% dmg for 8 s
+const BUFF_ENCHANT       = 32; // +35% dmg, +20% spd for 10 s
 
 // ── Player skill range constants ──────────────────────────────────────────────
 const SKILL_AoE_RADIUS = 55;  // pixels — for AoE skills
@@ -2485,12 +2488,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
     player.mana = Math.max(0, player.mana - manaCost);
 
     // Skill multipliers
-    const surgeMult  = surgeBuff ? 2.0 : 1.0;
+    const surgeMult   = surgeBuff ? 2.0 : 1.0;
     const berserkMult = ((player.buffFlags & BUFF_BERSERK) !== 0 && now < player.buffExpiresAt) ? 1.5 : 1.0;
+    const craftMult   = ((player.buffFlags & BUFF_MASTER_CRAFT) !== 0 && now < player.buffExpiresAt) ? 1.4 : 1.0;
+    const enchantMult = ((player.buffFlags & BUFF_ENCHANT) !== 0 && now < player.buffExpiresAt) ? 1.35 : 1.0;
     const petDmgBonus = this.getPetDamageBonus(client.sessionId);
-    const dmgBonus   = 1 + bonuses.damagePct + petDmgBonus;
+    const dmgBonus    = 1 + bonuses.damagePct + petDmgBonus;
 
-    this.executeSkillEffect(client, player, skillId, now, surgeMult * berserkMult * dmgBonus);
+    this.executeSkillEffect(client, player, skillId, now, surgeMult * berserkMult * craftMult * enchantMult * dmgBonus);
 
     // Broadcast cooldown info back to the caster
     player.skillCooldowns = JSON.stringify(cds);
@@ -2629,6 +2634,142 @@ export class ZoneRoom extends Room<ZoneGameState> {
       }
       case "arcane_surge": {
         player.buffFlags    |= BUFF_ARCANE_SURGE;
+        player.buffExpiresAt = now + 10000;
+        break;
+      }
+
+      // ── Ranger — Sharpshooter ─────────────────────────────────────────────
+      case "piercing_shot": {
+        const enemy = this.nearestEnemyTo(player, 200);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(55 * dmgMult), player, sid);
+        break;
+      }
+      case "arrow_rain": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS * 1.3) return;
+          this.dealDamageToEnemy(e, Math.round(70 * dmgMult), player, sid);
+        });
+        break;
+      }
+      case "eagle_eye": {
+        player.buffFlags    |= BUFF_EAGLE_EYE;
+        player.buffExpiresAt = now + 15000;
+        break;
+      }
+
+      // ── Ranger — Shadowstalker ────────────────────────────────────────────
+      case "smoke_bomb": {
+        player.invincibleUntil = now + 3000;
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.targetId === player.sessionId) {
+            e.aiState  = "idle";
+            e.targetId = "";
+          }
+        });
+        break;
+      }
+      case "poison_blade": {
+        const enemy = this.nearestEnemyTo(player, SKILL_MELEE_RANGE * 2);
+        if (enemy) {
+          this.dealDamageToEnemy(enemy, Math.round(40 * dmgMult), player, sid);
+          enemy.statusFlags |= 2; // burn/poison DoT
+        }
+        break;
+      }
+      case "shadow_strike": {
+        const enemy = this.nearestEnemyTo(player, 200);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(120 * dmgMult), player, sid);
+        break;
+      }
+
+      // ── Ranger — Beastmaster ──────────────────────────────────────────────
+      case "call_companion": {
+        const enemy = this.nearestEnemyTo(player, 200);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(35 * dmgMult), player, sid);
+        break;
+      }
+      case "natures_grasp": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS) return;
+          e.statusFlags |= 8; // stun/root
+          e.spawnedAt = now + 2000;
+        });
+        break;
+      }
+      case "stampede": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS * 1.5) return;
+          this.dealDamageToEnemy(e, Math.round(100 * dmgMult), player, sid);
+        });
+        break;
+      }
+
+      // ── Artisan — Blacksmith ──────────────────────────────────────────────
+      case "hammer_strike": {
+        const enemy = this.nearestEnemyTo(player, SKILL_MELEE_RANGE * 2);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(50 * dmgMult), player, sid);
+        break;
+      }
+      case "forge_blast": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS) return;
+          this.dealDamageToEnemy(e, Math.round(65 * dmgMult), player, sid);
+        });
+        break;
+      }
+      case "master_craft": {
+        player.buffFlags    |= BUFF_MASTER_CRAFT;
+        player.buffExpiresAt = now + 8000;
+        break;
+      }
+
+      // ── Artisan — Alchemist ───────────────────────────────────────────────
+      case "potion_throw": {
+        const enemy = this.nearestEnemyTo(player, 200);
+        if (enemy) {
+          this.dealDamageToEnemy(enemy, Math.round(45 * dmgMult), player, sid);
+          enemy.statusFlags |= 2; // burn
+        }
+        break;
+      }
+      case "elixir_burst": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS) return;
+          this.dealDamageToEnemy(e, Math.round(75 * dmgMult), player, sid);
+        });
+        break;
+      }
+      case "volatile_mix": {
+        this.state.enemies.forEach((e: Enemy) => {
+          if (e.aiState === "dead") return;
+          if (dist(player.x, player.y, e.x, e.y) > SKILL_AoE_RADIUS * 1.5) return;
+          this.dealDamageToEnemy(e, Math.round(130 * dmgMult), player, sid);
+          e.statusFlags |= 2; // burn
+        });
+        break;
+      }
+
+      // ── Artisan — Enchanter ───────────────────────────────────────────────
+      case "rune_bolt": {
+        const enemy = this.nearestEnemyTo(player, 200);
+        if (enemy) this.dealDamageToEnemy(enemy, Math.round(50 * dmgMult), player, sid);
+        break;
+      }
+      case "arcane_bind": {
+        const enemy = this.nearestEnemyTo(player, SKILL_MELEE_RANGE * 3);
+        if (enemy) {
+          enemy.statusFlags |= 8; // stun
+          enemy.spawnedAt = now + 2000;
+        }
+        break;
+      }
+      case "enchant_mastery": {
+        player.buffFlags    |= BUFF_ENCHANT;
         player.buffExpiresAt = now + 10000;
         break;
       }

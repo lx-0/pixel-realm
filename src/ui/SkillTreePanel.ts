@@ -45,10 +45,14 @@ const COL_ACTIVE    = 0xffe040;
 const COL_CONNECTOR = 0x445566;
 const COL_WARRIOR   = 0xdd5533;
 const COL_MAGE      = 0x7755dd;
+const COL_RANGER    = 0x22dd88;
+const COL_ARTISAN   = 0xddaa44;
 
 const CLASS_COLOR: Record<ClassId, number> = {
   warrior: COL_WARRIOR,
   mage:    COL_MAGE,
+  ranger:  COL_RANGER,
+  artisan: COL_ARTISAN,
 };
 
 // ── SkillTreePanel ─────────────────────────────────────────────────────────────
@@ -320,14 +324,16 @@ export class SkillTreePanel {
 
     // ── Class switcher (only if 0 skills unlocked) ─────────────────────────
     if (this.state.unlockedSkills.length === 0) {
-      const otherClass: ClassId = this.state.classId === 'warrior' ? 'mage' : 'warrior';
-      const switchTxt = `→ ${CLASS_NAMES[otherClass]}`;
+      const allClasses: ClassId[] = ['warrior', 'mage', 'ranger', 'artisan'];
+      const curIdx = allClasses.indexOf(this.state.classId);
+      const nextClass = allClasses[(curIdx + 1) % allClasses.length];
+      const switchTxt = `→ ${CLASS_NAMES[nextClass]}`;
       const switchBtn = this.scene.add.text(
         PANEL_X + PAD, hotbarY,
         switchTxt,
         { fontSize: '4px', color: '#8888cc', fontFamily: 'monospace' },
       ).setInteractive({ useHandCursor: true });
-      switchBtn.on('pointerdown', () => this.onSetClass?.(otherClass));
+      switchBtn.on('pointerdown', () => this.onSetClass?.(nextClass));
       this.container.add(switchBtn);
     }
   }

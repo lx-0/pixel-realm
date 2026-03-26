@@ -126,10 +126,12 @@ describe("computePassiveBonuses()", () => {
 // ── Skill tree data integrity ─────────────────────────────────────────────────
 
 describe("Skill tree data integrity", () => {
-  it("ALL_SKILLS contains skills for both warrior and mage classes", () => {
+  it("ALL_SKILLS contains skills for all four classes", () => {
     const classes = new Set(ALL_SKILLS.map((s) => s.classId));
     expect(classes.has("warrior")).toBe(true);
     expect(classes.has("mage")).toBe(true);
+    expect(classes.has("ranger")).toBe(true);
+    expect(classes.has("artisan")).toBe(true);
   });
 
   it("every skill has a unique id", () => {
@@ -182,6 +184,93 @@ describe("Skill tree data integrity", () => {
 
   it("MAX_SKILL_POINTS is 9 (one per level 2–10)", () => {
     expect(MAX_SKILL_POINTS).toBe(9);
+  });
+});
+
+// ── Ranger class passives ─────────────────────────────────────────────────────
+
+describe("Ranger class passive bonuses", () => {
+  it("keen_eye grants crit chance and damage", () => {
+    const bonuses = computePassiveBonuses(["keen_eye"]);
+    expect(bonuses.critChancePct).toBeCloseTo(0.10);
+    expect(bonuses.damagePct).toBeCloseTo(0.10);
+  });
+
+  it("sharpshooter passives stack crit and attack speed", () => {
+    const bonuses = computePassiveBonuses(["keen_eye", "quiver_mastery"]);
+    expect(bonuses.critChancePct).toBeCloseTo(0.25);
+    expect(bonuses.attackCdReductionPct).toBeCloseTo(0.15);
+  });
+
+  it("shadowstalker passives stack speed and damage reduction", () => {
+    const bonuses = computePassiveBonuses(["fleet_step", "camouflage"]);
+    expect(bonuses.speedPct).toBeCloseTo(0.35);
+    expect(bonuses.damageReductionPct).toBeCloseTo(0.15);
+  });
+
+  it("beastmaster passives grant HP and mana regen", () => {
+    const bonuses = computePassiveBonuses(["tracker", "swift_feet"]);
+    expect(bonuses.maxHpFlat).toBe(70);
+    expect(bonuses.manaRegenFlat).toBe(3);
+    expect(bonuses.damagePct).toBeCloseTo(0.10);
+  });
+
+  it("ranger has 15 skills total (3 archetypes × 5 tiers)", () => {
+    const rangerSkills = ALL_SKILLS.filter((s) => s.classId === "ranger");
+    expect(rangerSkills.length).toBe(15);
+  });
+});
+
+// ── Artisan class passives ────────────────────────────────────────────────────
+
+describe("Artisan class passive bonuses", () => {
+  it("tempered_steel grants HP and damage reduction", () => {
+    const bonuses = computePassiveBonuses(["tempered_steel"]);
+    expect(bonuses.maxHpFlat).toBe(35);
+    expect(bonuses.damageReductionPct).toBeCloseTo(0.08);
+  });
+
+  it("blacksmith passives stack HP and damage reduction", () => {
+    const bonuses = computePassiveBonuses(["tempered_steel", "anvil_guard"]);
+    expect(bonuses.maxHpFlat).toBe(85);
+    expect(bonuses.damageReductionPct).toBeCloseTo(0.20);
+  });
+
+  it("alchemist passives grant damage and mana", () => {
+    const bonuses = computePassiveBonuses(["brew_mastery", "concoction_heal"]);
+    expect(bonuses.damagePct).toBeCloseTo(0.12);
+    expect(bonuses.maxManaFlat).toBe(20);
+    expect(bonuses.manaRegenFlat).toBe(4);
+  });
+
+  it("enchanter passives grant mana, damage, and CD reduction", () => {
+    const bonuses = computePassiveBonuses(["mana_infusion", "spell_weave"]);
+    expect(bonuses.maxManaFlat).toBe(30);
+    expect(bonuses.manaRegenFlat).toBe(3);
+    expect(bonuses.damagePct).toBeCloseTo(0.15);
+    expect(bonuses.allCdReductionPct).toBeCloseTo(0.15);
+  });
+
+  it("artisan has 15 skills total (3 archetypes × 5 tiers)", () => {
+    const artisanSkills = ALL_SKILLS.filter((s) => s.classId === "artisan");
+    expect(artisanSkills.length).toBe(15);
+  });
+});
+
+// ── Cross-class data integrity ───────────────────────────────────────────────
+
+describe("Cross-class skill data integrity", () => {
+  it("ALL_SKILLS has 60 total skills (4 classes × 3 archetypes × 5 tiers)", () => {
+    expect(ALL_SKILLS.length).toBe(60);
+  });
+
+  it("each class has exactly 3 archetypes with 5 skills each", () => {
+    for (const classId of ["warrior", "mage", "ranger", "artisan"]) {
+      const classSkills = ALL_SKILLS.filter((s) => s.classId === classId);
+      expect(classSkills.length, `${classId} should have 15 skills`).toBe(15);
+      const archetypes = new Set(classSkills.map((s) => s.archetypeId));
+      expect(archetypes.size, `${classId} should have 3 archetypes`).toBe(3);
+    }
   });
 });
 

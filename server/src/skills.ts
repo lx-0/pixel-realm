@@ -1,5 +1,6 @@
 /**
- * Skill tree definitions for Warrior and Mage class archetypes.
+ * Skill tree definitions for all four class archetypes:
+ * Warrior, Mage, Ranger, and Artisan.
  *
  * Each class has 3 archetype branches, each branch has 5 skills
  * (mix of active abilities and passive bonuses).
@@ -8,11 +9,13 @@
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type ClassId = 'warrior' | 'mage';
+export type ClassId = 'warrior' | 'mage' | 'ranger' | 'artisan';
 
 export type ArchetypeId =
-  | 'berserker' | 'guardian' | 'paladin'   // Warrior archetypes
-  | 'pyromancer' | 'frostbinder' | 'arcanist'; // Mage archetypes
+  | 'berserker' | 'guardian' | 'paladin'          // Warrior archetypes
+  | 'pyromancer' | 'frostbinder' | 'arcanist'     // Mage archetypes
+  | 'sharpshooter' | 'shadowstalker' | 'beastmaster' // Ranger archetypes
+  | 'blacksmith' | 'alchemist' | 'enchanter';     // Artisan archetypes
 
 export type SkillType = 'active' | 'passive';
 
@@ -314,6 +317,276 @@ const ARCANIST: SkillDef[] = [
   },
 ];
 
+// ── Ranger — Sharpshooter (ranged DPS / crits) ──────────────────────────────
+
+const SHARPSHOOTER: SkillDef[] = [
+  {
+    id: 'piercing_shot',
+    classId: 'ranger', archetypeId: 'sharpshooter',
+    name: 'Piercing Shot',
+    description: 'Fire a penetrating arrow dealing 55 damage to the nearest enemy.',
+    type: 'active', tier: 1, prerequisiteId: null,
+    cooldownMs: 4000, manaCost: 10,
+  },
+  {
+    id: 'keen_eye',
+    classId: 'ranger', archetypeId: 'sharpshooter',
+    name: 'Keen Eye',
+    description: '+10% crit chance and +10% attack damage.',
+    type: 'passive', tier: 2, prerequisiteId: 'piercing_shot',
+    passiveBonus: { critChancePct: 0.10, damagePct: 0.10 },
+  },
+  {
+    id: 'arrow_rain',
+    classId: 'ranger', archetypeId: 'sharpshooter',
+    name: 'Arrow Rain',
+    description: 'Rain arrows on all nearby enemies dealing 70 damage each.',
+    type: 'active', tier: 3, prerequisiteId: 'keen_eye',
+    cooldownMs: 10000, manaCost: 22,
+  },
+  {
+    id: 'quiver_mastery',
+    classId: 'ranger', archetypeId: 'sharpshooter',
+    name: 'Quiver Mastery',
+    description: '+15% crit chance and +15% attack speed.',
+    type: 'passive', tier: 4, prerequisiteId: 'arrow_rain',
+    passiveBonus: { critChancePct: 0.15, attackCdReductionPct: 0.15 },
+  },
+  {
+    id: 'eagle_eye',
+    classId: 'ranger', archetypeId: 'sharpshooter',
+    name: 'Eagle Eye',
+    description: 'Mark a target for death: next 3 attacks on it deal 3× damage. 25s CD.',
+    type: 'active', tier: 5, prerequisiteId: 'quiver_mastery',
+    cooldownMs: 25000, manaCost: 30,
+  },
+];
+
+// ── Ranger — Shadowstalker (stealth / evasion / poison) ─────────────────────
+
+const SHADOWSTALKER: SkillDef[] = [
+  {
+    id: 'smoke_bomb',
+    classId: 'ranger', archetypeId: 'shadowstalker',
+    name: 'Smoke Bomb',
+    description: 'Throw a smoke bomb granting 3s evasion — enemies lose target.',
+    type: 'active', tier: 1, prerequisiteId: null,
+    cooldownMs: 8000, manaCost: 12,
+  },
+  {
+    id: 'fleet_step',
+    classId: 'ranger', archetypeId: 'shadowstalker',
+    name: 'Fleet Step',
+    description: '+15% movement speed and +5% damage reduction.',
+    type: 'passive', tier: 2, prerequisiteId: 'smoke_bomb',
+    passiveBonus: { speedPct: 0.15, damageReductionPct: 0.05 },
+  },
+  {
+    id: 'poison_blade',
+    classId: 'ranger', archetypeId: 'shadowstalker',
+    name: 'Poison Blade',
+    description: 'Strike the nearest enemy for 40 damage and apply poison (DoT).',
+    type: 'active', tier: 3, prerequisiteId: 'fleet_step',
+    cooldownMs: 6000, manaCost: 14,
+  },
+  {
+    id: 'camouflage',
+    classId: 'ranger', archetypeId: 'shadowstalker',
+    name: 'Camouflage',
+    description: '+20% movement speed and +10% damage reduction.',
+    type: 'passive', tier: 4, prerequisiteId: 'poison_blade',
+    passiveBonus: { speedPct: 0.20, damageReductionPct: 0.10 },
+  },
+  {
+    id: 'shadow_strike',
+    classId: 'ranger', archetypeId: 'shadowstalker',
+    name: 'Shadow Strike',
+    description: 'Vanish and reappear behind the target dealing 120 damage. Long cooldown.',
+    type: 'active', tier: 5, prerequisiteId: 'camouflage',
+    cooldownMs: 20000, manaCost: 28,
+  },
+];
+
+// ── Ranger — Beastmaster (summons / nature buffs) ───────────────────────────
+
+const BEASTMASTER: SkillDef[] = [
+  {
+    id: 'call_companion',
+    classId: 'ranger', archetypeId: 'beastmaster',
+    name: 'Call Companion',
+    description: 'Summon a wolf companion that attacks the nearest enemy for 35 damage.',
+    type: 'active', tier: 1, prerequisiteId: null,
+    cooldownMs: 6000, manaCost: 14,
+  },
+  {
+    id: 'tracker',
+    classId: 'ranger', archetypeId: 'beastmaster',
+    name: 'Tracker',
+    description: '+30 max HP and +3 mana regen per second.',
+    type: 'passive', tier: 2, prerequisiteId: 'call_companion',
+    passiveBonus: { maxHpFlat: 30, manaRegenFlat: 3 },
+  },
+  {
+    id: 'natures_grasp',
+    classId: 'ranger', archetypeId: 'beastmaster',
+    name: "Nature's Grasp",
+    description: 'Roots all nearby enemies for 2s, preventing movement.',
+    type: 'active', tier: 3, prerequisiteId: 'tracker',
+    cooldownMs: 12000, manaCost: 20,
+  },
+  {
+    id: 'swift_feet',
+    classId: 'ranger', archetypeId: 'beastmaster',
+    name: 'Swift Feet',
+    description: '+40 max HP and +10% attack damage.',
+    type: 'passive', tier: 4, prerequisiteId: 'natures_grasp',
+    passiveBonus: { maxHpFlat: 40, damagePct: 0.10 },
+  },
+  {
+    id: 'stampede',
+    classId: 'ranger', archetypeId: 'beastmaster',
+    name: 'Stampede',
+    description: 'Unleash a beast stampede dealing 100 AoE damage to all nearby enemies.',
+    type: 'active', tier: 5, prerequisiteId: 'swift_feet',
+    cooldownMs: 22000, manaCost: 35,
+  },
+];
+
+// ── Artisan — Blacksmith (melee / forging buffs) ────────────────────────────
+
+const BLACKSMITH: SkillDef[] = [
+  {
+    id: 'hammer_strike',
+    classId: 'artisan', archetypeId: 'blacksmith',
+    name: 'Hammer Strike',
+    description: 'Slam the nearest enemy with a forge hammer dealing 50 damage.',
+    type: 'active', tier: 1, prerequisiteId: null,
+    cooldownMs: 5000, manaCost: 10,
+  },
+  {
+    id: 'tempered_steel',
+    classId: 'artisan', archetypeId: 'blacksmith',
+    name: 'Tempered Steel',
+    description: '+35 max HP and +8% damage reduction.',
+    type: 'passive', tier: 2, prerequisiteId: 'hammer_strike',
+    passiveBonus: { maxHpFlat: 35, damageReductionPct: 0.08 },
+  },
+  {
+    id: 'forge_blast',
+    classId: 'artisan', archetypeId: 'blacksmith',
+    name: 'Forge Blast',
+    description: 'Blast all nearby enemies with forge sparks dealing 65 AoE damage.',
+    type: 'active', tier: 3, prerequisiteId: 'tempered_steel',
+    cooldownMs: 9000, manaCost: 20,
+  },
+  {
+    id: 'anvil_guard',
+    classId: 'artisan', archetypeId: 'blacksmith',
+    name: 'Anvil Guard',
+    description: '+50 max HP and +12% damage reduction.',
+    type: 'passive', tier: 4, prerequisiteId: 'forge_blast',
+    passiveBonus: { maxHpFlat: 50, damageReductionPct: 0.12 },
+  },
+  {
+    id: 'master_craft',
+    classId: 'artisan', archetypeId: 'blacksmith',
+    name: 'Master Craft',
+    description: 'Forge an enchanted weapon: +40% damage for 8s. Long cooldown.',
+    type: 'active', tier: 5, prerequisiteId: 'anvil_guard',
+    cooldownMs: 30000, manaCost: 30,
+  },
+];
+
+// ── Artisan — Alchemist (potions / AoE / healing) ──────────────────────────
+
+const ALCHEMIST: SkillDef[] = [
+  {
+    id: 'potion_throw',
+    classId: 'artisan', archetypeId: 'alchemist',
+    name: 'Potion Throw',
+    description: 'Hurl a volatile potion dealing 45 damage and applying burn.',
+    type: 'active', tier: 1, prerequisiteId: null,
+    cooldownMs: 4500, manaCost: 12,
+  },
+  {
+    id: 'brew_mastery',
+    classId: 'artisan', archetypeId: 'alchemist',
+    name: 'Brew Mastery',
+    description: '+12% attack damage and +20 max mana.',
+    type: 'passive', tier: 2, prerequisiteId: 'potion_throw',
+    passiveBonus: { damagePct: 0.12, maxManaFlat: 20 },
+  },
+  {
+    id: 'elixir_burst',
+    classId: 'artisan', archetypeId: 'alchemist',
+    name: 'Elixir Burst',
+    description: 'Throw an explosive elixir dealing 75 AoE damage to nearby enemies.',
+    type: 'active', tier: 3, prerequisiteId: 'brew_mastery',
+    cooldownMs: 10000, manaCost: 24,
+  },
+  {
+    id: 'concoction_heal',
+    classId: 'artisan', archetypeId: 'alchemist',
+    name: 'Concoction Heal',
+    description: '+4 mana regen per second.',
+    type: 'passive', tier: 4, prerequisiteId: 'elixir_burst',
+    passiveBonus: { manaRegenFlat: 4 },
+  },
+  {
+    id: 'volatile_mix',
+    classId: 'artisan', archetypeId: 'alchemist',
+    name: 'Volatile Mix',
+    description: 'Unleash a massive chemical explosion: 130 AoE damage and burn. Very long CD.',
+    type: 'active', tier: 5, prerequisiteId: 'concoction_heal',
+    cooldownMs: 25000, manaCost: 45,
+  },
+];
+
+// ── Artisan — Enchanter (buffs / debuffs / rune magic) ─────────────────────
+
+const ENCHANTER: SkillDef[] = [
+  {
+    id: 'rune_bolt',
+    classId: 'artisan', archetypeId: 'enchanter',
+    name: 'Rune Bolt',
+    description: 'Fire a rune-charged bolt dealing 50 damage at range.',
+    type: 'active', tier: 1, prerequisiteId: null,
+    cooldownMs: 4500, manaCost: 14,
+  },
+  {
+    id: 'mana_infusion',
+    classId: 'artisan', archetypeId: 'enchanter',
+    name: 'Mana Infusion',
+    description: '+30 max mana and +3 mana regen per second.',
+    type: 'passive', tier: 2, prerequisiteId: 'rune_bolt',
+    passiveBonus: { maxManaFlat: 30, manaRegenFlat: 3 },
+  },
+  {
+    id: 'arcane_bind',
+    classId: 'artisan', archetypeId: 'enchanter',
+    name: 'Arcane Bind',
+    description: 'Stun the nearest enemy for 2s with enchanted chains.',
+    type: 'active', tier: 3, prerequisiteId: 'mana_infusion',
+    cooldownMs: 10000, manaCost: 18,
+  },
+  {
+    id: 'spell_weave',
+    classId: 'artisan', archetypeId: 'enchanter',
+    name: 'Spell Weave',
+    description: '+15% attack damage and -15% cooldown on all skills.',
+    type: 'passive', tier: 4, prerequisiteId: 'arcane_bind',
+    passiveBonus: { damagePct: 0.15, allCdReductionPct: 0.15 },
+  },
+  {
+    id: 'enchant_mastery',
+    classId: 'artisan', archetypeId: 'enchanter',
+    name: 'Enchant Mastery',
+    description: 'Enchant your weapons: +35% damage and +20% speed for 10s. Long CD.',
+    type: 'active', tier: 5, prerequisiteId: 'spell_weave',
+    cooldownMs: 35000, manaCost: 35,
+  },
+];
+
 // ── Master registry ───────────────────────────────────────────────────────────
 
 export const ALL_SKILLS: SkillDef[] = [
@@ -323,6 +596,12 @@ export const ALL_SKILLS: SkillDef[] = [
   ...PYROMANCER,
   ...FROSTBINDER,
   ...ARCANIST,
+  ...SHARPSHOOTER,
+  ...SHADOWSTALKER,
+  ...BEASTMASTER,
+  ...BLACKSMITH,
+  ...ALCHEMIST,
+  ...ENCHANTER,
 ];
 
 /** Lookup a skill by id — throws if not found. */
@@ -340,20 +619,30 @@ export const SKILL_BY_ID: ReadonlyMap<string, SkillDef> = new Map(
 export const CLASS_ARCHETYPES: Record<ClassId, ArchetypeId[]> = {
   warrior: ['berserker', 'guardian', 'paladin'],
   mage:    ['pyromancer', 'frostbinder', 'arcanist'],
+  ranger:  ['sharpshooter', 'shadowstalker', 'beastmaster'],
+  artisan: ['blacksmith', 'alchemist', 'enchanter'],
 };
 
 export const CLASS_NAMES: Record<ClassId, string> = {
   warrior: 'Warrior',
   mage:    'Mage',
+  ranger:  'Ranger',
+  artisan: 'Artisan',
 };
 
 export const ARCHETYPE_NAMES: Record<ArchetypeId, string> = {
-  berserker:   'Berserker',
-  guardian:    'Guardian',
-  paladin:     'Paladin',
-  pyromancer:  'Pyromancer',
-  frostbinder: 'Frostbinder',
-  arcanist:    'Arcanist',
+  berserker:      'Berserker',
+  guardian:       'Guardian',
+  paladin:        'Paladin',
+  pyromancer:     'Pyromancer',
+  frostbinder:    'Frostbinder',
+  arcanist:       'Arcanist',
+  sharpshooter:   'Sharpshooter',
+  shadowstalker:  'Shadowstalker',
+  beastmaster:    'Beastmaster',
+  blacksmith:     'Blacksmith',
+  alchemist:      'Alchemist',
+  enchanter:      'Enchanter',
 };
 
 /**
