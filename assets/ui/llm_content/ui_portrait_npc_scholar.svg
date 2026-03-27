@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" style="image-rendering: pixelated;">
+  <!-- NPC Portrait: Scholar — purple robes, glasses, bookish -->
+  <!-- Background -->
+  <rect x="0" y="0" width="32" height="32" fill="#1a0a3a"/>
+
+  <!-- Shoulders (robes) -->
+  <rect x="6" y="26" width="20" height="6" fill="#5a20a0"/>
+  <rect x="8" y="26" width="16" height="6" fill="#5a20a0"/>
+  <!-- Robe collar -->
+  <rect x="10" y="26" width="12" height="2" fill="#9050e0"/>
+  <rect x="12" y="26" width="8" height="1" fill="#d090ff"/>
+
+  <!-- Head -->
+  <rect x="10" y="10" width="12" height="16" fill="#d4a85a"/>
+  <rect x="9" y="12" width="14" height="12" fill="#d4a85a"/>
+  <!-- Ears -->
+  <rect x="8" y="14" width="2" height="4" fill="#d4a85a"/>
+  <rect x="22" y="14" width="2" height="4" fill="#d4a85a"/>
+
+  <!-- Hair (receding, gray) -->
+  <rect x="8" y="8" width="16" height="4" fill="#6e6e6e"/>
+  <rect x="10" y="6" width="12" height="4" fill="#6e6e6e"/>
+  <!-- Bald top -->
+  <rect x="12" y="7" width="8" height="2" fill="#d4a85a"/>
+  <!-- Hair sides -->
+  <rect x="8" y="10" width="2" height="6" fill="#6e6e6e"/>
+  <rect x="22" y="10" width="2" height="6" fill="#6e6e6e"/>
+
+  <!-- Glasses -->
+  <rect x="10" y="14" width="5" height="4" fill="#c8c8c8"/>
+  <rect x="11" y="15" width="3" height="2" fill="#90d0f8"/>
+  <rect x="17" y="14" width="5" height="4" fill="#c8c8c8"/>
+  <rect x="18" y="15" width="3" height="2" fill="#90d0f8"/>
+  <!-- Glasses bridge -->
+  <rect x="15" y="15" width="2" height="1" fill="#c8c8c8"/>
+  <!-- Eyes behind glasses -->
+  <rect x="12" y="15" width="1" height="1" fill="#3b2010"/>
+  <rect x="19" y="15" width="1" height="1" fill="#3b2010"/>
+
+  <!-- Nose -->
+  <rect x="15" y="18" width="2" height="2" fill="#b8843f"/>
+
+  <!-- Gentle smile -->
+  <rect x="13" y="22" width="6" height="1" fill="#8b5c2a"/>
+
+  <!-- Goatee -->
+  <rect x="14" y="23" width="4" height="2" fill="#6e6e6e"/>
+  <rect x="15" y="25" width="2" height="1" fill="#969696"/>
+
+  <!-- Book/quill hint near shoulder -->
+  <rect x="4" y="28" width="4" height="3" fill="#8b5c2a"/>
+  <rect x="5" y="28" width="2" height="3" fill="#e8d08a"/>
+</svg>
