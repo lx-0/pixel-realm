@@ -284,8 +284,52 @@ Integration testing, balance pass, and distribution rebuild for the 4-class rost
 Procedural dungeons, class-specific gear visuals, and world boss events to deepen endgame retention post-v1.1.0.
 
 - [ ] PIX-305 — Implement procedural dungeon generator for repeatable endgame content
-- [ ] PIX-306 — Create class-specific equipment and weapon sprite sets
+- [x] PIX-306 — Create class-specific equipment and weapon sprite sets
 - [ ] PIX-307 — Implement world boss event system with scheduled spawns
+- [x] PIX-309 — Create procedural dungeon tileset and room template art
+- [x] PIX-310 — Create world boss sprites and battle event art
+
+### M36: Social Systems & v1.2.0
+Reputation/faction system and v1.2.0 distribution rebuild. Art pipeline feeds into code implementation.
+
+- [ ] PIX-312 — Rebuild distribution as v1.2.0 with endgame replayability content
+- [x] PIX-313 — Create reputation and faction system art assets
+- [ ] PIX-314 — Implement reputation and faction system
+- [x] PIX-315 — Create player housing art assets
+
+### M37: Player Economy & Mounts
+Mount system, player housing implementation, and auction house to deepen the player-driven economy and world engagement.
+
+- [x] PIX-318 — Create mount system art assets
+- [x] PIX-319 — Create auction house and trading post art assets
+- [ ] PIX-320 — Implement player housing system
+
+### M38: Economy, Mounts & LLM UI Polish
+Mount system implementation, auction house, LLM dynamic content UI, and dungeon biome integration. All art assets complete — focus is code implementation.
+
+- [ ] PIX-325 — Implement mount system with rideable travel mounts
+- [ ] PIX-326 — Implement auction house and player-to-player trading post
+- [ ] PIX-327 — Implement LLM dynamic content UI — quest board, NPC portraits, event banners
+
+### M39: World Systems & Player Expression
+World map navigation, bestiary collection, and cosmetic shop art pipeline. Fills the remaining GDD feature gaps for player expression and world exploration UX.
+
+- [x] PIX-336 — Create world map and fast-travel waystone art assets
+- [x] PIX-337 — Create bestiary and monster compendium UI art
+- [x] PIX-338 — Create cosmetic shop and character appearance customization art
+- [ ] PIX-340 — Implement world map and fast-travel waystone navigation system
+- [ ] PIX-341 — Implement bestiary and monster compendium collection system
+- [ ] PIX-342 — Implement cosmetic shop and character appearance customization
+
+### M40: Combat Depth, Activities & Communication
+Dodge/roll combat mechanics, fishing mini-game, and mailbox/notification infrastructure. All art assets complete — pure code implementation.
+
+- [x] PIX-346 — Create dodge/roll and sprint combat animation sprites for all 4 classes
+- [x] PIX-347 — Create fishing mini-game art assets
+- [x] PIX-348 — Create mailbox and notification system UI art
+- [ ] PIX-352 — Implement dodge/roll and sprint combat mechanics for all 4 classes
+- [ ] PIX-353 — Implement fishing mini-game system
+- [ ] PIX-354 — Implement mailbox and notification system
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -362,6 +406,12 @@ M5 → M6 ──────────────────┘
 - **Hardcore Mode & Adaptive Audio** — M32 shipped hardcore permadeath mode (PIX-280) and adaptive music system (PIX-282). Art assets (PIX-281) in progress with Game Artist. Complete (code) as of 2026-03-26.
 - **Ranger & Artisan Classes** — M33 implements the remaining 2 of 4 GDD classes. All 4 GDD classes now fully implemented with 12 archetype skill trees (60 total skills). Complete as of 2026-03-26.
 - **Class Integration & Balance** — M34 adds integration tests, 4-class balance pass, class selection art, and v1.1.0 distribution rebuild. Complete as of 2026-03-26.
-- **Endgame Replayability & Class Polish** — M35 adds procedural dungeons (PIX-305), class-specific equipment art (PIX-306), and world boss events (PIX-307). Focus is deepening endgame retention and completing the visual identity of the 4-class system. In progress as of 2026-03-26.
-- **Single engineer** — One engineer has shipped M0–M34 solo. Strong velocity.
-- **Game Artist** — Completed art through zone 19 (Astral Pinnacle). All zones fully illustrated.
+- **Endgame Replayability & Class Polish** — M35 adds procedural dungeons (PIX-305), class-specific equipment art (PIX-306), and world boss events (PIX-307). Focus is deepening endgame retention and completing the visual identity of the 4-class system. Art complete, code in progress as of 2026-03-26.
+- **Social Systems & v1.2.0** — M36 adds reputation/faction system (PIX-313 art done, PIX-314 code), player housing art (PIX-315 done), and v1.2.0 distribution rebuild (PIX-312). Focus is adding social depth and long-term progression beyond level cap. Art complete, code in progress as of 2026-03-27.
+- **Player Economy & Mounts** — M37 art complete (PIX-318 mounts, PIX-319 auction house). Player housing code (PIX-320) in progress. Art done as of 2026-03-27.
+- **Economy, Mounts & LLM UI Polish** — M38 adds mount system code (PIX-325), auction house code (PIX-326), and LLM dynamic content UI (PIX-327). All art assets complete — pure code implementation milestone. Created 2026-03-27.
+- **Single engineer** — One engineer has shipped M0–M34 solo. Strong velocity. Engineer runs stalled since 2026-03-26 — 4 queued runs not executing.
+- **Game Artist** — Completed art through M38. All zones, endgame, faction, housing, mount, auction house, dungeon biome, and LLM UI content fully illustrated. M39 art pipeline started (world map, bestiary, cosmetic shop) as of 2026-03-27.
+- **World Systems & Player Expression** — M39 art complete (PIX-336 world map, PIX-337 bestiary, PIX-338 cosmetic shop). Implementation tasks created (PIX-340, PIX-341, PIX-342). Art done as of 2026-03-27, code pending Engineer unblock.
+- **Combat Depth, Activities & Communication** — M40 art complete (PIX-346 dodge/roll sprites, PIX-347 fishing art, PIX-348 mailbox UI). Implementation tasks created (PIX-352, PIX-353, PIX-354). Art done as of 2026-03-27.
+- **Engineer stall persists** — As of 2026-03-27, Engineer has 13 queued tasks (M35–M40), none executing. Last heartbeat 2026-03-26. @-mention nudge posted on PIX-305. All art pipeline is caught up — code execution is the sole bottleneck.
