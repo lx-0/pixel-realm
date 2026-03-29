@@ -297,46 +297,46 @@ Reputation/faction system and v1.2.0 distribution rebuild. Art pipeline feeds in
 - [x] PIX-314 — Implement reputation and faction system
 - [x] PIX-315 — Create player housing art assets
 
-### M37: Player Economy & Mounts
+### M37: Player Economy & Mounts — COMPLETE
 Mount system, player housing implementation, and auction house to deepen the player-driven economy and world engagement.
 
 - [x] PIX-318 — Create mount system art assets
 - [x] PIX-319 — Create auction house and trading post art assets
-- [ ] PIX-320 — Implement player housing system
+- [x] PIX-320 — Implement player housing system
 
-### M38: Economy, Mounts & LLM UI Polish
+### M38: Economy, Mounts & LLM UI Polish — COMPLETE
 Mount system implementation, auction house, LLM dynamic content UI, and dungeon biome integration. All art assets complete — focus is code implementation.
 
-- [ ] PIX-325 — Implement mount system with rideable travel mounts
-- [ ] PIX-326 — Implement auction house and player-to-player trading post
-- [ ] PIX-327 — Implement LLM dynamic content UI — quest board, NPC portraits, event banners
+- [x] PIX-325 — Implement mount system with rideable travel mounts
+- [x] PIX-326 — Implement auction house and player-to-player trading post
+- [x] PIX-327 — Implement LLM dynamic content UI — quest board, NPC portraits, event banners
 
-### M39: World Systems & Player Expression
+### M39: World Systems & Player Expression — COMPLETE
 World map navigation, bestiary collection, and cosmetic shop art pipeline. Fills the remaining GDD feature gaps for player expression and world exploration UX.
 
 - [x] PIX-336 — Create world map and fast-travel waystone art assets
 - [x] PIX-337 — Create bestiary and monster compendium UI art
 - [x] PIX-338 — Create cosmetic shop and character appearance customization art
 - [x] PIX-340 — Implement world map and fast-travel waystone navigation system
-- [ ] PIX-341 — Implement bestiary and monster compendium collection system
-- [ ] PIX-342 — Implement cosmetic shop and character appearance customization
+- [x] PIX-341 — Implement bestiary and monster compendium collection system
+- [x] PIX-342 — Implement cosmetic shop and character appearance customization
 
-### M40: Combat Depth, Activities & Communication
+### M40: Combat Depth, Activities & Communication — COMPLETE
 Dodge/roll combat mechanics, fishing mini-game, and mailbox/notification infrastructure. All art assets complete — pure code implementation.
 
 - [x] PIX-346 — Create dodge/roll and sprint combat animation sprites for all 4 classes
 - [x] PIX-347 — Create fishing mini-game art assets
 - [x] PIX-348 — Create mailbox and notification system UI art
-- [ ] PIX-352 — Implement dodge/roll and sprint combat mechanics for all 4 classes
-- [ ] PIX-353 — Implement fishing mini-game system
+- [x] PIX-352 — Implement dodge/roll and sprint combat mechanics for all 4 classes
+- [x] PIX-353 — Implement fishing mini-game system
 - [x] PIX-354 — Implement mailbox and notification system
 
-### M41: Art Polish & v1.3.0 Release
+### M41: Art Polish & v1.3.0 Release — IN PROGRESS
 Updated promotional art, achievement icons, tutorial visuals, and final distribution rebuild for all M37-M40 features.
 
-- [ ] PIX-408 — Create updated promotional art and feature screenshots for v1.3.0 release
-- [ ] PIX-409 — Create achievement and milestone icon set for M37-M40 game systems
-- [ ] PIX-410 — Create tutorial and tooltip art for M37-M40 game systems
+- [x] PIX-408 — Create updated promotional art and feature screenshots for v1.3.0 release
+- [x] PIX-409 — Create achievement and milestone icon set for M37-M40 game systems
+- [x] PIX-410 — Create tutorial and tooltip art for M37-M40 game systems
 - [ ] PIX-411 — Rebuild distribution as v1.3.0 with M37-M40 feature content
 
 ### M14: NFT Integration — DEFERRED (post-launch)
@@ -422,5 +422,6 @@ M5 → M6 ──────────────────┘
 - **Game Artist** — Completed art through M38. All zones, endgame, faction, housing, mount, auction house, dungeon biome, and LLM UI content fully illustrated. M39 art pipeline started (world map, bestiary, cosmetic shop) as of 2026-03-27.
 - **World Systems & Player Expression** — M39 art complete (PIX-336 world map, PIX-337 bestiary, PIX-338 cosmetic shop). Implementation tasks created (PIX-340, PIX-341, PIX-342). Art done as of 2026-03-27, code pending Engineer unblock.
 - **Combat Depth, Activities & Communication** — M40 art complete (PIX-346 dodge/roll sprites, PIX-347 fishing art, PIX-348 mailbox UI). Implementation tasks created (PIX-352, PIX-353, PIX-354). Art done as of 2026-03-27.
-- **Engineer unblocked** — As of 2026-03-29, Engineer completed M35–M36 and parts of M39–M40 (PIX-305, PIX-307, PIX-312, PIX-314, PIX-340, PIX-354). 8 code tasks remain (M37–M40). Strong velocity restored.
-- **M41: Art Polish & v1.3.0** — All GDD features through M40 are decomposed. Game Artist finished all roadmap art; new tasks created for promotional art (PIX-408), achievement icons (PIX-409), tutorial art (PIX-410). v1.3.0 rebuild (PIX-411) queued in backlog for after M37–M40 code completes.
+- **Engineer unblocked** — As of 2026-03-29, Engineer completed M35–M40 code. All GDD features implemented. Only PIX-411 (v1.3.0 rebuild) remains.
+- **M41: Art Polish & v1.3.0** — Game Artist completed all M41 art (PIX-408, PIX-409, PIX-410). PIX-411 (v1.3.0 rebuild) is the final task before launch readiness.
+- **Feature-complete** — As of 2026-03-29, all GDD features through M40 are fully implemented. M37-M40 marked complete. Game is feature-complete pending v1.3.0 distribution rebuild (PIX-411) and itch.io launch (PIX-19, board-blocked).
