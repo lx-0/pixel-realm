@@ -56,6 +56,11 @@ export interface SaveData {
     inventory:  Record<string, number>;
     storage:    string[];
   };
+  /** Bestiary: enemy type IDs the player has encountered. */
+  bestiary?: {
+    discovered: string[];
+    bossKills:  Record<string, number>;
+  };
 }
 
 /**
@@ -138,6 +143,7 @@ export class SaveManager {
         unlockedMounts:       p.unlockedMounts       ?? [],
         activeMountId:        p.activeMountId        ?? '',
         housing:              p.housing,
+        bestiary:             p.bestiary,
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
@@ -300,6 +306,37 @@ export class SaveManager {
     else data.housing.inventory[furnId] = qty - 1;
     SaveManager.save(data);
     return true;
+  }
+
+  // ── Bestiary ──────────────────────────────────────────────────────────────
+
+  static getBestiary(): { discovered: string[]; bossKills: Record<string, number> } {
+    const data = SaveManager.load();
+    return data.bestiary ?? { discovered: [], bossKills: {} };
+  }
+
+  /** Mark an enemy type as discovered. Returns true if it was newly discovered. */
+  static discoverEnemy(enemyTypeId: string): boolean {
+    const data = SaveManager.load();
+    if (!data.bestiary) data.bestiary = { discovered: [], bossKills: {} };
+    if (data.bestiary.discovered.includes(enemyTypeId)) return false;
+    data.bestiary.discovered.push(enemyTypeId);
+    SaveManager.save(data);
+    return true;
+  }
+
+  /** Increment kill counter for a boss type. Returns new total. */
+  static recordBossKill(bossTypeId: string): number {
+    const data = SaveManager.load();
+    if (!data.bestiary) data.bestiary = { discovered: [], bossKills: {} };
+    // Boss encounters also count as discovery
+    if (!data.bestiary.discovered.includes(bossTypeId)) {
+      data.bestiary.discovered.push(bossTypeId);
+    }
+    const prev = data.bestiary.bossKills[bossTypeId] ?? 0;
+    data.bestiary.bossKills[bossTypeId] = prev + 1;
+    SaveManager.save(data);
+    return prev + 1;
   }
 
   // ── Save slots ────────────────────────────────────────────────────────────

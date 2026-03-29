@@ -25,6 +25,7 @@ import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { QuestBoardPanel }   from '../ui/QuestBoardPanel';
 import { EventBanner, type WorldEventData } from '../ui/EventBanner';
+import { BestiaryPanel }     from '../ui/BestiaryPanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { StatSheetPanel, type StatSheetState } from '../ui/StatSheetPanel';
 import { PrestigePanel } from '../ui/PrestigePanel';
@@ -493,6 +494,9 @@ export class GameScene extends Phaser.Scene {
   /** World event announcement banner (slides in from top). */
   private eventBanner?: EventBanner;
 
+  /** Bestiary / monster compendium panel (Z key). */
+  private bestiaryPanel?: BestiaryPanel;
+
   /** Seasonal event progress tracker panel. */
   private seasonalEventPanel?: SeasonalEventPanel;
   private worldBossPanel?: WorldBossPanel;
@@ -558,6 +562,11 @@ export class GameScene extends Phaser.Scene {
     const found  = ZONES.find(z => z.id === zoneId);
     this.zone    = found ?? ZONES[0];
     this.zoneIdx = ZONES.indexOf(this.zone);
+
+    // Bestiary: auto-discover all enemy types present in this zone on entry
+    for (const enemyId of this.zone.enemyTypes) {
+      SaveManager.discoverEnemy(enemyId);
+    }
 
     const save   = SaveManager.load();
     // Enforce server-side rule: hardcore only allowed at HARDCORE_UNLOCK_LEVEL+
@@ -678,6 +687,9 @@ export class GameScene extends Phaser.Scene {
     // Event banner (world event announcements)
     this.eventBanner = new EventBanner(this);
 
+    // Bestiary panel (Z key)
+    this.bestiaryPanel = new BestiaryPanel(this);
+
     // Seasonal event panel (G key to toggle)
     this.seasonalEventPanel = new SeasonalEventPanel(this);
     this.seasonalEventPanel.onClaimReward = (itemId) => this.mp?.sendEventClaimReward(itemId);
@@ -752,6 +764,7 @@ export class GameScene extends Phaser.Scene {
         this.tradeWindow?.closeIfOpen()       ||
         this.marketplace?.closeIfOpen()       ||
         this.questBoardPanel?.closeIfOpen()   ||
+        this.bestiaryPanel?.closeIfOpen()     ||
         this.guildPanel?.closeIfOpen()        ||
         this.partyPanel?.closeIfOpen()        ||
         this.petPanel?.closeIfOpen()          ||
@@ -821,6 +834,7 @@ export class GameScene extends Phaser.Scene {
 
     // Quest board panel (B key handled inside the panel)
     this.questBoardPanel?.update();
+    this.bestiaryPanel?.update();
     this.updateQuestBoardHint();
 
     // Seasonal event panel (G key handled inside the panel)
@@ -1765,6 +1779,8 @@ export class GameScene extends Phaser.Scene {
       this.questBoardPanel = undefined;
       this.eventBanner?.destroy();
       this.eventBanner = undefined;
+      this.bestiaryPanel?.destroy();
+      this.bestiaryPanel = undefined;
       this.socialPanel?.destroy();
       this.socialPanel = undefined;
       this.achievementPanel?.destroy();
@@ -3925,6 +3941,16 @@ export class GameScene extends Phaser.Scene {
     if (isBoss) {
       const bossUnlocks = AchievementTracker.recordEvent('boss_kill');
       bossUnlocks.forEach(a => this.showAchievementUnlock(a));
+    }
+
+    // Bestiary discovery & boss kill tracking
+    if (isBoss && extra.bossType) {
+      SaveManager.recordBossKill(extra.bossType);
+    } else if (!isBoss) {
+      const isNew = SaveManager.discoverEnemy(extra.typeName as string);
+      if (isNew) {
+        this.floatingText(e.x, e.y - 12, '📖 New entry!', '#ddbb77');
+      }
     }
 
     this.spawnBurst(e.x, e.y, [0xd42020, 0xf06020, 0x2b2b2b, 0x4a4a4a], isBoss ? 18 : 10, isBoss ? 200 : 140);

@@ -152,6 +152,33 @@ export class BootScene extends Phaser.Scene {
     this.load.image('ui_button_mount_summon',   'assets/ui/mounts/ui_button_mount_summon.png');
     this.load.image('ui_button_mount_dismiss',  'assets/ui/mounts/ui_button_mount_dismiss.png');
 
+    // ── Bestiary (PIX-337 art set) ────────────────────────────────────────────
+    this.load.image('ui_bestiary_book_frame',        'assets/ui/bestiary/ui_bestiary_book_frame.png');
+    this.load.image('ui_bestiary_info_panel',         'assets/ui/bestiary/ui_bestiary_info_panel.png');
+    this.load.image('ui_bestiary_portrait_common',    'assets/ui/bestiary/ui_bestiary_portrait_common.png');
+    this.load.image('ui_bestiary_portrait_uncommon',  'assets/ui/bestiary/ui_bestiary_portrait_uncommon.png');
+    this.load.image('ui_bestiary_portrait_rare',      'assets/ui/bestiary/ui_bestiary_portrait_rare.png');
+    this.load.image('ui_bestiary_portrait_boss',      'assets/ui/bestiary/ui_bestiary_portrait_boss.png');
+    this.load.image('ui_bestiary_portrait_world_boss','assets/ui/bestiary/ui_bestiary_portrait_world_boss.png');
+    this.load.image('ui_bestiary_undiscovered',       'assets/ui/bestiary/ui_bestiary_undiscovered.png');
+    this.load.image('ui_bestiary_discovered',         'assets/ui/bestiary/ui_bestiary_discovered.png');
+    this.load.image('ui_bestiary_progress_bg',        'assets/ui/bestiary/ui_bestiary_progress_bg.png');
+    this.load.image('ui_bestiary_progress_fill',      'assets/ui/bestiary/ui_bestiary_progress_fill.png');
+    this.load.image('ui_bestiary_badge_bronze',       'assets/ui/bestiary/ui_bestiary_badge_bronze.png');
+    this.load.image('ui_bestiary_badge_silver',       'assets/ui/bestiary/ui_bestiary_badge_silver.png');
+    this.load.image('ui_bestiary_badge_gold',         'assets/ui/bestiary/ui_bestiary_badge_gold.png');
+    this.load.image('ui_bestiary_badge_platinum',     'assets/ui/bestiary/ui_bestiary_badge_platinum.png');
+    this.load.image('ui_bestiary_tab_active',         'assets/ui/bestiary/ui_bestiary_tab_active.png');
+    this.load.image('ui_bestiary_tab_inactive',       'assets/ui/bestiary/ui_bestiary_tab_inactive.png');
+    this.load.image('ui_bestiary_list_row',           'assets/ui/bestiary/ui_bestiary_list_row.png');
+    this.load.image('ui_bestiary_list_row_hover',     'assets/ui/bestiary/ui_bestiary_list_row_hover.png');
+    // Bestiary zone icons
+    this.load.image('ui_bestiary_zone_all',     'assets/ui/bestiary/ui_bestiary_zone_all.png');
+    this.load.image('ui_bestiary_zone_plains',  'assets/ui/bestiary/ui_bestiary_zone_plains.png');
+    this.load.image('ui_bestiary_zone_forest',  'assets/ui/bestiary/ui_bestiary_zone_forest.png');
+    this.load.image('ui_bestiary_zone_desert',  'assets/ui/bestiary/ui_bestiary_zone_desert.png');
+    this.load.image('ui_bestiary_zone_dungeon', 'assets/ui/bestiary/ui_bestiary_zone_dungeon.png');
+
     // ── LLM dynamic content UI (PIX-323 art set) ─────────────────────────────
     // Quest board
     this.load.image('ui_panel_quest_board',    'assets/ui/llm_content/ui_panel_quest_board.png');
