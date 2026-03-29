@@ -152,6 +152,37 @@ export class BootScene extends Phaser.Scene {
     this.load.image('ui_button_mount_summon',   'assets/ui/mounts/ui_button_mount_summon.png');
     this.load.image('ui_button_mount_dismiss',  'assets/ui/mounts/ui_button_mount_dismiss.png');
 
+    // ── LLM dynamic content UI (PIX-323 art set) ─────────────────────────────
+    // Quest board
+    this.load.image('ui_panel_quest_board',    'assets/ui/llm_content/ui_panel_quest_board.png');
+    this.load.image('ui_frame_quest_scroll',   'assets/ui/llm_content/ui_frame_quest_scroll.png');
+    // NPC portrait frames + 6 portrait bases
+    this.load.image('ui_frame_npc_portrait',       'assets/ui/llm_content/ui_frame_npc_portrait.png');
+    this.load.image('ui_portrait_npc_adventurer',  'assets/ui/llm_content/ui_portrait_npc_adventurer.png');
+    this.load.image('ui_portrait_npc_farmer',      'assets/ui/llm_content/ui_portrait_npc_farmer.png');
+    this.load.image('ui_portrait_npc_guard',       'assets/ui/llm_content/ui_portrait_npc_guard.png');
+    this.load.image('ui_portrait_npc_merchant',    'assets/ui/llm_content/ui_portrait_npc_merchant.png');
+    this.load.image('ui_portrait_npc_mystic',      'assets/ui/llm_content/ui_portrait_npc_mystic.png');
+    this.load.image('ui_portrait_npc_scholar',     'assets/ui/llm_content/ui_portrait_npc_scholar.png');
+    // Emotion icons (happy/angry/sad/neutral/surprised)
+    this.load.image('ui_icon_emotion_happy',     'assets/ui/llm_content/ui_icon_emotion_happy.png');
+    this.load.image('ui_icon_emotion_angry',     'assets/ui/llm_content/ui_icon_emotion_angry.png');
+    this.load.image('ui_icon_emotion_sad',       'assets/ui/llm_content/ui_icon_emotion_sad.png');
+    this.load.image('ui_icon_emotion_neutral',   'assets/ui/llm_content/ui_icon_emotion_neutral.png');
+    this.load.image('ui_icon_emotion_surprised', 'assets/ui/llm_content/ui_icon_emotion_surprised.png');
+    // World event banner + type icons
+    this.load.image('ui_banner_world_event',      'assets/ui/llm_content/ui_banner_world_event.png');
+    this.load.image('ui_icon_event_boss_spawn',   'assets/ui/llm_content/ui_icon_event_boss_spawn.png');
+    this.load.image('ui_icon_event_discovery',    'assets/ui/llm_content/ui_icon_event_discovery.png');
+    this.load.image('ui_icon_event_festival',     'assets/ui/llm_content/ui_icon_event_festival.png');
+    this.load.image('ui_icon_event_invasion',     'assets/ui/llm_content/ui_icon_event_invasion.png');
+    this.load.image('ui_icon_event_storm',        'assets/ui/llm_content/ui_icon_event_storm.png');
+    // Dialogue bubble variants
+    this.load.image('ui_bubble_dialogue_normal', 'assets/ui/llm_content/ui_bubble_dialogue_normal.png');
+    this.load.image('ui_bubble_dialogue_quest',  'assets/ui/llm_content/ui_bubble_dialogue_quest.png');
+    this.load.image('ui_bubble_dialogue_urgent', 'assets/ui/llm_content/ui_bubble_dialogue_urgent.png');
+    this.load.image('ui_bubble_dialogue_lore',   'assets/ui/llm_content/ui_bubble_dialogue_lore.png');
+
     // ── Auction house (PIX-319 art set) ───────────────────────────────────────
     this.load.image('char_npc_auctioneer',       'assets/sprites/characters/char_npc_auctioneer.png');
     this.load.image('ui_panel_auction_browse',   'assets/ui/auction/ui_panel_auction_browse.png');

@@ -23,6 +23,8 @@ import { WorldMapOverlay } from '../ui/WorldMapOverlay';
 import { TutorialOverlay }  from '../ui/TutorialOverlay';
 import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
+import { QuestBoardPanel }   from '../ui/QuestBoardPanel';
+import { EventBanner, type WorldEventData } from '../ui/EventBanner';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { StatSheetPanel, type StatSheetState } from '../ui/StatSheetPanel';
 import { PrestigePanel } from '../ui/PrestigePanel';
@@ -481,6 +483,16 @@ export class GameScene extends Phaser.Scene {
   /** Prestige confirmation dialog. */
   private prestigePanel?: PrestigePanel;
 
+  /** Quest board panel (B key / NPC interact). */
+  private questBoardPanel?: QuestBoardPanel;
+  /** Quest board world sign sprite. */
+  private questBoardSign?: Phaser.GameObjects.Sprite;
+  /** Proximity hint for quest board sign. */
+  private questBoardHint?: Phaser.GameObjects.Text;
+
+  /** World event announcement banner (slides in from top). */
+  private eventBanner?: EventBanner;
+
   /** Seasonal event progress tracker panel. */
   private seasonalEventPanel?: SeasonalEventPanel;
   private worldBossPanel?: WorldBossPanel;
@@ -656,6 +668,16 @@ export class GameScene extends Phaser.Scene {
     this.statSheet = new StatSheetPanel(this);
     this.statSheet.updateState(this.buildStatSheetState());
 
+    // Quest board panel (B key to toggle)
+    this.questBoardPanel = new QuestBoardPanel(this);
+    this.questBoardPanel.onAccept = (quest) => {
+      this.npcDialogue?.show(quest);
+      this.sfx.playPanelOpen();
+    };
+
+    // Event banner (world event announcements)
+    this.eventBanner = new EventBanner(this);
+
     // Seasonal event panel (G key to toggle)
     this.seasonalEventPanel = new SeasonalEventPanel(this);
     this.seasonalEventPanel.onClaimReward = (itemId) => this.mp?.sendEventClaimReward(itemId);
@@ -729,6 +751,7 @@ export class GameScene extends Phaser.Scene {
         this.skillTree?.closeIfOpen()         ||
         this.tradeWindow?.closeIfOpen()       ||
         this.marketplace?.closeIfOpen()       ||
+        this.questBoardPanel?.closeIfOpen()   ||
         this.guildPanel?.closeIfOpen()        ||
         this.partyPanel?.closeIfOpen()        ||
         this.petPanel?.closeIfOpen()          ||
@@ -795,6 +818,10 @@ export class GameScene extends Phaser.Scene {
         this.chat?.addMessage(`Prestige available at level ${LEVELS.MAX_LEVEL}.`, '#aaaaaa');
       }
     }
+
+    // Quest board panel (B key handled inside the panel)
+    this.questBoardPanel?.update();
+    this.updateQuestBoardHint();
 
     // Seasonal event panel (G key handled inside the panel)
     this.seasonalEventPanel?.update();
@@ -1637,12 +1664,24 @@ export class GameScene extends Phaser.Scene {
       this.dayNight?.syncHour(hour);
     };
 
-    // World events — show in chat on zone enter
+    // World events — show EventBanner overlay + chat message
     client.onWorldEvents = (events: WorldEventEntry[]) => {
       if (events.length) {
         events.forEach(e => {
           this.chat?.addMessage(`✦ World Event: ${e.name} — ${e.description}`, '#ffdd44');
         });
+        // Show the first active event in the banner overlay
+        const first = events[0];
+        if (this.eventBanner) {
+          const eventData: WorldEventData = {
+            id:          first.id,
+            name:        first.name,
+            description: first.description,
+            endsAt:      first.endsAt ?? null,
+            zoneId:      first.zoneId,
+          };
+          this.eventBanner.showEvent(eventData);
+        }
       }
     };
 
@@ -1722,6 +1761,10 @@ export class GameScene extends Phaser.Scene {
       this.tradeWindow = undefined;
       this.marketplace?.destroy();
       this.marketplace = undefined;
+      this.questBoardPanel?.destroy();
+      this.questBoardPanel = undefined;
+      this.eventBanner?.destroy();
+      this.eventBanner = undefined;
       this.socialPanel?.destroy();
       this.socialPanel = undefined;
       this.achievementPanel?.destroy();
@@ -2176,6 +2219,9 @@ export class GameScene extends Phaser.Scene {
     // Auctioneer NPC — placed in top-left corner (multiplayer only)
     if (this.isMultiplayer) this.addAuctioneerNpc(WALL + 24, WALL + 24);
 
+    // Quest board sign — placed near auctioneer (multiplayer only)
+    if (this.isMultiplayer) this.addQuestBoardSign(WALL + 64, WALL + 24);
+
     // Housing NPC (Realtor) — placed in bottom-right corner
     this.addHousingNpc(W - WALL - 24, H - WALL - 24);
 
@@ -2442,6 +2488,47 @@ export class GameScene extends Phaser.Scene {
         this.marketplace.show();
         this.sfx.playPanelOpen();
       }
+    }
+  }
+
+  // ── Quest Board Sign ──────────────────────────────────────────────────────
+
+  private addQuestBoardSign(x: number, y: number): void {
+    const texKey = this.textures.exists('ui_panel_quest_board') ? 'ui_panel_quest_board' : 'waystone_inactive';
+    this.questBoardSign = this.add.sprite(x, y, texKey).setDepth(4).setOrigin(0.5, 1).setScale(0.5);
+
+    const label = this.add.text(x, y - 24, 'QUEST BOARD', {
+      fontSize: '3px', color: '#ddbb77', fontFamily: 'monospace',
+    }).setOrigin(0.5, 1).setDepth(5);
+
+    this.questBoardHint = this.add.text(x, y - 32, '[B] Quest Board', {
+      fontSize: '3px', color: '#ffffff', fontFamily: 'monospace',
+      backgroundColor: '#00000088',
+      padding: { x: 2, y: 1 },
+    }).setOrigin(0.5, 1).setDepth(5).setVisible(false);
+
+    this.tweens.add({
+      targets: label,
+      alpha: { from: 0.7, to: 1.0 },
+      duration: 1100,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
+  private updateQuestBoardHint(): void {
+    if (!this.questBoardSign || !this.questBoardHint || !this.player) return;
+    const dist = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.questBoardSign.x, this.questBoardSign.y,
+    );
+    const near = dist < 40;
+    this.questBoardHint.setVisible(near && !(this.questBoardPanel?.isVisible));
+
+    if (near && (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false))) {
+      this.questBoardPanel?.show(this.zone?.id ?? '');
+      this.sfx.playPanelOpen();
     }
   }
 

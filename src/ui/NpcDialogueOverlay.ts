@@ -10,6 +10,9 @@
  * When no choices are present (legacy / fallback), falls back to the original
  * [Accept] / [Decline] layout.
  *
+ * Portrait support: shows an NPC portrait frame (PIX-323 assets) with emotion
+ * indicator to the left of the name bar.
+ *
  * Styled consistently with ChatOverlay and PlayerListPanel.
  */
 
@@ -24,8 +27,57 @@ const PANEL_X   = (CANVAS.WIDTH - PANEL_W) / 2;
 const DEPTH     = 75;
 const PAD       = 5;
 
+const PORTRAIT_SIZE = 32;
+const PORTRAIT_X    = PANEL_X - PORTRAIT_SIZE - 3; // float just left of dialogue panel
+
 /** How long (ms) the NPC response is shown before auto-resolving the outcome. */
 const RESPONSE_DISPLAY_MS = 2200;
+
+// ── Portrait type → asset key ─────────────────────────────────────────────────
+
+const QUEST_TYPE_PORTRAIT: Record<string, string> = {
+  kill:      'ui_portrait_npc_guard',
+  collect:   'ui_portrait_npc_merchant',
+  escort:    'ui_portrait_npc_adventurer',
+  fetch:     'ui_portrait_npc_farmer',
+  explore:   'ui_portrait_npc_mystic',
+  lore:      'ui_portrait_npc_scholar',
+};
+
+const FACTION_PORTRAIT: Record<string, string> = {
+  merchant_guild: 'ui_portrait_npc_merchant',
+  scholars:       'ui_portrait_npc_scholar',
+  town_guard:     'ui_portrait_npc_guard',
+  farmers:        'ui_portrait_npc_farmer',
+};
+
+type Emotion = 'happy' | 'angry' | 'sad' | 'neutral' | 'surprised';
+
+const EMOTION_COLOR: Record<Emotion, number> = {
+  happy:     0x44cc44,
+  angry:     0xcc4444,
+  sad:       0x4488cc,
+  neutral:   0x888888,
+  surprised: 0xffaa00,
+};
+
+function detectEmotion(text: string): Emotion {
+  const t = text.toLowerCase();
+  if (/happy|joy|pleas|thank|delight|wonderful|well met|celebrat/.test(t)) return 'happy';
+  if (/angry|furious|outrage|demand|insolent|fool|useless/.test(t))         return 'angry';
+  if (/sad|sorrow|terrible|lost|grief|tragic|mourn|weep/.test(t))          return 'sad';
+  if (/danger|beware|careful|warning|threat|enemy|attack|urgent/.test(t))  return 'surprised';
+  return 'neutral';
+}
+
+function portraitKeyForQuest(quest: ClientQuest): string {
+  if (quest.factionId && FACTION_PORTRAIT[quest.factionId]) {
+    return FACTION_PORTRAIT[quest.factionId];
+  }
+  return QUEST_TYPE_PORTRAIT[quest.questType] ?? 'ui_portrait_npc_adventurer';
+}
+
+// ── Panel ─────────────────────────────────────────────────────────────────────
 
 export class NpcDialogueOverlay {
   private scene:     Phaser.Scene;
@@ -80,6 +132,63 @@ export class NpcDialogueOverlay {
     return this.visible;
   }
 
+  // ── Portrait helper ───────────────────────────────────────────────────────
+
+  private buildPortrait(
+    objects: Phaser.GameObjects.GameObject[],
+    panelY: number,
+    emotion: Emotion,
+    portraitKey: string,
+  ): void {
+    const px = PORTRAIT_X;
+    const py = panelY;
+
+    // Portrait background
+    const portraitBg = this.scene.add.rectangle(px, py, PORTRAIT_SIZE, PORTRAIT_SIZE, 0x0a1020, 0.95)
+      .setOrigin(0, 0).setScrollFactor(0);
+
+    // Portrait image (fallback to colored rect if asset not loaded)
+    if (this.scene.textures.exists(portraitKey)) {
+      const portraitImg = this.scene.add.image(px + PORTRAIT_SIZE / 2, py + PORTRAIT_SIZE / 2, portraitKey)
+        .setDisplaySize(PORTRAIT_SIZE - 2, PORTRAIT_SIZE - 2)
+        .setScrollFactor(0);
+      objects.push(portraitImg);
+    } else {
+      const fallback = this.scene.add.rectangle(
+        px + PORTRAIT_SIZE / 2, py + PORTRAIT_SIZE / 2,
+        PORTRAIT_SIZE - 4, PORTRAIT_SIZE - 4, 0x334466,
+      ).setScrollFactor(0);
+      objects.push(fallback);
+    }
+
+    // Portrait frame overlay
+    if (this.scene.textures.exists('ui_frame_npc_portrait')) {
+      const frame = this.scene.add.image(px + PORTRAIT_SIZE / 2, py + PORTRAIT_SIZE / 2, 'ui_frame_npc_portrait')
+        .setDisplaySize(PORTRAIT_SIZE, PORTRAIT_SIZE)
+        .setScrollFactor(0);
+      objects.push(frame);
+    } else {
+      const border = this.scene.add.graphics().setScrollFactor(0);
+      border.lineStyle(1, 0x4466aa, 0.9);
+      border.strokeRect(px, py, PORTRAIT_SIZE, PORTRAIT_SIZE);
+      objects.push(border);
+    }
+
+    // Emotion indicator — small colored circle + icon in bottom-right of portrait
+    const emX = px + PORTRAIT_SIZE - 6;
+    const emY = py + PORTRAIT_SIZE - 6;
+    const emCircle = this.scene.add.circle(emX, emY, 5, EMOTION_COLOR[emotion], 0.92).setScrollFactor(0);
+
+    const emotionIconKey = `ui_icon_emotion_${emotion}`;
+    if (this.scene.textures.exists(emotionIconKey)) {
+      const emIcon = this.scene.add.image(emX, emY, emotionIconKey)
+        .setDisplaySize(8, 8).setScrollFactor(0);
+      objects.push(emIcon);
+    }
+
+    objects.push(portraitBg, emCircle);
+  }
+
   // ── Greeting phase ────────────────────────────────────────────────────────
 
   private rebuildGreeting(): void {
@@ -94,6 +203,9 @@ export class NpcDialogueOverlay {
     const dialogueLine = q ? q.dialogue.greeting : 'Well met, adventurer.';
     const npcName = 'Quest Giver';
     const questTitle = q ? q.title : '';
+
+    const emotion = q ? detectEmotion(dialogueLine) : 'neutral';
+    const portraitKey = q ? portraitKeyForQuest(q) : 'ui_portrait_npc_adventurer';
 
     // ── Background ──────────────────────────────────────────────────────────
 
@@ -136,11 +248,16 @@ export class NpcDialogueOverlay {
       wordWrap: { width: maxLineWidth, useAdvancedWrap: false },
     }).setScrollFactor(0);
 
-    // ── Buttons ─────────────────────────────────────────────────────────────
+    // ── Assemble ────────────────────────────────────────────────────────────
 
     const objects: Phaser.GameObjects.GameObject[] = [
       bg, border, nameBg, nameTxt, titleTxt, dialogueTxt,
     ];
+
+    // Portrait — only shown if portrait area is on-screen (PORTRAIT_X >= 0)
+    if (PORTRAIT_X >= 0) {
+      this.buildPortrait(objects, panelY, emotion, portraitKey);
+    }
 
     if (hasChoices && choices) {
       this.buildChoiceButtons(panelY, panelH, choices, objects);
@@ -158,7 +275,6 @@ export class NpcDialogueOverlay {
     choices: ClientDialogueChoice[],
     objects: Phaser.GameObjects.GameObject[],
   ): void {
-    // Three choice buttons stacked vertically in the lower portion of the panel
     const btnAreaTop = panelY + 36;
     const btnH       = 14;
     const btnGap     = 3;
@@ -167,7 +283,6 @@ export class NpcDialogueOverlay {
     choices.slice(0, 3).forEach((choice, idx) => {
       const btnY = btnAreaTop + idx * (btnH + btnGap);
 
-      // Colour scheme: accept = green-tinted, decline = red-tinted, others = neutral
       let fillColor   = 0x1a2233;
       let borderColor = 0x445566;
       let hoverColor  = 0x223344;
@@ -179,7 +294,7 @@ export class NpcDialogueOverlay {
       }
 
       const prefix = `[${idx + 1}] `;
-      const label = (prefix + choice.label).slice(0, 52); // keep within button width
+      const label = (prefix + choice.label).slice(0, 52);
 
       const btnBg = this.scene.add
         .rectangle(PANEL_X + PAD, btnY, btnW, btnH, fillColor, 0.9)
@@ -200,7 +315,6 @@ export class NpcDialogueOverlay {
       objects.push(btnBg, btnBorder, btnTxt);
     });
 
-    // Small hint
     const hint = this.scene.add.text(
       PANEL_X + PANEL_W - PAD, panelY + panelH - 5,
       '[1/2/3] choose',
@@ -263,13 +377,9 @@ export class NpcDialogueOverlay {
     if (!this.currentQuest) return;
     const quest = this.currentQuest;
 
-    // Notify caller (for server-side rep delta)
     this.onChoiceSelected?.(quest, choice);
-
-    // Show NPC response phase
     this.rebuildResponse(choice, quest);
 
-    // Auto-resolve after delay
     this.responseTimer = this.scene.time.delayedCall(RESPONSE_DISPLAY_MS, () => {
       this.resolveChoice(choice, quest);
     });
@@ -290,6 +400,12 @@ export class NpcDialogueOverlay {
     const panelH = BASE_H;
     const panelY = CANVAS.HEIGHT - panelH - 8;
     const npcName = 'Quest Giver';
+
+    // Emotion reflects the NPC's response to the player's choice
+    const responseEmotion: Emotion =
+      (choice.outcome === 'accept' || choice.outcome === 'rep_bonus') ? 'happy'
+      : (choice.outcome === 'decline')                                ? 'sad'
+      : detectEmotion(choice.response);
 
     const bg = this.scene.add
       .rectangle(PANEL_X, panelY, PANEL_W, panelH, 0x000000, 0.88)
@@ -324,7 +440,6 @@ export class NpcDialogueOverlay {
       },
     ).setScrollFactor(0);
 
-    // Outcome indicator
     let outcomeLabel = '...';
     let outcomeColor = '#556677';
     if (choice.outcome === 'accept' || choice.outcome === 'rep_bonus') {
@@ -341,7 +456,13 @@ export class NpcDialogueOverlay {
       { fontSize: '4px', color: outcomeColor, fontFamily: 'monospace' },
     ).setScrollFactor(0);
 
-    this.container.add([bg, border, nameBg, nameTxt, titleTxt, responseTxt, outcomeTxt]);
+    const objects: Phaser.GameObjects.GameObject[] = [bg, border, nameBg, nameTxt, titleTxt, responseTxt, outcomeTxt];
+
+    if (PORTRAIT_X >= 0) {
+      this.buildPortrait(objects, panelY, responseEmotion, portraitKeyForQuest(quest));
+    }
+
+    this.container.add(objects);
     this.container.setVisible(true).setDepth(DEPTH);
   }
 
@@ -351,16 +472,13 @@ export class NpcDialogueOverlay {
     } else if (choice.outcome === 'decline') {
       this.onDecline?.();
     }
-    // 'neutral' — just close without accept/decline
     this.hide();
   }
 
   // ── Legacy accept / decline ───────────────────────────────────────────────
 
-  /** Direct accept (used when no choices are present, or E key shortcut). */
   accept(): void {
     if (!this.currentQuest) return;
-    // If choices exist, default to the first 'accept' outcome choice
     const choices = this.currentQuest.dialogue.choices;
     if (choices && choices.length > 0) {
       const acceptChoice = choices.find(c => c.outcome === 'accept') ?? choices[0];
@@ -371,7 +489,6 @@ export class NpcDialogueOverlay {
     this.hide();
   }
 
-  /** Direct decline. */
   decline(): void {
     this.onDecline?.();
     this.hide();
