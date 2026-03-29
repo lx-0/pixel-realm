@@ -152,6 +152,18 @@ export class BootScene extends Phaser.Scene {
     this.load.image('ui_button_mount_summon',   'assets/ui/mounts/ui_button_mount_summon.png');
     this.load.image('ui_button_mount_dismiss',  'assets/ui/mounts/ui_button_mount_dismiss.png');
 
+    // ── Auction house (PIX-319 art set) ───────────────────────────────────────
+    this.load.image('char_npc_auctioneer',       'assets/sprites/characters/char_npc_auctioneer.png');
+    this.load.image('ui_panel_auction_browse',   'assets/ui/auction/ui_panel_auction_browse.png');
+    this.load.image('ui_panel_auction_bids',     'assets/ui/auction/ui_panel_auction_bids.png');
+    this.load.image('ui_stamp_sold',             'assets/ui/auction/ui_stamp_sold.png');
+    this.load.image('ui_stamp_expired',          'assets/ui/auction/ui_stamp_expired.png');
+    this.load.image('ui_glow_rare_auction',      'assets/ui/auction/ui_glow_rare_auction.png');
+    this.load.image('ui_glow_epic_auction',      'assets/ui/auction/ui_glow_epic_auction.png');
+    this.load.image('ui_glow_legendary_auction', 'assets/ui/auction/ui_glow_legendary_auction.png');
+    this.load.image('ui_icon_bid_hammer',        'assets/ui/auction/ui_icon_bid_hammer.png');
+    this.load.image('ui_icon_gold_coin',         'assets/ui/auction/ui_icon_gold_coin.png');
+
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();
     });

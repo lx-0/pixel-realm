@@ -365,6 +365,12 @@ export class GameScene extends Phaser.Scene {
   /** Proximity hint for housing portal. */
   private housingPortalHint?: Phaser.GameObjects.Text;
 
+  // ── Auctioneer NPC ────────────────────────────────────────────────────────
+  /** Auctioneer NPC world sprite (top-left zone corner). */
+  private auctioneerNpc?:  Phaser.GameObjects.Sprite;
+  /** Proximity hint for Auctioneer NPC. */
+  private auctioneerHint?: Phaser.GameObjects.Text;
+
   /** P2P trade window (multiplayer only). */
   private tradeWindow?: TradeWindow;
 
@@ -839,7 +845,11 @@ export class GameScene extends Phaser.Scene {
       : false) || (this.housingPortal && this.player
       ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.housingPortal.x, this.housingPortal.y) < 40
       : false);
-    if ((this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false)) && this.isMultiplayer && !nearTransport && !nearStable && !nearHousing) {
+    const nearAuctioneer = this.auctioneerNpc && this.player
+      ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.auctioneerNpc.x, this.auctioneerNpc.y) < 40
+      : false;
+    this.updateAuctioneerHint();
+    if ((this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false)) && this.isMultiplayer && !nearTransport && !nearStable && !nearHousing && !nearAuctioneer) {
       this.handleNpcInteract();
     }
 
@@ -2163,6 +2173,9 @@ export class GameScene extends Phaser.Scene {
     // Stable NPC — placed in bottom-left corner of the zone
     this.addStableNpc(WALL + 24, H - WALL - 24);
 
+    // Auctioneer NPC — placed in top-left corner (multiplayer only)
+    if (this.isMultiplayer) this.addAuctioneerNpc(WALL + 24, WALL + 24);
+
     // Housing NPC (Realtor) — placed in bottom-right corner
     this.addHousingNpc(W - WALL - 24, H - WALL - 24);
 
@@ -2383,6 +2396,50 @@ export class GameScene extends Phaser.Scene {
         this.mountPanel.activeMountId    = save.activeMountId  ?? '';
         this.mountPanel.playerGold       = this.gold;
         this.mountPanel.open();
+        this.sfx.playPanelOpen();
+      }
+    }
+  }
+
+  // ── Auctioneer NPC ────────────────────────────────────────────────────────
+
+  private addAuctioneerNpc(x: number, y: number): void {
+    const texKey = this.textures.exists('char_npc_auctioneer') ? 'char_npc_auctioneer' : 'waystone_inactive';
+    this.auctioneerNpc = this.add.sprite(x, y, texKey).setDepth(4).setOrigin(0.5, 1);
+
+    const label = this.add.text(x, y - 20, 'AUCTIONEER', {
+      fontSize: '3px', color: '#ffd700', fontFamily: 'monospace',
+    }).setOrigin(0.5, 1).setDepth(5);
+
+    this.auctioneerHint = this.add.text(x, y - 28, '[E] Auction House', {
+      fontSize: '3px', color: '#ffffff', fontFamily: 'monospace',
+      backgroundColor: '#00000088',
+      padding: { x: 2, y: 1 },
+    }).setOrigin(0.5, 1).setDepth(5).setVisible(false);
+
+    // Subtle glow tween
+    this.tweens.add({
+      targets: label,
+      alpha: { from: 0.7, to: 1.0 },
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
+  private updateAuctioneerHint(): void {
+    if (!this.auctioneerNpc || !this.auctioneerHint || !this.player) return;
+    const dist = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.auctioneerNpc.x, this.auctioneerNpc.y,
+    );
+    const near = dist < 40;
+    this.auctioneerHint.setVisible(near && !(this.marketplace?.isVisible));
+
+    if (near && (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false))) {
+      if (this.marketplace) {
+        this.marketplace.show();
         this.sfx.playPanelOpen();
       }
     }
