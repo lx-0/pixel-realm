@@ -10,6 +10,7 @@ import { GameOverScene }    from './scenes/GameOverScene';
 import { CreditsScene }     from './scenes/CreditsScene';
 import { ArenaScene }       from './scenes/ArenaScene';
 import { HousingScene }     from './scenes/HousingScene';
+import { DungeonScene }     from './scenes/DungeonScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -31,7 +32,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [BootScene, MenuScene, LevelSelectScene, GameScene, PauseScene, SettingsScene, GameOverScene, CreditsScene, ArenaScene, HousingScene],
+  scene: [BootScene, MenuScene, LevelSelectScene, GameScene, PauseScene, SettingsScene, GameOverScene, CreditsScene, ArenaScene, HousingScene, DungeonScene],
 };
 
 new Phaser.Game(config);

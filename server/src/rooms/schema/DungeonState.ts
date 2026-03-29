@@ -27,7 +27,10 @@ export class DungeonGameState extends Schema {
   /** Total rooms in this dungeon instance (always 7). */
   @type("int8")   totalRooms: number = 7;
 
-  /** Room type for UI rendering: "spawn" | "combat" | "treasure" | "boss" */
+  /**
+   * Room type for UI rendering:
+   * "spawn" | "combat" | "arena" | "elite" | "treasure" | "boss"
+   */
   @type("string") roomType: string = "spawn";
 
   /**

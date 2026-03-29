@@ -28,6 +28,7 @@ import { computePassiveBonuses } from "../skills";
 import { addItem } from "../db/inventory";
 import { getPlayerGuild } from "../db/guilds";
 import { recordDungeonCooldown, getDungeonCooldownRemainingDb } from "../db/cooldowns";
+import { processAchievementEvent } from "../db/achievements";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -200,6 +201,98 @@ const BOSS_CONFIGS: Record<number, BossConfig> = {
   },
 };
 
+// ── Tier 4 (Nightmare) enemy pools — endgame zone enemies ─────────────────────
+// Extends DUNGEON_ENEMIES at runtime to avoid re-declaring the const.
+
+(DUNGEON_ENEMIES as Record<number, EnemyDef[][]>)[4] = [
+  // Combat slot 0 — zone 10/11 enemies
+  [
+    { type: "deep_angler",       hp: 500,  dmg: 80,  speed: 55, aggroRange: 110, xp: 140 },
+    { type: "abyssal_leviathan", hp: 700,  dmg: 90,  speed: 40, aggroRange: 90,  xp: 160 },
+  ],
+  // Combat slot 1 — zone 12/13 enemies
+  [
+    { type: "rift_walker",    hp: 450, dmg: 85,  speed: 70, aggroRange: 120, xp: 150, ranged: true },
+    { type: "eclipse_knight", hp: 600, dmg: 95,  speed: 55, aggroRange: 100, xp: 170 },
+  ],
+  // Combat slot 2 — zone 14/15 enemies
+  [
+    { type: "shattered_golem",   hp: 900,  dmg: 100, speed: 30, aggroRange: 85,  xp: 190 },
+    { type: "elemental_amalgam", hp: 650,  dmg: 88,  speed: 60, aggroRange: 110, xp: 175, ranged: true },
+  ],
+  // Combat slot 3 — zone 16-18 enemies (hardest regular)
+  [
+    { type: "nexus_guardian",    hp: 800, dmg: 110, speed: 65, aggroRange: 120, xp: 200, ranged: true },
+    { type: "twilight_sentinel", hp: 750, dmg: 105, speed: 60, aggroRange: 115, xp: 195 },
+    { type: "spire_sentinel",    hp: 850, dmg: 115, speed: 50, aggroRange: 100, xp: 210 },
+  ],
+];
+
+// ── Endgame boss pool (tier 4) — boss randomly selected per dungeon instance ──
+
+const ENDGAME_BOSS_POOL: BossConfig[] = [
+  {
+    type: "abyssal_kraken_lord",
+    baseHp: 8000, baseDamage: 120,
+    phases: [
+      { hpPctThreshold: 1.00, speedMult: 1.0, damageMult: 1.0, ranged: false, label: "Submerged" },
+      { hpPctThreshold: 0.66, speedMult: 1.4, damageMult: 1.7, ranged: true,  label: "Tentacle Fury" },
+      { hpPctThreshold: 0.33, speedMult: 1.9, damageMult: 2.3, ranged: true,  label: "Abyssal Wrath" },
+    ],
+    xp: 3500,
+  },
+  {
+    type: "ancient_dracolich",
+    baseHp: 9000, baseDamage: 135,
+    phases: [
+      { hpPctThreshold: 1.00, speedMult: 1.0, damageMult: 1.0, ranged: true,  label: "Dormant" },
+      { hpPctThreshold: 0.66, speedMult: 1.5, damageMult: 1.8, ranged: true,  label: "Undead Surge" },
+      { hpPctThreshold: 0.33, speedMult: 2.0, damageMult: 2.5, ranged: false, label: "Lich Rage" },
+    ],
+    xp: 4000,
+  },
+  {
+    type: "void_architect",
+    baseHp: 10000, baseDamage: 145,
+    phases: [
+      { hpPctThreshold: 1.00, speedMult: 1.0, damageMult: 1.0, ranged: true,  label: "Blueprint Phase" },
+      { hpPctThreshold: 0.66, speedMult: 1.5, damageMult: 1.9, ranged: true,  label: "Void Rift" },
+      { hpPctThreshold: 0.33, speedMult: 2.1, damageMult: 2.6, ranged: true,  label: "Unraveling" },
+    ],
+    xp: 4500,
+  },
+  {
+    type: "the_unmaker",
+    baseHp: 11000, baseDamage: 155,
+    phases: [
+      { hpPctThreshold: 1.00, speedMult: 1.0, damageMult: 1.0, ranged: false, label: "Constructing" },
+      { hpPctThreshold: 0.66, speedMult: 1.6, damageMult: 2.0, ranged: true,  label: "Unmaking" },
+      { hpPctThreshold: 0.33, speedMult: 2.2, damageMult: 2.8, ranged: true,  label: "Total Erasure" },
+    ],
+    xp: 5000,
+  },
+  {
+    type: "nexus_overseer",
+    baseHp: 12000, baseDamage: 165,
+    phases: [
+      { hpPctThreshold: 1.00, speedMult: 1.0, damageMult: 1.0, ranged: true,  label: "Monitoring" },
+      { hpPctThreshold: 0.66, speedMult: 1.7, damageMult: 2.1, ranged: true,  label: "Overcharge" },
+      { hpPctThreshold: 0.33, speedMult: 2.3, damageMult: 3.0, ranged: true,  label: "Nexus Core Unleashed" },
+    ],
+    xp: 5500,
+  },
+  {
+    type: "astral_sovereign",
+    baseHp: 14000, baseDamage: 180,
+    phases: [
+      { hpPctThreshold: 1.00, speedMult: 1.0, damageMult: 1.0, ranged: true,  label: "Celestial Form" },
+      { hpPctThreshold: 0.66, speedMult: 1.8, damageMult: 2.2, ranged: true,  label: "Star Fall" },
+      { hpPctThreshold: 0.33, speedMult: 2.4, damageMult: 3.2, ranged: true,  label: "Sovereign's Wrath" },
+    ],
+    xp: 6000,
+  },
+];
+
 // ── Party HP / loot scaling ────────────────────────────────────────────────────
 
 const PARTY_SCALE: Record<number, { hpMult: number; lootMult: number }> = {
@@ -254,21 +347,40 @@ const BOSS_LOOT: Record<number, Array<{ itemId: string; chance: number }>> = {
   ],
 };
 
+// Tier 4 loot — added at runtime to avoid re-declaring the consts.
+(DUNGEON_LOOT as Record<number, Array<{ itemId: string; chance: number }>>)[4] = [
+  { itemId: "dungeon_gem_prismatic", chance: 0.45 },
+  { itemId: "mat_void_essence",      chance: 0.50 },
+  { itemId: "mat_astral_dust",       chance: 0.40 },
+  { itemId: "dungeon_scroll_t4",     chance: 0.30 },
+  { itemId: "potion_mana_large",     chance: 0.35 },
+];
+
+(BOSS_LOOT as Record<number, Array<{ itemId: string; chance: number }>>)[4] = [
+  { itemId: "boss_essence_endgame",  chance: 1.00 },
+  { itemId: "dungeon_gem_prismatic", chance: 0.90 },
+  { itemId: "dungeon_shard_void",    chance: 0.70 },
+  { itemId: "dungeon_scroll_t4",     chance: 0.80 },
+  { itemId: "weapon_void_blade",     chance: 0.25 },
+  { itemId: "armor_void_plate",      chance: 0.20 },
+];
+
 /** Ranged enemy types (server-side tracking — Enemy schema has no ranged flag). */
 const RANGED_TYPES = new Set<string>([
   "bandit", "archer", "wisp", "ice_elemental",
   // boss types that go ranged are handled per-phase in activeBossRanged
 ]);
 
-// ── Room layout ────────────────────────────────────────────────────────────────
-// Fixed 7-room structure:
-//   0: spawn_room  (no enemies, 3 s then auto-advance)
-//   1-4: combat_room
-//   5: treasure_room  (no enemies, loot burst)
-//   6: boss_chamber
-const ROOM_TYPES: Array<"spawn" | "combat" | "treasure" | "boss"> = [
-  "spawn", "combat", "combat", "combat", "combat", "treasure", "boss",
-];
+// ── Room type definition ───────────────────────────────────────────────────────
+// Layout is now procedurally generated per instance — see generateRoomLayout().
+// Room types:
+//   "spawn"    — no enemies, auto-advance after 3 s
+//   "combat"   — standard wave of enemies
+//   "arena"    — two waves: clear first to trigger harder second
+//   "elite"    — 1-2 high-HP elite enemies with bonus loot
+//   "treasure" — no enemies, loot burst (guaranteed 1 per dungeon)
+//   "boss"     — final boss chamber with phase transitions
+type RoomType = "spawn" | "combat" | "arena" | "elite" | "treasure" | "boss";
 
 // ── Join options ───────────────────────────────────────────────────────────────
 
@@ -318,6 +430,13 @@ export class DungeonRoom extends Room<DungeonGameState> {
   // RNG for procedural layout (seeded on create)
   private rng!: () => number;
 
+  // Procedurally generated room sequence for this instance
+  private roomLayout: RoomType[] = [];
+
+  // Arena-room wave tracking (reset per arena room)
+  private arenaCurrentWave = 0;
+  private arenaMaxWaves    = 2;
+
   // Skill state per session
   private skillStateMap = new Map<string, SkillState>();
   private skillCooldowns = new Map<string, Record<string, number>>();
@@ -350,7 +469,7 @@ export class DungeonRoom extends Room<DungeonGameState> {
   onCreate(options: DungeonJoinOptions) {
     this.setState(new DungeonGameState());
 
-    const tier = Math.max(1, Math.min(3, Number(options?.tier ?? 1)));
+    const tier = Math.max(1, Math.min(4, Number(options?.tier ?? 1)));
     this.state.tier = tier;
 
     // Generate a seed from tier + timestamp for reproducibility
@@ -358,10 +477,22 @@ export class DungeonRoom extends Room<DungeonGameState> {
     this.state.seed = seed;
     this.rng = makeSeededRng(seed);
 
-    this.state.totalRooms  = ROOM_TYPES.length;
+    // Procedurally generate the room sequence for this instance
+    this.roomLayout = this.generateRoomLayout();
+
+    this.state.totalRooms  = this.roomLayout.length;
     this.state.currentRoom = 0;
-    this.state.roomType    = ROOM_TYPES[0];
-    this.state.bossType    = BOSS_CONFIGS[tier]?.type ?? "";
+    this.state.roomType    = this.roomLayout[0];
+
+    // For tier 4, pick a random endgame boss from the pool
+    let bossType: string;
+    if (tier >= 4) {
+      const poolIdx = Math.floor(this.rng() * ENDGAME_BOSS_POOL.length);
+      bossType = ENDGAME_BOSS_POOL[poolIdx].type;
+    } else {
+      bossType = BOSS_CONFIGS[tier]?.type ?? "";
+    }
+    this.state.bossType     = bossType;
     this.state.dungeonState = "preparing";
 
     // Register message handlers
@@ -388,7 +519,7 @@ export class DungeonRoom extends Room<DungeonGameState> {
     // After join window, start the dungeon with however many players joined
     this.clock.setTimeout(() => this.beginDungeon(), JOIN_WINDOW_MS);
 
-    console.log(`[DungeonRoom] created tier-${tier} instance ${this.roomId} seed=${seed}`);
+    console.log(`[DungeonRoom] created tier-${tier} instance ${this.roomId} seed=${seed} rooms=${this.roomLayout.length}`);
   }
 
   async onJoin(client: Client, options: DungeonJoinOptions) {
@@ -396,6 +527,20 @@ export class DungeonRoom extends Room<DungeonGameState> {
     const player = new Player();
     player.sessionId = client.sessionId;
     player.name = options?.playerName ?? auth?.username ?? "Hero";
+
+    // Tier 4 (Nightmare) requires level 40+
+    if (this.state.tier >= 4) {
+      const userId = auth?.userId;
+      if (userId) {
+        try {
+          const saved = await import("../db/players").then(m => m.loadPlayerState(userId));
+          if (saved && saved.level < 40) {
+            client.error(403, "Nightmare dungeon requires level 40+");
+            return;
+          }
+        } catch { /* non-fatal — allow entry if check fails */ }
+      }
+    }
 
     // Spawn near center
     player.x = 140 + this.rng() * 40;
@@ -457,6 +602,40 @@ export class DungeonRoom extends Room<DungeonGameState> {
     console.log(`[DungeonRoom] disposing room ${this.roomId}`);
   }
 
+  // ── Procedural Layout Generator ───────────────────────────────────────────────
+
+  /**
+   * Generate a variable-length room sequence using the seeded RNG.
+   * Structure: spawn → [3-6 middle rooms, shuffled] → boss
+   * Middle room types and their approximate weights:
+   *   combat   40% — standard wave
+   *   arena    25% — two-wave gauntlet
+   *   elite    15% — 1-2 elite enemies
+   *   treasure 20% — bonus loot (always at least 1 guaranteed)
+   */
+  private generateRoomLayout(): RoomType[] {
+    const middleCount = 3 + Math.floor(this.rng() * 4); // 3-6 middle rooms
+    const middle: Array<"combat" | "arena" | "elite" | "treasure"> = ["treasure"]; // 1 guaranteed
+
+    for (let i = 0; i < middleCount - 1; i++) {
+      const roll = this.rng();
+      if      (roll < 0.40) middle.push("combat");
+      else if (roll < 0.65) middle.push("arena");
+      else if (roll < 0.80) middle.push("elite");
+      else                  middle.push("treasure");
+    }
+
+    // Fisher-Yates shuffle of middle rooms
+    for (let i = middle.length - 1; i > 0; i--) {
+      const j = Math.floor(this.rng() * (i + 1));
+      [middle[i], middle[j]] = [middle[j], middle[i]];
+    }
+
+    const layout: RoomType[] = ["spawn", ...middle, "boss"];
+    console.log(`[DungeonRoom] generated layout (${layout.length} rooms): ${layout.join(" → ")}`);
+    return layout;
+  }
+
   // ── Dungeon Flow ──────────────────────────────────────────────────────────────
 
   private beginDungeon() {
@@ -472,17 +651,17 @@ export class DungeonRoom extends Room<DungeonGameState> {
 
   /** Transition to the given room index. */
   private enterRoom(roomIndex: number) {
-    if (roomIndex >= ROOM_TYPES.length) {
+    if (roomIndex >= this.roomLayout.length) {
       this.completeDungeon();
       return;
     }
 
     this.state.currentRoom = roomIndex;
-    const roomType = ROOM_TYPES[roomIndex];
+    const roomType = this.roomLayout[roomIndex];
     this.state.roomType    = roomType;
     this.state.dungeonState = "room_active";
 
-    this.broadcast("room_enter", { room: roomIndex, type: roomType, total: ROOM_TYPES.length });
+    this.broadcast("room_enter", { room: roomIndex, type: roomType, total: this.roomLayout.length });
 
     switch (roomType) {
       case "spawn":
@@ -491,6 +670,14 @@ export class DungeonRoom extends Room<DungeonGameState> {
         break;
       case "combat":
         this.spawnCombatRoom();
+        break;
+      case "arena":
+        this.arenaCurrentWave = 0;
+        this.arenaMaxWaves    = 2;
+        this.spawnArenaWave(1);
+        break;
+      case "elite":
+        this.spawnEliteRoom();
         break;
       case "treasure":
         this.grantTreasureRoomLoot();
@@ -579,11 +766,103 @@ export class DungeonRoom extends Room<DungeonGameState> {
     console.log(`[DungeonRoom] treasure room granted loot to ${this.clients.length} players`);
   }
 
+  // ── Arena Room (two-wave gauntlet) ────────────────────────────────────────────
+
+  private spawnArenaWave(wave: number) {
+    this.arenaCurrentWave = wave;
+    const tier = this.state.tier;
+    const enemyPool = (DUNGEON_ENEMIES[tier] ?? DUNGEON_ENEMIES[1]);
+    // Pick a random slot from the pool for variety
+    const slot = Math.floor(this.rng() * enemyPool.length);
+    const pool = enemyPool[slot];
+    const scale = PARTY_SCALE[this.state.partySize] ?? PARTY_SCALE[1];
+
+    // Wave 1: normal count; wave 2: more enemies, scaled up
+    const waveMult = wave === 1 ? 1.0 : 1.5;
+    const baseCount = 2 + wave;
+    const count = Math.round(baseCount * (0.75 + this.state.partySize * 0.25));
+
+    for (let i = 0; i < count; i++) {
+      const def = pool[Math.floor(this.rng() * pool.length)];
+      const enemy = new Enemy();
+      enemy.id        = uid();
+      enemy.type      = def.type;
+      enemy.hp        = Math.round(def.hp * scale.hpMult * waveMult);
+      enemy.maxHp     = enemy.hp;
+      enemy.damage    = Math.round(def.dmg * waveMult);
+      enemy.speed     = def.speed;
+      enemy.aggroRange = def.aggroRange;
+      enemy.aiState   = "patrol";
+      enemy.spawnedAt = Date.now();
+
+      const edge = Math.floor(this.rng() * 4);
+      switch (edge) {
+        case 0: enemy.x = this.rng() * 320; enemy.y = 10;  break;
+        case 1: enemy.x = this.rng() * 320; enemy.y = 170; break;
+        case 2: enemy.x = 10;  enemy.y = this.rng() * 180; break;
+        default: enemy.x = 310; enemy.y = this.rng() * 180; break;
+      }
+      enemy.patrolX = enemy.x;
+      enemy.patrolY = enemy.y;
+
+      this.state.enemies.set(enemy.id, enemy);
+    }
+
+    this.updateEnemiesAlive();
+    this.broadcast("arena_wave", { wave, maxWaves: this.arenaMaxWaves, count });
+    console.log(`[DungeonRoom] arena wave ${wave}/${this.arenaMaxWaves} spawned ${count} enemies`);
+  }
+
+  // ── Elite Room ────────────────────────────────────────────────────────────────
+
+  private spawnEliteRoom() {
+    const tier = this.state.tier;
+    const enemyPool = (DUNGEON_ENEMIES[tier] ?? DUNGEON_ENEMIES[1]);
+    const hardestSlot = enemyPool.length - 1; // use the strongest pool
+    const pool = enemyPool[hardestSlot];
+    const scale = PARTY_SCALE[this.state.partySize] ?? PARTY_SCALE[1];
+
+    // 1-2 elite enemies with 3× HP and 1.5× damage
+    const count = 1 + Math.floor(this.rng() * 2);
+    for (let i = 0; i < count; i++) {
+      const def = pool[Math.floor(this.rng() * pool.length)];
+      const enemy = new Enemy();
+      enemy.id        = uid();
+      enemy.type      = def.type;
+      enemy.hp        = Math.round(def.hp * scale.hpMult * 3.0);
+      enemy.maxHp     = enemy.hp;
+      enemy.damage    = Math.round(def.dmg * 1.5);
+      enemy.speed     = Math.round(def.speed * 0.85); // slightly slower
+      enemy.aggroRange = def.aggroRange + 20;          // more alert
+      enemy.aiState   = "patrol";
+      enemy.spawnedAt = Date.now();
+
+      // Spawn near center for dramatic effect
+      enemy.x = 120 + this.rng() * 80;
+      enemy.y = 60  + this.rng() * 60;
+      enemy.patrolX = enemy.x;
+      enemy.patrolY = enemy.y;
+
+      this.state.enemies.set(enemy.id, enemy);
+    }
+
+    this.updateEnemiesAlive();
+    this.broadcast("elite_room_enter", { count, tier });
+    console.log(`[DungeonRoom] elite room spawned ${count} elite enemies`);
+  }
+
   // ── Boss Chamber ──────────────────────────────────────────────────────────────
 
   private spawnBoss() {
     const tier = this.state.tier;
-    const cfg = BOSS_CONFIGS[tier] ?? BOSS_CONFIGS[1];
+    // Tier 4: randomly select from endgame boss pool using the seeded RNG
+    let cfg: BossConfig;
+    if (tier >= 4) {
+      const poolIdx = Math.floor(this.rng() * ENDGAME_BOSS_POOL.length);
+      cfg = ENDGAME_BOSS_POOL[poolIdx];
+    } else {
+      cfg = BOSS_CONFIGS[tier] ?? BOSS_CONFIGS[1];
+    }
     this.bossConfig = cfg;
 
     const scale = PARTY_SCALE[this.state.partySize] ?? PARTY_SCALE[1];
@@ -657,12 +936,17 @@ export class DungeonRoom extends Room<DungeonGameState> {
   private async completeDungeon() {
     this.state.dungeonState = "complete";
 
-    // Grant boss loot to all players
-    const tier = this.state.tier;
-    const bossLootTable = BOSS_LOOT[tier] ?? BOSS_LOOT[1];
+    const tier  = this.state.tier;
     const scale = PARTY_SCALE[this.state.partySize] ?? PARTY_SCALE[1];
+    const bossLootTable = (BOSS_LOOT as Record<number, Array<{ itemId: string; chance: number }>>)[tier]
+      ?? BOSS_LOOT[1];
+
+    // Completion bonus XP: scales with tier and number of combat rooms cleared
+    const combatRooms  = this.roomLayout.filter(t => t === "combat" || t === "arena" || t === "elite").length;
+    const bonusXp      = Math.round(200 * tier * (combatRooms + 1));
 
     for (const client of this.clients) {
+      // Boss loot
       const grants: string[] = [];
       for (const entry of bossLootTable) {
         if (this.rng() < entry.chance * scale.lootMult) {
@@ -673,9 +957,17 @@ export class DungeonRoom extends Room<DungeonGameState> {
         await this.grantLootToSession(client.sessionId, grants).catch(() => {/* best-effort */});
       }
 
-      // Apply cooldown per player (persisted to DB so it survives restarts)
+      // Bonus XP notification (client applies it to local counter)
+      client.send("dungeon_bonus_xp", { amount: bonusXp });
+
       const userId = dungeonSessionUserMap.get(client.sessionId);
       if (userId) {
+        // Persist bonus XP to DB
+        await this.grantBonusXpToPlayer(userId, bonusXp).catch((err) =>
+          console.warn("[DungeonRoom] Failed to grant bonus XP:", err),
+        );
+
+        // Cooldown
         await recordDungeonCooldown(userId, DUNGEON_COOLDOWN_MS).catch((err) =>
           console.warn("[DungeonRoom] Failed to persist cooldown:", err),
         );
@@ -683,11 +975,26 @@ export class DungeonRoom extends Room<DungeonGameState> {
           remainingMs: DUNGEON_COOLDOWN_MS,
           totalMs: DUNGEON_COOLDOWN_MS,
         });
+
+        // Achievement progress (non-fatal)
+        const achieveResult = await processAchievementEvent(userId, "dungeon_completed", { tier }).catch(() => null);
+        if (achieveResult?.newlyUnlocked?.length) {
+          client.send("achievements_unlocked", { achievements: achieveResult.newlyUnlocked });
+        }
       }
     }
 
-    this.broadcast("dungeon_complete", { tier });
-    console.log(`[DungeonRoom] dungeon tier-${tier} completed by ${this.clients.length} player(s)`);
+    this.broadcast("dungeon_complete", { tier, bonusXp, rooms: this.roomLayout.length });
+    console.log(`[DungeonRoom] dungeon tier-${tier} completed by ${this.clients.length} player(s) (bonusXp=${bonusXp})`);
+  }
+
+  /** Increment XP in player_state for dungeon completion bonus. */
+  private async grantBonusXpToPlayer(userId: string, xp: number): Promise<void> {
+    const pool = getPool();
+    await pool.query(
+      "UPDATE player_state SET xp = xp + $2, updated_at = NOW() WHERE player_id = $1",
+      [userId, xp],
+    );
   }
 
   // ── Enemy Kill ────────────────────────────────────────────────────────────────
@@ -720,6 +1027,13 @@ export class DungeonRoom extends Room<DungeonGameState> {
   private checkRoomClear() {
     if (this.state.dungeonState !== "room_active") return;
     if (this.state.enemiesAlive > 0) return;
+
+    // Arena rooms have multiple waves — spawn next wave before clearing
+    if (this.state.roomType === "arena" && this.arenaCurrentWave < this.arenaMaxWaves) {
+      const nextWave = this.arenaCurrentWave + 1;
+      this.clock.setTimeout(() => this.spawnArenaWave(nextWave), ROOM_ADVANCE_DELAY_MS);
+      return;
+    }
 
     this.state.dungeonState = "room_cleared";
     this.broadcast("room_cleared", { room: this.state.currentRoom });

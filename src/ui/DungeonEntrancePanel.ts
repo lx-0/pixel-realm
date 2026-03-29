@@ -21,7 +21,7 @@ import { CANVAS } from '../config/constants';
 
 // ── Layout constants ───────────────────────────────────────────────────────────
 
-const PANEL_W  = 160;
+const PANEL_W  = 180;
 const PANEL_H  = 120;
 const PANEL_X  = (CANVAS.WIDTH  - PANEL_W) / 2;
 const PANEL_Y  = (CANVAS.HEIGHT - PANEL_H) / 2;
@@ -31,13 +31,17 @@ const TIER_COLORS: Record<number, number> = {
   1: 0x44bb66,  // green  — Novice
   2: 0xddaa22,  // gold   — Champion
   3: 0xcc3355,  // red    — Legendary
+  4: 0x9922ff,  // purple — Nightmare (endgame, level 40+)
 };
 
 const TIER_LABELS: Record<number, { name: string; description: string; minLevel: number }> = {
-  1: { name: 'Tier I — Novice',     description: 'Beginner dungeon. Recommended level 3+.',  minLevel: 1 },
-  2: { name: 'Tier II — Champion',  description: 'Challenging enemies and boss. Lvl 6+.',     minLevel: 6 },
-  3: { name: 'Tier III — Legendary',description: 'Elite dungeon. For max-level parties. 10+.', minLevel: 10 },
+  1: { name: 'Tier I — Novice',      description: 'Beginner dungeon. Recommended level 3+.',      minLevel: 1  },
+  2: { name: 'Tier II — Champion',   description: 'Challenging enemies and boss. Lvl 6+.',         minLevel: 6  },
+  3: { name: 'Tier III — Legendary', description: 'Elite dungeon. For max-level parties. 10+.',    minLevel: 10 },
+  4: { name: 'Tier IV — Nightmare',  description: 'Endgame dungeon. Random boss. Requires lvl 40.', minLevel: 40 },
 };
+
+const TOTAL_TIERS = 4;
 
 const BTN_W = 38;
 const BTN_H = 10;
@@ -53,7 +57,7 @@ export interface DungeonEntrancePanelOptions {
 
 export class DungeonEntrancePanel {
   private scene: Phaser.Scene;
-  private isOpen = false;
+  isOpen = false;
 
   // State
   private selectedTier = 1;
@@ -128,9 +132,9 @@ export class DungeonEntrancePanel {
 
     // ── Tier selector ──────────────────────────────────────────────────────────
     const tierY = y + 18;
-    const tierSpacing = (PANEL_W - 6) / 3;
+    const tierSpacing = (PANEL_W - 6) / TOTAL_TIERS;
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < TOTAL_TIERS; i++) {
       const tier = i + 1;
       const bx = x + 3 + i * tierSpacing;
       const bw = tierSpacing - 2;
@@ -291,7 +295,7 @@ export class DungeonEntrancePanel {
     this.selectedTier = tier;
     const info = TIER_LABELS[tier];
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < TOTAL_TIERS; i++) {
       const t = i + 1;
       const selected = t === tier;
       this.tierBtns[i].setAlpha(selected ? 1.0 : 0.3);

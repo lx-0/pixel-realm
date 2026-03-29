@@ -33,6 +33,7 @@ import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
 import { FastTravelPanel } from '../ui/FastTravelPanel';
+import { DungeonEntrancePanel, type DungeonEntrancePanelOptions } from '../ui/DungeonEntrancePanel';
 import { ConnectionOverlay } from '../ui/ConnectionOverlay';
 import { LootRollPanel } from '../ui/LootRollPanel';
 import { DayNightSystem } from '../systems/DayNightSystem';
@@ -307,6 +308,11 @@ export class GameScene extends Phaser.Scene {
 
   /** Proximity hint shown when player is near the Transport NPC. */
   private transportHint?: Phaser.GameObjects.Text;
+
+  /** Dungeon portal (endgame zones only). */
+  private dungeonPortal?: Phaser.GameObjects.Container;
+  private dungeonPortalHint?: Phaser.GameObjects.Text;
+  private dungeonEntrancePanel?: DungeonEntrancePanel;
 
   /** T key — opens fast travel dialog (handled inline in update). */
   // fastTravelKey handled via escScrollKey below
@@ -827,6 +833,8 @@ export class GameScene extends Phaser.Scene {
     // Crafting station proximity hint
     this.updateCraftingStationHint();
     this.updateTransportNpcHint();
+    this.updateDungeonPortalHint();
+    this.dungeonEntrancePanel?.update();
 
     this.handleDodgeRoll(time);
     this.handlePlayerMovement(delta);
@@ -1966,6 +1974,11 @@ export class GameScene extends Phaser.Scene {
     // Transport NPC — placed in top-right corner of the zone
     this.addTransportNpc(W - WALL - 24, WALL + 24);
 
+    // Dungeon portal — appears in endgame zones (zone10+)
+    if (this.zoneIdx >= 9) {
+      this.addDungeonPortal(W - WALL - 24, H - WALL - 24);
+    }
+
     // Zone name splash
     const zColor = `#${z.accentColor.toString(16).padStart(6, '0')}`;
     const banner = this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2, z.name, {
@@ -2102,6 +2115,89 @@ export class GameScene extends Phaser.Scene {
         this.fastTravelPanel.playerGold     = this.gold;
         this.fastTravelPanel.open();
       }
+    }
+  }
+
+  // ── Dungeon Portal ────────────────────────────────────────────────────────
+
+  private addDungeonPortal(x: number, y: number): void {
+    const g = this.add.graphics().setDepth(4);
+
+    // Portal frame — dark archway
+    g.fillStyle(0x220033);
+    g.fillRect(-12, -20, 24, 28);
+    // Inner glow (purple/void)
+    g.fillStyle(0x6622aa);
+    g.fillRect(-9, -17, 18, 22);
+    g.fillStyle(0x331155);
+    g.fillRect(-7, -15, 14, 18);
+    // Swirl effect dots
+    g.fillStyle(0xcc88ff, 0.9);
+    [[0,-10],[3,-5],[-3,-5],[0,-2],[4,-12],[-4,-12]].forEach(([dx,dy]) => {
+      g.fillCircle(dx, dy, 1);
+    });
+    // Top arc hint
+    g.lineStyle(1, 0xaa44ff, 0.8);
+    g.strokeRect(-12, -20, 24, 28);
+
+    const label = this.add.text(0, 12, 'DUNGEON', {
+      fontSize: '4px', color: '#cc88ff', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0).setDepth(4);
+
+    this.dungeonPortal = this.add.container(x, y, [g, label]).setDepth(4);
+
+    // Pulsing animation
+    this.tweens.add({
+      targets: label,
+      alpha: 0.4,
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    // HUD proximity hint
+    this.dungeonPortalHint = this.add.text(
+      CANVAS.WIDTH / 2, CANVAS.HEIGHT - 28,
+      '[E] Enter Dungeon',
+      { fontSize: '4px', color: '#cc88ff', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
+
+    // Create the dungeon entrance panel (lazy, positioned at panel coords)
+    this.dungeonEntrancePanel = new DungeonEntrancePanel(this);
+    this.dungeonEntrancePanel.onEnter = (tier) => {
+      const save = SaveManager.load();
+      this.scene.start(SCENES.DUNGEON, {
+        tier,
+        playerName: save.playerName ?? 'Hero',
+        userId:     save.userId,
+        returnZone: this.zone.id,
+        playerLevel: this.level,
+      });
+    };
+  }
+
+  private updateDungeonPortalHint(): void {
+    if (!this.dungeonPortal || !this.dungeonPortalHint || !this.player) return;
+    const d = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.dungeonPortal.x, this.dungeonPortal.y,
+    );
+    const near = d < 45;
+    const panelOpen = this.dungeonEntrancePanel?.isOpen ?? false;
+    this.dungeonPortalHint.setVisible(near && !panelOpen);
+
+    if (near && !panelOpen &&
+        (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false))) {
+      const save = SaveManager.load();
+      const cd   = 0; // cooldown check would query server; start at 0 for local
+      const opts: DungeonEntrancePanelOptions = {
+        userId:     save.userId ?? '',
+        playerLevel: this.level,
+        partyMembers: [],
+        cooldownRemainingMs: cd,
+      };
+      this.dungeonEntrancePanel?.show(opts);
     }
   }
 

@@ -79,6 +79,11 @@ const DEFS: LocalAchievementDef[] = [
   { id: 'hero_realm',    title: 'Hero of the Realm',  description: 'Complete 5 quests.',          icon: '📋', category: 'questing',    points: 3, goal: 5   },
   { id: 'legendary_quester', title: 'Legendary Quester', description: 'Complete 15 quests.',     icon: '📜', category: 'questing',    points: 5, goal: 15  },
   { id: 'type_specialist',   title: 'Type Specialist',description: 'Complete 3 different quest types.', icon: '📋', category: 'questing', points: 3, goal: 3 },
+  // Dungeons
+  { id: 'dungeon_first',     title: 'Dungeon Delver',       description: 'Complete your first procedural dungeon.',         icon: '🏚', category: 'combat', points: 3,  goal: 1  },
+  { id: 'dungeon_runner',    title: 'Dungeon Runner',        description: 'Complete 5 dungeons.',                             icon: '⚔', category: 'combat', points: 5,  goal: 5  },
+  { id: 'dungeon_master',    title: 'Dungeon Master',        description: 'Complete 10 dungeons.',                            icon: '🔱', category: 'combat', points: 7,  goal: 10 },
+  { id: 'dungeon_nightmare', title: 'Nightmare Conqueror',   description: 'Complete a Nightmare-tier dungeon (level 40+).', icon: '💀', category: 'combat', points: 10, goal: 1  },
 ];
 
 const STORAGE_KEY = 'pixelrealm_achievements_v1';

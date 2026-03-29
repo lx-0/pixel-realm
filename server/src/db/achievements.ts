@@ -288,6 +288,43 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     points: 3,
     goal: 3,
   },
+  // ── Dungeons ─────────────────────────────────────────────────────────────────
+  {
+    id: "dungeon_first",
+    title: "Dungeon Delver",
+    description: "Complete your first procedural dungeon.",
+    icon: "🏚",
+    category: "combat",
+    points: 3,
+    goal: 1,
+  },
+  {
+    id: "dungeon_runner",
+    title: "Dungeon Runner",
+    description: "Complete 5 dungeons.",
+    icon: "⚔",
+    category: "combat",
+    points: 5,
+    goal: 5,
+  },
+  {
+    id: "dungeon_master",
+    title: "Dungeon Master",
+    description: "Complete 10 dungeons.",
+    icon: "🔱",
+    category: "combat",
+    points: 7,
+    goal: 10,
+  },
+  {
+    id: "dungeon_nightmare",
+    title: "Nightmare Conqueror",
+    description: "Complete a Nightmare-tier dungeon (level 40+).",
+    icon: "💀",
+    category: "combat",
+    points: 10,
+    goal: 1,
+  },
 ];
 
 // Map for quick lookup
@@ -307,7 +344,8 @@ export type AchievementEventType =
   | "player_invited"    // data: { totalInvited: number }
   | "quest_completed"   // data: { totalQuests: number; distinctTypes: number; zoneId?: string }
   | "tutorial_complete" // no extra data — just completion
-  | "level_up";         // data: { level: number }
+  | "level_up"          // data: { level: number }
+  | "dungeon_completed";// data: { tier: number }
 
 // ── Public result types ────────────────────────────────────────────────────────
 
@@ -473,6 +511,18 @@ export async function processAchievementEvent(
         const level = Number(data.level ?? 1);
         updates.push({ id: "veteran", progress: level });
         updates.push({ id: "legend", progress: level });
+        break;
+      }
+      case "dungeon_completed": {
+        // Use dungeon_first progress as the running total (same pattern as enemy_killed)
+        const dungeonRow = rows.get("dungeon_first");
+        const total = (dungeonRow?.progress ?? 0) + 1;
+        updates.push({ id: "dungeon_first",  progress: total });
+        updates.push({ id: "dungeon_runner",  progress: total });
+        updates.push({ id: "dungeon_master",  progress: total });
+        if (Number(data.tier ?? 0) >= 4) {
+          updates.push({ id: "dungeon_nightmare", progress: 1 });
+        }
         break;
       }
     }

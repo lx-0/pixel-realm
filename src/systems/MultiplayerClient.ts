@@ -390,6 +390,30 @@ export class MultiplayerClient {
     }
   }
 
+  /**
+   * Join (or create) a dungeon room for the given tier.
+   * Returns the Colyseus Room object on success, or null if the server is unreachable.
+   */
+  async joinDungeon(
+    tier: number,
+    playerName: string,
+    userId?: string,
+    token?: string,
+  ): Promise<import('colyseus.js').Room | null> {
+    try {
+      const opts: Record<string, string | number> = { tier, playerName };
+      if (userId) opts.userId = userId;
+      if (token)  opts.token  = token;
+
+      const dungeonRoom = await this.client.joinOrCreate<any>('dungeon', opts);
+      console.log(`[MP] Joined dungeon tier-${tier} as session ${dungeonRoom.sessionId}`);
+      return dungeonRoom;
+    } catch (err) {
+      console.warn('[MP] Dungeon join failed:', (err as Error).message);
+      return null;
+    }
+  }
+
   // ── State listeners ───────────────────────────────────────────────────────
 
   private setupStateListeners(): void {
