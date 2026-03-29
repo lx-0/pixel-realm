@@ -152,6 +152,44 @@ export class BootScene extends Phaser.Scene {
     this.load.image('ui_button_mount_summon',   'assets/ui/mounts/ui_button_mount_summon.png');
     this.load.image('ui_button_mount_dismiss',  'assets/ui/mounts/ui_button_mount_dismiss.png');
 
+    // ── Cosmetic shop (PIX-338 art set) ──────────────────────────────────────
+    // Shop UI panels
+    this.load.image('ui_panel_cosmetic_shop',  'assets/ui/cosmetic_shop/ui_panel_cosmetic_shop.png');
+    this.load.image('ui_fitting_room_bg',      'assets/ui/cosmetic_shop/ui_fitting_room_bg.png');
+    this.load.image('ui_dye_palette_panel',    'assets/ui/cosmetic_shop/ui_dye_palette_panel.png');
+    this.load.image('ui_purchase_confirm',     'assets/ui/cosmetic_shop/ui_purchase_confirm.png');
+    // Category icons
+    this.load.image('icon_category_aura',        'assets/ui/cosmetic_shop/icon_category_aura.png');
+    this.load.image('icon_category_head',         'assets/ui/cosmetic_shop/icon_category_head.png');
+    this.load.image('icon_category_back',         'assets/ui/cosmetic_shop/icon_category_back.png');
+    this.load.image('icon_category_chest',        'assets/ui/cosmetic_shop/icon_category_chest.png');
+    this.load.image('icon_category_weapon_skin',  'assets/ui/cosmetic_shop/icon_category_weapon_skin.png');
+    // Stylist NPC sprite
+    this.load.image('char_npc_stylist', 'assets/sprites/characters/char_npc_stylist.png');
+    // Cosmetic overlays (outfit, hat, aura, cloak, wings)
+    this.load.image('aura_flame',   'assets/cosmetics/aura_flame.png');
+    this.load.image('aura_frost',   'assets/cosmetics/aura_frost.png');
+    this.load.image('aura_holy',    'assets/cosmetics/aura_holy.png');
+    this.load.image('aura_shadow',  'assets/cosmetics/aura_shadow.png');
+    this.load.image('hat_wizard',   'assets/cosmetics/hat_wizard.png');
+    this.load.image('hat_crown',    'assets/cosmetics/hat_crown.png');
+    this.load.image('hat_pirate',   'assets/cosmetics/hat_pirate.png');
+    this.load.image('hat_hood',     'assets/cosmetics/hat_hood.png');
+    this.load.image('cloak_crimson',  'assets/cosmetics/cloak_crimson.png');
+    this.load.image('cloak_midnight', 'assets/cosmetics/cloak_midnight.png');
+    this.load.image('cloak_ivory',    'assets/cosmetics/cloak_ivory.png');
+    this.load.image('wings_angel',    'assets/cosmetics/wings_angel.png');
+    this.load.image('wings_demon',    'assets/cosmetics/wings_demon.png');
+    this.load.image('wings_fairy',    'assets/cosmetics/wings_fairy.png');
+    this.load.image('cosmetic_outfit_mage_celestial',   'assets/cosmetics/cosmetic_outfit_mage_celestial.png');
+    this.load.image('cosmetic_outfit_warrior_ember',    'assets/cosmetics/cosmetic_outfit_warrior_ember.png');
+    this.load.image('cosmetic_outfit_ranger_frost',     'assets/cosmetics/cosmetic_outfit_ranger_frost.png');
+    this.load.image('cosmetic_outfit_ranger_shadow',    'assets/cosmetics/cosmetic_outfit_ranger_shadow.png');
+    this.load.image('cosmetic_outfit_warrior_royal',    'assets/cosmetics/cosmetic_outfit_warrior_royal.png');
+    // Portrait frames
+    this.load.image('frame_gold',      'assets/ui/cosmetic_shop/frame_gold.png');
+    this.load.image('frame_celestial', 'assets/ui/cosmetic_shop/frame_celestial.png');
+
     // ── Bestiary (PIX-337 art set) ────────────────────────────────────────────
     this.load.image('ui_bestiary_book_frame',        'assets/ui/bestiary/ui_bestiary_book_frame.png');
     this.load.image('ui_bestiary_info_panel',         'assets/ui/bestiary/ui_bestiary_info_panel.png');

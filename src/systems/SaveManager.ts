@@ -61,6 +61,18 @@ export interface SaveData {
     discovered: string[];
     bossKills:  Record<string, number>;
   };
+  /** Cosmetics: owned items and equipped slots. */
+  cosmetics?: {
+    owned:    string[];
+    equipped: {
+      outfit?:       string;
+      hat?:          string;
+      aura?:         string;
+      cloak?:        string;
+      wings?:        string;
+      portraitFrame?: string;
+    };
+  };
 }
 
 /**
@@ -144,6 +156,7 @@ export class SaveManager {
         activeMountId:        p.activeMountId        ?? '',
         housing:              p.housing,
         bestiary:             p.bestiary,
+        cosmetics:            p.cosmetics,
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
@@ -337,6 +350,43 @@ export class SaveManager {
     data.bestiary.bossKills[bossTypeId] = prev + 1;
     SaveManager.save(data);
     return prev + 1;
+  }
+
+  // ── Cosmetics ─────────────────────────────────────────────────────────────
+
+  static getCosmetics(): { owned: string[]; equipped: Record<string, string | undefined> } {
+    const data = SaveManager.load();
+    return {
+      owned:    data.cosmetics?.owned    ?? [],
+      equipped: (data.cosmetics?.equipped ?? {}) as Record<string, string | undefined>,
+    };
+  }
+
+  /** Add a cosmetic item to the player's owned list. */
+  static buyCosmetic(cosmeticId: string): void {
+    const data = SaveManager.load();
+    if (!data.cosmetics) data.cosmetics = { owned: [], equipped: {} };
+    if (!data.cosmetics.owned.includes(cosmeticId)) {
+      data.cosmetics.owned.push(cosmeticId);
+    }
+    SaveManager.save(data);
+  }
+
+  /** Equip a cosmetic to its slot. Pass null to unequip. */
+  static equipCosmetic(slot: string, cosmeticId: string | null): void {
+    const data = SaveManager.load();
+    if (!data.cosmetics) data.cosmetics = { owned: [], equipped: {} };
+    if (cosmeticId === null) {
+      delete (data.cosmetics.equipped as Record<string, string | undefined>)[slot];
+    } else {
+      (data.cosmetics.equipped as Record<string, string | undefined>)[slot] = cosmeticId;
+    }
+    SaveManager.save(data);
+  }
+
+  /** Grant a cosmetic by achievement (bypasses gold cost). */
+  static grantCosmetic(cosmeticId: string): void {
+    SaveManager.buyCosmetic(cosmeticId);
   }
 
   // ── Save slots ────────────────────────────────────────────────────────────

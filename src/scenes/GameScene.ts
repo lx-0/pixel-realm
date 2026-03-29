@@ -26,6 +26,7 @@ import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { QuestBoardPanel }   from '../ui/QuestBoardPanel';
 import { EventBanner, type WorldEventData } from '../ui/EventBanner';
 import { BestiaryPanel }     from '../ui/BestiaryPanel';
+import { CosmeticShopPanel, type EquippedCosmetics } from '../ui/CosmeticShopPanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { StatSheetPanel, type StatSheetState } from '../ui/StatSheetPanel';
 import { PrestigePanel } from '../ui/PrestigePanel';
@@ -497,6 +498,18 @@ export class GameScene extends Phaser.Scene {
   /** Bestiary / monster compendium panel (Z key). */
   private bestiaryPanel?: BestiaryPanel;
 
+  // ── Cosmetic shop ─────────────────────────────────────────────────────────
+  /** Cosmetic shop + wardrobe panel (V key / Stylist NPC). */
+  private cosmeticPanel?: CosmeticShopPanel;
+  /** Stylist NPC world sprite. */
+  private stylistNpc?:  Phaser.GameObjects.Sprite;
+  /** Proximity hint for Stylist NPC. */
+  private stylistHint?: Phaser.GameObjects.Text;
+  /** Cosmetic overlay sprites layered over the player. */
+  private cosmeticOverlays: Map<string, Phaser.GameObjects.Sprite> = new Map();
+  /** Currently equipped cosmetics (cached). */
+  private equippedCosmetics: EquippedCosmetics = {};
+
   /** Seasonal event progress tracker panel. */
   private seasonalEventPanel?: SeasonalEventPanel;
   private worldBossPanel?: WorldBossPanel;
@@ -690,6 +703,18 @@ export class GameScene extends Phaser.Scene {
     // Bestiary panel (Z key)
     this.bestiaryPanel = new BestiaryPanel(this);
 
+    // Cosmetic shop panel (V key)
+    this.cosmeticPanel = new CosmeticShopPanel(this);
+    this.cosmeticPanel.onEquipChanged = (equipped: EquippedCosmetics) => {
+      this.equippedCosmetics = equipped;
+      this.updateCosmeticOverlays();
+      // Broadcast cosmetics to multiplayer peers (method added in multiplayer expansion)
+      (this.mp as any)?.sendCosmeticUpdate?.(equipped);
+    };
+    // Load saved equipped cosmetics on start
+    this.equippedCosmetics = SaveManager.getCosmetics().equipped as EquippedCosmetics;
+    this.updateCosmeticOverlays();
+
     // Seasonal event panel (G key to toggle)
     this.seasonalEventPanel = new SeasonalEventPanel(this);
     this.seasonalEventPanel.onClaimReward = (itemId) => this.mp?.sendEventClaimReward(itemId);
@@ -765,6 +790,7 @@ export class GameScene extends Phaser.Scene {
         this.marketplace?.closeIfOpen()       ||
         this.questBoardPanel?.closeIfOpen()   ||
         this.bestiaryPanel?.closeIfOpen()     ||
+        this.cosmeticPanel?.closeIfOpen()     ||
         this.guildPanel?.closeIfOpen()        ||
         this.partyPanel?.closeIfOpen()        ||
         this.petPanel?.closeIfOpen()          ||
@@ -835,6 +861,8 @@ export class GameScene extends Phaser.Scene {
     // Quest board panel (B key handled inside the panel)
     this.questBoardPanel?.update();
     this.bestiaryPanel?.update();
+    this.cosmeticPanel?.update();
+    this.updateStylistHint();
     this.updateQuestBoardHint();
 
     // Seasonal event panel (G key handled inside the panel)
@@ -997,6 +1025,14 @@ export class GameScene extends Phaser.Scene {
     // Mount sprite follows player
     if (this.mountSprite) {
       this.mountSprite.setPosition(this.player.x, this.player.y + 4);
+    }
+
+    // Cosmetic overlays follow player
+    if (this.cosmeticOverlays.size > 0) {
+      this.cosmeticOverlays.forEach((overlay, slot) => {
+        const offY = slot === 'hat' ? -8 : (slot === 'wings' ? 0 : 0);
+        overlay.setPosition(this.player!.x, this.player!.y + offY);
+      });
     }
 
     this.handleDodgeRoll(time);
@@ -1781,6 +1817,10 @@ export class GameScene extends Phaser.Scene {
       this.eventBanner = undefined;
       this.bestiaryPanel?.destroy();
       this.bestiaryPanel = undefined;
+      this.cosmeticPanel?.destroy();
+      this.cosmeticPanel = undefined;
+      this.cosmeticOverlays.forEach(s => s.destroy());
+      this.cosmeticOverlays.clear();
       this.socialPanel?.destroy();
       this.socialPanel = undefined;
       this.achievementPanel?.destroy();
@@ -2238,6 +2278,9 @@ export class GameScene extends Phaser.Scene {
     // Quest board sign — placed near auctioneer (multiplayer only)
     if (this.isMultiplayer) this.addQuestBoardSign(WALL + 64, WALL + 24);
 
+    // Stylist NPC — placed top-right corner (single-player + multiplayer)
+    this.addStylistNpc(W - WALL - 24, WALL + 24);
+
     // Housing NPC (Realtor) — placed in bottom-right corner
     this.addHousingNpc(W - WALL - 24, H - WALL - 24);
 
@@ -2546,6 +2589,89 @@ export class GameScene extends Phaser.Scene {
       this.questBoardPanel?.show(this.zone?.id ?? '');
       this.sfx.playPanelOpen();
     }
+  }
+
+  // ── Stylist NPC ───────────────────────────────────────────────────────────
+
+  private addStylistNpc(x: number, y: number): void {
+    const texKey = this.textures.exists('char_npc_stylist') ? 'char_npc_stylist' : 'waystone_inactive';
+    this.stylistNpc = this.add.sprite(x, y, texKey).setDepth(4).setOrigin(0.5, 1);
+
+    const label = this.add.text(x, y - 20, 'STYLIST', {
+      fontSize: '3px', color: '#ddaaff', fontFamily: 'monospace',
+    }).setOrigin(0.5, 1).setDepth(5);
+
+    this.stylistHint = this.add.text(x, y - 28, '[V] Cosmetic Shop', {
+      fontSize: '3px', color: '#ffffff', fontFamily: 'monospace',
+      backgroundColor: '#00000088',
+      padding: { x: 2, y: 1 },
+    }).setOrigin(0.5, 1).setDepth(5).setVisible(false);
+
+    this.tweens.add({
+      targets: label,
+      alpha: { from: 0.7, to: 1.0 },
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
+  private updateStylistHint(): void {
+    if (!this.stylistNpc || !this.stylistHint || !this.player) return;
+    const dist = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.stylistNpc.x, this.stylistNpc.y,
+    );
+    const near = dist < 40;
+    this.stylistHint.setVisible(near && !(this.cosmeticPanel?.isVisible));
+
+    if (near && (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false))) {
+      if (this.cosmeticPanel) {
+        this.cosmeticPanel.playerGold = this.gold;
+        this.cosmeticPanel.show();
+        this.sfx.playPanelOpen();
+      }
+    }
+  }
+
+  /**
+   * Update cosmetic overlay sprites on top of the player.
+   * Slots: hat, aura, cloak, wings — each becomes a layered sprite.
+   */
+  private updateCosmeticOverlays(): void {
+    if (!this.player) return;
+
+    const OVERLAY_SLOTS: (keyof EquippedCosmetics)[] = ['aura', 'hat', 'cloak', 'wings'];
+
+    OVERLAY_SLOTS.forEach(slot => {
+      const equipped = this.equippedCosmetics[slot];
+      const existing = this.cosmeticOverlays.get(slot);
+
+      if (!equipped) {
+        // Remove overlay if no longer equipped
+        if (existing) { existing.destroy(); this.cosmeticOverlays.delete(slot); }
+        return;
+      }
+
+      if (existing) {
+        // Update texture if changed
+        if (this.textures.exists(equipped) && existing.texture.key !== equipped) {
+          existing.setTexture(equipped);
+        }
+      } else {
+        // Create new overlay
+        if (this.textures.exists(equipped)) {
+          const overlay = this.add.sprite(this.player!.x, this.player!.y, equipped)
+            .setDepth(11).setDisplaySize(16, 16);
+          // Offset by slot type
+          if (slot === 'hat')   overlay.setOrigin(0.5, 1.5);
+          if (slot === 'aura')  overlay.setAlpha(0.7);
+          if (slot === 'wings') overlay.setDepth(9); // behind player
+          this.cosmeticOverlays.set(slot, overlay);
+        }
+      }
+    });
   }
 
   // ── Housing NPC ────────────────────────────────────────────────────────────
