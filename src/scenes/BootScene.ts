@@ -260,6 +260,34 @@ export class BootScene extends Phaser.Scene {
     this.load.image('ui_icon_bid_hammer',        'assets/ui/auction/ui_icon_bid_hammer.png');
     this.load.image('ui_icon_gold_coin',         'assets/ui/auction/ui_icon_gold_coin.png');
 
+    // ── Fishing (PIX-353 art set) ─────────────────────────────────────────────
+    this.load.image('fishing_spot',                'assets/sprites/fishing/fishing_spot.png');
+    this.load.image('char_npc_rod_vendor',         'assets/sprites/characters/char_npc_rod_vendor.png');
+    this.load.image('ui_fishing_cast_bar_bg',      'assets/ui/fishing/ui_fishing_cast_bar_bg.png');
+    this.load.image('ui_fishing_cast_bar_fill',    'assets/ui/fishing/ui_fishing_cast_bar_fill.png');
+    this.load.image('ui_fishing_tension_bar_bg',   'assets/ui/fishing/ui_fishing_tension_bar_bg.png');
+    this.load.image('ui_fishing_tension_arrow',    'assets/ui/fishing/ui_fishing_tension_arrow.png');
+    // Fish sprites
+    this.load.image('item_fish_forest_trout',      'assets/sprites/fishing/item_fish_forest_trout.png');
+    this.load.image('item_fish_forest_bass',       'assets/sprites/fishing/item_fish_forest_bass.png');
+    this.load.image('item_fish_river_perch',       'assets/sprites/fishing/item_fish_river_perch.png');
+    this.load.image('item_fish_desert_catfish',    'assets/sprites/fishing/item_fish_desert_catfish.png');
+    this.load.image('item_fish_desert_sandfish',   'assets/sprites/fishing/item_fish_desert_sandfish.png');
+    this.load.image('item_fish_ocean_clownfish',   'assets/sprites/fishing/item_fish_ocean_clownfish.png');
+    this.load.image('item_fish_ocean_tuna',        'assets/sprites/fishing/item_fish_ocean_tuna.png');
+    this.load.image('item_fish_frost_salmon',      'assets/sprites/fishing/item_fish_frost_salmon.png');
+    this.load.image('item_fish_ice_pike',          'assets/sprites/fishing/item_fish_ice_pike.png');
+    this.load.image('item_fish_volcanic_eel',      'assets/sprites/fishing/item_fish_volcanic_eel.png');
+    this.load.image('item_fish_lava_guppy',        'assets/sprites/fishing/item_fish_lava_guppy.png');
+    this.load.image('item_fish_void_anglerfish',   'assets/sprites/fishing/item_fish_void_anglerfish.png');
+    this.load.image('item_fish_void_jellyfish',    'assets/sprites/fishing/item_fish_void_jellyfish.png');
+    this.load.image('item_catch_old_boot',         'assets/sprites/fishing/item_catch_old_boot.png');
+    this.load.image('item_catch_treasure',         'assets/sprites/fishing/item_catch_treasure.png');
+    // Rod items
+    this.load.image('item_rod_basic',              'assets/sprites/fishing/item_rod_basic.png');
+    this.load.image('item_rod_reinforced',         'assets/sprites/fishing/item_rod_reinforced.png');
+    this.load.image('item_rod_master',             'assets/sprites/fishing/item_rod_master.png');
+
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();
     });

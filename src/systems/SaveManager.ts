@@ -73,6 +73,14 @@ export interface SaveData {
       portraitFrame?: string;
     };
   };
+  /** Fishing: skill progress, catch log, owned rods. */
+  fishing?: {
+    skillLevel:   number;
+    xp:           number;
+    caughtFish:   Record<string, number>; // fishId → catch count
+    ownedRods:    string[];               // rod ids
+    equippedRodId: string;
+  };
 }
 
 /**
@@ -157,6 +165,7 @@ export class SaveManager {
         housing:              p.housing,
         bestiary:             p.bestiary,
         cosmetics:            p.cosmetics,
+        fishing:              p.fishing,
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
@@ -387,6 +396,63 @@ export class SaveManager {
   /** Grant a cosmetic by achievement (bypasses gold cost). */
   static grantCosmetic(cosmeticId: string): void {
     SaveManager.buyCosmetic(cosmeticId);
+  }
+
+  // ── Fishing ───────────────────────────────────────────────────────────────
+
+  static getFishing(): { skillLevel: number; xp: number; caughtFish: Record<string, number>; ownedRods: string[]; equippedRodId: string } {
+    const data = SaveManager.load();
+    return data.fishing ?? { skillLevel: 1, xp: 0, caughtFish: {}, ownedRods: ['rod_basic'], equippedRodId: 'rod_basic' };
+  }
+
+  /**
+   * Record a fish catch. Returns { isNew, newSkillLevel } where isNew indicates
+   * the species was caught for the first time, and newSkillLevel is set if the
+   * player levelled up fishing.
+   */
+  static recordFishCatch(fishId: string, xpGained: number): { isNew: boolean; newSkillLevel: number | null } {
+    const data = SaveManager.load();
+    if (!data.fishing) {
+      data.fishing = { skillLevel: 1, xp: 0, caughtFish: {}, ownedRods: ['rod_basic'], equippedRodId: 'rod_basic' };
+    }
+    const isNew  = !(data.fishing.caughtFish[fishId] > 0);
+    data.fishing.caughtFish[fishId] = (data.fishing.caughtFish[fishId] ?? 0) + 1;
+    data.fishing.xp += xpGained;
+
+    // Skill level up: 100 xp per level, cap at 20
+    let newSkillLevel: number | null = null;
+    const XP_PER_LEVEL = 100;
+    const MAX_SKILL    = 20;
+    while (data.fishing.skillLevel < MAX_SKILL && data.fishing.xp >= data.fishing.skillLevel * XP_PER_LEVEL) {
+      data.fishing.xp -= data.fishing.skillLevel * XP_PER_LEVEL;
+      data.fishing.skillLevel++;
+      newSkillLevel = data.fishing.skillLevel;
+    }
+
+    SaveManager.save(data);
+    return { isNew, newSkillLevel };
+  }
+
+  /** Buy a rod — adds it to ownedRods list. Returns false if already owned. */
+  static buyRod(rodId: string): boolean {
+    const data = SaveManager.load();
+    if (!data.fishing) {
+      data.fishing = { skillLevel: 1, xp: 0, caughtFish: {}, ownedRods: ['rod_basic'], equippedRodId: 'rod_basic' };
+    }
+    if (data.fishing.ownedRods.includes(rodId)) return false;
+    data.fishing.ownedRods.push(rodId);
+    SaveManager.save(data);
+    return true;
+  }
+
+  /** Equip a rod — only if owned. Returns false if not owned. */
+  static equipRod(rodId: string): boolean {
+    const data = SaveManager.load();
+    if (!data.fishing) return false;
+    if (!data.fishing.ownedRods.includes(rodId)) return false;
+    data.fishing.equippedRodId = rodId;
+    SaveManager.save(data);
+    return true;
   }
 
   // ── Save slots ────────────────────────────────────────────────────────────

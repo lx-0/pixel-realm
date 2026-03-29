@@ -27,6 +27,9 @@ import { QuestBoardPanel }   from '../ui/QuestBoardPanel';
 import { EventBanner, type WorldEventData } from '../ui/EventBanner';
 import { BestiaryPanel }     from '../ui/BestiaryPanel';
 import { CosmeticShopPanel, type EquippedCosmetics } from '../ui/CosmeticShopPanel';
+import { FishingSystem, ROD_DEFS } from '../systems/FishingSystem';
+import { FishingPanel }            from '../ui/FishingPanel';
+import { FishingJournalPanel }     from '../ui/FishingJournalPanel';
 import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { StatSheetPanel, type StatSheetState } from '../ui/StatSheetPanel';
 import { PrestigePanel } from '../ui/PrestigePanel';
@@ -510,6 +513,23 @@ export class GameScene extends Phaser.Scene {
   /** Currently equipped cosmetics (cached). */
   private equippedCosmetics: EquippedCosmetics = {};
 
+  // ── Fishing ────────────────────────────────────────────────────────────────
+  private fishingSystem?: FishingSystem;
+  private fishingPanel?:  FishingPanel;
+  private fishingJournal?: FishingJournalPanel;
+  /** World fishing spot sprites. */
+  private fishingSpots: Phaser.GameObjects.Sprite[] = [];
+  /** Proximity hint shown when near a fishing spot. */
+  private fishingSpotHint?: Phaser.GameObjects.Text;
+  /** Rod vendor NPC world sprite. */
+  private rodVendorNpc?: Phaser.GameObjects.Sprite;
+  /** Proximity hint for rod vendor. */
+  private rodVendorHint?: Phaser.GameObjects.Text;
+  /** F key for fishing interactions. */
+  private fishingKey?: Phaser.Input.Keyboard.Key;
+  /** True when the player is standing near a fishing spot. */
+  private nearFishingSpot = false;
+
   /** Seasonal event progress tracker panel. */
   private seasonalEventPanel?: SeasonalEventPanel;
   private worldBossPanel?: WorldBossPanel;
@@ -715,6 +735,44 @@ export class GameScene extends Phaser.Scene {
     this.equippedCosmetics = SaveManager.getCosmetics().equipped as EquippedCosmetics;
     this.updateCosmeticOverlays();
 
+    // Fishing system + HUD panel (F key)
+    {
+      const fishSave = SaveManager.getFishing();
+      this.fishingSystem = new FishingSystem();
+      this.fishingSystem.skillLevel    = fishSave.skillLevel;
+      this.fishingSystem.currentRodId  = fishSave.equippedRodId;
+      this.fishingSystem.currentZoneId = zoneId;
+
+      this.fishingSystem.onCatch = (result) => {
+        // Mark isNew based on save
+        const { isNew, newSkillLevel } = SaveManager.recordFishCatch(result.fish.id, result.xp);
+        result.isNew = isNew;
+        // Award gold
+        this.gold += result.gold;
+        this.updateHUD();
+        // Show panel
+        this.fishingPanel?.showCatchPopup(result);
+        // Floating text
+        this.floatingText(this.player.x, this.player.y - 16, `+${result.xp}xp  +${result.gold}g`, '#88ff88');
+        if (isNew) {
+          this.floatingText(this.player.x, this.player.y - 26, '🐟 New species!', '#ffd700');
+        }
+        if (newSkillLevel !== null) {
+          this.floatingText(this.player.x, this.player.y - 36, `Fishing Lv.${newSkillLevel}!`, '#88ccff');
+          // Update system with new skill level
+          this.fishingSystem!.skillLevel = newSkillLevel;
+        }
+      };
+
+      this.fishingSystem.onFail = () => {
+        this.fishingPanel?.showFailMessage();
+      };
+
+      this.fishingPanel  = new FishingPanel(this, this.fishingSystem);
+      this.fishingJournal = new FishingJournalPanel(this);
+      this.fishingKey    = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+    }
+
     // Seasonal event panel (G key to toggle)
     this.seasonalEventPanel = new SeasonalEventPanel(this);
     this.seasonalEventPanel.onClaimReward = (itemId) => this.mp?.sendEventClaimReward(itemId);
@@ -791,6 +849,7 @@ export class GameScene extends Phaser.Scene {
         this.questBoardPanel?.closeIfOpen()   ||
         this.bestiaryPanel?.closeIfOpen()     ||
         this.cosmeticPanel?.closeIfOpen()     ||
+        this.fishingJournal?.closeIfOpen()    ||
         this.guildPanel?.closeIfOpen()        ||
         this.partyPanel?.closeIfOpen()        ||
         this.petPanel?.closeIfOpen()          ||
@@ -864,6 +923,9 @@ export class GameScene extends Phaser.Scene {
     this.cosmeticPanel?.update();
     this.updateStylistHint();
     this.updateQuestBoardHint();
+    this.fishingJournal?.update();
+    this.updateFishing(delta);
+    this.updateRodVendorHint();
 
     // Seasonal event panel (G key handled inside the panel)
     this.seasonalEventPanel?.update();
@@ -1821,6 +1883,14 @@ export class GameScene extends Phaser.Scene {
       this.cosmeticPanel = undefined;
       this.cosmeticOverlays.forEach(s => s.destroy());
       this.cosmeticOverlays.clear();
+      this.fishingSystem?.destroy();
+      this.fishingSystem = undefined;
+      this.fishingPanel?.destroy();
+      this.fishingPanel = undefined;
+      this.fishingJournal?.destroy();
+      this.fishingJournal = undefined;
+      this.fishingSpots.forEach(s => s.destroy());
+      this.fishingSpots = [];
       this.socialPanel?.destroy();
       this.socialPanel = undefined;
       this.achievementPanel?.destroy();
@@ -2281,6 +2351,13 @@ export class GameScene extends Phaser.Scene {
     // Stylist NPC — placed top-right corner (single-player + multiplayer)
     this.addStylistNpc(W - WALL - 24, WALL + 24);
 
+    // Fishing spots — placed near the bottom edge of the zone
+    this.addFishingSpot(W / 2 - 30, H - WALL - 16);
+    this.addFishingSpot(W / 2 + 30, H - WALL - 16);
+
+    // Rod vendor NPC — placed near fishing spots
+    this.addRodVendorNpc(W / 2, H - WALL - 32);
+
     // Housing NPC (Realtor) — placed in bottom-right corner
     this.addHousingNpc(W - WALL - 24, H - WALL - 24);
 
@@ -2672,6 +2749,153 @@ export class GameScene extends Phaser.Scene {
         }
       }
     });
+  }
+
+  // ── Fishing ────────────────────────────────────────────────────────────────
+
+  private addFishingSpot(x: number, y: number): void {
+    const texKey = this.textures.exists('fishing_spot') ? 'fishing_spot' : 'waystone_inactive';
+    const spot = this.add.sprite(x, y, texKey)
+      .setDepth(2).setOrigin(0.5, 0.5).setDisplaySize(20, 10);
+
+    // Gentle ripple tween
+    this.tweens.add({
+      targets: spot,
+      scaleX: { from: 1.0, to: 1.15 },
+      duration: 1000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    this.fishingSpots.push(spot);
+
+    // Proximity hint (shared — only one shown at a time, updated in updateFishing)
+    if (!this.fishingSpotHint) {
+      this.fishingSpotHint = this.add.text(
+        CANVAS.WIDTH / 2, CANVAS.HEIGHT - 44,
+        '[F] Fish here  [J] Journal',
+        { fontSize: '4px', color: '#88ccff', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+      ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
+    }
+  }
+
+  private addRodVendorNpc(x: number, y: number): void {
+    const texKey = this.textures.exists('char_npc_rod_vendor') ? 'char_npc_rod_vendor' : 'waystone_inactive';
+    this.rodVendorNpc = this.add.sprite(x, y, texKey).setDepth(4).setOrigin(0.5, 1);
+
+    const label = this.add.text(x, y - 20, 'ROD SHOP', {
+      fontSize: '3px', color: '#88ccff', fontFamily: 'monospace',
+    }).setOrigin(0.5, 1).setDepth(5);
+    this.tweens.add({ targets: label, alpha: { from: 0.7, to: 1.0 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    this.rodVendorHint = this.add.text(
+      CANVAS.WIDTH / 2, CANVAS.HEIGHT - 44,
+      '[E] Rod Shop',
+      { fontSize: '4px', color: '#88ccff', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
+  }
+
+  private updateRodVendorHint(): void {
+    if (!this.rodVendorNpc || !this.rodVendorHint || !this.player) return;
+    const dist = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y, this.rodVendorNpc.x, this.rodVendorNpc.y,
+    );
+    const near = dist < 36;
+    this.rodVendorHint.setVisible(near && !this.nearFishingSpot);
+
+    if (near && this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey)) {
+      this.openRodShop();
+    }
+  }
+
+  /** Simple rod shop — opens a small overlay listing rods from ROD_DEFS. */
+  private openRodShop(): void {
+    const fishing = SaveManager.getFishing();
+    const lines: string[] = ['── Rod Shop ──'];
+    ROD_DEFS.forEach((rod, i) => {
+      const owned    = fishing.ownedRods.includes(rod.id);
+      const equipped = fishing.equippedRodId === rod.id;
+      const tag      = equipped ? '[equipped]' : owned ? '[owned]' : `${rod.goldCost}g`;
+      lines.push(`${i + 1}. ${rod.name}  ${tag}`);
+    });
+    lines.push('', 'Press 1/2/3 to buy/equip');
+    this.floatingText(this.player.x, this.player.y - 20, lines[1], '#88ccff');
+
+    // One-time key listener for rod purchase
+    const oneTime = (event: KeyboardEvent) => {
+      const idx = parseInt(event.key) - 1;
+      if (idx < 0 || idx >= ROD_DEFS.length) return;
+      const rod = ROD_DEFS[idx];
+      const fishSave = SaveManager.getFishing();
+      if (fishSave.ownedRods.includes(rod.id)) {
+        SaveManager.equipRod(rod.id);
+        this.fishingSystem!.currentRodId = rod.id;
+        this.floatingText(this.player.x, this.player.y - 20, `Equipped: ${rod.name}`, '#88ccff');
+      } else if (this.gold >= rod.goldCost) {
+        this.gold -= rod.goldCost;
+        this.updateHUD();
+        SaveManager.buyRod(rod.id);
+        SaveManager.equipRod(rod.id);
+        this.fishingSystem!.currentRodId = rod.id;
+        this.floatingText(this.player.x, this.player.y - 20, `Bought: ${rod.name}!`, '#ffd700');
+      } else {
+        this.floatingText(this.player.x, this.player.y - 20, 'Not enough gold!', '#ff6666');
+      }
+      this.input.keyboard?.removeListener('keydown', oneTime);
+    };
+    this.input.keyboard?.on('keydown', oneTime);
+  }
+
+  private updateFishing(delta: number): void {
+    if (!this.fishingSystem || !this.fishingPanel || !this.player) return;
+
+    // Update fishing zone in case player zoneId changed
+    this.fishingSystem.currentZoneId = this.zone?.id ?? '';
+
+    // Check proximity to any fishing spot
+    this.nearFishingSpot = this.fishingSpots.some(s =>
+      Phaser.Math.Distance.Between(this.player.x, this.player.y, s.x, s.y) < 36,
+    );
+
+    const fishState = this.fishingSystem.state;
+
+    // Show/hide proximity hint
+    if (this.fishingSpotHint) {
+      this.fishingSpotHint.setVisible(
+        this.nearFishingSpot && fishState === 'idle' && !this.fishingJournal?.isVisible,
+      );
+    }
+
+    // Cancel fishing when player moves away
+    if (fishState !== 'idle' && !this.nearFishingSpot && fishState !== 'success' && fishState !== 'fail') {
+      this.fishingSystem.cancel();
+    }
+
+    // F key: start / charge / release cast; reel during reeling phase
+    if (this.fishingKey) {
+      const fDown   = this.fishingKey.isDown;
+      const fJustUp = Phaser.Input.Keyboard.UpDuration(this.fishingKey, 16);
+
+      if (this.nearFishingSpot) {
+        if (fishState === 'idle' && Phaser.Input.Keyboard.JustDown(this.fishingKey)) {
+          this.fishingSystem.startCast();
+        } else if (fishState === 'casting' && fDown) {
+          this.fishingSystem.chargeCast(delta);
+        } else if (fishState === 'casting' && fJustUp) {
+          this.fishingSystem.releaseCast();
+        } else if (fishState === 'biting' && Phaser.Input.Keyboard.JustDown(this.fishingKey)) {
+          this.fishingSystem.startReel();
+        }
+      }
+
+      if (fishState === 'reeling') {
+        this.fishingSystem.reelTick(fDown, delta);
+      }
+    }
+
+    // Update HUD panel
+    this.fishingPanel.update();
   }
 
   // ── Housing NPC ────────────────────────────────────────────────────────────
