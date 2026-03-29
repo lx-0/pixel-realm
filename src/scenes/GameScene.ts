@@ -8,7 +8,7 @@ import {
 import { SoundManager } from '../systems/SoundManager';
 import { SettingsManager } from '../systems/SettingsManager';
 import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData, HARDCORE_UNLOCK_LEVEL }  from '../systems/SaveManager';
-import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FriendEntry, type EmoteEvent, type WorldEventEntry, type EmoteId, type PetData } from '../systems/MultiplayerClient';
+import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FactionTitleUnlocked, type FactionDailyTask, type FriendEntry, type EmoteEvent, type WorldEventEntry, type EmoteId, type PetData } from '../systems/MultiplayerClient';
 import { PetPanel } from '../ui/PetPanel';
 import { FactionReputationPanel } from '../ui/FactionReputationPanel';
 import { ChatOverlay }        from '../ui/ChatOverlay';
@@ -1117,6 +1117,28 @@ export class GameScene extends Phaser.Scene {
         `${change.factionName}: ${sign}${change.delta} rep (${change.standing})`,
         change.delta >= 0 ? '#88ee88' : '#ff8888',
       );
+    };
+
+    client.onFactionTitleUnlocked = (data: FactionTitleUnlocked) => {
+      this.chat?.addMessage(
+        `Title unlocked: "${data.title}" (${data.factionName})`,
+        '#ffd700',
+      );
+    };
+
+    client.onFactionDailyTasks = (tasks: FactionDailyTask[]) => {
+      this.factionPanel?.setDailyTasks(tasks);
+    };
+
+    client.onFactionDailyResult = (success: boolean, _factionId: string, repReward?: number, goldReward?: number, reason?: string) => {
+      if (success) {
+        this.chat?.addMessage(
+          `Daily task complete! +${repReward ?? 0} rep, +${goldReward ?? 0} gold`,
+          '#88ee88',
+        );
+      } else if (reason) {
+        this.chat?.addMessage(reason, '#ff8888');
+      }
     };
 
     // Incoming chat messages

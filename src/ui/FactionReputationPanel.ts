@@ -9,10 +9,10 @@
 
 import Phaser from 'phaser';
 import { CANVAS } from '../config/constants';
-import type { FactionRepEntry } from '../systems/MultiplayerClient';
+import type { FactionRepEntry, FactionDailyTask } from '../systems/MultiplayerClient';
 
-const PANEL_W  = 210;
-const PANEL_H  = 150;
+const PANEL_W  = 220;
+const PANEL_H  = 160;
 const PANEL_X  = (CANVAS.WIDTH  - PANEL_W) / 2;
 const PANEL_Y  = (CANVAS.HEIGHT - PANEL_H) / 2;
 const DEPTH    = 70;
@@ -24,6 +24,7 @@ const STANDING_META: Record<string, { label: string; color: string; barColor: nu
   unfriendly: { label: 'Unfriendly', color: '#ff8844', barColor: 0xcc5522 },
   neutral:    { label: 'Neutral',    color: '#aabbcc', barColor: 0x445566 },
   friendly:   { label: 'Friendly',   color: '#88ee88', barColor: 0x336633 },
+  honored:    { label: 'Honored',    color: '#44ddff', barColor: 0x226688 },
   exalted:    { label: 'Exalted',    color: '#ffd700', barColor: 0x886600 },
 };
 
@@ -38,11 +39,12 @@ const FACTION_META: Record<string, { displayName: string; swatchColor: number }>
 const FACTION_ORDER = ['nature_wardens', 'merchants_guild', 'mages_circle', 'shadow_clan'];
 
 export class FactionReputationPanel {
-  private scene:     Phaser.Scene;
-  private visible    = false;
-  private rKey!:     Phaser.Input.Keyboard.Key;
-  private container: Phaser.GameObjects.Container;
+  private scene:       Phaser.Scene;
+  private visible      = false;
+  private rKey!:       Phaser.Input.Keyboard.Key;
+  private container:   Phaser.GameObjects.Container;
   private reputations: FactionRepEntry[] = [];
+  private dailyTasks:  FactionDailyTask[] = [];
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -64,6 +66,11 @@ export class FactionReputationPanel {
 
   setReputations(reps: FactionRepEntry[]): void {
     this.reputations = reps;
+    if (this.visible) this.rebuild();
+  }
+
+  setDailyTasks(tasks: FactionDailyTask[]): void {
+    this.dailyTasks = tasks;
     if (this.visible) this.rebuild();
   }
 
@@ -193,7 +200,27 @@ export class FactionReputationPanel {
         { fontSize: '3px', color: '#667788', fontFamily: 'monospace' },
       ).setScrollFactor(0);
 
-      this.container.add([swatch, nameText, standingText, barBg, barFill, tick, repLabel]);
+      // Vendor access indicator (shown at Friendly+)
+      const hasVendor = standing === 'friendly' || standing === 'honored' || standing === 'exalted';
+      const vendorIcon = this.scene.add.text(
+        PANEL_X + PAD + 20, y + 16,
+        hasVendor ? '[Vendor]' : '',
+        { fontSize: '3px', color: '#ffcc44', fontFamily: 'monospace' },
+      ).setScrollFactor(0);
+
+      // Daily task status
+      const dailyTask = this.dailyTasks.find((t) => t.factionId === factionId);
+      const dailyText = dailyTask
+        ? (dailyTask.completed ? '[Daily: Done]' : '[Daily: Available]')
+        : '';
+      const dailyColor = dailyTask?.completed ? '#446644' : '#88ee88';
+      const dailyLabel = this.scene.add.text(
+        PANEL_X + PANEL_W - PAD, y + 16,
+        dailyText,
+        { fontSize: '3px', color: dailyColor, fontFamily: 'monospace' },
+      ).setOrigin(1, 0).setScrollFactor(0);
+
+      this.container.add([swatch, nameText, standingText, barBg, barFill, tick, repLabel, vendorIcon, dailyLabel]);
 
       y += ROW_H;
     }

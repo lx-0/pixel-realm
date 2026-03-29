@@ -11,6 +11,10 @@ import {
   getPlayerFactionReputations,
   adjustFactionReputation,
   initPlayerFactionReputations,
+  getPlayerDailyTaskStatus,
+  completeFactionDailyTask,
+  awardEarnedFactionTitles,
+  getFactionVendorItems,
 } from "../db/factions";
 import {
   factionForZone,
@@ -19,6 +23,7 @@ import {
   REP_PER_KILL,
   RIVAL_REP_LOSS,
   FACTION_BY_ID,
+  canAccessVendor,
 } from "../factions";
 import { executeP2PTrade, type TradeItem } from "../db/marketplace";
 import { initSkillState, loadSkillState, saveSkillState, type SkillState } from "../db/skills";
@@ -576,6 +581,12 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("pet:acquire", (client: Client, msg: PetAcquireMessage) => this.handlePetAcquire(client, msg));
     this.onMessage("pet:list",    (client: Client)                         => this.handlePetList(client));
 
+    // Faction messages
+    this.onMessage("faction_vendor_open",     (client: Client, msg: { factionId: string }) => this.handleFactionVendorOpen(client, msg));
+    this.onMessage("faction_vendor_buy",      (client: Client, msg: { factionId: string; itemId: string }) => this.handleFactionVendorBuy(client, msg));
+    this.onMessage("faction_daily_list",      (client: Client) => this.handleFactionDailyList(client));
+    this.onMessage("faction_daily_complete",  (client: Client, msg: { factionId: string }) => this.handleFactionDailyComplete(client, msg));
+
     // Count every incoming WS message for /metrics
     this.onMessage("*", () => { incrementMessageCount(); });
 
@@ -685,11 +696,13 @@ export class ZoneRoom extends Room<ZoneGameState> {
           // Non-fatal: pet data unavailable
         }
 
-        // Load faction reputations and send to client (best-effort)
+        // Load faction reputations, daily tasks, and send to client (best-effort)
         try {
           await initPlayerFactionReputations(userId);
           const reps = await getPlayerFactionReputations(userId);
           client.send("faction_reputations", { reputations: reps });
+          const dailyTasks = await getPlayerDailyTaskStatus(userId);
+          client.send("faction_daily_tasks", { tasks: dailyTasks });
         } catch (_factionErr) {
           // Non-fatal: faction data unavailable
         }
@@ -1424,6 +1437,17 @@ export class ZoneRoom extends Room<ZoneGameState> {
             newRep,
             standing,
           });
+
+          // Award any newly-earned titles
+          const newTitles = await awardEarnedFactionTitles(userId, factionId, newRep);
+          for (const title of newTitles) {
+            client.send("faction_title_unlocked", {
+              factionId,
+              factionName: faction.name,
+              titleId:    title.titleId,
+              title:      title.title,
+            });
+          }
         }
       }
     } catch (err) {
@@ -1720,7 +1744,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
   /**
    * Awards +REP_PER_KILL reputation to the faction whose enemies include this enemy type.
-   * Sends updated standings to the killer's client.
+   * Sends updated standings to the killer's client. Also checks for newly earned titles.
    */
   private async awardKillFactionRep(sessionId: string, enemyType: string): Promise<void> {
     const userId = sessionUserMap.get(sessionId);
@@ -1741,6 +1765,196 @@ export class ZoneRoom extends Room<ZoneGameState> {
         newRep,
         standing,
       });
+
+      // Award any newly-earned titles at this rep level
+      const newTitles = await awardEarnedFactionTitles(userId, faction.id, newRep);
+      for (const title of newTitles) {
+        killerClient.send("faction_title_unlocked", {
+          factionId:  title.factionId,
+          factionName: faction.name,
+          titleId:    title.titleId,
+          title:      title.title,
+        });
+      }
+    }
+  }
+
+  // ── Faction vendor handlers ───────────────────────────────────────────────────
+
+  /** Opens the faction vendor for the player — returns available items based on standing. */
+  private async handleFactionVendorOpen(
+    client: Client,
+    msg: { factionId: string },
+  ): Promise<void> {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+    const factionId = String(msg.factionId ?? "").slice(0, 50);
+    if (!factionId) return;
+
+    try {
+      const result = await getFactionVendorItems(userId, factionId);
+      if (!result) {
+        client.send("faction_vendor_denied", {
+          factionId,
+          reason: "You need Friendly standing or higher to access this vendor.",
+        });
+        return;
+      }
+      client.send("faction_vendor_items", {
+        factionId,
+        standing: result.standing,
+        items: result.items,
+      });
+    } catch (err) {
+      console.warn("[ZoneRoom] faction_vendor_open error:", (err as Error).message);
+    }
+  }
+
+  /** Processes a faction vendor item purchase. */
+  private async handleFactionVendorBuy(
+    client: Client,
+    msg: { factionId: string; itemId: string },
+  ): Promise<void> {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+    const factionId = String(msg.factionId ?? "").slice(0, 50);
+    const itemId    = String(msg.itemId    ?? "").slice(0, 100);
+    if (!factionId || !itemId) return;
+
+    try {
+      const result = await getFactionVendorItems(userId, factionId);
+      if (!result) {
+        client.send("faction_vendor_denied", { factionId, reason: "Insufficient standing." });
+        return;
+      }
+
+      const item = result.items.find((i) => i.id === itemId);
+      if (!item) {
+        client.send("faction_vendor_buy_result", {
+          success: false,
+          reason: "Item not available at your standing.",
+        });
+        return;
+      }
+
+      // Deduct gold from persisted player state
+      const savedState = await loadPlayerState(userId);
+      const currentGold = savedState?.gold ?? 0;
+      if (currentGold < item.goldCost) {
+        client.send("faction_vendor_buy_result", {
+          success: false,
+          itemId,
+          itemName: item.name,
+          reason: "Not enough gold.",
+        });
+        return;
+      }
+
+      await savePlayerState(userId, { gold: currentGold - item.goldCost });
+
+      // Grant the item to inventory
+      await addItem(userId, itemId, 1);
+
+      client.send("faction_vendor_buy_result", {
+        success: true,
+        itemId,
+        itemName: item.name,
+        goldCost: item.goldCost,
+        goldRemaining: currentGold - item.goldCost,
+      });
+    } catch (err) {
+      console.warn("[ZoneRoom] faction_vendor_buy error:", (err as Error).message);
+    }
+  }
+
+  // ── Faction daily task handlers ───────────────────────────────────────────────
+
+  /** Returns today's daily task status for all factions. */
+  private async handleFactionDailyList(client: Client): Promise<void> {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+
+    try {
+      const tasks = await getPlayerDailyTaskStatus(userId);
+      client.send("faction_daily_tasks", { tasks });
+    } catch (err) {
+      console.warn("[ZoneRoom] faction_daily_list error:", (err as Error).message);
+    }
+  }
+
+  /**
+   * Completes a faction daily task for the player.
+   * Awards reputation and gold. Idempotent — no double-award if already completed today.
+   */
+  private async handleFactionDailyComplete(
+    client: Client,
+    msg: { factionId: string },
+  ): Promise<void> {
+    const userId = sessionUserMap.get(client.sessionId);
+    if (!userId) return;
+    const factionId = String(msg.factionId ?? "").slice(0, 50);
+    if (!factionId) return;
+
+    const faction = FACTION_BY_ID.get(factionId);
+    if (!faction) return;
+
+    try {
+      const wasNew = await completeFactionDailyTask(userId, factionId);
+      if (!wasNew) {
+        client.send("faction_daily_result", {
+          success: false,
+          factionId,
+          reason: "Daily task already completed.",
+        });
+        return;
+      }
+
+      const { repReward, goldReward } = faction.dailyTask;
+      const newRep = await adjustFactionReputation(userId, factionId, repReward);
+      const standing = getStanding(newRep);
+
+      // Add gold to persisted player state
+      const savedState = await loadPlayerState(userId);
+      const currentGold = savedState?.gold ?? 0;
+      await savePlayerState(userId, { gold: currentGold + goldReward });
+
+      // Apply rival rep loss
+      if (faction.rivalFactionId) {
+        await adjustFactionReputation(userId, faction.rivalFactionId, -RIVAL_REP_LOSS);
+      }
+
+      // Check for new titles
+      const newTitles = await awardEarnedFactionTitles(userId, factionId, newRep);
+
+      // Send updated standings
+      const reps = await getPlayerFactionReputations(userId);
+      client.send("faction_reputations", { reputations: reps });
+      client.send("faction_rep_changed", {
+        factionId,
+        factionName: faction.name,
+        delta: repReward,
+        newRep,
+        standing,
+      });
+      client.send("faction_daily_result", {
+        success:    true,
+        factionId,
+        repReward,
+        goldReward,
+        newRep,
+        standing,
+      });
+
+      for (const title of newTitles) {
+        client.send("faction_title_unlocked", {
+          factionId,
+          factionName: faction.name,
+          titleId:    title.titleId,
+          title:      title.title,
+        });
+      }
+    } catch (err) {
+      console.warn("[ZoneRoom] faction_daily_complete error:", (err as Error).message);
     }
   }
 

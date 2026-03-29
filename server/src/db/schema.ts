@@ -258,6 +258,37 @@ export const playerFactionReputation = pgTable(
   }),
 );
 
+// ── Faction Daily Task Completions ───────────────────────────────────────────
+
+export const factionDailyCompletions = pgTable(
+  "faction_daily_completions",
+  {
+    playerId:   uuid("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+    factionId:  varchar("faction_id", { length: 50 }).notNull(),
+    taskId:     varchar("task_id", { length: 100 }).notNull(),
+    /** UTC date string (YYYY-MM-DD) so resets are timezone-agnostic. */
+    completedDate: varchar("completed_date", { length: 10 }).notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.factionId, table.completedDate] }),
+  }),
+);
+
+// ── Player Faction Titles ─────────────────────────────────────────────────────
+
+export const playerFactionTitles = pgTable(
+  "player_faction_titles",
+  {
+    playerId:  uuid("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+    titleId:   varchar("title_id", { length: 100 }).notNull(),
+    factionId: varchar("faction_id", { length: 50 }).notNull(),
+    unlockedAt: timestamp("unlocked_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.playerId, table.titleId] }),
+  }),
+);
+
 // ── Land Plots (town plot ownership) ─────────────────────────────────────────
 
 export const landPlots = pgTable(

@@ -136,7 +136,7 @@ export interface ClientQuest {
 
 // ── Faction data shapes ───────────────────────────────────────────────────────
 
-export type FactionStanding = "hostile" | "unfriendly" | "neutral" | "friendly" | "exalted";
+export type FactionStanding = "hostile" | "unfriendly" | "neutral" | "friendly" | "honored" | "exalted";
 
 export interface FactionRepEntry {
   factionId: string;
@@ -150,6 +150,33 @@ export interface FactionRepChanged {
   delta: number;
   newRep: number;
   standing: FactionStanding;
+}
+
+export interface FactionTitleUnlocked {
+  factionId: string;
+  factionName: string;
+  titleId: string;
+  title: string;
+}
+
+export interface FactionDailyTask {
+  factionId: string;
+  taskId: string;
+  description: string;
+  enemyType: string;
+  killCount: number;
+  repReward: number;
+  goldReward: number;
+  completed: boolean;
+}
+
+export interface FactionVendorItem {
+  id: string;
+  name: string;
+  description: string;
+  goldCost: number;
+  requiredStanding: "friendly" | "honored" | "exalted";
+  type: "consumable" | "gear" | "cosmetic";
 }
 
 export interface ZoneRoomState {
@@ -301,6 +328,12 @@ export class MultiplayerClient {
   // Faction callbacks
   onFactionReputations?: (reputations: FactionRepEntry[]) => void;
   onFactionRepChanged?: (change: FactionRepChanged) => void;
+  onFactionTitleUnlocked?: (data: FactionTitleUnlocked) => void;
+  onFactionDailyTasks?: (tasks: FactionDailyTask[]) => void;
+  onFactionVendorItems?: (factionId: string, standing: FactionStanding, items: FactionVendorItem[]) => void;
+  onFactionVendorDenied?: (factionId: string, reason: string) => void;
+  onFactionVendorBuyResult?: (success: boolean, itemId: string, itemName: string, reason?: string) => void;
+  onFactionDailyResult?: (success: boolean, factionId: string, repReward?: number, goldReward?: number, reason?: string) => void;
 
   // Guild callbacks
   onGuildChatMessage?: (sender: string, text: string) => void;
@@ -572,6 +605,30 @@ export class MultiplayerClient {
       this.onFactionRepChanged?.(msg);
     });
 
+    room.onMessage('faction_title_unlocked', (msg: FactionTitleUnlocked) => {
+      this.onFactionTitleUnlocked?.(msg);
+    });
+
+    room.onMessage('faction_daily_tasks', (msg: { tasks: FactionDailyTask[] }) => {
+      this.onFactionDailyTasks?.(msg.tasks);
+    });
+
+    room.onMessage('faction_vendor_items', (msg: { factionId: string; standing: FactionStanding; items: FactionVendorItem[] }) => {
+      this.onFactionVendorItems?.(msg.factionId, msg.standing, msg.items);
+    });
+
+    room.onMessage('faction_vendor_denied', (msg: { factionId: string; reason: string }) => {
+      this.onFactionVendorDenied?.(msg.factionId, msg.reason);
+    });
+
+    room.onMessage('faction_vendor_buy_result', (msg: { success: boolean; itemId: string; itemName: string; reason?: string }) => {
+      this.onFactionVendorBuyResult?.(msg.success, msg.itemId, msg.itemName, msg.reason);
+    });
+
+    room.onMessage('faction_daily_result', (msg: { success: boolean; factionId: string; repReward?: number; goldReward?: number; reason?: string }) => {
+      this.onFactionDailyResult?.(msg.success, msg.factionId, msg.repReward, msg.goldReward, msg.reason);
+    });
+
     // ── Guild messages ────────────────────────────────────────────────────
     room.onMessage('guild_chat', (msg: { sender: string; text: string }) => {
       this.onGuildChatMessage?.(msg.sender, msg.text);
@@ -814,6 +871,26 @@ export class MultiplayerClient {
   /** Send the player's dialogue choice to the server (for rep delta processing). */
   sendDialogueChoice(questId: string, choiceId: string, repDelta?: number, factionId?: string): void {
     this.room?.send('dialogue_choice', { questId, choiceId, repDelta, factionId });
+  }
+
+  /** Request the faction vendor item list (requires Friendly+ standing). */
+  sendFactionVendorOpen(factionId: string): void {
+    this.room?.send('faction_vendor_open', { factionId });
+  }
+
+  /** Purchase an item from a faction vendor. */
+  sendFactionVendorBuy(factionId: string, itemId: string): void {
+    this.room?.send('faction_vendor_buy', { factionId, itemId });
+  }
+
+  /** Request today's faction daily task list. */
+  sendFactionDailyList(): void {
+    this.room?.send('faction_daily_list', {});
+  }
+
+  /** Mark a faction's daily task as completed. */
+  sendFactionDailyComplete(factionId: string): void {
+    this.room?.send('faction_daily_complete', { factionId });
   }
 
   /** Mark a quest as completed on the server. */
