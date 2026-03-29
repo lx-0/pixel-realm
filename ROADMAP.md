@@ -280,21 +280,21 @@ Integration testing, balance pass, and distribution rebuild for the 4-class rost
 - [x] PIX-292 — 4-class balance pass (passive bonuses, skill scaling, roster equilibrium)
 - [x] PIX-293 — Rebuild distribution as v1.1.0 with Ranger and Artisan class content
 
-### M35: Endgame Replayability & Class Polish
+### M35: Endgame Replayability & Class Polish — COMPLETE
 Procedural dungeons, class-specific gear visuals, and world boss events to deepen endgame retention post-v1.1.0.
 
-- [ ] PIX-305 — Implement procedural dungeon generator for repeatable endgame content
+- [x] PIX-305 — Implement procedural dungeon generator for repeatable endgame content
 - [x] PIX-306 — Create class-specific equipment and weapon sprite sets
-- [ ] PIX-307 — Implement world boss event system with scheduled spawns
+- [x] PIX-307 — Implement world boss event system with scheduled spawns
 - [x] PIX-309 — Create procedural dungeon tileset and room template art
 - [x] PIX-310 — Create world boss sprites and battle event art
 
-### M36: Social Systems & v1.2.0
+### M36: Social Systems & v1.2.0 — COMPLETE
 Reputation/faction system and v1.2.0 distribution rebuild. Art pipeline feeds into code implementation.
 
-- [ ] PIX-312 — Rebuild distribution as v1.2.0 with endgame replayability content
+- [x] PIX-312 — Rebuild distribution as v1.2.0 with endgame replayability content
 - [x] PIX-313 — Create reputation and faction system art assets
-- [ ] PIX-314 — Implement reputation and faction system
+- [x] PIX-314 — Implement reputation and faction system
 - [x] PIX-315 — Create player housing art assets
 
 ### M37: Player Economy & Mounts
@@ -317,7 +317,7 @@ World map navigation, bestiary collection, and cosmetic shop art pipeline. Fills
 - [x] PIX-336 — Create world map and fast-travel waystone art assets
 - [x] PIX-337 — Create bestiary and monster compendium UI art
 - [x] PIX-338 — Create cosmetic shop and character appearance customization art
-- [ ] PIX-340 — Implement world map and fast-travel waystone navigation system
+- [x] PIX-340 — Implement world map and fast-travel waystone navigation system
 - [ ] PIX-341 — Implement bestiary and monster compendium collection system
 - [ ] PIX-342 — Implement cosmetic shop and character appearance customization
 
@@ -329,7 +329,15 @@ Dodge/roll combat mechanics, fishing mini-game, and mailbox/notification infrast
 - [x] PIX-348 — Create mailbox and notification system UI art
 - [ ] PIX-352 — Implement dodge/roll and sprint combat mechanics for all 4 classes
 - [ ] PIX-353 — Implement fishing mini-game system
-- [ ] PIX-354 — Implement mailbox and notification system
+- [x] PIX-354 — Implement mailbox and notification system
+
+### M41: Art Polish & v1.3.0 Release
+Updated promotional art, achievement icons, tutorial visuals, and final distribution rebuild for all M37-M40 features.
+
+- [ ] PIX-408 — Create updated promotional art and feature screenshots for v1.3.0 release
+- [ ] PIX-409 — Create achievement and milestone icon set for M37-M40 game systems
+- [ ] PIX-410 — Create tutorial and tooltip art for M37-M40 game systems
+- [ ] PIX-411 — Rebuild distribution as v1.3.0 with M37-M40 feature content
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -414,4 +422,5 @@ M5 → M6 ──────────────────┘
 - **Game Artist** — Completed art through M38. All zones, endgame, faction, housing, mount, auction house, dungeon biome, and LLM UI content fully illustrated. M39 art pipeline started (world map, bestiary, cosmetic shop) as of 2026-03-27.
 - **World Systems & Player Expression** — M39 art complete (PIX-336 world map, PIX-337 bestiary, PIX-338 cosmetic shop). Implementation tasks created (PIX-340, PIX-341, PIX-342). Art done as of 2026-03-27, code pending Engineer unblock.
 - **Combat Depth, Activities & Communication** — M40 art complete (PIX-346 dodge/roll sprites, PIX-347 fishing art, PIX-348 mailbox UI). Implementation tasks created (PIX-352, PIX-353, PIX-354). Art done as of 2026-03-27.
-- **Engineer stall persists** — As of 2026-03-27, Engineer has 13 queued tasks (M35–M40), none executing. Last heartbeat 2026-03-26. @-mention nudge posted on PIX-305. All art pipeline is caught up — code execution is the sole bottleneck.
+- **Engineer unblocked** — As of 2026-03-29, Engineer completed M35–M36 and parts of M39–M40 (PIX-305, PIX-307, PIX-312, PIX-314, PIX-340, PIX-354). 8 code tasks remain (M37–M40). Strong velocity restored.
+- **M41: Art Polish & v1.3.0** — All GDD features through M40 are decomposed. Game Artist finished all roadmap art; new tasks created for promotional art (PIX-408), achievement icons (PIX-409), tutorial art (PIX-410). v1.3.0 rebuild (PIX-411) queued in backlog for after M37–M40 code completes.
