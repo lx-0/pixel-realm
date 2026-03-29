@@ -7,6 +7,14 @@ import { ZoneRoom } from "./rooms/ZoneRoom";
 import { DungeonRoom, DUNGEON_COOLDOWN_MS } from "./rooms/DungeonRoom";
 import { RaidRoom } from "./rooms/RaidRoom";
 import { ArenaRoom, leaveArenaQueue, getQueueDepths } from "./rooms/ArenaRoom";
+import { WorldBossRoom } from "./rooms/WorldBossRoom";
+import { startWorldBossScheduler, stopWorldBossScheduler } from "./worldBossScheduler";
+import {
+  getActiveBossInstance,
+  getBossLeaderboard,
+  getBossHistory,
+  WORLD_BOSS_DEFS,
+} from "./db/worldBoss";
 import { getDungeonCooldownRemainingDb } from "./db/cooldowns";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
@@ -119,7 +127,12 @@ async function initDb(): Promise<void> {
   }
 }
 
-initDb();
+initDb().then(() => {
+  // Start world boss scheduler after DB is ready
+  startWorldBossScheduler().catch(err =>
+    console.warn("[WorldBoss] Scheduler start failed:", (err as Error).message),
+  );
+});
 
 // Re-sync seasonal activation once per hour (handles day-boundary rollovers)
 setInterval(() => {
@@ -1379,6 +1392,66 @@ app.post("/admin/mute/:playerId", adminAuth, async (req: Request, res: Response)
   }
 });
 
+// ── World Boss REST endpoints ─────────────────────────────────────────────────
+
+// GET /world-boss/active — current active or pending world boss event
+app.get("/world-boss/active", async (_req, res) => {
+  try {
+    const instance = await getActiveBossInstance();
+    if (!instance) {
+      res.json({ active: false, boss: null });
+      return;
+    }
+    const def = WORLD_BOSS_DEFS[instance.bossId];
+    res.json({
+      active: true,
+      boss: {
+        instanceId:  instance.id,
+        bossId:      instance.bossId,
+        bossName:    def?.name ?? instance.bossId,
+        description: def?.description ?? "",
+        status:      instance.status,
+        currentHp:   instance.currentHp,
+        maxHp:       instance.maxHp,
+        phase:       instance.phase,
+        zoneId:      instance.zoneId,
+        spawnsAt:    instance.spawnsAt.toISOString(),
+        expiresAt:   instance.expiresAt.toISOString(),
+      },
+    });
+  } catch (err) {
+    console.warn("[WorldBoss] active lookup failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch active boss" });
+  }
+});
+
+// GET /world-boss/:instanceId/leaderboard — top contributors for an event
+app.get("/world-boss/:instanceId/leaderboard", async (req, res) => {
+  const { instanceId } = req.params as { instanceId: string };
+  if (!instanceId || instanceId.length > 100) {
+    res.status(400).json({ error: "Invalid instanceId" });
+    return;
+  }
+  try {
+    const entries = await getBossLeaderboard(instanceId);
+    res.json({ instanceId, entries });
+  } catch (err) {
+    console.warn("[WorldBoss] leaderboard failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch boss leaderboard" });
+  }
+});
+
+// GET /world-boss/history — last 10 boss events
+app.get("/world-boss/history", async (_req, res) => {
+  try {
+    const history = await getBossHistory();
+    res.json({ history });
+  } catch (err) {
+    console.warn("[WorldBoss] history failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch boss history" });
+  }
+});
+
 // ── HTTP + Colyseus server ────────────────────────────────────────────────────
 
 const httpServer = http.createServer(app);
@@ -1412,6 +1485,12 @@ gameServer.define("raid", RaidRoom).filterBy(["bossId"]);
 // connection, then join: client.joinById(roomId, { playerId })
 gameServer.define("arena", ArenaRoom);
 
+// Register the WorldBossRoom. A single shared instance per active event (up to 200 players).
+// Created programmatically by the WorldBossScheduler when a boss spawns.
+// Clients join via: client.joinById(roomId, { token }) — roomId from the
+// "world_boss_spawned" announcement broadcast through ZoneRoom.
+gameServer.define("world_boss", WorldBossRoom);
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 
 gameServer.listen(config.port).then(() => {
@@ -1441,6 +1520,7 @@ async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
   console.log(`[PixelRealm] ${signal} received — starting graceful shutdown`);
+  stopWorldBossScheduler();
 
   // Stop accepting new connections
   httpServer.close();

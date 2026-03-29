@@ -26,6 +26,7 @@ import { SkillTreePanel, type SkillTreeState } from '../ui/SkillTreePanel';
 import { StatSheetPanel, type StatSheetState } from '../ui/StatSheetPanel';
 import { PrestigePanel } from '../ui/PrestigePanel';
 import { SeasonalEventPanel, type SeasonalEventState } from '../ui/SeasonalEventPanel';
+import { WorldBossPanel } from '../ui/WorldBossPanel';
 import { GuildPanel } from '../ui/GuildPanel';
 import { PartyPanel } from '../ui/PartyPanel';
 import { SocialPanel } from '../ui/SocialPanel';
@@ -422,6 +423,7 @@ export class GameScene extends Phaser.Scene {
 
   /** Seasonal event progress tracker panel. */
   private seasonalEventPanel?: SeasonalEventPanel;
+  private worldBossPanel?: WorldBossPanel;
   /** Small persistent HUD badge shown when a seasonal event is active. */
   private seasonalEventBadge?: Phaser.GameObjects.Text;
   /** HUD text showing current prestige tier next to level. */
@@ -591,6 +593,23 @@ export class GameScene extends Phaser.Scene {
     this.seasonalEventPanel = new SeasonalEventPanel(this);
     this.seasonalEventPanel.onClaimReward = (itemId) => this.mp?.sendEventClaimReward(itemId);
 
+    // World boss panel (B key to toggle; auto-opens on boss announcement)
+    this.worldBossPanel = new WorldBossPanel(this);
+    this.worldBossPanel.onJoinFight = (data) => {
+      const save = SaveManager.load();
+      this.scene.start(SCENES.WORLD_BOSS, {
+        roomId:      data.roomId,
+        instanceId:  data.instanceId,
+        bossId:      data.bossId,
+        bossName:    data.bossName,
+        maxHp:       data.maxHp,
+        playerName:  save.playerName ?? 'Hero',
+        userId:      save.userId,
+        returnZone:  this.zone?.id ?? 'zone3',
+        playerLevel: this.level,
+      });
+    };
+
     // Leaderboard panel (always present, populated once multiplayer connects)
     this.leaderboardPanel = new LeaderboardPanel(this);
 
@@ -710,6 +729,9 @@ export class GameScene extends Phaser.Scene {
 
     // Seasonal event panel (G key handled inside the panel)
     this.seasonalEventPanel?.update();
+
+    // World boss panel (B key handled inside the panel)
+    this.worldBossPanel?.update();
 
     // Character stat sheet (V key handled inside the panel)
     this.statSheet?.update();
@@ -1582,6 +1604,11 @@ export class GameScene extends Phaser.Scene {
     // ── Maintenance notice ────────────────────────────────────────────────
     client.onMaintenanceNotice = (minutesLeft: number) => {
       this.showMaintenanceBanner(minutesLeft);
+    };
+
+    // World boss event — announced server-wide through ZoneRoom
+    client.onWorldBossEvent = (payload) => {
+      this.worldBossPanel?.handleEvent(payload as any);
     };
 
     // ── Connection overlay ────────────────────────────────────────────────

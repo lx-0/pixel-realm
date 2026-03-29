@@ -166,6 +166,7 @@ export const SCENES = {
   ARENA: 'ArenaScene',
   HOUSING: 'HousingScene',
   DUNGEON: 'DungeonScene',
+  WORLD_BOSS: 'WorldBossScene',
 } as const;
 
 // ── Housing ───────────────────────────────────────────────────────────────────

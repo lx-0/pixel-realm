@@ -3250,4 +3250,13 @@ export class ZoneRoom extends Room<ZoneGameState> {
       client.send("pet_list", { pets: [] });
     }
   }
+
+  /**
+   * Remote-callable method invoked by the WorldBossScheduler to broadcast
+   * world boss events (spawn incoming, active, defeated) to all players
+   * currently in this zone.
+   */
+  broadcastWorldBossEvent(type: string, payload: Record<string, unknown>): void {
+    this.broadcast("world_boss_event", { type, ...payload });
+  }
 }

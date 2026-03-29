@@ -254,6 +254,7 @@ export class MultiplayerClient {
   onLatencyUpdate?: (ms: number) => void;
   /** Fired when the server pushes a planned maintenance warning. */
   onMaintenanceNotice?: (minutesLeft: number) => void;
+  onWorldBossEvent?:   (payload: Record<string, unknown>) => void;
   onChatMessage?: (msg: ChatIncomingMessage) => void;
   onQuestData?: (quest: ClientQuest, isNew: boolean) => void;
   onQuestError?: (message: string) => void;
@@ -709,6 +710,11 @@ export class MultiplayerClient {
     // ── Server maintenance notice ─────────────────────────────────────────
     room.onMessage('server_maintenance', (msg: { minutesLeft: number }) => {
       this.onMaintenanceNotice?.(msg.minutesLeft as number);
+    });
+
+    // ── World boss events (broadcast from ZoneRoom via scheduler) ────────
+    room.onMessage('world_boss_event', (msg: Record<string, unknown>) => {
+      this.onWorldBossEvent?.(msg);
     });
 
     // ── Connection events ────────────────────────────────────────────────
