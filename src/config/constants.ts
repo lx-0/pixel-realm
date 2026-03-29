@@ -71,10 +71,16 @@ export const MANA = {
   ATTACK_COST: 5,     // mana used per attack swing
 } as const;
 
+// ── Stamina ───────────────────────────────────────────────────────────────────
+export const STAMINA = {
+  BASE:                100,  // starting and max stamina
+  REGEN_PER_SEC:        20,  // stamina recovered per second when not sprinting
+  SPRINT_COST_PER_SEC:  30,  // stamina drained per second while sprinting
+} as const;
+
 // ── Sprint ────────────────────────────────────────────────────────────────────
 export const SPRINT = {
-  SPEED_MULT:        1.5,  // speed multiplier while holding Shift
-  MANA_COST_PER_SEC: 15,   // mana drained per second while sprinting
+  SPEED_MULT: 1.5,  // speed multiplier while holding Shift
 } as const;
 
 // ── Dodge ─────────────────────────────────────────────────────────────────────

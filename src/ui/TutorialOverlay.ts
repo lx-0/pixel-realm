@@ -53,7 +53,7 @@ const STEPS: TutorialStep[] = [
   },
   {
     title:       'Combat — Dodge Roll',
-    instruction: 'Press Q to dodge-roll in your movement direction. Costs mana, grants invincibility frames.',
+    instruction: 'Press Q to dodge-roll in your movement direction. Costs mana, grants invincibility frames. Hold Shift to sprint (drains stamina bar).',
     trigger:     'dodge',
   },
   {

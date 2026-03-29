@@ -149,6 +149,18 @@ export class BootScene extends Phaser.Scene {
     if (!a.exists('player-walk'))   a.create({ key: 'player-walk',   frames: a.generateFrameNumbers('player', { start: 2,  end: 5  }), frameRate: 12, repeat: -1 });
     if (!a.exists('player-attack')) a.create({ key: 'player-attack', frames: a.generateFrameNumbers('player', { start: 6,  end: 9  }), frameRate: 16, repeat: 0  });
     if (!a.exists('player-death'))  a.create({ key: 'player-death',  frames: a.generateFrameNumbers('player', { start: 10, end: 13 }), frameRate: 8,  repeat: 0  });
+    // Class-specific dodge animations (registered when spritesheet is available)
+    const dodgeSheets: [string, string][] = [
+      ['player-dodge-warrior', 'player_dodge_warrior'],
+      ['player-dodge-mage',    'player_dodge_mage'],
+      ['player-dodge-ranger',  'player_dodge_ranger'],
+      ['player-dodge-artisan', 'player_dodge_artisan'],
+    ];
+    for (const [key, sheet] of dodgeSheets) {
+      if (!a.exists(key) && this.textures.exists(sheet) && this.textures.get(sheet).frameTotal > 1) {
+        a.create({ key, frames: a.generateFrameNumbers(sheet, { start: 0, end: -1 }), frameRate: 16, repeat: 0 });
+      }
+    }
   }
 
   private createEnemyAnims(): void {

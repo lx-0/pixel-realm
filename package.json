@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "colyseus.js": "^0.15.28",
-    "phaser": "^3.80.0"
+    "phaser": "^3.80.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.57.1",

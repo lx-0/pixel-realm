@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import {
-  CANVAS, PLAYER, COMBAT, MANA, LEVELS, PRESTIGE, SCENES, SPRINT, DODGE,
+  CANVAS, PLAYER, COMBAT, MANA, STAMINA, LEVELS, PRESTIGE, SCENES, SPRINT, DODGE,
   ZONES, ENEMY_TYPES, BOSS_TYPES, ECONOMY, LOOT,
   STATUS_EFFECTS, MELEE_STATUS_ON_HIT, PROJECTILE_STATUS_ON_HIT,
   type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
@@ -170,6 +170,10 @@ export class GameScene extends Phaser.Scene {
   private playerEffectImmunity: Partial<Record<EffectKey, number>>            = {};
   private statusHudIndicators:  Partial<Record<EffectKey, Phaser.GameObjects.Text>> = {};
 
+  // ── Stamina ──────────────────────────────────────────────────────────────
+  private stamina = STAMINA.BASE;
+  private isSprinting = false;
+
   // ── Sprint ───────────────────────────────────────────────────────────────
   private sprintDustTimer = 0;
 
@@ -203,6 +207,7 @@ export class GameScene extends Phaser.Scene {
 
   private hpBar!:           Phaser.GameObjects.Rectangle;
   private manaBar!:         Phaser.GameObjects.Rectangle;
+  private staminaBar!:      Phaser.GameObjects.Rectangle;
   private xpBar!:           Phaser.GameObjects.Rectangle;
   private levelText!:       Phaser.GameObjects.Text;
   private waveText!:        Phaser.GameObjects.Text;
@@ -503,6 +508,7 @@ export class GameScene extends Phaser.Scene {
     this.level   = save.playerLevel;
     this.hp      = (PLAYER.BASE_HP as number) + (this.level - 1) * LEVELS.HP_BONUS_PER_LEVEL;
     this.mana    = PLAYER.BASE_MANA as number;
+    this.stamina = STAMINA.BASE;
     this.xp      = 0;
 
     this.lastAttackTime    = 0;
@@ -873,6 +879,7 @@ export class GameScene extends Phaser.Scene {
     this.handleDodgeRoll(time);
     this.handlePlayerMovement(delta);
     this.regenMana(delta);
+    this.regenStamina(delta);
     this.updateDodgeCooldownHUD(time);
     this.updateHotbarHUD();
 
@@ -2324,6 +2331,7 @@ export class GameScene extends Phaser.Scene {
   private handlePlayerMovement(delta: number): void {
     // Dodge overrides normal movement for its duration
     if (this.isDodging) {
+      this.isSprinting = false;
       this.player.setVelocity(this.dodgeVx, this.dodgeVy);
       return;
     }
@@ -2369,13 +2377,14 @@ export class GameScene extends Phaser.Scene {
     // Tutorial: notify movement
     if (this.tutorial && (vx !== 0 || vy !== 0)) this.tutorial.notifyMoved();
 
-    // Sprint: hold Shift (or touch sprint button) while moving, mana must be available
-    const wantsToSprint = (this.sprintKey.isDown || (this.touch?.sprint.isDown ?? false)) && (vx !== 0 || vy !== 0) && this.mana > 0;
+    // Sprint: hold Shift (or touch sprint button) while moving, stamina must be available
+    const wantsToSprint = (this.sprintKey.isDown || (this.touch?.sprint.isDown ?? false)) && (vx !== 0 || vy !== 0) && this.stamina > 0;
+    this.isSprinting = wantsToSprint;
     if (wantsToSprint) {
       speed *= SPRINT.SPEED_MULT;
       vx    *= SPRINT.SPEED_MULT;
       vy    *= SPRINT.SPEED_MULT;
-      this.mana = Math.max(0, this.mana - SPRINT.MANA_COST_PER_SEC * delta / 1000);
+      this.stamina = Math.max(0, this.stamina - STAMINA.SPRINT_COST_PER_SEC * delta / 1000);
 
       // Spawn dust trail periodically
       this.sprintDustTimer -= delta;
@@ -2595,6 +2604,12 @@ export class GameScene extends Phaser.Scene {
     if (this.manaBar) this.manaBar.scaleX = Math.max(0, this.mana / this.getMaxMana());
   }
 
+  private regenStamina(delta: number): void {
+    if (this.isSprinting) return;
+    this.stamina = Math.min(STAMINA.BASE, this.stamina + STAMINA.REGEN_PER_SEC * delta / 1000);
+    if (this.staminaBar) this.staminaBar.scaleX = Math.max(0, this.stamina / STAMINA.BASE);
+  }
+
   private handleDodgeRoll(time: number): void {
     // End dodge when duration expires
     if (this.isDodging && time >= this.dodgeEndTime) {
@@ -2638,19 +2653,39 @@ export class GameScene extends Phaser.Scene {
     this.isDodging  = true;
     this.sessionStats.dodgesAttempted++;
     this.tutorial?.notifyDodged();
-    this.dodgeEndTime = time + DODGE.DURATION_MS;
-    this.dodgeVx    = dx * DODGE.DASH_SPEED;
-    this.dodgeVy    = dy * DODGE.DASH_SPEED;
     this.sfx.playDodge();
 
-    // Visual feedback: white-blue flash tint for roll duration
-    this.player.setTint(0xaaddff);
+    // Class-specific dodge: Mage blinks instantly; others dash with velocity
+    if (this.classId === 'mage') {
+      // Blink: teleport instantly, skip velocity-based movement
+      const blinkDist = DODGE.DASH_SPEED * (DODGE.DURATION_MS / 1000);
+      this.player.setPosition(this.player.x + dx * blinkDist, this.player.y + dy * blinkDist);
+      this.dodgeVx = 0;
+      this.dodgeVy = 0;
+      this.dodgeEndTime = time + 80; // very short duration — mostly i-frame window
+    } else {
+      this.dodgeVx = dx * DODGE.DASH_SPEED;
+      this.dodgeVy = dy * DODGE.DASH_SPEED;
+      this.dodgeEndTime = time + DODGE.DURATION_MS;
+    }
 
-    // Burst particles in dash direction
-    this.spawnBurst(this.player.x, this.player.y, [0xaaddff, 0xffffff, 0x88bbff], 6, 90);
+    // Class-specific visual tint and particles
+    const classVisuals: Record<string, { tint: number; particles: number[]; flash: number }> = {
+      warrior:  { tint: 0xffcc44, particles: [0xffcc44, 0xffffff, 0xffaa22], flash: 0xffaa00 },
+      mage:     { tint: 0x44eeff, particles: [0x44eeff, 0xffffff, 0x8844ff], flash: 0x4488ff },
+      ranger:   { tint: 0x44ff88, particles: [0x44ff88, 0xffffff, 0x88ffaa], flash: 0x00cc44 },
+      artisan:  { tint: 0xcc88ff, particles: [0xcc88ff, 0xffffff, 0x8844cc], flash: 0x9900cc },
+    };
+    const vis = classVisuals[this.classId] ?? classVisuals['warrior'];
+    this.player.setTint(vis.tint);
+    this.spawnBurst(this.player.x, this.player.y, vis.particles, 6, 90);
+    this.screenFlash(vis.flash, 0.08);
 
-    // Screen flash (subtle)
-    this.screenFlash(0x4488ff, 0.08);
+    // Play class-specific dodge animation if available, else fall back to walk anim
+    const dodgeAnimKey = `player-dodge-${this.classId}`;
+    if (this.anims.exists(dodgeAnimKey)) {
+      this.player.play(dodgeAnimKey);
+    }
   }
 
   private updateDodgeCooldownHUD(time: number): void {
@@ -3898,7 +3933,7 @@ export class GameScene extends Phaser.Scene {
     const bw = 58;
     const Z  = 12;
 
-    this.add.rectangle(bx + bw / 2 + 4, 28, bw + 36, 66, 0x000000, 0.5).setScrollFactor(0).setDepth(Z - 1);
+    this.add.rectangle(bx + bw / 2 + 4, 36, bw + 36, 82, 0x000000, 0.5).setScrollFactor(0).setDepth(Z - 1);
 
     this.add.text(lx, 5, 'HP', { fontSize: '5px', color: '#ff8888', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.add.rectangle(bx + bw / 2, 5, bw, 4, 0x440000).setScrollFactor(0).setDepth(Z - 1);
@@ -3920,22 +3955,26 @@ export class GameScene extends Phaser.Scene {
     mpHitZone.on('pointerover', () => this.showHudStatTooltip('mana'));
     mpHitZone.on('pointerout',  () => this.hideHudStatTooltip());
 
-    this.add.text(lx, 20, 'XP', { fontSize: '5px', color: '#ffe040', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.add.text(lx, 20, 'ST', { fontSize: '5px', color: '#ffcc44', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.add.rectangle(bx + bw / 2, 20, bw, 3, 0x3a2a00).setScrollFactor(0).setDepth(Z - 1);
-    this.xpBar = this.add.rectangle(bx, 20, bw, 3, 0xe8b800).setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z);
+    this.staminaBar = this.add.rectangle(bx, 20, bw, 3, 0xffaa00).setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z);
+
+    this.add.text(lx, 28, 'XP', { fontSize: '5px', color: '#ffe040', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.add.rectangle(bx + bw / 2, 28, bw, 3, 0x3a2a00).setScrollFactor(0).setDepth(Z - 1);
+    this.xpBar = this.add.rectangle(bx, 28, bw, 3, 0xe8b800).setOrigin(0, 0.5).setScrollFactor(0).setDepth(Z);
 
     this.levelText = this.add.text(bx + bw + 4, 5, 'Lv.1', { fontSize: '5px', color: '#ffffff', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.prestigeText = this.add.text(bx + bw + 4, 12, '', { fontSize: '4px', color: '#ffd700', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.achievePtsText = this.add.text(bx + bw + 4, 19, '0 pts', { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
     this.updateAchievementPtsHUD();
 
-    this.waveText = this.add.text(lx, 28, 'Wave 1', { fontSize: '5px', color: '#ffd700', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
-    this.killText = this.add.text(lx, 37, 'Kills: 0', { fontSize: '5px', color: '#aaaaaa', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.waveText = this.add.text(lx, 37, 'Wave 1', { fontSize: '5px', color: '#ffd700', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.killText = this.add.text(lx, 46, 'Kills: 0', { fontSize: '5px', color: '#aaaaaa', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
 
-    this.dodgeCooldownText = this.add.text(lx, 46, 'Q DODGE', { fontSize: '5px', color: '#44ffaa', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.dodgeCooldownText = this.add.text(lx, 55, 'Q DODGE', { fontSize: '5px', color: '#44ffaa', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
 
-    this.goldText   = this.add.text(lx, 64, 'Gold: 0', { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
-    this.scrollText = this.add.text(lx, 71, 'T:Scroll x1', { fontSize: '4px', color: '#88ffcc', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.goldText   = this.add.text(lx, 72, 'Gold: 0', { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
+    this.scrollText = this.add.text(lx, 79, 'T:Scroll x1', { fontSize: '4px', color: '#88ffcc', fontFamily: 'monospace' }).setScrollFactor(0).setDepth(Z);
 
     this.enemyCountText = this.add.text(CANVAS.WIDTH - 4, 4, '', { fontSize: '5px', color: '#ff8888', fontFamily: 'monospace' })
       .setOrigin(1, 0).setScrollFactor(0).setDepth(Z);
@@ -3953,7 +3992,7 @@ export class GameScene extends Phaser.Scene {
     ];
     let iconX = lx;
     for (const [key, label, color] of effectDefs) {
-      const icon = this.add.text(iconX, 55, label, {
+      const icon = this.add.text(iconX, 63, label, {
         fontSize: '4px', color, fontFamily: 'monospace',
       }).setScrollFactor(0).setDepth(Z).setVisible(false);
       this.statusHudIndicators[key] = icon;
@@ -4074,6 +4113,7 @@ export class GameScene extends Phaser.Scene {
     this.hpBar.scaleX = hpPct;
     this.hpBar.setFillStyle(hpPct > 0.5 ? 0x00ee44 : hpPct > 0.25 ? 0xffaa00 : 0xff2222);
     if (this.manaBar) this.manaBar.scaleX = Math.max(0, this.mana / maxMana);
+    if (this.staminaBar) this.staminaBar.scaleX = Math.max(0, this.stamina / STAMINA.BASE);
     const atMax = this.level >= LEVELS.MAX_LEVEL;
     if (this.xpBar) this.xpBar.scaleX = atMax ? 1 : Math.min(1, this.xp / LEVELS.XP_THRESHOLDS[this.level - 1]);
     this.levelText?.setText(`Lv.${this.level}${atMax ? ' MAX' : ''}`);
