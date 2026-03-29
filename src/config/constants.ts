@@ -83,6 +83,114 @@ export const SPRINT = {
   SPEED_MULT: 1.5,  // speed multiplier while holding Shift
 } as const;
 
+// ── Mount System ──────────────────────────────────────────────────────────────
+
+export interface MountDef {
+  id:          string;
+  name:        string;
+  speedMult:   number;   // multiplier applied to base move speed (e.g. 1.6 = +60%)
+  castTimeMs:  number;   // cast time before mounting is complete (ms)
+  goldCost:    number;   // gold cost at stable NPC (0 = not purchasable)
+  rarity:      'common' | 'rare' | 'epic' | 'legendary';
+  source:      string;   // short description of how to obtain
+  spriteKey:   string;   // texture key for world sprite
+  iconKey:     string;   // texture key for collection panel icon
+  borderKey:   string;   // texture key for rarity glow border
+  dustColor:   number;   // particle dust colour while mounted
+}
+
+export const MOUNTS: MountDef[] = [
+  {
+    id:         'war_horse',
+    name:       'War Horse',
+    speedMult:  1.6,
+    castTimeMs: 1500,
+    goldCost:   500,
+    rarity:     'common',
+    source:     'Purchase from Stable NPC',
+    spriteKey:  'mount_war_horse',
+    iconKey:    'icon_mount_war_horse',
+    borderKey:  'ui_glow_border_common',
+    dustColor:  0xd4aa70,
+  },
+  {
+    id:         'shadow_wolf',
+    name:       'Shadow Wolf',
+    speedMult:  1.7,
+    castTimeMs: 1200,
+    goldCost:   0,
+    rarity:     'rare',
+    source:     'Quest reward (zone 5+)',
+    spriteKey:  'mount_shadow_wolf',
+    iconKey:    'icon_mount_shadow_wolf',
+    borderKey:  'ui_glow_border_rare',
+    dustColor:  0x8844cc,
+  },
+  {
+    id:         'desert_raptor',
+    name:       'Desert Raptor',
+    speedMult:  1.75,
+    castTimeMs: 1000,
+    goldCost:   0,
+    rarity:     'rare',
+    source:     'Reputation vendor (Desert zones)',
+    spriteKey:  'mount_desert_raptor',
+    iconKey:    'icon_mount_desert_raptor',
+    borderKey:  'ui_glow_border_rare',
+    dustColor:  0xdd8833,
+  },
+  {
+    id:         'frost_elk',
+    name:       'Frost Elk',
+    speedMult:  1.8,
+    castTimeMs: 1200,
+    goldCost:   0,
+    rarity:     'epic',
+    source:     'Rare drop (Ice/Snow zones)',
+    spriteKey:  'mount_frost_elk',
+    iconKey:    'icon_mount_frost_elk',
+    borderKey:  'ui_glow_border_epic',
+    dustColor:  0x88ccff,
+  },
+  {
+    id:         'crystal_drake',
+    name:       'Crystal Drake',
+    speedMult:  1.9,
+    castTimeMs: 1500,
+    goldCost:   0,
+    rarity:     'epic',
+    source:     'Quest reward (zone 12+)',
+    spriteKey:  'mount_crystal_drake',
+    iconKey:    'icon_mount_crystal_drake',
+    borderKey:  'ui_glow_border_epic',
+    dustColor:  0x44ffcc,
+  },
+  {
+    id:         'mech_golem',
+    name:       'Mechanical Golem',
+    speedMult:  2.0,
+    castTimeMs: 2000,
+    goldCost:   0,
+    rarity:     'legendary',
+    source:     'Rare drop (endgame zones)',
+    spriteKey:  'mount_mech_golem',
+    iconKey:    'icon_mount_mech_golem',
+    borderKey:  'ui_glow_border_legendary',
+    dustColor:  0xffdd44,
+  },
+] as const;
+
+export const MOUNT = {
+  /** Time (ms) after mounting begins before speed bonus applies. */
+  CAST_TIME_MS:    1500,
+  /** Dismount when taking damage — mount is cancelled immediately. */
+  DISMOUNT_ON_HIT: true,
+  /** Stable NPC interaction range in pixels. */
+  STABLE_RANGE_PX: 40,
+  /** Key code for mount summon/dismiss toggle (X). */
+  TOGGLE_KEY:      'X',
+} as const;
+
 // ── Dodge ─────────────────────────────────────────────────────────────────────
 export const DODGE = {
   DASH_SPEED:  300,   // px/s during roll

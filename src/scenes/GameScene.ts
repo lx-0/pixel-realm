@@ -3,6 +3,7 @@ import {
   CANVAS, PLAYER, COMBAT, MANA, STAMINA, LEVELS, PRESTIGE, SCENES, SPRINT, DODGE,
   ZONES, ENEMY_TYPES, BOSS_TYPES, ECONOMY, LOOT,
   STATUS_EFFECTS, MELEE_STATUS_ON_HIT, PROJECTILE_STATUS_ON_HIT,
+  MOUNTS, MOUNT,
   type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
 } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
@@ -36,6 +37,7 @@ import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
 import { FastTravelPanel } from '../ui/FastTravelPanel';
+import { MountPanel } from '../ui/MountPanel';
 import { DungeonEntrancePanel, type DungeonEntrancePanelOptions } from '../ui/DungeonEntrancePanel';
 import { ConnectionOverlay } from '../ui/ConnectionOverlay';
 import { LootRollPanel } from '../ui/LootRollPanel';
@@ -176,6 +178,34 @@ export class GameScene extends Phaser.Scene {
 
   // ── Sprint ───────────────────────────────────────────────────────────────
   private sprintDustTimer = 0;
+
+  // ── Mount system ─────────────────────────────────────────────────────────
+  /** True when the player is mounted and speed bonus is active. */
+  private isMounted          = false;
+  /** True during the mount cast animation (before speed kicks in). */
+  private isCasting          = false;
+  /** Timestamp when mount cast finishes (time.now). */
+  private mountCastEndTime   = 0;
+  /** Currently selected mount ID ('' = none). */
+  private activeMountId      = '';
+  /** Visual sprite layered below the player while mounted. */
+  private mountSprite?: Phaser.GameObjects.Image;
+  /** Dust particle timer while mounted and moving. */
+  private mountDustTimer     = 0;
+  /** Cast-bar HUD container. */
+  private mountCastBar?: Phaser.GameObjects.Container;
+  /** Cast-bar fill rectangle. */
+  private mountCastFill?: Phaser.GameObjects.Rectangle;
+  /** Mount HUD icon shown when mounted. */
+  private mountHudIcon?: Phaser.GameObjects.Text;
+  /** Stable NPC world sprite. */
+  private stableNpc?: Phaser.GameObjects.Sprite;
+  /** Proximity hint for stable NPC. */
+  private stableHint?: Phaser.GameObjects.Text;
+  /** Mount collection / stable panel. */
+  private mountPanel?: MountPanel;
+  /** X key — summon / dismiss mount. */
+  private mountKey?: Phaser.Input.Keyboard.Key;
 
   // ── Dodge ────────────────────────────────────────────────────────────────
   private isDodging          = false;
@@ -519,6 +549,12 @@ export class GameScene extends Phaser.Scene {
     this.playerEffects        = {};
     this.playerEffectImmunity = {};
 
+    // Load mount state from save
+    this.activeMountId   = save.activeMountId  ?? '';
+    this.isMounted       = false;
+    this.isCasting       = false;
+    this.mountCastEndTime = 0;
+
     this.sessionStats = {
       damageDealt: 0, damageTaken: 0, xpGained: 0, goldEarned: 0,
       itemsLooted: 0, critHits: 0, totalHits: 0, dodgesAttempted: 0,
@@ -687,6 +723,7 @@ export class GameScene extends Phaser.Scene {
         (this.statsOverlayVisible && (() => { this.statsOverlayVisible = false; this.rebuildStatsOverlay(); return true; })()) ||
         this.factionPanel?.closeIfOpen()      ||
         this.fastTravelPanel?.closeIfOpen()   ||
+        this.mountPanel?.closeIfOpen()        ||
         this.npcDialogue?.closeIfOpen()       ||
         this.craftingPanel?.closeIfOpen()     ||
         this.questLog?.closeIfOpen()          ||
@@ -780,11 +817,14 @@ export class GameScene extends Phaser.Scene {
     }
 
     // NPC interact key (E) — triggers quest dialogue in multiplayer
-    // Skipped when the player is near the Transport NPC (handled in updateTransportNpcHint)
+    // Skipped when the player is near the Transport NPC or Stable NPC (handled in their update methods)
     const nearTransport = this.transportNpc && this.player
       ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.transportNpc.x, this.transportNpc.y) < 40
       : false;
-    if ((this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false)) && this.isMultiplayer && !nearTransport) {
+    const nearStable = this.stableNpc && this.player
+      ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.stableNpc.x, this.stableNpc.y) < MOUNT.STABLE_RANGE_PX
+      : false;
+    if ((this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false)) && this.isMultiplayer && !nearTransport && !nearStable) {
       this.handleNpcInteract();
     }
 
@@ -873,8 +913,24 @@ export class GameScene extends Phaser.Scene {
     // Crafting station proximity hint
     this.updateCraftingStationHint();
     this.updateTransportNpcHint();
+    this.updateStableNpcHint();
     this.updateDungeonPortalHint();
     this.dungeonEntrancePanel?.update();
+
+    // Mount summon/dismiss (X key)
+    if (this.mountKey && Phaser.Input.Keyboard.JustDown(this.mountKey) && !this.mountPanel?.isVisible) {
+      this.handleMountToggle(time);
+    }
+
+    // Mount cast progress
+    if (this.isCasting) {
+      this.updateMountCast(time);
+    }
+
+    // Mount sprite follows player
+    if (this.mountSprite) {
+      this.mountSprite.setPosition(this.player.x, this.player.y + 4);
+    }
 
     this.handleDodgeRoll(time);
     this.handlePlayerMovement(delta);
@@ -1576,7 +1632,7 @@ export class GameScene extends Phaser.Scene {
 
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [Z+1-6] emotes  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC/stable  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [X] mount  [Z+1-6] emotes  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -2088,6 +2144,9 @@ export class GameScene extends Phaser.Scene {
     // Transport NPC — placed in top-right corner of the zone
     this.addTransportNpc(W - WALL - 24, WALL + 24);
 
+    // Stable NPC — placed in bottom-left corner of the zone
+    this.addStableNpc(WALL + 24, H - WALL - 24);
+
     // Dungeon portal — appears in endgame zones (zone10+)
     if (this.zoneIdx >= 9) {
       this.addDungeonPortal(W - WALL - 24, H - WALL - 24);
@@ -2236,6 +2295,180 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  // ── Stable NPC ────────────────────────────────────────────────────────────
+
+  private addStableNpc(x: number, y: number): void {
+    const texKey = this.textures.exists('sprite_stable_building') ? 'sprite_stable_building' : 'waystone_inactive';
+    this.stableNpc = this.add.sprite(x, y, texKey).setDepth(4).setOrigin(0.5, 1);
+
+    // Stablemaster NPC sprite (if asset exists)
+    if (this.textures.exists('char_npc_stablemaster')) {
+      const nm = this.add.sprite(x + 10, y, 'char_npc_stablemaster').setDepth(4).setOrigin(0.5, 1);
+      this.tweens.add({ targets: nm, y: y - 2, duration: 1000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+
+    // Floating label
+    const label = this.add.text(x, y - 20, 'STABLE', {
+      fontSize: '3px', color: '#ffdd88', fontFamily: 'monospace',
+      stroke: '#000', strokeThickness: 1,
+    }).setOrigin(0.5, 1).setDepth(4);
+    this.tweens.add({ targets: label, y: y - 23, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    // HUD proximity hint (scroll-fixed)
+    this.stableHint = this.add.text(
+      CANVAS.WIDTH / 2, CANVAS.HEIGHT - 28,
+      '[E] Stable — Manage Mounts',
+      { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
+
+    // Mount collection panel (created once, reused)
+    this.mountPanel = new MountPanel(this);
+    const save      = SaveManager.load();
+    this.mountPanel.unlockedMountIds = save.unlockedMounts ?? [];
+    this.mountPanel.activeMountId    = save.activeMountId  ?? '';
+    this.mountPanel.playerGold       = this.gold;
+
+    this.mountPanel.onPurchase = (mountId, cost) => {
+      this.gold = Math.max(0, this.gold - cost);
+      this.updateHUD();
+      SaveManager.unlockMount(mountId);
+      SaveManager.setActiveMount(mountId);
+      this.activeMountId = mountId;
+      this.sfx.playPanelOpen();
+      this.floatingText(this.player.x, this.player.y - 20, `Mount unlocked!`, '#ffd700');
+    };
+
+    this.mountPanel.onSelectMount = (mountId) => {
+      this.activeMountId = mountId;
+      SaveManager.setActiveMount(mountId);
+      // If currently mounted on a different mount, dismount
+      if (this.isMounted && mountId !== this.activeMountId) {
+        this.dismount();
+      }
+    };
+  }
+
+  private updateStableNpcHint(): void {
+    if (!this.stableNpc || !this.stableHint || !this.player) return;
+    const dist = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.stableNpc.x, this.stableNpc.y,
+    );
+    const near = dist < MOUNT.STABLE_RANGE_PX;
+    this.stableHint.setVisible(near && !(this.mountPanel?.isVisible));
+
+    if (near && (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false))) {
+      if (this.mountPanel) {
+        const save = SaveManager.load();
+        this.mountPanel.unlockedMountIds = save.unlockedMounts ?? [];
+        this.mountPanel.activeMountId    = save.activeMountId  ?? '';
+        this.mountPanel.playerGold       = this.gold;
+        this.mountPanel.open();
+        this.sfx.playPanelOpen();
+      }
+    }
+  }
+
+  // ── Mount toggle / cast ───────────────────────────────────────────────────
+
+  private handleMountToggle(time: number): void {
+    if (this.isMounted || this.isCasting) {
+      this.dismount();
+      return;
+    }
+    if (!this.activeMountId) {
+      this.floatingText(this.player.x, this.player.y - 14, 'No mount selected', '#888888');
+      return;
+    }
+    // Start cast
+    const mountDef = MOUNTS.find(m => m.id === this.activeMountId);
+    if (!mountDef) return;
+    this.isCasting       = true;
+    this.mountCastEndTime = time + mountDef.castTimeMs;
+    this.showMountCastBar(mountDef.castTimeMs);
+    this.floatingText(this.player.x, this.player.y - 14, `Summoning ${mountDef.name}…`, '#ffdd88');
+  }
+
+  private updateMountCast(time: number): void {
+    if (!this.isCasting) return;
+    const mountDef = MOUNTS.find(m => m.id === this.activeMountId);
+    if (!mountDef) { this.isCasting = false; return; }
+
+    const elapsed  = time - (this.mountCastEndTime - mountDef.castTimeMs);
+    const progress = Math.min(1, elapsed / mountDef.castTimeMs);
+
+    if (this.mountCastFill) {
+      this.mountCastFill.scaleX = progress;
+    }
+
+    if (time >= this.mountCastEndTime) {
+      this.isCasting = false;
+      this.hideMountCastBar();
+      this.mountOn(mountDef);
+    }
+  }
+
+  private mountOn(mountDef: (typeof MOUNTS)[number]): void {
+    this.isMounted = true;
+    // Spawn mount sprite below player
+    if (this.mountSprite) this.mountSprite.destroy();
+    if (this.textures.exists(mountDef.spriteKey)) {
+      this.mountSprite = this.add.image(this.player.x, this.player.y + 4, mountDef.spriteKey)
+        .setDepth(this.player.depth - 1)
+        .setDisplaySize(18, 18);
+    }
+    // Mount HUD icon
+    this.mountHudIcon?.destroy();
+    const rarityColors: Record<string, string> = { common: '#aaaaaa', rare: '#4488ff', epic: '#aa44ff', legendary: '#ffd700' };
+    this.mountHudIcon = this.add.text(
+      CANVAS.WIDTH - 4, 60,
+      `[X] ${mountDef.name} +${Math.round((mountDef.speedMult - 1) * 100)}%`,
+      { fontSize: '3px', color: rarityColors[mountDef.rarity] ?? '#ffffff', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+    ).setOrigin(1, 0).setScrollFactor(0).setDepth(12);
+    // Particle burst on summon
+    this.spawnBurst(this.player.x, this.player.y, [mountDef.dustColor, 0xffffff], 8, 60);
+    this.sfx.playPanelOpen();
+  }
+
+  private dismount(): void {
+    if (this.isCasting) {
+      this.isCasting = false;
+      this.hideMountCastBar();
+    }
+    this.isMounted = false;
+    this.mountSprite?.destroy();
+    this.mountSprite = undefined;
+    this.mountHudIcon?.destroy();
+    this.mountHudIcon = undefined;
+    this.spawnBurst(this.player.x, this.player.y, [0xffdd88, 0xffffff], 4, 50);
+  }
+
+  private showMountCastBar(durationMs: number): void {
+    this.hideMountCastBar();
+    const cx   = CANVAS.WIDTH / 2;
+    const cy   = CANVAS.HEIGHT - 32;
+    const barW = 60;
+    const barH = 5;
+    const cont = this.add.container(0, 0).setScrollFactor(0).setDepth(20);
+    // Background
+    cont.add(this.add.rectangle(cx, cy, barW + 2, barH + 2, 0x000000, 0.7).setOrigin(0.5, 0.5));
+    cont.add(this.add.rectangle(cx - barW / 2, cy, barW, barH, 0x332200).setOrigin(0, 0.5));
+    // Fill
+    this.mountCastFill = this.add.rectangle(cx - barW / 2, cy, barW, barH, 0xffdd44).setOrigin(0, 0.5);
+    this.mountCastFill.scaleX = 0;
+    cont.add(this.mountCastFill);
+    // Label
+    cont.add(this.add.text(cx, cy - 6, 'Summoning…', { fontSize: '4px', color: '#ffdd88', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 }).setOrigin(0.5, 1));
+    this.mountCastBar = cont;
+    void durationMs; // used by caller for cast end time
+  }
+
+  private hideMountCastBar(): void {
+    this.mountCastBar?.destroy(true);
+    this.mountCastBar  = undefined;
+    this.mountCastFill = undefined;
+  }
+
   // ── Dungeon Portal ────────────────────────────────────────────────────────
 
   private addDungeonPortal(x: number, y: number): void {
@@ -2336,7 +2569,10 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    let speed = (PLAYER.MOVE_SPEED + (this.level - 1) * LEVELS.SPEED_BONUS_PER_LEVEL) * (1 + this.passiveBonusCache.speedPct) * (this.weather?.speedMultiplier ?? 1);
+    // Mount speed bonus (overrides sprint; dismounts cancel it)
+    const mountDef  = this.isMounted ? MOUNTS.find(m => m.id === this.activeMountId) : undefined;
+    const mountMult = mountDef ? mountDef.speedMult : 1;
+    let speed = (PLAYER.MOVE_SPEED + (this.level - 1) * LEVELS.SPEED_BONUS_PER_LEVEL) * (1 + this.passiveBonusCache.speedPct) * (this.weather?.speedMultiplier ?? 1) * mountMult;
     let vx = 0;
     let vy = 0;
     const left  = this.cursors.left.isDown  || this.wasd.A.isDown;
@@ -2378,7 +2614,8 @@ export class GameScene extends Phaser.Scene {
     if (this.tutorial && (vx !== 0 || vy !== 0)) this.tutorial.notifyMoved();
 
     // Sprint: hold Shift (or touch sprint button) while moving, stamina must be available
-    const wantsToSprint = (this.sprintKey.isDown || (this.touch?.sprint.isDown ?? false)) && (vx !== 0 || vy !== 0) && this.stamina > 0;
+    // Sprinting is suppressed while mounted (mount speed replaces sprint)
+    const wantsToSprint = !this.isMounted && (this.sprintKey.isDown || (this.touch?.sprint.isDown ?? false)) && (vx !== 0 || vy !== 0) && this.stamina > 0;
     this.isSprinting = wantsToSprint;
     if (wantsToSprint) {
       speed *= SPRINT.SPEED_MULT;
@@ -2396,6 +2633,19 @@ export class GameScene extends Phaser.Scene {
       this.tutorial?.notifySprinted();
     } else {
       this.sprintDustTimer = 0;
+    }
+
+    // Mount dust trail while mounted and moving
+    if (this.isMounted && (vx !== 0 || vy !== 0)) {
+      this.mountDustTimer -= delta;
+      if (this.mountDustTimer <= 0) {
+        const md = MOUNTS.find(m => m.id === this.activeMountId);
+        const dc = md?.dustColor ?? 0xffdd88;
+        this.spawnBurst(this.player.x, this.player.y + 6, [dc, 0xffffff], 2, 30);
+        this.mountDustTimer = 120;
+      }
+    } else {
+      this.mountDustTimer = 0;
     }
 
     this.player.setVelocity(vx, vy);
@@ -3472,6 +3722,13 @@ export class GameScene extends Phaser.Scene {
 
     this.hp = Math.max(0, this.hp - dmg);
     this.sessionStats.damageTaken += dmg;
+
+    // Dismount on damage
+    if ((this.isMounted || this.isCasting) && MOUNT.DISMOUNT_ON_HIT) {
+      this.dismount();
+      this.floatingText(this.player.x, this.player.y - 20, 'Dismounted!', '#ffaa44');
+    }
+
     this.player.setTint(tint);
     this.time.delayedCall(300, () => {
       if (!this.isDead) {
@@ -3590,6 +3847,8 @@ export class GameScene extends Phaser.Scene {
     this.isDead = true;
     this.deathCount++;
     SaveManager.recordDeath();
+    // Dismount on death
+    if (this.isMounted || this.isCasting) this.dismount();
 
     this.sfx.playDeath();
     this.sfx.duckMusic(2200);
@@ -3908,6 +4167,7 @@ export class GameScene extends Phaser.Scene {
     this.emoteKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
     this.prestigeKey     = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Y);
     this.statsKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+    this.mountKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.X);
     // Hotbar skill keys 1–6
     const hotbarKeyCodes = [
       Phaser.Input.Keyboard.KeyCodes.ONE,

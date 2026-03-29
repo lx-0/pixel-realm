@@ -42,6 +42,10 @@ export interface SaveData {
   playerName?: string;
   /** Server-side user ID for authenticated sessions. */
   userId?: string;
+  /** Mount IDs the player has unlocked. */
+  unlockedMounts?: string[];
+  /** Currently active (last summoned) mount ID, or empty string for none. */
+  activeMountId?: string;
 }
 
 /**
@@ -95,6 +99,8 @@ const DEFAULT_SAVE: SaveData = {
   tutorialCompleted: false,
   hardcoreHighestLevel: 0,
   hardcoreZonesCleared: 0,
+  unlockedMounts: [],
+  activeMountId: '',
 };
 
 export class SaveManager {
@@ -119,6 +125,8 @@ export class SaveManager {
         hardcoreZonesCleared: p.hardcoreZonesCleared ?? 0,
         playerName:           p.playerName,
         userId:               p.userId,
+        unlockedMounts:       p.unlockedMounts       ?? [],
+        activeMountId:        p.activeMountId        ?? '',
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
@@ -204,6 +212,22 @@ export class SaveManager {
     localStorage.removeItem(SAVE_KEY);
     // Also clear achievement progress so it stays in sync
     try { localStorage.removeItem('pixelrealm_achievements_v1'); } catch { /* ignore */ }
+  }
+
+  // ── Mount helpers ─────────────────────────────────────────────────────────
+
+  static unlockMount(mountId: string): void {
+    const data = SaveManager.load();
+    if (!(data.unlockedMounts ?? []).includes(mountId)) {
+      data.unlockedMounts = [...(data.unlockedMounts ?? []), mountId];
+      SaveManager.save(data);
+    }
+  }
+
+  static setActiveMount(mountId: string): void {
+    const data = SaveManager.load();
+    data.activeMountId = mountId;
+    SaveManager.save(data);
   }
 
   // ── Save slots ────────────────────────────────────────────────────────────

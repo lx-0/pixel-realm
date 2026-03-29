@@ -114,6 +114,34 @@ export class BootScene extends Phaser.Scene {
     this.load.image('marker_path_arrow',            'assets/worldmap/marker_path_arrow.png');
     this.load.image('marker_quest',                 'assets/worldmap/marker_quest.png');
 
+    // ── Mount system ──────────────────────────────────────────────────────────
+    // Mount world sprites (24×24 rideable mounts in game world)
+    this.load.image('mount_war_horse',     'assets/sprites/mounts/mount_war_horse.png');
+    this.load.image('mount_shadow_wolf',   'assets/sprites/mounts/mount_shadow_wolf.png');
+    this.load.image('mount_desert_raptor', 'assets/sprites/mounts/mount_desert_raptor.png');
+    this.load.image('mount_frost_elk',     'assets/sprites/mounts/mount_frost_elk.png');
+    this.load.image('mount_crystal_drake', 'assets/sprites/mounts/mount_crystal_drake.png');
+    this.load.image('mount_mech_golem',    'assets/sprites/mounts/mount_mech_golem.png');
+    // Stable building and stablemaster NPC
+    this.load.image('sprite_stable_building', 'assets/sprites/mounts/sprite_stable_building.png');
+    this.load.image('char_npc_stablemaster',  'assets/sprites/mounts/char_npc_stablemaster.png');
+    // Mount collection panel background
+    this.load.image('ui_panel_mount_collection', 'assets/ui/mounts/ui_panel_mount_collection.png');
+    // Mount icons (16×16)
+    this.load.image('icon_mount_war_horse',     'assets/ui/mounts/icon_mount_war_horse.png');
+    this.load.image('icon_mount_shadow_wolf',   'assets/ui/mounts/icon_mount_shadow_wolf.png');
+    this.load.image('icon_mount_desert_raptor', 'assets/ui/mounts/icon_mount_desert_raptor.png');
+    this.load.image('icon_mount_frost_elk',     'assets/ui/mounts/icon_mount_frost_elk.png');
+    this.load.image('icon_mount_crystal_drake', 'assets/ui/mounts/icon_mount_crystal_drake.png');
+    this.load.image('icon_mount_mech_golem',    'assets/ui/mounts/icon_mount_mech_golem.png');
+    // Mount UI elements
+    this.load.image('ui_glow_border_common',    'assets/ui/mounts/ui_glow_border_common.png');
+    this.load.image('ui_glow_border_rare',      'assets/ui/mounts/ui_glow_border_rare.png');
+    this.load.image('ui_glow_border_epic',      'assets/ui/mounts/ui_glow_border_epic.png');
+    this.load.image('ui_glow_border_legendary', 'assets/ui/mounts/ui_glow_border_legendary.png');
+    this.load.image('ui_button_mount_summon',   'assets/ui/mounts/ui_button_mount_summon.png');
+    this.load.image('ui_button_mount_dismiss',  'assets/ui/mounts/ui_button_mount_dismiss.png');
+
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();
     });
