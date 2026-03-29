@@ -624,6 +624,45 @@ export const playerPets = pgTable("player_pets", {
   acquiredAt: timestamp("acquired_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Mailbox (persistent async player & system messages) ──────────────────────
+
+export const mailMessages = pgTable("mail_messages", {
+  id:              uuid("id").defaultRandom().primaryKey(),
+  /** null = system mail */
+  senderId:        uuid("sender_id").references(() => players.id, { onDelete: "set null" }),
+  senderName:      varchar("sender_name", { length: 20 }).notNull().default("System"),
+  recipientId:     uuid("recipient_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  subject:         varchar("subject", { length: 120 }).notNull(),
+  body:            text("body").notNull().default(""),
+  /** Gold attached to this mail (0 = none) */
+  attachmentGold:  integer("attachment_gold").notNull().default(0),
+  /** Item attached to this mail (null = none) */
+  attachmentItemId: varchar("attachment_item_id", { length: 50 }).references(() => items.id),
+  attachmentQty:   integer("attachment_qty").notNull().default(0),
+  isRead:          boolean("is_read").notNull().default(false),
+  attachmentClaimed: boolean("attachment_claimed").notNull().default(false),
+  sentAt:          timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt:       timestamp("expires_at", { withTimezone: true }).notNull(),
+  deletedAt:       timestamp("deleted_at", { withTimezone: true }),
+});
+
+// ── Player Notifications (toast + history) ────────────────────────────────────
+
+export const playerNotifications = pgTable("player_notifications", {
+  id:          uuid("id").defaultRandom().primaryKey(),
+  playerId:    uuid("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  /** 'mail' | 'friend_request' | 'guild_invite' | 'event_start' | 'auction_sold' | 'auction_expired' */
+  kind:        varchar("kind", { length: 30 }).notNull(),
+  title:       varchar("title", { length: 100 }).notNull(),
+  body:        varchar("body", { length: 255 }).notNull().default(""),
+  isRead:      boolean("is_read").notNull().default(false),
+  createdAt:   timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
 export const playerSessions = pgTable("player_sessions", {
@@ -688,3 +727,5 @@ export type GuildTerritory = typeof guildTerritories.$inferSelect;
 export type GuildWar = typeof guildWars.$inferSelect;
 export type WarCapturePoint = typeof warCapturePoints.$inferSelect;
 export type PlayerPet = typeof playerPets.$inferSelect;
+export type MailMessage = typeof mailMessages.$inferSelect;
+export type PlayerNotification = typeof playerNotifications.$inferSelect;

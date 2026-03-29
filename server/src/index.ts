@@ -100,6 +100,20 @@ import {
   getAnalyticsSummary,
 } from "./db/analytics";
 import { claimDailyReward, getStreakStatus } from "./db/dailyRewards";
+import {
+  getMailbox,
+  getUnreadMailCount,
+  sendMail,
+  sendSystemMail,
+  markMailRead,
+  claimMailAttachment,
+  deleteMail,
+  getNotifications,
+  getUnreadNotificationCount,
+  markAllNotificationsRead,
+  expireOldMail,
+  createNotification,
+} from "./db/mailbox";
 import { getUptimeSeconds, recordHttpRequest, renderPrometheusMetrics } from "./metrics";
 import { ensureSeasonalEvents, syncSeasonalActivation } from "./seasons/rotation";
 
@@ -140,6 +154,15 @@ setInterval(() => {
     console.warn("[Seasons] hourly sync failed:", (err as Error).message),
   );
 }, 60 * 60 * 1000);
+
+// Expire old mail once every 6 hours (return unclaimed gold to senders)
+setInterval(() => {
+  expireOldMail().then((n) => {
+    if (n > 0) console.log(`[Mailbox] Expired ${n} old mail message(s)`);
+  }).catch(err =>
+    console.warn("[Mailbox] expireOldMail failed:", (err as Error).message),
+  );
+}, 6 * 60 * 60 * 1000);
 
 // ── Express app ───────────────────────────────────────────────────────────────
 
@@ -309,18 +332,37 @@ app.post("/marketplace/list", async (req, res) => {
 // POST /marketplace/buy/:listingId — purchase a listing
 app.post("/marketplace/buy/:listingId", async (req, res) => {
   const { listingId } = req.params as { listingId: string };
-  const { userId } = req.body as { userId?: string };
+  const { userId, buyerName } = req.body as { userId?: string; buyerName?: string };
 
   if (!userId || userId.length > 100 || !listingId || listingId.length > 100) {
     res.status(400).json({ error: "Invalid parameters" });
     return;
   }
   try {
+    // Fetch listing detail before purchase for notification context
+    const listings = await getActiveListings();
+    const listing = listings.find((l) => l.id === listingId);
+
     const result = await buyListing(listingId, userId);
     if (!result.success) {
       res.status(422).json({ error: result.error });
     } else {
       res.json({ success: true });
+      // Non-blocking: send system mail + notification to seller
+      if (listing) {
+        const buyer = buyerName ?? "a player";
+        sendSystemMail(
+          listing.sellerId,
+          `Item Sold: ${listing.itemName}`,
+          `Your ${listing.itemName} (x${listing.quantity}) sold to ${buyer} for ${listing.priceGold}g.\n\nGold has been added to your wallet.`,
+        ).catch(() => {/* non-fatal */});
+        createNotification({
+          playerId: listing.sellerId,
+          kind: "auction_sold",
+          title: "Item Sold!",
+          body: `${listing.itemName} sold for ${listing.priceGold}g`,
+        }).catch(() => {/* non-fatal */});
+      }
     }
   } catch (err) {
     console.warn("[REST] marketplace/buy failed:", (err as Error).message);
@@ -1262,6 +1304,154 @@ app.post("/daily-reward/claim", playerAuth, async (req: Request, res: Response) 
   } catch (err) {
     console.warn("[DailyReward] claim failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to claim daily reward" });
+  }
+});
+
+// ── Mailbox endpoints ─────────────────────────────────────────────────────────
+
+// GET /mailbox/:userId — fetch inbox
+app.get("/mailbox/:userId", async (req: Request, res: Response) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) { res.status(400).json({ error: "Invalid userId" }); return; }
+  try {
+    const mail = await getMailbox(userId);
+    res.json(mail);
+  } catch (err) {
+    console.warn("[Mailbox] getMailbox failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch mailbox" });
+  }
+});
+
+// GET /mailbox/:userId/unread-count — unread mail count
+app.get("/mailbox/:userId/unread-count", async (req: Request, res: Response) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) { res.status(400).json({ error: "Invalid userId" }); return; }
+  try {
+    const count = await getUnreadMailCount(userId);
+    res.json({ count });
+  } catch (err) {
+    console.warn("[Mailbox] unread-count failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch unread count" });
+  }
+});
+
+// POST /mail/send — send a player-to-player mail
+app.post("/mail/send", async (req: Request, res: Response) => {
+  const { senderId, senderName, recipientId, subject, body, attachmentGold } =
+    req.body as {
+      senderId?: string;
+      senderName?: string;
+      recipientId?: string;
+      subject?: string;
+      body?: string;
+      attachmentGold?: number;
+    };
+  if (!senderId || !recipientId || !subject || !senderName) {
+    res.status(400).json({ error: "Missing required fields" });
+    return;
+  }
+  try {
+    const result = await sendMail({
+      senderId,
+      senderName,
+      recipientId,
+      subject,
+      body: body ?? "",
+      attachmentGold: attachmentGold ?? 0,
+    });
+    if (!result.success) {
+      res.status(422).json({ error: result.error });
+      return;
+    }
+    res.json({ success: true, mailId: result.mailId });
+  } catch (err) {
+    console.warn("[Mailbox] sendMail failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to send mail" });
+  }
+});
+
+// POST /mail/read/:mailId — mark mail as read
+app.post("/mail/read/:mailId", async (req: Request, res: Response) => {
+  const { mailId } = req.params as { mailId: string };
+  const { userId } = req.body as { userId?: string };
+  if (!mailId || !userId) { res.status(400).json({ error: "Missing mailId or userId" }); return; }
+  try {
+    await markMailRead(mailId, userId);
+    res.json({ success: true });
+  } catch (err) {
+    console.warn("[Mailbox] markMailRead failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to mark as read" });
+  }
+});
+
+// POST /mail/claim/:mailId — claim attachment
+app.post("/mail/claim/:mailId", async (req: Request, res: Response) => {
+  const { mailId } = req.params as { mailId: string };
+  const { userId } = req.body as { userId?: string };
+  if (!mailId || !userId) { res.status(400).json({ error: "Missing mailId or userId" }); return; }
+  try {
+    const result = await claimMailAttachment(mailId, userId);
+    if (!result.success) {
+      res.status(422).json({ error: result.error });
+      return;
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.warn("[Mailbox] claimAttachment failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to claim attachment" });
+  }
+});
+
+// DELETE /mail/:mailId — soft-delete a mail
+app.delete("/mail/:mailId", async (req: Request, res: Response) => {
+  const { mailId } = req.params as { mailId: string };
+  const { userId } = req.body as { userId?: string };
+  if (!mailId || !userId) { res.status(400).json({ error: "Missing mailId or userId" }); return; }
+  try {
+    await deleteMail(mailId, userId);
+    res.json({ success: true });
+  } catch (err) {
+    console.warn("[Mailbox] deleteMail failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to delete mail" });
+  }
+});
+
+// GET /notifications/:userId — get notification history
+app.get("/notifications/:userId", async (req: Request, res: Response) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) { res.status(400).json({ error: "Invalid userId" }); return; }
+  try {
+    const notes = await getNotifications(userId);
+    res.json(notes);
+  } catch (err) {
+    console.warn("[Notifications] getNotifications failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch notifications" });
+  }
+});
+
+// GET /notifications/:userId/unread-count
+app.get("/notifications/:userId/unread-count", async (req: Request, res: Response) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) { res.status(400).json({ error: "Invalid userId" }); return; }
+  try {
+    const count = await getUnreadNotificationCount(userId);
+    res.json({ count });
+  } catch (err) {
+    console.warn("[Notifications] unread-count failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch unread count" });
+  }
+});
+
+// POST /notifications/:userId/read-all — mark all notifications as read
+app.post("/notifications/:userId/read-all", async (req: Request, res: Response) => {
+  const { userId } = req.params as { userId: string };
+  if (!userId || userId.length > 100) { res.status(400).json({ error: "Invalid userId" }); return; }
+  try {
+    await markAllNotificationsRead(userId);
+    res.json({ success: true });
+  } catch (err) {
+    console.warn("[Notifications] markAllRead failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to mark notifications read" });
   }
 });
 

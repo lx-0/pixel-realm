@@ -30,6 +30,8 @@ import { WorldBossPanel } from '../ui/WorldBossPanel';
 import { GuildPanel } from '../ui/GuildPanel';
 import { PartyPanel } from '../ui/PartyPanel';
 import { SocialPanel } from '../ui/SocialPanel';
+import { MailboxPanel } from '../ui/MailboxPanel';
+import { NotificationToast } from '../ui/NotificationToast';
 import { AchievementPanel, type AchievementData } from '../ui/AchievementPanel';
 import { LeaderboardPanel } from '../ui/LeaderboardPanel';
 import { AchievementTracker } from '../systems/AchievementTracker';
@@ -332,6 +334,13 @@ export class GameScene extends Phaser.Scene {
 
   /** Social / friend list panel (multiplayer only). */
   private socialPanel?: SocialPanel;
+
+  /** In-game mailbox panel (M key). */
+  private mailboxPanel?: MailboxPanel;
+  /** Notification toast overlay (always present in multiplayer). */
+  private notificationToast?: NotificationToast;
+  /** HUD unread-mail badge text. */
+  private mailBadge?: Phaser.GameObjects.Text;
 
   /** Party loot roll panel (multiplayer only). */
   private lootRollPanel?: LootRollPanel;
@@ -666,6 +675,7 @@ export class GameScene extends Phaser.Scene {
         this.partyPanel?.closeIfOpen()        ||
         this.petPanel?.closeIfOpen()          ||
         this.socialPanel?.closeIfOpen()       ||
+        this.mailboxPanel?.closeIfOpen()      ||
         this.achievementPanel?.closeIfOpen()  ||
         this.leaderboardPanel?.closeIfOpen()  ||
         (this.statsOverlayVisible && (() => { this.statsOverlayVisible = false; this.rebuildStatsOverlay(); return true; })()) ||
@@ -786,6 +796,8 @@ export class GameScene extends Phaser.Scene {
     this.partyPanel?.update();
     this.petPanel?.update();
     this.socialPanel?.update();
+    this.mailboxPanel?.update();
+    this.notificationToast?.update();
     this.achievementPanel?.update();
     this.leaderboardPanel?.update();
     this.factionPanel?.update();
@@ -1430,6 +1442,52 @@ export class GameScene extends Phaser.Scene {
           if (this.chat) this.chat.onSend = origOnSend;
         };
       }
+    };
+
+    // Mailbox panel (M key — available in multiplayer)
+    this.mailboxPanel = new MailboxPanel(this);
+    this.mailboxPanel.userId   = localStorage.getItem('pr_userId')   ?? undefined;
+    this.mailboxPanel.username = localStorage.getItem('pr_username') ?? 'Hero';
+    this.mailboxPanel.onShowToast = (title, body, kind) => {
+      this.notificationToast?.show(title, body, kind);
+    };
+    this.mailboxPanel.onUnreadCountChanged = (count) => {
+      if (this.mailBadge) {
+        this.mailBadge.setText(count > 0 ? `✉ ${count}` : '');
+      }
+    };
+
+    // Notification toast overlay
+    this.notificationToast = new NotificationToast(this);
+    const uid = localStorage.getItem('pr_userId');
+    if (uid) this.notificationToast.setUserId(uid);
+    this.notificationToast.onUnreadCountChanged = (_count) => {
+      this.mailboxPanel?.pollUnread().catch(() => {/* non-fatal */});
+    };
+
+    // Mail HUD badge (top-right, below connection status)
+    this.mailBadge = this.add
+      .text(CANVAS.WIDTH - 6, 4, '', {
+        fontSize: '5px',
+        color: '#ffdd44',
+        fontFamily: 'monospace',
+        stroke: '#000000',
+        strokeThickness: 1,
+      })
+      .setScrollFactor(0)
+      .setDepth(70)
+      .setOrigin(1, 0)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => this.mailboxPanel?.showTab('inbox'));
+
+    // Initial poll for unread counts
+    this.mailboxPanel.pollUnread().catch(() => {/* non-fatal */});
+
+    // Wire friend-request notifications as toasts
+    const origFriendRequest = client.onFriendRequestReceived;
+    client.onFriendRequestReceived = (fromName: string) => {
+      this.notificationToast?.show('Friend Request', `${fromName} wants to be friends`, 'friend_request');
+      if (origFriendRequest) origFriendRequest.call(client, fromName);
     };
 
     // Social server callbacks
