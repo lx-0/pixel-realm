@@ -15,6 +15,7 @@
 import Phaser from 'phaser';
 import { CANVAS, SCENES, HOUSING } from '../config/constants';
 import { HousingPanel } from '../ui/HousingPanel';
+import { SaveManager } from '../systems/SaveManager';
 
 // ── Data contracts ─────────────────────────────────────────────────────────────
 
@@ -350,54 +351,72 @@ export class HousingScene extends Phaser.Scene {
   // ── Save layout ───────────────────────────────────────────────────────────────
 
   private async _saveLayout(): Promise<void> {
-    try {
-      const serverHttp = this._serverHttp();
-      await fetch(`${serverHttp}/housing/${this.data_.playerId}/layout`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ layout: this.layout }),
-      });
-      this._showHint('Layout saved!');
-      this.time.delayedCall(1500, () => this._showHint(''));
-    } catch {
-      this._showHint('Save failed');
+    // Always persist locally first (instant, offline-safe)
+    SaveManager.saveHousingLayout(this.layout);
+    this._showHint('Layout saved!');
+    this.time.delayedCall(1500, () => this._showHint(''));
+
+    // Best-effort sync to server
+    if (this.data_.playerId !== 'local') {
+      try {
+        const serverHttp = this._serverHttp();
+        await fetch(`${serverHttp}/housing/${this.data_.playerId}/layout`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ layout: this.layout }),
+        });
+      } catch { /* non-fatal */ }
     }
   }
 
   private async _onPermChange(perm: string): Promise<void> {
-    try {
-      const serverHttp = this._serverHttp();
-      await fetch(`${serverHttp}/housing/${this.data_.playerId}/permission`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ permission: perm }),
-      });
-      this.data_.permission = perm as 'public' | 'friends' | 'locked';
-    } catch {
-      // non-fatal
+    const typedPerm = perm as 'public' | 'friends' | 'locked';
+    SaveManager.saveHousingPermission(typedPerm);
+    this.data_.permission = typedPerm;
+
+    if (this.data_.playerId !== 'local') {
+      try {
+        const serverHttp = this._serverHttp();
+        await fetch(`${serverHttp}/housing/${this.data_.playerId}/permission`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ permission: perm }),
+        });
+      } catch { /* non-fatal */ }
     }
   }
 
   private async _onUpgrade(): Promise<void> {
-    try {
-      const serverHttp = this._serverHttp();
-      const res = await fetch(`${serverHttp}/housing/${this.data_.playerId}/upgrade`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (res.ok) {
-        const json = await res.json() as { houseTier: number };
-        this.data_.houseTier = json.houseTier;
-        this._showHint('House upgraded to Manor!');
-        this.time.delayedCall(2000, () => {
-          this.scene.restart(this.data_);
+    const save    = SaveManager.load();
+    const housing = save.housing;
+    if (!housing) return;
+
+    // Determine next tier
+    const nextTier    = housing.tier + 1;
+    const nextStyle   = HOUSING.EXTERIOR_STYLES.find(s => s.tier === nextTier);
+    if (!nextStyle) { this._showHint('Already at max tier'); return; }
+
+    const upgradeCost = nextTier === 2 ? HOUSING.UPGRADE_COST : HOUSING.ESTATE_COST;
+
+    // Deduct gold and upgrade
+    SaveManager.upgradeHouse(nextStyle.id, nextTier);
+    this.data_.houseTier = nextTier;
+    this._showHint(`House upgraded to ${nextStyle.name}!`);
+
+    this.time.delayedCall(2000, () => {
+      this.scene.restart({ ...this.data_, houseTier: nextTier });
+    });
+
+    // Best-effort server sync
+    if (this.data_.playerId !== 'local') {
+      try {
+        const serverHttp = this._serverHttp();
+        await fetch(`${serverHttp}/housing/${this.data_.playerId}/upgrade`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ upgradeCost }),
         });
-      } else {
-        const err = await res.json() as { error: string };
-        this._showHint(err.error ?? 'Upgrade failed');
-      }
-    } catch {
-      this._showHint('Upgrade failed');
+      } catch { /* non-fatal */ }
     }
   }
 

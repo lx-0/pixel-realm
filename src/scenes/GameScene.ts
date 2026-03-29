@@ -3,7 +3,7 @@ import {
   CANVAS, PLAYER, COMBAT, MANA, STAMINA, LEVELS, PRESTIGE, SCENES, SPRINT, DODGE,
   ZONES, ENEMY_TYPES, BOSS_TYPES, ECONOMY, LOOT,
   STATUS_EFFECTS, MELEE_STATUS_ON_HIT, PROJECTILE_STATUS_ON_HIT,
-  MOUNTS, MOUNT,
+  MOUNTS, MOUNT, HOUSING,
   type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
 } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
@@ -354,6 +354,16 @@ export class GameScene extends Phaser.Scene {
 
   /** T key — opens fast travel dialog (handled inline in update). */
   // fastTravelKey handled via escScrollKey below
+
+  // ── Housing NPC ───────────────────────────────────────────────────────────
+  /** Housing realtor NPC world sprite (bottom-right zone corner). */
+  private housingNpc?: Phaser.GameObjects.Sprite;
+  /** Proximity hint for housing NPC. */
+  private housingHint?: Phaser.GameObjects.Text;
+  /** Housing portal world sprite (player's house entrance, if owned). */
+  private housingPortal?: Phaser.GameObjects.Sprite;
+  /** Proximity hint for housing portal. */
+  private housingPortalHint?: Phaser.GameObjects.Text;
 
   /** P2P trade window (multiplayer only). */
   private tradeWindow?: TradeWindow;
@@ -824,7 +834,12 @@ export class GameScene extends Phaser.Scene {
     const nearStable = this.stableNpc && this.player
       ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.stableNpc.x, this.stableNpc.y) < MOUNT.STABLE_RANGE_PX
       : false;
-    if ((this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false)) && this.isMultiplayer && !nearTransport && !nearStable) {
+    const nearHousing = (this.housingNpc && this.player
+      ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.housingNpc.x, this.housingNpc.y) < 40
+      : false) || (this.housingPortal && this.player
+      ? Phaser.Math.Distance.Between(this.player.x, this.player.y, this.housingPortal.x, this.housingPortal.y) < 40
+      : false);
+    if ((this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false)) && this.isMultiplayer && !nearTransport && !nearStable && !nearHousing) {
       this.handleNpcInteract();
     }
 
@@ -914,6 +929,7 @@ export class GameScene extends Phaser.Scene {
     this.updateCraftingStationHint();
     this.updateTransportNpcHint();
     this.updateStableNpcHint();
+    this.updateHousingNpcHint();
     this.updateDungeonPortalHint();
     this.dungeonEntrancePanel?.update();
 
@@ -2147,6 +2163,9 @@ export class GameScene extends Phaser.Scene {
     // Stable NPC — placed in bottom-left corner of the zone
     this.addStableNpc(WALL + 24, H - WALL - 24);
 
+    // Housing NPC (Realtor) — placed in bottom-right corner
+    this.addHousingNpc(W - WALL - 24, H - WALL - 24);
+
     // Dungeon portal — appears in endgame zones (zone10+)
     if (this.zoneIdx >= 9) {
       this.addDungeonPortal(W - WALL - 24, H - WALL - 24);
@@ -2367,6 +2386,167 @@ export class GameScene extends Phaser.Scene {
         this.sfx.playPanelOpen();
       }
     }
+  }
+
+  // ── Housing NPC ────────────────────────────────────────────────────────────
+
+  private addHousingNpc(x: number, y: number): void {
+    const texKey = this.textures.exists('sprite_plot_for_sale') ? 'sprite_plot_for_sale' : 'waystone_inactive';
+    this.housingNpc = this.add.sprite(x, y, texKey).setDepth(4).setOrigin(0.5, 1);
+
+    // Floating "REALTOR" label
+    const label = this.add.text(x, y - 20, 'REALTOR', {
+      fontSize: '3px', color: '#aaffaa', fontFamily: 'monospace',
+      stroke: '#000', strokeThickness: 1,
+    }).setOrigin(0.5, 1).setDepth(4);
+    this.tweens.add({ targets: label, y: y - 23, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    // HUD proximity hint
+    this.housingHint = this.add.text(
+      CANVAS.WIDTH / 2, CANVAS.HEIGHT - 36,
+      '[E] Housing — Buy or Upgrade House',
+      { fontSize: '4px', color: '#aaffaa', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
+
+    // Also show a housing portal if the player already owns a house
+    const save = SaveManager.load();
+    if (save.housing?.owned) {
+      this.addHousingPortal(x - 24, y);
+    }
+  }
+
+  private addHousingPortal(x: number, y: number): void {
+    const texKey = this.textures.exists('sprite_housing_portal') ? 'sprite_housing_portal' : 'waystone_active';
+    this.housingPortal = this.add.sprite(x, y, texKey).setDepth(4).setOrigin(0.5, 1);
+    this.tweens.add({ targets: this.housingPortal, alpha: 0.7, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    this.housingPortalHint = this.add.text(
+      CANVAS.WIDTH / 2, CANVAS.HEIGHT - 44,
+      '[E] Enter Your House',
+      { fontSize: '4px', color: '#ffddaa', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
+  }
+
+  private updateHousingNpcHint(): void {
+    if (!this.player) return;
+
+    // Check proximity to housing portal (enter house)
+    if (this.housingPortal && this.housingPortalHint) {
+      const distPortal = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.housingPortal.x, this.housingPortal.y);
+      const nearPortal  = distPortal < 40;
+      this.housingPortalHint.setVisible(nearPortal);
+      if (nearPortal && (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false))) {
+        this.enterHouse();
+        return;
+      }
+    }
+
+    // Check proximity to housing NPC (purchase/manage)
+    if (!this.housingNpc || !this.housingHint) return;
+    const distNpc = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.housingNpc.x, this.housingNpc.y);
+    const nearNpc  = distNpc < 40;
+    this.housingHint.setVisible(nearNpc);
+    if (nearNpc && (this.npcKey && Phaser.Input.Keyboard.JustDown(this.npcKey) || (this.touch?.interact.justPressed ?? false))) {
+      this.openHousingNpcDialog();
+    }
+  }
+
+  private openHousingNpcDialog(): void {
+    const save    = SaveManager.load();
+    const housing = save.housing;
+
+    if (!housing?.owned) {
+      // Show purchase options — simple floating dialog
+      this.showHousingPurchaseDialog();
+    } else {
+      // Already owns a house — show management options
+      this.floatingText(this.player.x, this.player.y - 20, `Your ${housing.styleId} is ready! [E] near portal to enter.`, '#aaffaa');
+    }
+  }
+
+  private showHousingPurchaseDialog(): void {
+    const cx = CANVAS.WIDTH  / 2;
+    const cy = CANVAS.HEIGHT / 2;
+    const W  = 160;
+    const H  = 90;
+    const px = cx - W / 2;
+    const py = cy - H / 2;
+    const Z  = 88;
+
+    const cont = this.add.container(0, 0).setScrollFactor(0).setDepth(Z);
+
+    // Background
+    cont.add(this.add.rectangle(cx, cy, W, H, 0x111122, 0.95).setOrigin(0.5));
+    cont.add(this.add.rectangle(cx, cy, W, H, 0x445544, 0).setOrigin(0.5).setStrokeStyle(1, 0x88cc88, 1));
+
+    // Title
+    cont.add(this.add.text(cx, py + 6, 'HOUSING REALTOR', { fontSize: '5px', color: '#aaffaa', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 }).setOrigin(0.5, 0));
+    cont.add(this.add.text(cx, py + 15, 'Purchase a house plot:', { fontSize: '4px', color: '#cccccc', fontFamily: 'monospace' }).setOrigin(0.5, 0));
+
+    // House style options
+    const styles = [
+      { id: 'cottage', name: 'Cottage', tier: 1, cost: HOUSING.PLOT_COST,    color: '#aaddaa', key: 'sprite_house_cottage' },
+      { id: 'manor',   name: 'Manor',   tier: 2, cost: HOUSING.PLOT_COST + HOUSING.UPGRADE_COST, color: '#aaaaff', key: 'sprite_house_manor'   },
+      { id: 'estate',  name: 'Estate',  tier: 3, cost: HOUSING.PLOT_COST + HOUSING.UPGRADE_COST + HOUSING.ESTATE_COST, color: '#ffddaa', key: 'sprite_house_estate'  },
+    ];
+
+    styles.forEach((style, i) => {
+      const bx  = px + 10 + i * 48;
+      const by  = py + 30;
+      const affordable = this.gold >= style.cost;
+
+      // Preview image
+      if (this.textures.exists(style.key)) {
+        cont.add(this.add.image(bx + 16, by + 8, style.key).setOrigin(0.5, 0).setDisplaySize(24, 24));
+      } else {
+        cont.add(this.add.rectangle(bx + 16, by + 8, 24, 24, affordable ? 0x224422 : 0x222222).setOrigin(0.5, 0));
+      }
+      cont.add(this.add.text(bx + 16, by + 35, style.name, { fontSize: '4px', color: style.color, fontFamily: 'monospace' }).setOrigin(0.5, 0));
+      cont.add(this.add.text(bx + 16, by + 42, `${style.cost}g`, { fontSize: '3px', color: affordable ? '#ffd700' : '#884444', fontFamily: 'monospace' }).setOrigin(0.5, 0));
+
+      if (affordable) {
+        const btn = this.add.text(bx + 16, by + 50, '[Buy]', { fontSize: '4px', color: '#44ff88', fontFamily: 'monospace' })
+          .setOrigin(0.5, 0).setInteractive({ useHandCursor: true });
+        btn.on('pointerdown', () => {
+          this.gold -= style.cost;
+          this.updateHUD();
+          SaveManager.purchaseHouse(style.id, style.tier);
+          cont.destroy(true);
+          // Show housing portal
+          this.addHousingPortal(this.housingNpc!.x - 24, this.housingNpc!.y);
+          this.floatingText(this.player.x, this.player.y - 20, `${style.name} purchased! Enter via portal.`, '#aaffaa');
+          this.sfx.playPanelOpen();
+        });
+        cont.add(btn);
+      }
+    });
+
+    // Gold display
+    cont.add(this.add.text(px + 6, py + H - 14, `Your gold: ${this.gold}g`, { fontSize: '4px', color: '#ffd700', fontFamily: 'monospace' }).setOrigin(0, 0));
+
+    // Close button
+    const closeBtn = this.add.text(px + W - 6, py + 6, '[X]', { fontSize: '4px', color: '#ff8888', fontFamily: 'monospace' })
+      .setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    closeBtn.on('pointerdown', () => cont.destroy(true));
+    cont.add(closeBtn);
+  }
+
+  private enterHouse(): void {
+    const save    = SaveManager.load();
+    const housing = save.housing;
+    if (!housing?.owned) return;
+
+    this.cameras.main.fadeOut(300, 0, 0, 0, () => {
+      this.scene.start(SCENES.HOUSING, {
+        playerId:        save.userId ?? 'local',
+        plotId:          'local',
+        zoneId:          this.zone.id,
+        isOwner:         true,
+        houseTier:       housing.tier,
+        furnitureLayout: housing.layout,
+        permission:      housing.permission,
+      });
+    });
   }
 
   // ── Mount toggle / cast ───────────────────────────────────────────────────

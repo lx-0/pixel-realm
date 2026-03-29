@@ -114,6 +114,16 @@ export class BootScene extends Phaser.Scene {
     this.load.image('marker_path_arrow',            'assets/worldmap/marker_path_arrow.png');
     this.load.image('marker_quest',                 'assets/worldmap/marker_quest.png');
 
+    // ── Housing system ────────────────────────────────────────────────────────
+    this.load.image('sprite_house_cottage',    'assets/sprites/housing/sprite_house_cottage.png');
+    this.load.image('sprite_house_manor',      'assets/sprites/housing/sprite_house_manor.png');
+    this.load.image('sprite_house_estate',     'assets/sprites/housing/sprite_house_estate.png');
+    this.load.image('sprite_housing_portal',   'assets/sprites/housing/sprite_housing_portal.png');
+    this.load.image('sprite_plot_for_sale',    'assets/sprites/housing/sprite_plot_for_sale.png');
+    this.load.image('ui_panel_housing',        'assets/ui/housing/ui_panel_housing.png');
+    this.load.image('ui_panel_house_selector', 'assets/ui/housing/ui_panel_house_selector.png');
+    this.load.image('icon_land_deed',          'assets/ui/housing/icon_land_deed.png');
+
     // ── Mount system ──────────────────────────────────────────────────────────
     // Mount world sprites (24×24 rideable mounts in game world)
     this.load.image('mount_war_horse',     'assets/sprites/mounts/mount_war_horse.png');

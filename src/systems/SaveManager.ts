@@ -46,6 +46,16 @@ export interface SaveData {
   unlockedMounts?: string[];
   /** Currently active (last summoned) mount ID, or empty string for none. */
   activeMountId?: string;
+  /** Player housing data (persisted locally; synced to server when online). */
+  housing?: {
+    owned:      boolean;
+    styleId:    string;
+    tier:       number;
+    layout:     Array<{ furnitureId: string; x: number; y: number; rotation: number }>;
+    permission: 'public' | 'friends' | 'locked';
+    inventory:  Record<string, number>;
+    storage:    string[];
+  };
 }
 
 /**
@@ -127,6 +137,7 @@ export class SaveManager {
         userId:               p.userId,
         unlockedMounts:       p.unlockedMounts       ?? [],
         activeMountId:        p.activeMountId        ?? '',
+        housing:              p.housing,
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
@@ -228,6 +239,67 @@ export class SaveManager {
     const data = SaveManager.load();
     data.activeMountId = mountId;
     SaveManager.save(data);
+  }
+
+  // ── Housing helpers ───────────────────────────────────────────────────────
+
+  static getHousing(data?: ReturnType<typeof SaveManager.load>) {
+    const d = data ?? SaveManager.load();
+    return d.housing ?? {
+      owned: false, styleId: 'cottage', tier: 1,
+      layout: [], permission: 'public' as const,
+      inventory: {}, storage: [],
+    };
+  }
+
+  static purchaseHouse(styleId: string, tier: number): void {
+    const data    = SaveManager.load();
+    data.housing  = {
+      owned: true, styleId, tier,
+      layout: [], permission: 'public',
+      inventory: {}, storage: [],
+    };
+    SaveManager.save(data);
+  }
+
+  static saveHousingLayout(layout: Array<{ furnitureId: string; x: number; y: number; rotation: number }>): void {
+    const data = SaveManager.load();
+    if (!data.housing) return;
+    data.housing.layout = layout;
+    SaveManager.save(data);
+  }
+
+  static saveHousingPermission(permission: 'public' | 'friends' | 'locked'): void {
+    const data = SaveManager.load();
+    if (!data.housing) return;
+    data.housing.permission = permission;
+    SaveManager.save(data);
+  }
+
+  static upgradeHouse(styleId: string, tier: number): void {
+    const data = SaveManager.load();
+    if (!data.housing) return;
+    data.housing.styleId = styleId;
+    data.housing.tier    = tier;
+    SaveManager.save(data);
+  }
+
+  static addFurnitureToInventory(furnId: string, qty = 1): void {
+    const data = SaveManager.load();
+    if (!data.housing) return;
+    data.housing.inventory[furnId] = (data.housing.inventory[furnId] ?? 0) + qty;
+    SaveManager.save(data);
+  }
+
+  static removeFurnitureFromInventory(furnId: string): boolean {
+    const data = SaveManager.load();
+    if (!data.housing) return false;
+    const qty = data.housing.inventory[furnId] ?? 0;
+    if (qty <= 0) return false;
+    if (qty === 1) delete data.housing.inventory[furnId];
+    else data.housing.inventory[furnId] = qty - 1;
+    SaveManager.save(data);
+    return true;
   }
 
   // ── Save slots ────────────────────────────────────────────────────────────

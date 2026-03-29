@@ -292,11 +292,46 @@ export const HOUSING = {
   INTERIOR_HEIGHT: 128,
   /** Maximum furniture pieces per house */
   MAX_FURNITURE: 20,
+  /** Housing storage chest item slots */
+  STORAGE_SLOTS: 20,
+  /** Gold cost to purchase a plot (Cottage) */
+  PLOT_COST: 1000,
+  /** Gold cost to upgrade Cottage → Manor */
+  UPGRADE_COST: 1500,
+  /** Gold cost to upgrade Manor → Estate */
+  ESTATE_COST: 5000,
+  /** House exterior style names (mapped to tier) */
+  EXTERIOR_STYLES: [
+    { id: 'cottage', name: 'Cottage',  tier: 1, spriteKey: 'sprite_house_cottage', cost: 0 },
+    { id: 'manor',   name: 'Manor',    tier: 2, spriteKey: 'sprite_house_manor',   cost: 1500 },
+    { id: 'estate',  name: 'Estate',   tier: 3, spriteKey: 'sprite_house_estate',  cost: 5000 },
+  ] as const,
   /** House tier tileset keys */
   TILESETS: {
     1: 'tileset_house_cottage',
     2: 'tileset_house_manor',
+    3: 'tileset_house_estate',
   } as Record<number, string>,
+  /** Furniture vendor prices (gold). 0 = not for sale. */
+  FURNITURE_PRICES: {
+    furn_bed:       200,
+    furn_table:     80,
+    furn_chair:     50,
+    furn_bookshelf: 150,
+    furn_chest:     300,
+    furn_fireplace: 400,
+    furn_rug:       120,
+    furn_lamp:      90,
+    furn_shelf:     100,
+    furn_crafting_bench: 0,  // crafting only
+    furn_cooking_pot:    0,  // crafting only
+    decor_painting: 250,
+    decor_trophy:   180,
+    decor_banner:   100,
+    decor_plant:    60,
+    decor_candles:  80,
+    decor_pet_bed:  350,
+  } as Record<string, number>,
   /** Available furniture definitions */
   FURNITURE: [
     { id: 'furn_bed',       name: 'Bed',         key: 'furn_bed',       restBonus: 10 },

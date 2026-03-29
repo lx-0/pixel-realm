@@ -10,6 +10,7 @@
 
 import Phaser from 'phaser';
 import { CANVAS, HOUSING } from '../config/constants';
+import { SaveManager } from '../systems/SaveManager';
 
 const PANEL_W = 90;
 const PANEL_H = 140;
@@ -30,6 +31,10 @@ export interface HousingPanelOptions {
   onPermChange:     (perm: HousingPermission) => void;
   onUpgrade:        () => void;
   onExit:           () => void;
+  /** Player's current gold (for vendor purchases). */
+  playerGold?:      number;
+  /** Called when player buys furniture from vendor (furnId, cost). */
+  onBuyFurniture?:  (furnId: string, cost: number) => void;
 }
 
 const PERM_LABELS: Record<HousingPermission, string> = {
@@ -99,9 +104,10 @@ export class HousingPanel {
     c.add(titleTxt);
 
     // Tier label
+    const styleName = HOUSING.EXTERIOR_STYLES.find(s => s.tier === this.opts.houseTier)?.name ?? 'Cottage';
     const tierLabel = this.scene.add.text(
       PANEL_X + PAD, PANEL_Y + PAD + 8,
-      `Tier ${this.opts.houseTier} — ${this.opts.houseTier === 2 ? 'Manor' : 'Cottage'}`,
+      `Tier ${this.opts.houseTier} — ${styleName}`,
       { fontSize: '4px', color: '#aaaaaa', fontFamily: 'monospace' },
     );
     c.add(tierLabel);
@@ -125,29 +131,41 @@ export class HousingPanel {
   ): number {
     let y = startY;
 
-    // Section: Furniture
-    c.add(this.scene.add.text(PANEL_X + PAD, y, 'Furniture', {
+    // Section: Furniture (show owned inventory)
+    c.add(this.scene.add.text(PANEL_X + PAD, y, 'Furniture (owned)', {
       fontSize: '4px', color: '#886633', fontFamily: 'monospace',
     }));
     y += 7;
 
-    // Furniture grid: show first 8 furniture items (2 cols × 4 rows)
-    const allItems = [...HOUSING.FURNITURE, ...HOUSING.DECORATIONS] as unknown as FurnDef[];
-    const visible8 = allItems.slice(0, 8);
+    const housingData = SaveManager.getHousing();
+    const inventory   = housingData.inventory ?? {};
+    const allItems    = [...HOUSING.FURNITURE, ...HOUSING.DECORATIONS] as unknown as FurnDef[];
+    const ownedItems  = allItems.filter(f => (inventory[f.id] ?? 0) > 0);
 
-    for (let i = 0; i < visible8.length; i++) {
-      const def  = visible8[i];
-      const col  = i % 2;
-      const row  = Math.floor(i / 2);
-      const bx   = PANEL_X + PAD + col * 38;
-      const by   = y + row * 11;
-
-      this._buildSmallButton(c, bx, by, 36, 10,
-        def.name.slice(0, 7), 0x2a1e10, 0xccaa66,
-        () => this.opts.onPlaceFurniture(def.id));
+    if (ownedItems.length === 0) {
+      c.add(this.scene.add.text(PANEL_X + PAD, y, 'No furniture owned.\nBuy some below!',
+        { fontSize: '3px', color: '#888888', fontFamily: 'monospace' }));
+      y += 14;
+    } else {
+      const visible8 = ownedItems.slice(0, 8);
+      for (let i = 0; i < visible8.length; i++) {
+        const def = visible8[i];
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const bx  = PANEL_X + PAD + col * 38;
+        const by  = y + row * 11;
+        const qty = inventory[def.id] ?? 0;
+        this._buildSmallButton(c, bx, by, 36, 10,
+          `${def.name.slice(0, 5)}x${qty}`, 0x2a1e10, 0xccaa66,
+          () => this.opts.onPlaceFurniture(def.id));
+      }
+      y += Math.ceil(visible8.length / 2) * 11 + 3;
     }
 
-    y += Math.ceil(visible8.length / 2) * 11 + 3;
+    // "Buy Furniture" vendor button
+    this._buildButton(c, PANEL_X + PAD, y, PANEL_W - PAD * 2, 11,
+      'Buy Furniture', 0x222244, 0x88aaff, () => this._openFurnitureVendor());
+    y += 13;
 
     // Save layout button
     this._buildButton(c, PANEL_X + PAD, y, PANEL_W - PAD * 2, 11,
@@ -171,10 +189,12 @@ export class HousingPanel {
     c.add(this.permText);
     y += 13;
 
-    // Upgrade button (tier 1 only)
-    if (this.opts.houseTier < 2) {
+    // Upgrade button (tiers 1 and 2 can upgrade)
+    if (this.opts.houseTier < 3) {
+      const upgCost = this.opts.houseTier === 1 ? HOUSING.UPGRADE_COST : HOUSING.ESTATE_COST;
+      const nextStyleName = HOUSING.EXTERIOR_STYLES.find(s => s.tier === this.opts.houseTier + 1)?.name ?? 'Upgrade';
       this._buildButton(c, PANEL_X + PAD, y, PANEL_W - PAD * 2, 11,
-        'Upgrade (1500g)', 0x2a1a00, 0xffcc44, () => this.opts.onUpgrade());
+        `Upgrade → ${nextStyleName} (${upgCost}g)`, 0x2a1a00, 0xffcc44, () => this.opts.onUpgrade());
       y += 13;
     }
 
@@ -203,6 +223,69 @@ export class HousingPanel {
     c.add(badgeTxt);
 
     return startY + 14;
+  }
+
+  // ── Furniture vendor popup ────────────────────────────────────────────────────
+
+  private _openFurnitureVendor(): void {
+    const scene = this.scene;
+    const cx = CANVAS.WIDTH / 2;
+    const cy = CANVAS.HEIGHT / 2;
+    const W  = 200;
+    const H  = 110;
+    const px = cx - W / 2;
+    const py = cy - H / 2;
+    const Z  = DEPTH + 10;
+
+    const vendorCont = scene.add.container(0, 0).setScrollFactor(0).setDepth(Z);
+
+    // Background
+    vendorCont.add(scene.add.rectangle(cx, cy, W, H, 0x111122, 0.96).setOrigin(0.5));
+    vendorCont.add(scene.add.rectangle(cx, cy, W, H, 0x446644, 0).setOrigin(0.5).setStrokeStyle(1, 0x88cc88, 1));
+    vendorCont.add(scene.add.text(cx, py + 5, 'FURNITURE VENDOR', { fontSize: '5px', color: '#aaffaa', fontFamily: 'monospace' }).setOrigin(0.5, 0));
+
+    const allItems   = [...HOUSING.FURNITURE, ...HOUSING.DECORATIONS] as unknown as FurnDef[];
+    const playerGold = this.opts.playerGold ?? 0;
+    let   curX = px + 6;
+    let   curY = py + 16;
+    const COL_W = 48;
+
+    allItems.slice(0, 12).forEach((def, i) => {
+      if (i > 0 && i % 4 === 0) { curX = px + 6; curY += 28; }
+      const price = (HOUSING.FURNITURE_PRICES as Record<string, number>)[def.id] ?? 0;
+      if (price <= 0) { curX += COL_W; return; }
+      const canBuy = playerGold >= price;
+
+      vendorCont.add(scene.add.rectangle(curX + COL_W / 2, curY + 10, COL_W - 2, 24, canBuy ? 0x1a2a1a : 0x1a1a1a).setOrigin(0.5));
+      vendorCont.add(scene.add.text(curX + COL_W / 2, curY + 4, def.name.slice(0, 6), { fontSize: '3px', color: canBuy ? '#ccffcc' : '#555555', fontFamily: 'monospace' }).setOrigin(0.5, 0));
+      vendorCont.add(scene.add.text(curX + COL_W / 2, curY + 12, `${price}g`, { fontSize: '3px', color: canBuy ? '#ffd700' : '#554444', fontFamily: 'monospace' }).setOrigin(0.5, 0));
+
+      if (canBuy) {
+        const buyBtn = scene.add.text(curX + COL_W / 2, curY + 19, '[Buy]', { fontSize: '3px', color: '#44ff88', fontFamily: 'monospace' })
+          .setOrigin(0.5, 0).setInteractive({ useHandCursor: true });
+        buyBtn.on('pointerdown', () => {
+          this.opts.onBuyFurniture?.(def.id, price);
+          SaveManager.addFurnitureToInventory(def.id);
+          vendorCont.destroy(true);
+          // Rebuild panel to show new inventory
+          this.container.destroy(true);
+          this.container = scene.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH).setVisible(this.visible);
+          this._build();
+        });
+        vendorCont.add(buyBtn);
+      }
+
+      curX += COL_W;
+    });
+
+    // Close button
+    const closeBtn = scene.add.text(px + W - 4, py + 4, '[X]', { fontSize: '4px', color: '#ff8888', fontFamily: 'monospace' })
+      .setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    closeBtn.on('pointerdown', () => vendorCont.destroy(true));
+    vendorCont.add(closeBtn);
+
+    // Gold display
+    vendorCont.add(scene.add.text(px + 6, py + H - 10, `Gold: ${playerGold}g`, { fontSize: '4px', color: '#ffd700', fontFamily: 'monospace' }).setOrigin(0, 0));
   }
 
   // ── Permission cycling ────────────────────────────────────────────────────────
