@@ -16,7 +16,7 @@
  */
 
 import Phaser from 'phaser';
-import { CANVAS, SCENES } from '../config/constants';
+import { CANVAS } from '../config/constants';
 
 // ── Layout ─────────────────────────────────────────────────────────────────────
 

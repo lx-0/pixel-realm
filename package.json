@@ -1,6 +1,6 @@
 {
   "name": "pixelrealm",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "PixelRealm — browser-based pixelated MMORPG with LLM-generated content",
   "scripts": {
@@ -22,8 +22,9 @@
     "@typescript-eslint/parser": "^8.57.1",
     "canvas": "^3.2.2",
     "eslint": "^10.1.0",
+    "pngjs": "^7.0.0",
     "typescript": "^5.9.3",
-    "vite": "^5.2.0",
-    "vitest": "^1.5.0"
+    "vite": "^5.4.21",
+    "vitest": "^1.6.1"
   }
 }

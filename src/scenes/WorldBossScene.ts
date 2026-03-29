@@ -14,7 +14,7 @@
  */
 
 import Phaser from 'phaser';
-import { CANVAS, SCENES } from '../config/constants';
+import { SCENES } from '../config/constants';
 import { MultiplayerClient } from '../systems/MultiplayerClient';
 
 // ── Data contracts ─────────────────────────────────────────────────────────────
@@ -53,7 +53,6 @@ export class WorldBossScene extends Phaser.Scene {
   // Colyseus room
   private bossRoom: import('colyseus.js').Room | null = null;
   private mp: MultiplayerClient | null = null;
-  private mySessionId = '';
 
   // Boss state (synced from server)
   private currentHp = 0;
@@ -70,13 +69,11 @@ export class WorldBossScene extends Phaser.Scene {
   private hpBarBg!: Phaser.GameObjects.Rectangle;
   private hpBar!: Phaser.GameObjects.Rectangle;
   private hpText!: Phaser.GameObjects.Text;
-  private bossNameText!: Phaser.GameObjects.Text;
   private phaseText!: Phaser.GameObjects.Text;
   private statusText!: Phaser.GameObjects.Text;
   private participantsText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
   private attackButton!: Phaser.GameObjects.Rectangle;
-  private attackLabel!: Phaser.GameObjects.Text;
   private leaderboardContainer!: Phaser.GameObjects.Container;
   private resultOverlay!: Phaser.GameObjects.Container;
 
@@ -84,7 +81,6 @@ export class WorldBossScene extends Phaser.Scene {
   private lastAttackTime = 0;
   private readonly ATTACK_COOLDOWN = 500;
   private attackCooldownBar!: Phaser.GameObjects.Rectangle;
-  private attackCooldownBg!: Phaser.GameObjects.Rectangle;
 
   // Hit flash tweens
   private bossTween: Phaser.Tweens.Tween | null = null;
@@ -200,13 +196,13 @@ export class WorldBossScene extends Phaser.Scene {
     });
   }
 
-  private buildHUD(width: number, height: number, colors: typeof DEFAULT_BOSS_COLOR): void {
+  private buildHUD(width: number, height: number, _colors: typeof DEFAULT_BOSS_COLOR): void {
     const hpBarY = height * 0.62;
     const barW = Math.min(320, width - 40);
     const barX = width / 2 - barW / 2;
 
     // Boss name
-    this.bossNameText = this.add.text(width / 2, height * 0.55, this.sceneData.bossName, {
+    this.add.text(width / 2, height * 0.55, this.sceneData.bossName, {
       fontSize: '20px',
       color: '#ffffff',
       fontFamily: 'monospace',
@@ -265,7 +261,7 @@ export class WorldBossScene extends Phaser.Scene {
     const by = height * 0.83;
 
     // Cooldown bar bg
-    this.attackCooldownBg = this.add.rectangle(bx, by - 22, 80, 4, 0x333333)
+    this.add.rectangle(bx, by - 22, 80, 4, 0x333333)
       .setOrigin(0.5).setDepth(10);
     this.attackCooldownBar = this.add.rectangle(bx - 40, by - 22, 80, 4, colors.primary)
       .setOrigin(0, 0.5).setDepth(11);
@@ -278,7 +274,7 @@ export class WorldBossScene extends Phaser.Scene {
       .on('pointerover', () => this.attackButton.setAlpha(0.85))
       .on('pointerout',  () => this.attackButton.setAlpha(1));
 
-    this.attackLabel = this.add.text(bx, by, 'ATTACK  [Space]', {
+    this.add.text(bx, by, 'ATTACK  [Space]', {
       fontSize: '13px',
       color: '#ffffff',
       fontFamily: 'monospace',
@@ -299,7 +295,7 @@ export class WorldBossScene extends Phaser.Scene {
     this.refreshLeaderboard();
   }
 
-  private buildExitButton(width: number, height: number): void {
+  private buildExitButton(width: number, _height: number): void {
     const btn = this.add.text(width - 8, 8, '✕ Exit', {
       fontSize: '11px', color: '#888888', fontFamily: 'monospace',
       backgroundColor: '#111111', padding: { x: 6, y: 3 },
@@ -314,23 +310,21 @@ export class WorldBossScene extends Phaser.Scene {
 
   private connectToRoom(): void {
     this.mp = new MultiplayerClient();
-    this.mp.connect().then(() => {
-      return this.mp!.joinById(this.sceneData.roomId, {
-        token: this.sceneData.token,
-      });
-    }).then((room) => {
+    this.mp.joinWorldBoss(this.sceneData.roomId, this.sceneData.token).then((room) => {
+      if (!room) {
+        this.statusText?.setText('Connection failed — spectator mode');
+        return;
+      }
       this.bossRoom = room;
-      this.mySessionId = room.sessionId;
 
-      room.onMessage('boss_state',    (msg) => this.onBossState(msg));
-      room.onMessage('boss_spawn',    (msg) => this.onBossSpawn(msg));
-      room.onMessage('boss_hit',      (msg) => this.onBossHit(msg));
-      room.onMessage('phase_change',  (msg) => this.onPhaseChange(msg));
-      room.onMessage('boss_defeated', (msg) => this.onBossDefeated(msg));
-      room.onMessage('boss_expired',  (msg) => this.onBossExpired(msg));
-      room.onMessage('loot_grant',    (msg) => this.onLootGrant(msg));
-
-    }).catch((err) => {
+      room.onMessage('boss_state',    (msg: Parameters<typeof this.onBossState>[0]) => this.onBossState(msg));
+      room.onMessage('boss_spawn',    (msg: Parameters<typeof this.onBossSpawn>[0]) => this.onBossSpawn(msg));
+      room.onMessage('boss_hit',      (msg: Parameters<typeof this.onBossHit>[0]) => this.onBossHit(msg));
+      room.onMessage('phase_change',  (msg: Parameters<typeof this.onPhaseChange>[0]) => this.onPhaseChange(msg));
+      room.onMessage('boss_defeated', (msg: Parameters<typeof this.onBossDefeated>[0]) => this.onBossDefeated(msg));
+      room.onMessage('boss_expired',  (msg: Parameters<typeof this.onBossExpired>[0]) => this.onBossExpired(msg));
+      room.onMessage('loot_grant',    (msg: Parameters<typeof this.onLootGrant>[0]) => this.onLootGrant(msg));
+    }).catch((err: unknown) => {
       console.warn('[WorldBossScene] Failed to connect to room:', err);
       this.statusText?.setText('Connection failed — spectator mode');
     });
@@ -502,11 +496,12 @@ export class WorldBossScene extends Phaser.Scene {
   private refreshLeaderboard(): void {
     // Remove old entries (keep bg + title = first 2 children)
     while (this.leaderboardContainer.length > 2) {
-      const last = this.leaderboardContainer.getAt(this.leaderboardContainer.length - 1);
+      const idx = this.leaderboardContainer.length - 1;
+      const last = this.leaderboardContainer.getAt(idx);
       if (last instanceof Phaser.GameObjects.GameObject) {
         (last as Phaser.GameObjects.Text).destroy();
       }
-      this.leaderboardContainer.removeLast();
+      this.leaderboardContainer.removeAt(idx);
     }
 
     const tierColors: Record<string, string> = {

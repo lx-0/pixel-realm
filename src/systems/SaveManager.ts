@@ -38,6 +38,10 @@ export interface SaveData {
   hardcoreHighestLevel: number;
   /** Total zones cleared across all hardcore runs. */
   hardcoreZonesCleared: number;
+  /** Display name used in multiplayer rooms. */
+  playerName?: string;
+  /** Server-side user ID for authenticated sessions. */
+  userId?: string;
 }
 
 /**
@@ -113,6 +117,8 @@ export class SaveManager {
         tutorialCompleted:    p.tutorialCompleted    ?? false,
         hardcoreHighestLevel: p.hardcoreHighestLevel ?? 0,
         hardcoreZonesCleared: p.hardcoreZonesCleared ?? 0,
+        playerName:           p.playerName,
+        userId:               p.userId,
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };

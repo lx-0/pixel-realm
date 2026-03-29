@@ -2,6 +2,49 @@
 
 All notable changes to PixelRealm are documented in this file.
 
+## [1.2.0] - 2026-03-29
+
+M35 endgame replayability — procedural dungeons and world boss events.
+
+### M35: Endgame Replayability
+
+**Procedural Dungeon Generator (PIX-305)**
+- Server: `DungeonRoom` generates variable-length room sequences (5–9 rooms) via seeded RNG — every instance is unique (combat, arena, elite, treasure, boss chambers).
+- New room types: arena (two-wave gauntlet) and elite (1–2 high-HP champions).
+- Tier 4 (Nightmare): endgame difficulty requiring level 40+, pulling enemies from zones 10–18 with a 6-boss endgame pool (abyssal_kraken_lord through astral_sovereign).
+- Dungeon completion grants bonus XP scaled by tier × rooms cleared; achievement progress persisted via `dungeon_completed` event.
+- Four new dungeon achievements: Dungeon Delver, Dungeon Runner, Dungeon Master, Nightmare Conqueror.
+- Client: `DungeonScene` — Colyseus connection, procedurally-coloured rooms, player/enemy sync, boss HP bar, room progress HUD, solo fallback.
+- Dungeon portal (void archway) spawned in endgame zones (zone10+); `[E]` opens `DungeonEntrancePanel` with 4-tier selection.
+
+**World Boss Event System (PIX-307)**
+- DB migration 0024: `world_boss_instances`, `world_boss_contributions`, `world_boss_loot_grants` tables.
+- Three world boss definitions: storm_titan, ancient_dracolich, void_herald — round-robin rotation.
+- Atomic HP damage, phase transitions (3 phases), contribution-based loot distribution (gold/silver/bronze tiers).
+- `WorldBossRoom`: shared Colyseus room (up to 200 players), attack rate limiting, phase change broadcasts.
+- `worldBossScheduler`: minute-tick scheduler announces incoming boss to all ZoneRooms, activates on spawn, re-schedules after defeat/expiry.
+- REST endpoints: `GET /world-boss/active`, `/world-boss/history`, `/world-boss/:instanceId/leaderboard`.
+- Client: `WorldBossScene` — arena background, boss HP bar + phase indicators, attack button, contribution leaderboard sidebar, victory/expiry splash.
+
+### Art Assets
+- Procedural dungeon tilesets: stone, crystal, lava, ruins, ancient ruins (PIX-397).
+- World boss event UI: announcement banners, HP frame, victory splash, reward tier badges (PIX-358, PIX-356).
+- World map illustration and waystone navigation art (PIX-399).
+- Mounted player riding animation sprites for all 4 classes (PIX-398).
+- Dodge/roll and sprint combat animation sprites (PIX-365).
+- Cosmetic shop and character customization art (PIX-366).
+- Bestiary and monster compendium UI art (PIX-367).
+- Reputation and faction system UI art (PIX-401).
+
+### Technical
+- 1026 server-side tests passing across all zones, classes, and systems.
+- Lint: 0 errors (68 warnings, all pre-existing).
+- TypeScript: no type errors (fixed TS6133/TS2339 issues in WorldBossScene and DungeonScene).
+- Build: clean Vite production build.
+- Client bundle: ~508 kB app JS + ~1.48 MB Phaser (gzip: ~135 kB + ~340 kB).
+
+---
+
 ## [1.1.0] - 2026-03-26
 
 Ranger and Artisan class expansion — completes the full 4-class roster from the GDD.

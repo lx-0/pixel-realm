@@ -117,8 +117,6 @@ export class DungeonScene extends Phaser.Scene {
 
   // Input
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private attackKey!: Phaser.Input.Keyboard.Key;
-  private exitKey!: Phaser.Input.Keyboard.Key;
 
   // HUD
   private hudRoomText!: Phaser.GameObjects.Text;
@@ -136,8 +134,6 @@ export class DungeonScene extends Phaser.Scene {
   private wallGraphics!: Phaser.GameObjects.Graphics;
 
   // Player state
-  private localPlayerHp   = 100;
-  private localPlayerMana = 50;
   private localPlayerX    = 160;
   private localPlayerY    = 90;
   private lastSentX       = -1;
@@ -238,10 +234,7 @@ export class DungeonScene extends Phaser.Scene {
         const px = player.x * 2, py = player.y * 2;
         r.setPosition(px, py);
         lbl.setPosition(px, py - 12);
-        if (sid === this.mySessionId) {
-          this.localPlayerHp   = player.hp;
-          this.localPlayerMana = player.mana;
-        }
+        // HP/mana not locally tracked in this scene
       });
     });
 
@@ -293,7 +286,6 @@ export class DungeonScene extends Phaser.Scene {
       this.currentRoom = data.room;
       this.totalRooms  = data.total;
       this.roomType    = data.type;
-      const palette = ROOM_PALETTES[data.type] ?? ROOM_PALETTES['combat'];
       this.buildRoomVisuals(data.type);
       this.showNotice(`Room ${data.room + 1}/${data.total}: ${ROOM_TYPE_LABELS[data.type] ?? data.type}`);
       this.time.delayedCall(2500, () => this.hideNotice());
@@ -338,7 +330,7 @@ export class DungeonScene extends Phaser.Scene {
       this.bonusXp = data.amount;
     });
 
-    room.onMessage('dungeon_complete', (data: any) => {
+    room.onMessage('dungeon_complete', (_data: unknown) => {
       this.dungeonState = 'complete';
       this.hideBossHpBar();
       this.cameras.main.flash(500, 100, 220, 100);
@@ -363,10 +355,7 @@ export class DungeonScene extends Phaser.Scene {
 
   private setupInput() {
     if (!this.input.keyboard) return;
-    this.cursors    = this.input.keyboard.createCursorKeys();
-    this.attackKey  = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.exitKey    = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-
+    this.cursors = this.input.keyboard.createCursorKeys();
     this.input.keyboard.on('keydown-SPACE', () => this.sendAttack());
     this.input.keyboard.on('keydown-ESC',   () => this.returnToGame());
   }
@@ -514,7 +503,7 @@ export class DungeonScene extends Phaser.Scene {
     const bw = CANVAS.WIDTH - 40;
     const fill = max > 0 ? Math.max(0, current / max) : 0;
     this.bossHpBarBg.setVisible(true);
-    this.bossHpBarFill.setWidth(Math.round(bw * fill)).setVisible(true);
+    this.bossHpBarFill.setSize(Math.round(bw * fill), this.bossHpBarFill.height).setVisible(true);
     this.bossHpLabel.setText(
       `${this.bossType.replace(/_/g, ' ').toUpperCase()} — HP ${current}/${max}`,
     ).setVisible(true);

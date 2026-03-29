@@ -415,6 +415,26 @@ export class MultiplayerClient {
     }
   }
 
+  /**
+   * Join a world boss room by its Colyseus room ID.
+   * Returns the Room object on success, or null if the server is unreachable.
+   */
+  async joinWorldBoss(
+    roomId: string,
+    token?: string,
+  ): Promise<import('colyseus.js').Room | null> {
+    try {
+      const opts: Record<string, string> = {};
+      if (token) opts.token = token;
+      const room = await this.client.joinById(roomId, opts);
+      console.log(`[MP] Joined world boss room ${roomId} as session ${room.sessionId}`);
+      return room;
+    } catch (err) {
+      console.warn('[MP] World boss join failed:', (err as Error).message);
+      return null;
+    }
+  }
+
   // ── State listeners ───────────────────────────────────────────────────────
 
   private setupStateListeners(): void {
