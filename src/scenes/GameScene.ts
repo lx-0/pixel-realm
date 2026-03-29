@@ -306,8 +306,8 @@ export class GameScene extends Phaser.Scene {
   /** Fast travel panel — opened by interacting with the Transport NPC. */
   private fastTravelPanel?: FastTravelPanel;
 
-  /** Transport NPC sprite (world-space, near zone hub). */
-  private transportNpc?: Phaser.GameObjects.Container;
+  /** Waystone sprite (world-space, near zone hub). */
+  private transportNpc?: Phaser.GameObjects.Sprite;
 
   /** Proximity hint shown when player is near the Transport NPC. */
   private transportHint?: Phaser.GameObjects.Text;
@@ -2157,38 +2157,36 @@ export class GameScene extends Phaser.Scene {
   // ── Transport NPC ─────────────────────────────────────────────────────────
 
   private addTransportNpc(x: number, y: number): void {
-    const g = this.add.graphics().setDepth(4);
+    // Waystone sprite — active if the zone is already in the player's save
+    const save     = SaveManager.load();
+    const isActive = save.unlockedZones.includes(this.zone.id);
+    const texKey   = isActive ? 'waystone_active' : 'waystone_inactive';
 
-    // Body: teal-robed figure
-    g.fillStyle(0x226688);
-    g.fillRect(-8, -10, 16, 18);
-    // Head
-    g.fillStyle(0xddbb99);
-    g.fillRect(-5, -18, 10, 10);
-    // Hat
-    g.fillStyle(0x114455);
-    g.fillRect(-6, -22, 12, 5);
+    this.transportNpc = this.add.sprite(x, y, texKey).setDepth(4).setOrigin(0.5, 1);
 
-    const label = this.add.text(0, 9, 'TRANSPORT', {
+    // Gentle pulse tween on the active waystone
+    if (isActive) {
+      this.tweens.add({
+        targets: this.transportNpc,
+        alpha: 0.65,
+        duration: 900,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+
+    // Floating "WAYSTONE" label above the sprite
+    const label = this.add.text(x, y - 20, 'WAYSTONE', {
       fontSize: '3px', color: '#88ddff', fontFamily: 'monospace',
-    }).setOrigin(0.5, 0).setDepth(4);
-
-    this.transportNpc = this.add.container(x, y, [g, label]).setDepth(4);
-
-    // Bobbing animation
-    this.tweens.add({
-      targets: label,
-      alpha: 0.5,
-      duration: 1100,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-    });
+      stroke: '#000', strokeThickness: 1,
+    }).setOrigin(0.5, 1).setDepth(4);
+    this.tweens.add({ targets: label, y: y - 23, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
     // HUD proximity hint (scroll-fixed)
     this.transportHint = this.add.text(
       CANVAS.WIDTH / 2, CANVAS.HEIGHT - 20,
-      '[E] Fast Travel',
+      '[E] Use Waystone',
       { fontSize: '4px', color: '#88ddff', fontFamily: 'monospace', stroke: '#000', strokeThickness: 1 },
     ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(20).setVisible(false);
 
@@ -2198,8 +2196,14 @@ export class GameScene extends Phaser.Scene {
     this.fastTravelPanel.onTravel = (zoneId, cost) => {
       this.gold = Math.max(0, this.gold - cost);
       this.updateHUD();
-      this.cameras.main.fadeOut(400, 0, 0, 0, () => {
-        this.scene.start(SCENES.GAME, { zoneId, hardcore: this.isHardcore });
+      // Play waystone teleport animation then fade out
+      if (this.transportNpc && this.anims.exists('waystone-teleport')) {
+        this.transportNpc.play('waystone-teleport');
+      }
+      this.time.delayedCall(500, () => {
+        this.cameras.main.fadeOut(400, 0, 0, 0, () => {
+          this.scene.start(SCENES.GAME, { zoneId, hardcore: this.isHardcore });
+        });
       });
     };
   }
@@ -4030,10 +4034,11 @@ export class GameScene extends Phaser.Scene {
 
     this.miniMap = new MiniMapOverlay(this);
 
-    // Fixed quest-NPC position: top-right of playable area (opposite the crafting station)
+    // NPC markers: quest NPC + waystone (shown on minimap)
     const WALL = 32;
     this.npcMarkers = [
-      { x: this.worldW - WALL - 40, y: WALL + 40, hasQuest: false },
+      { x: this.worldW - WALL - 40, y: WALL + 40, hasQuest: false }, // quest NPC
+      { x: this.worldW - WALL - 24, y: WALL + 24, hasQuest: false }, // waystone
     ];
 
     const save = SaveManager.load();

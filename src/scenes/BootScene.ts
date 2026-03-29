@@ -76,6 +76,44 @@ export class BootScene extends Phaser.Scene {
     // ── Day/night cycle HUD icon sheet ────────────────────────────────────────
     DayNightSystem.preload(this);
 
+    // ── World map + waystone navigation ───────────────────────────────────────
+    this.load.image('worldmap_bg',                 'assets/worldmap/worldmap_bg.png');
+    this.load.image('waystone_inactive',            'assets/worldmap/waystone_inactive.png');
+    this.load.image('waystone_active',              'assets/worldmap/waystone_active.png');
+    this.load.spritesheet('waystone_teleport',      'assets/worldmap/waystone_teleport.png',  { frameWidth: 16, frameHeight: 16 });
+    // Zone biome icons (16×16)
+    this.load.image('icon_zone_forest',             'assets/worldmap/icon_zone_forest.png');
+    this.load.image('icon_zone_desert',             'assets/worldmap/icon_zone_desert.png');
+    this.load.image('icon_zone_dungeon',            'assets/worldmap/icon_zone_dungeon.png');
+    this.load.image('icon_zone_ocean',              'assets/worldmap/icon_zone_ocean.png');
+    this.load.image('icon_zone_ice',                'assets/worldmap/icon_zone_ice.png');
+    this.load.image('icon_zone_volcanic',           'assets/worldmap/icon_zone_volcanic.png');
+    this.load.image('icon_zone_swamp',              'assets/worldmap/icon_zone_swamp.png');
+    this.load.image('icon_zone_astral',             'assets/worldmap/icon_zone_astral.png');
+    this.load.image('icon_zone_eclipsed',           'assets/worldmap/icon_zone_eclipsed.png');
+    this.load.image('icon_zone_ethereal',           'assets/worldmap/icon_zone_ethereal.png');
+    this.load.image('icon_zone_oblivion',           'assets/worldmap/icon_zone_oblivion.png');
+    // Fast-travel panel + buttons (160×96 panel, 48×16 buttons)
+    this.load.image('ui_panel_fasttravel',          'assets/worldmap/ui_panel_fasttravel.png');
+    this.load.image('ui_btn_fasttravel',            'assets/worldmap/ui_btn_fasttravel.png');
+    this.load.image('ui_btn_fasttravel_disabled',   'assets/worldmap/ui_btn_fasttravel_disabled.png');
+    // Fog-of-war tiles (16×16)
+    this.load.image('fog_tile',                     'assets/worldmap/fog_tile.png');
+    this.load.image('fog_edge_n',                   'assets/worldmap/fog_edge_n.png');
+    this.load.image('fog_edge_s',                   'assets/worldmap/fog_edge_s.png');
+    this.load.image('fog_edge_e',                   'assets/worldmap/fog_edge_e.png');
+    this.load.image('fog_edge_w',                   'assets/worldmap/fog_edge_w.png');
+    this.load.image('fog_corner_ne',                'assets/worldmap/fog_corner_ne.png');
+    this.load.image('fog_corner_nw',                'assets/worldmap/fog_corner_nw.png');
+    this.load.image('fog_corner_se',                'assets/worldmap/fog_corner_se.png');
+    this.load.image('fog_corner_sw',                'assets/worldmap/fog_corner_sw.png');
+    // Markers (16×16 static; 96×16 animated 6-frame)
+    this.load.image('marker_player',                'assets/worldmap/marker_player.png');
+    this.load.spritesheet('marker_player_anim',     'assets/worldmap/marker_player_anim.png', { frameWidth: 16, frameHeight: 16 });
+    this.load.image('marker_path',                  'assets/worldmap/marker_path.png');
+    this.load.image('marker_path_arrow',            'assets/worldmap/marker_path_arrow.png');
+    this.load.image('marker_quest',                 'assets/worldmap/marker_quest.png');
+
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();
     });
@@ -91,6 +129,12 @@ export class BootScene extends Phaser.Scene {
     }
     if (this.textures.get('enemy').frameTotal > 1) {
       this.createEnemyAnims();
+    }
+    if (this.textures.get('waystone_teleport').frameTotal > 1) {
+      this.anims.create({ key: 'waystone-teleport', frames: this.anims.generateFrameNumbers('waystone_teleport', { start: 0, end: 5 }), frameRate: 10, repeat: -1 });
+    }
+    if (this.textures.get('marker_player_anim').frameTotal > 1) {
+      this.anims.create({ key: 'marker-player-pulse', frames: this.anims.generateFrameNumbers('marker_player_anim', { start: 0, end: 5 }), frameRate: 8, repeat: -1 });
     }
 
     SettingsManager.getInstance().applyAll();

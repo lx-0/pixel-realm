@@ -1,33 +1,80 @@
 /**
  * WorldMapOverlay — full-screen world map toggled with M.
  *
- * Shows all five zones laid out in a horizontal path with directional
- * connectors. Undiscovered zones are fogged (dark overlay). The current
- * zone is highlighted. Quest markers appear on the active zone if the
- * player has a quest. Zoom controls (+/-) let the player scale the view.
+ * Uses the worldmap_bg art asset as the base, with biome icons for each zone,
+ * fog-of-war tiles over undiscovered areas, an animated player position marker,
+ * and a quest marker on the active zone. Zoom (+/-/wheel) scales the map content.
  *
  * Close with M or Escape.
  */
 
 import Phaser from 'phaser';
-import { CANVAS, ZONES, ZoneConfig } from '../config/constants';
+import { CANVAS, ZONES } from '../config/constants';
 
 // ── Layout ────────────────────────────────────────────────────────────────────
 
 const DEPTH        = 75;
-const BG_ALPHA     = 0.93;
-
-// Zone card dimensions (at zoom 1)
-const CARD_W       = 44;
-const CARD_H       = 28;
-const CARD_GAP     = 18; // gap between cards (connector space)
-// Total layout width
-const TOTAL_ZONES  = ZONES.length; // 5
-const TOTAL_W      = TOTAL_ZONES * CARD_W + (TOTAL_ZONES - 1) * CARD_GAP;
-
+const BG_ALPHA     = 0.95;
 const ZOOM_STEP    = 0.25;
 const ZOOM_MIN     = 0.6;
 const ZOOM_MAX     = 2.0;
+
+// Zone icon positions on the 320×180 worldmap_bg (centre of each 16×16 icon).
+// Arranged as a snake path following game progression zones 1→19.
+const ZONE_POS: Record<string, { x: number; y: number }> = {
+  zone1:  { x: 44,  y: 50  },
+  zone2:  { x: 100, y: 50  },
+  zone3:  { x: 156, y: 50  },
+  zone4:  { x: 212, y: 50  },
+  zone5:  { x: 268, y: 50  },
+
+  zone6:  { x: 268, y: 90  },
+  zone7:  { x: 212, y: 90  },
+  zone8:  { x: 156, y: 90  },
+  zone9:  { x: 100, y: 90  },
+  zone10: { x: 44,  y: 90  },
+
+  zone11: { x: 44,  y: 128 },
+  zone12: { x: 100, y: 128 },
+  zone13: { x: 156, y: 128 },
+  zone14: { x: 212, y: 128 },
+  zone15: { x: 268, y: 128 },
+
+  zone16: { x: 268, y: 160 },
+  zone17: { x: 212, y: 160 },
+  zone18: { x: 156, y: 160 },
+  zone19: { x: 100, y: 160 },
+};
+
+// Snake-path connections for path-line rendering
+const ZONE_PATH: string[] = [
+  'zone1','zone2','zone3','zone4','zone5',
+  'zone6','zone7','zone8','zone9','zone10',
+  'zone11','zone12','zone13','zone14','zone15',
+  'zone16','zone17','zone18','zone19',
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function biomeToIconKey(biome: string): string {
+  const b = biome.toLowerCase();
+  if (b.includes('forest'))                                   return 'icon_zone_forest';
+  if (b.includes('desert') || b.includes('plain'))           return 'icon_zone_desert';
+  if (b.includes('dungeon'))                                  return 'icon_zone_dungeon';
+  if (b.includes('ocean') || b.includes('coastal') || b.includes('sea') || b.includes('deep'))
+                                                              return 'icon_zone_ocean';
+  if (b.includes('ice') || b.includes('frost') || b.includes('cave') || b.includes('mountain'))
+                                                              return 'icon_zone_ice';
+  if (b.includes('volcanic') || b.includes('lava') || b.includes('fire') || b.includes('primordial'))
+                                                              return 'icon_zone_volcanic';
+  if (b.includes('swamp') || b.includes('marsh') || b.includes('mire') || b.includes('bog'))
+                                                              return 'icon_zone_swamp';
+  if (b.includes('astral') || b.includes('sky') || b.includes('celestial') || b.includes('twilight'))
+                                                              return 'icon_zone_astral';
+  if (b.includes('eclipsed') || b.includes('eclipse'))       return 'icon_zone_eclipsed';
+  if (b.includes('ethereal') || b.includes('nexus'))         return 'icon_zone_ethereal';
+  return 'icon_zone_oblivion'; // void, bone, shattered, oblivion
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -35,6 +82,21 @@ export interface WorldMapState {
   currentZoneId:   string;
   unlockedZoneIds: string[];
   hasActiveQuest:  boolean;
+}
+
+// Per-zone display objects
+interface ZoneDisplay {
+  icon:        Phaser.GameObjects.Image;
+  fogCenter:   Phaser.GameObjects.TileSprite;
+  fogEdgeN:    Phaser.GameObjects.Image;
+  fogEdgeS:    Phaser.GameObjects.Image;
+  fogEdgeE:    Phaser.GameObjects.Image;
+  fogEdgeW:    Phaser.GameObjects.Image;
+  fogCornerNE: Phaser.GameObjects.Image;
+  fogCornerNW: Phaser.GameObjects.Image;
+  fogCornerSE: Phaser.GameObjects.Image;
+  fogCornerSW: Phaser.GameObjects.Image;
+  nameLabel:   Phaser.GameObjects.Text;
 }
 
 // ── Class ─────────────────────────────────────────────────────────────────────
@@ -45,15 +107,13 @@ export class WorldMapOverlay {
   private zoom     = 1;
   private state:   WorldMapState;
 
-  private container!: Phaser.GameObjects.Container;
-  private bg!:        Phaser.GameObjects.Rectangle;
-  private title!:     Phaser.GameObjects.Text;
-  private hint!:      Phaser.GameObjects.Text;
-  private zoomLabel!: Phaser.GameObjects.Text;
-  private btnPlus!:   Phaser.GameObjects.Text;
-  private btnMinus!:  Phaser.GameObjects.Text;
-  private mapGfx!:    Phaser.GameObjects.Graphics;
-  private labels:     Phaser.GameObjects.Text[] = [];
+  private container!:    Phaser.GameObjects.Container;
+  private mapContent!:   Phaser.GameObjects.Container;
+  private pathGfx!:      Phaser.GameObjects.Graphics;
+  private playerMarker!: Phaser.GameObjects.Sprite;
+  private questMarker!:  Phaser.GameObjects.Image;
+  private zoomLabel!:    Phaser.GameObjects.Text;
+  private zoneDisplays:  Map<string, ZoneDisplay> = new Map();
 
   private mKey!:   Phaser.Input.Keyboard.Key;
   private escKey!: Phaser.Input.Keyboard.Key;
@@ -69,7 +129,7 @@ export class WorldMapOverlay {
   show(): void {
     this.visible = true;
     this.container.setVisible(true);
-    this._redraw();
+    this._refresh();
   }
 
   hide(): void {
@@ -84,15 +144,12 @@ export class WorldMapOverlay {
 
   get isVisible(): boolean { return this.visible; }
 
-  /** Call each frame with fresh state. */
   update(state: WorldMapState): void {
-    // Check toggle keys
     if (Phaser.Input.Keyboard.JustDown(this.mKey) ||
         (this.visible && Phaser.Input.Keyboard.JustDown(this.escKey))) {
       this.toggle();
     }
 
-    // Refresh only when visible
     if (!this.visible) return;
 
     const changed =
@@ -101,10 +158,9 @@ export class WorldMapOverlay {
       state.unlockedZoneIds.join() !== this.state.unlockedZoneIds.join();
 
     this.state = { ...state };
-    if (changed) this._redraw();
+    if (changed) this._refresh();
   }
 
-  /** Close if open; returns true if it was open (for ESC priority chain). */
   closeIfOpen(): boolean {
     if (!this.visible) return false;
     this.hide();
@@ -126,57 +182,111 @@ export class WorldMapOverlay {
       .setDepth(DEPTH)
       .setVisible(false);
 
-    // Semi-transparent full-screen background
-    this.bg = this.scene.add.rectangle(W / 2, H / 2, W, H, 0x050510, BG_ALPHA)
+    // Full-screen dimming layer
+    const dimBg = this.scene.add.rectangle(W / 2, H / 2, W, H, 0x000000, BG_ALPHA)
       .setScrollFactor(0);
-    this.container.add(this.bg);
+    this.container.add(dimBg);
 
     // Title
-    this.title = this.scene.add.text(W / 2, 8, 'WORLD MAP', {
-      fontSize: '7px',
-      color: '#aaccff',
-      fontFamily: 'monospace',
-      stroke: '#000',
-      strokeThickness: 2,
+    const title = this.scene.add.text(W / 2, 6, 'WORLD MAP', {
+      fontSize: '7px', color: '#aaccff', fontFamily: 'monospace',
+      stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5, 0).setScrollFactor(0);
-    this.container.add(this.title);
+    this.container.add(title);
 
     // Hint bar
-    this.hint = this.scene.add.text(W / 2, H - 6, '[M] / [ESC] close  |  [+] zoom in  [-] zoom out', {
-      fontSize: '4px',
-      color: '#445566',
-      fontFamily: 'monospace',
+    const hint = this.scene.add.text(W / 2, H - 5, '[M] / [ESC] close  |  [+] zoom in  [-] zoom out', {
+      fontSize: '4px', color: '#445566', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0);
-    this.container.add(this.hint);
+    this.container.add(hint);
 
     // Zoom label
-    this.zoomLabel = this.scene.add.text(W / 2, H - 12, '', {
-      fontSize: '4px',
-      color: '#667788',
-      fontFamily: 'monospace',
+    this.zoomLabel = this.scene.add.text(W / 2, H - 11, '', {
+      fontSize: '4px', color: '#667788', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0);
     this.container.add(this.zoomLabel);
 
     // Zoom buttons
-    this.btnPlus = this.scene.add.text(W / 2 + 30, H - 12, '[+]', {
-      fontSize: '5px',
-      color: '#88aacc',
-      fontFamily: 'monospace',
+    const btnPlus = this.scene.add.text(W / 2 + 30, H - 11, '[+]', {
+      fontSize: '5px', color: '#88aacc', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setInteractive({ useHandCursor: true });
-    this.btnPlus.on('pointerdown', () => this._zoomIn());
-    this.container.add(this.btnPlus);
+    btnPlus.on('pointerdown', () => this._zoomIn());
+    this.container.add(btnPlus);
 
-    this.btnMinus = this.scene.add.text(W / 2 - 30, H - 12, '[-]', {
-      fontSize: '5px',
-      color: '#88aacc',
-      fontFamily: 'monospace',
+    const btnMinus = this.scene.add.text(W / 2 - 30, H - 11, '[-]', {
+      fontSize: '5px', color: '#88aacc', fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setInteractive({ useHandCursor: true });
-    this.btnMinus.on('pointerdown', () => this._zoomOut());
-    this.container.add(this.btnMinus);
+    btnMinus.on('pointerdown', () => this._zoomOut());
+    this.container.add(btnMinus);
 
-    // Graphics object for zone cards + connectors
-    this.mapGfx = this.scene.add.graphics().setScrollFactor(0);
-    this.container.add(this.mapGfx);
+    // ── Map content container (zoomable, centred on canvas) ─────────────────
+    this.mapContent = this.scene.add.container(W / 2, H / 2).setScrollFactor(0);
+    this.container.add(this.mapContent);
+
+    // worldmap_bg image centred in mapContent (origin 0.5)
+    const mapBg = this.scene.add.image(0, 0, 'worldmap_bg')
+      .setOrigin(0.5, 0.5).setScrollFactor(0);
+    this.mapContent.add(mapBg);
+
+    // Path graphics drawn underneath icons
+    this.pathGfx = this.scene.add.graphics().setScrollFactor(0);
+    this.mapContent.add(this.pathGfx);
+
+    // Build zone displays
+    const halfW = W / 2;
+    const halfH = H / 2;
+
+    for (const zone of ZONES) {
+      const pos = ZONE_POS[zone.id];
+      if (!pos) continue;
+
+      // Offset from mapContent centre (bg is W×H centred at origin)
+      const ox = pos.x - halfW;
+      const oy = pos.y - halfH;
+
+      // Biome icon
+      const iconKey = biomeToIconKey(zone.biome);
+      const icon = this.scene.add.image(ox, oy, iconKey)
+        .setOrigin(0.5, 0.5).setScrollFactor(0);
+      this.mapContent.add(icon);
+
+      // Fog overlay — centre tile + 8 edge/corner tiles (each 16×16)
+      const fogCenter = this.scene.add.tileSprite(ox, oy, 16, 16, 'fog_tile')
+        .setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.92);
+      const fogEdgeN   = this.scene.add.image(ox,      oy - 16, 'fog_edge_n').setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.85);
+      const fogEdgeS   = this.scene.add.image(ox,      oy + 16, 'fog_edge_s').setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.85);
+      const fogEdgeE   = this.scene.add.image(ox + 16, oy,      'fog_edge_e').setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.85);
+      const fogEdgeW   = this.scene.add.image(ox - 16, oy,      'fog_edge_w').setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.85);
+      const fogCornerNE = this.scene.add.image(ox + 16, oy - 16, 'fog_corner_ne').setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.80);
+      const fogCornerNW = this.scene.add.image(ox - 16, oy - 16, 'fog_corner_nw').setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.80);
+      const fogCornerSE = this.scene.add.image(ox + 16, oy + 16, 'fog_corner_se').setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.80);
+      const fogCornerSW = this.scene.add.image(ox - 16, oy + 16, 'fog_corner_sw').setOrigin(0.5, 0.5).setScrollFactor(0).setAlpha(0.80);
+      this.mapContent.add([fogCenter, fogEdgeN, fogEdgeS, fogEdgeE, fogEdgeW, fogCornerNE, fogCornerNW, fogCornerSE, fogCornerSW]);
+
+      // Zone name label below icon
+      const nameLabel = this.scene.add.text(ox, oy + 10, '', {
+        fontSize: '3px', color: '#aaccee', fontFamily: 'monospace',
+        stroke: '#000', strokeThickness: 1,
+      }).setOrigin(0.5, 0).setScrollFactor(0);
+      this.mapContent.add(nameLabel);
+
+      this.zoneDisplays.set(zone.id, {
+        icon, fogCenter, fogEdgeN, fogEdgeS, fogEdgeE, fogEdgeW,
+        fogCornerNE, fogCornerNW, fogCornerSE, fogCornerSW, nameLabel,
+      });
+    }
+
+    // Animated player marker (drawn above fog)
+    const markerAnim = this.scene.anims.exists('marker-player-pulse') ? 'marker-player-pulse' : undefined;
+    this.playerMarker = this.scene.add.sprite(0, 0, markerAnim ? 'marker_player_anim' : 'marker_player')
+      .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(1);
+    if (markerAnim) this.playerMarker.play(markerAnim);
+    this.mapContent.add(this.playerMarker);
+
+    // Quest marker (shown above player marker when quest active)
+    this.questMarker = this.scene.add.image(0, -14, 'marker_quest')
+      .setOrigin(0.5, 1).setScrollFactor(0).setDepth(1);
+    this.mapContent.add(this.questMarker);
 
     // Key bindings
     this.mKey   = this.scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.M);
@@ -190,185 +300,128 @@ export class WorldMapOverlay {
     });
   }
 
-  // ── Drawing ────────────────────────────────────────────────────────────────
+  // ── Refresh ────────────────────────────────────────────────────────────────
 
-  private _redraw(): void {
-    this.mapGfx.clear();
-    // Destroy previous text labels
-    this.labels.forEach(t => t.destroy());
-    this.labels = [];
+  private _refresh(): void {
+    const halfW = CANVAS.WIDTH  / 2;
+    const halfH = CANVAS.HEIGHT / 2;
 
-    const z   = this.zoom;
-    const ox  = CANVAS.WIDTH  / 2 - (TOTAL_W * z) / 2;
-    const oy  = CANVAS.HEIGHT / 2 - (CARD_H  * z) / 2;
+    // Draw path lines between consecutive zones
+    this._drawPaths();
 
-    for (let i = 0; i < ZONES.length; i++) {
-      const zone = ZONES[i];
-      const cx   = ox + i * (CARD_W + CARD_GAP) * z;
-      const cy   = oy;
-      const cw   = CARD_W * z;
-      const ch   = CARD_H * z;
+    for (const zone of ZONES) {
+      const disp = this.zoneDisplays.get(zone.id);
+      if (!disp) continue;
 
-      const unlocked = this.state.unlockedZoneIds.includes(zone.id);
+      const pos     = ZONE_POS[zone.id];
+      if (!pos) continue;
+
+      const unlocked  = this.state.unlockedZoneIds.includes(zone.id);
       const isCurrent = zone.id === this.state.currentZoneId;
 
-      this._drawZoneCard(zone, cx, cy, cw, ch, unlocked, isCurrent, i);
-
-      // Connector arrow to next zone
-      if (i < ZONES.length - 1) {
-        const arrowX = cx + cw;
-        const arrowMidY = cy + ch / 2;
-        const arrowLen  = CARD_GAP * z;
-        const nextUnlocked = this.state.unlockedZoneIds.includes(ZONES[i + 1].id);
-        const connColor = nextUnlocked ? 0x446688 : 0x222233;
-        this._drawConnector(arrowX, arrowMidY, arrowLen, connColor);
+      // Icon appearance
+      if (unlocked) {
+        disp.icon.setAlpha(1).clearTint();
+        if (isCurrent) {
+          disp.icon.setTint(0xffffff); // full brightness for current zone
+        }
+      } else {
+        disp.icon.setAlpha(0.3).setTint(0x334455); // dark fog tint
       }
+
+      // Fog visibility: show for undiscovered zones
+      const fogVisible = !unlocked;
+      disp.fogCenter.setVisible(fogVisible);
+      disp.fogEdgeN.setVisible(fogVisible);
+      disp.fogEdgeS.setVisible(fogVisible);
+      disp.fogEdgeE.setVisible(fogVisible);
+      disp.fogEdgeW.setVisible(fogVisible);
+      disp.fogCornerNE.setVisible(fogVisible);
+      disp.fogCornerNW.setVisible(fogVisible);
+      disp.fogCornerSE.setVisible(fogVisible);
+      disp.fogCornerSW.setVisible(fogVisible);
+
+      // Name label
+      const ox = pos.x - halfW;
+      const oy = pos.y - halfH;
+      disp.nameLabel.setText(unlocked ? zone.name : '???');
+      disp.nameLabel.setColor(isCurrent ? '#ffee44' : (unlocked ? '#aaccee' : '#334455'));
+      disp.nameLabel.setPosition(ox, oy + 10);
+    }
+
+    // Player marker position
+    const curPos = ZONE_POS[this.state.currentZoneId];
+    if (curPos) {
+      const mx = curPos.x - halfW;
+      const my = curPos.y - halfH;
+      this.playerMarker.setPosition(mx, my).setVisible(true);
+      this.questMarker.setPosition(mx, my - 10).setVisible(this.state.hasActiveQuest);
+    } else {
+      this.playerMarker.setVisible(false);
+      this.questMarker.setVisible(false);
     }
 
     this.zoomLabel.setText(`zoom ${Math.round(this.zoom * 100)}%`);
   }
 
-  private _drawZoneCard(
-    zone:      ZoneConfig,
-    cx:        number,
-    cy:        number,
-    cw:        number,
-    ch:        number,
-    unlocked:  boolean,
-    isCurrent: boolean,
-    _index:    number,
-  ): void {
-    const z = this.zoom;
+  private _drawPaths(): void {
+    this.pathGfx.clear();
 
-    // Card background
-    const bgColor = unlocked ? 0x0a1a2e : 0x08080f;
-    this.mapGfx.fillStyle(bgColor, 1);
-    this.mapGfx.fillRect(cx, cy, cw, ch);
+    const halfW = CANVAS.WIDTH  / 2;
+    const halfH = CANVAS.HEIGHT / 2;
 
-    // Biome accent band at top of card
-    if (unlocked) {
-      this.mapGfx.fillStyle(zone.accentColor, 0.25);
-      this.mapGfx.fillRect(cx, cy, cw, 4 * z);
-    }
+    for (let i = 0; i < ZONE_PATH.length - 1; i++) {
+      const aId = ZONE_PATH[i]!;
+      const bId = ZONE_PATH[i + 1]!;
+      const aPos = ZONE_POS[aId];
+      const bPos = ZONE_POS[bId];
+      if (!aPos || !bPos) continue;
 
-    // Card border
-    const borderColor = isCurrent ? zone.accentColor : (unlocked ? 0x334455 : 0x1a1a2a);
-    const borderThick = isCurrent ? 1.5 : 0.75;
-    this.mapGfx.lineStyle(borderThick, borderColor, 1);
-    this.mapGfx.strokeRect(cx, cy, cw, ch);
+      const ax = aPos.x - halfW;
+      const ay = aPos.y - halfH;
+      const bx = bPos.x - halfW;
+      const by = bPos.y - halfH;
 
-    // Fog overlay on locked zones
-    if (!unlocked) {
-      this.mapGfx.fillStyle(0x000000, 0.65);
-      this.mapGfx.fillRect(cx, cy, cw, ch);
-      // Lock icon (simple padlock shape using rects)
-      const lx = cx + cw / 2;
-      const ly = cy + ch / 2;
-      this.mapGfx.lineStyle(1 * z, 0x334455, 0.9);
-      this.mapGfx.strokeCircle(lx, ly - 3 * z, 3 * z);
-      this.mapGfx.fillStyle(0x334455, 0.9);
-      this.mapGfx.fillRect(lx - 3 * z, ly - 1 * z, 6 * z, 5 * z);
-    }
+      const aUnlocked = this.state.unlockedZoneIds.includes(aId);
+      const bUnlocked = this.state.unlockedZoneIds.includes(bId);
+      const color = (aUnlocked && bUnlocked) ? 0x446688 : (aUnlocked ? 0x2a3a4a : 0x1a1a2a);
+      const alpha = (aUnlocked && bUnlocked) ? 0.7 : 0.35;
 
-    // Zone name
-    const nameColor = unlocked
-      ? `#${zone.accentColor.toString(16).padStart(6, '0')}`
-      : '#333344';
-    const nameTxt = this.scene.add.text(
-      cx + cw / 2,
-      cy + (unlocked ? 7 : 5) * z,
-      unlocked ? zone.name : '???',
-      {
-        fontSize: `${Math.max(3, Math.round(4 * z))}px`,
-        color: nameColor,
-        fontFamily: 'monospace',
-      },
-    ).setOrigin(0.5, 0).setScrollFactor(0);
-    this.container.add(nameTxt);
-    this.labels.push(nameTxt);
+      this.pathGfx.lineStyle(1, color, alpha);
+      this.pathGfx.beginPath();
+      this.pathGfx.moveTo(ax, ay);
+      this.pathGfx.lineTo(bx, by);
+      this.pathGfx.strokePath();
 
-    if (unlocked) {
-      // Biome
-      const biomeTxt = this.scene.add.text(
-        cx + cw / 2,
-        cy + 14 * z,
-        zone.biome,
-        {
-          fontSize: `${Math.max(3, Math.round(3 * z))}px`,
-          color: '#556677',
-          fontFamily: 'monospace',
-        },
-      ).setOrigin(0.5, 0).setScrollFactor(0);
-      this.container.add(biomeTxt);
-      this.labels.push(biomeTxt);
-    }
-
-    // "YOU ARE HERE" marker
-    if (isCurrent) {
-      const markerY = cy + ch - 8 * z;
-
-      // Player dot
-      this.mapGfx.fillStyle(0xffee44, 1);
-      this.mapGfx.fillCircle(cx + cw / 2, markerY, 2 * z);
-
-      const youTxt = this.scene.add.text(
-        cx + cw / 2,
-        cy + ch - 3 * z,
-        'YOU',
-        {
-          fontSize: `${Math.max(3, Math.round(3 * z))}px`,
-          color: '#ffee44',
-          fontFamily: 'monospace',
-        },
-      ).setOrigin(0.5, 1).setScrollFactor(0);
-      this.container.add(youTxt);
-      this.labels.push(youTxt);
-
-      // Quest marker
-      if (this.state.hasActiveQuest) {
-        const qx = cx + cw - 5 * z;
-        const qy = cy + 5 * z;
-        this.mapGfx.fillStyle(0xffdd00, 1);
-        this.mapGfx.fillTriangle(qx, qy - 3 * z, qx + 2.5 * z, qy, qx, qy + 3 * z);
-        this.mapGfx.fillTriangle(qx, qy - 3 * z, qx - 2.5 * z, qy, qx, qy + 3 * z);
+      // Arrow head pointing toward bPos
+      if (aUnlocked) {
+        const angle = Math.atan2(by - ay, bx - ax);
+        const tip   = { x: (ax + bx) / 2, y: (ay + by) / 2 }; // mid-point arrow
+        const sz    = 2;
+        this.pathGfx.fillStyle(color, alpha);
+        this.pathGfx.fillTriangle(
+          tip.x + Math.cos(angle) * sz,       tip.y + Math.sin(angle) * sz,
+          tip.x + Math.cos(angle + 2.4) * sz, tip.y + Math.sin(angle + 2.4) * sz,
+          tip.x + Math.cos(angle - 2.4) * sz, tip.y + Math.sin(angle - 2.4) * sz,
+        );
       }
     }
   }
 
-  private _drawConnector(
-    startX:  number,
-    midY:    number,
-    len:     number,
-    color:   number,
-  ): void {
-    const endX = startX + len;
-    const tipX = endX;
-    const arrowSize = Math.max(2, 3 * this.zoom);
-
-    this.mapGfx.lineStyle(Math.max(0.5, this.zoom), color, 0.8);
-    this.mapGfx.beginPath();
-    this.mapGfx.moveTo(startX, midY);
-    this.mapGfx.lineTo(endX - arrowSize, midY);
-    this.mapGfx.strokePath();
-
-    // Arrow head
-    this.mapGfx.fillStyle(color, 0.8);
-    this.mapGfx.fillTriangle(
-      tipX,            midY,
-      tipX - arrowSize, midY - arrowSize / 2,
-      tipX - arrowSize, midY + arrowSize / 2,
-    );
-  }
-
   // ── Zoom ──────────────────────────────────────────────────────────────────
+
+  private _applyZoom(): void {
+    this.mapContent.setScale(this.zoom);
+    this.zoomLabel.setText(`zoom ${Math.round(this.zoom * 100)}%`);
+  }
 
   private _zoomIn(): void {
     this.zoom = Math.min(ZOOM_MAX, parseFloat((this.zoom + ZOOM_STEP).toFixed(2)));
-    if (this.visible) this._redraw();
+    this._applyZoom();
   }
 
   private _zoomOut(): void {
     this.zoom = Math.max(ZOOM_MIN, parseFloat((this.zoom - ZOOM_STEP).toFixed(2)));
-    if (this.visible) this._redraw();
+    this._applyZoom();
   }
 }
