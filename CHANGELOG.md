@@ -2,6 +2,36 @@
 
 All notable changes to PixelRealm are documented in this file.
 
+## [1.3.0] - 2026-03-29
+
+M37–M40 feature pack: player housing, mount system, auction house, LLM dynamic UI, world map, bestiary, cosmetic shop, dodge/roll, and fishing mini-game.
+
+### M37: Player Economy & Mounts
+- **Player Housing (PIX-320)**: Land plot purchase, furniture placement grid (10×8), tier-1/2 house upgrades, visit permission system (public/friends/locked).
+- **Mount System (PIX-325)**: 6 mounts (common→legendary), stable NPC, cast-time mounting animation, speed bonuses, dismount on hit, mount collection panel.
+
+### M38: Economy, Mounts & LLM UI Polish
+- **Auction House (PIX-326)**: Marketplace listings with 5% listing fee, buy/cancel flows, trade history, filter by rarity/type, auctioneer NPC, bid history panel.
+- **LLM Dynamic Content UI (PIX-327)**: Quest board with AI-generated quests, dynamic NPC portraits, seasonal event banners, LLM safety guardrails.
+
+### M39: World Systems & Player Expression
+- **World Map (PIX-340)**: Interactive zone navigation with fog-of-war, fast travel (10g/zone), discovered zone tracking.
+- **Bestiary (PIX-341)**: Monster compendium with kill-count tracking, enemy stat reveal, 50 boss achievements, bestiary panel.
+- **Cosmetic Shop (PIX-342)**: Character appearance customization (hair, skin, outfit, accessories), preview mannequin, gold-purchased cosmetics, cosmetic persistence.
+
+### M40: Combat Depth, Activities & Communication
+- **Dodge/Roll (PIX-352)**: Z-key dodge roll with 220ms dash, 300ms i-frames, 1500ms cooldown, 8MP mana cost, dust trail VFX.
+- **Fishing Mini-Game (PIX-353)**: Full state machine (cast→wait→bite→reel→catch), 15 fish species across 19 zones, 3 rod tiers, tension-bar reel mechanic.
+
+### Tests
+- Integration test suites added for all 4 new systems: mounts (27 tests), auction house (13 tests), fishing (27 tests), dodge/stamina (21 tests).
+- Total test coverage: **38 test files, 1122 tests** (all passing).
+
+### Distribution
+- Version bumped to 1.3.0.
+- `pixelrealm-v1.3.0.zip` built from production Vite bundle.
+- TypeScript errors fixed: `stamina` field explicit `number` type, `StatSheetPanel` sprint constant corrected.
+
 ## [1.2.0] - 2026-03-29
 
 M35 endgame replayability — procedural dungeons and world boss events.

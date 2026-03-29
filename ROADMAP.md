@@ -331,13 +331,13 @@ Dodge/roll combat mechanics, fishing mini-game, and mailbox/notification infrast
 - [x] PIX-353 — Implement fishing mini-game system
 - [x] PIX-354 — Implement mailbox and notification system
 
-### M41: Art Polish & v1.3.0 Release — IN PROGRESS
+### M41: Art Polish & v1.3.0 Release — COMPLETE
 Updated promotional art, achievement icons, tutorial visuals, and final distribution rebuild for all M37-M40 features.
 
 - [x] PIX-408 — Create updated promotional art and feature screenshots for v1.3.0 release
 - [x] PIX-409 — Create achievement and milestone icon set for M37-M40 game systems
 - [x] PIX-410 — Create tutorial and tooltip art for M37-M40 game systems
-- [ ] PIX-411 — Rebuild distribution as v1.3.0 with M37-M40 feature content
+- [x] PIX-411 — Rebuild distribution as v1.3.0 with M37-M40 feature content
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -423,5 +423,5 @@ M5 → M6 ──────────────────┘
 - **World Systems & Player Expression** — M39 art complete (PIX-336 world map, PIX-337 bestiary, PIX-338 cosmetic shop). Implementation tasks created (PIX-340, PIX-341, PIX-342). Art done as of 2026-03-27, code pending Engineer unblock.
 - **Combat Depth, Activities & Communication** — M40 art complete (PIX-346 dodge/roll sprites, PIX-347 fishing art, PIX-348 mailbox UI). Implementation tasks created (PIX-352, PIX-353, PIX-354). Art done as of 2026-03-27.
 - **Engineer unblocked** — As of 2026-03-29, Engineer completed M35–M40 code. All GDD features implemented. Only PIX-411 (v1.3.0 rebuild) remains.
-- **M41: Art Polish & v1.3.0** — Game Artist completed all M41 art (PIX-408, PIX-409, PIX-410). PIX-411 (v1.3.0 rebuild) is the final task before launch readiness.
-- **Feature-complete** — As of 2026-03-29, all GDD features through M40 are fully implemented. M37-M40 marked complete. Game is feature-complete pending v1.3.0 distribution rebuild (PIX-411) and itch.io launch (PIX-19, board-blocked).
+- **M41: Art Polish & v1.3.0** — All M41 tasks complete. v1.3.0 distribution rebuilt with all M37-M40 features (player housing, mounts, auction house, LLM UI, world map, bestiary, cosmetic shop, dodge/roll, fishing). 1122 tests pass. All complete as of 2026-03-29.
+- **Feature-complete & v1.3.0 shipped** — As of 2026-03-29, all GDD features through M40 are fully implemented and packaged in v1.3.0. Game is feature-complete. Pending itch.io launch (PIX-19, board-blocked).

@@ -12,7 +12,7 @@
  */
 
 import Phaser from 'phaser';
-import { CANVAS, PLAYER, LEVELS, MANA, SPRINT, DODGE, COMBAT, PRESTIGE } from '../config/constants';
+import { CANVAS, PLAYER, LEVELS, MANA, STAMINA, DODGE, COMBAT, PRESTIGE } from '../config/constants';
 import { SKILL_BY_ID, type PassiveBonus } from '../config/skills';
 
 // ── Layout ────────────────────────────────────────────────────────────────────
@@ -302,8 +302,8 @@ export class StatSheetPanel {
       },
       {
         label: 'Sprint',
-        value: `${SPRINT.MANA_COST_PER_SEC} MP/s`,
-        contrib: 'mana drained while holding Shift',
+        value: `${STAMINA.SPRINT_COST_PER_SEC} STA/s`,
+        contrib: 'stamina drained while holding Shift',
       },
       {
         label: 'Dodge',

@@ -180,7 +180,7 @@ export class GameScene extends Phaser.Scene {
   private statusHudIndicators:  Partial<Record<EffectKey, Phaser.GameObjects.Text>> = {};
 
   // ── Stamina ──────────────────────────────────────────────────────────────
-  private stamina = STAMINA.BASE;
+  private stamina: number = STAMINA.BASE;
   private isSprinting = false;
 
   // ── Sprint ───────────────────────────────────────────────────────────────
