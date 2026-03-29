@@ -1,0 +1,400 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- === BACKGROUND: Night sky gradient === -->
+  <rect width="630" height="500" fill="#0a1a3a"/>
+  <rect y="0" width="630" height="200" fill="#0a1a3a"/>
+  <rect y="200" width="630" height="100" fill="#0d1a35"/>
+  <rect y="300" width="630" height="80" fill="#1a3a1a" opacity="0.6"/>
+
+  <!-- Stars -->
+  <g fill="#f0f0f0" opacity="0.8">
+    <rect x="45" y="25" width="3" height="3"/>
+    <rect x="120" y="60" width="2" height="2"/>
+    <rect x="200" y="15" width="3" height="3"/>
+    <rect x="310" y="40" width="2" height="2"/>
+    <rect x="420" y="20" width="3" height="3"/>
+    <rect x="500" y="55" width="2" height="2"/>
+    <rect x="560" y="30" width="3" height="3"/>
+    <rect x="80" y="90" width="2" height="2"/>
+    <rect x="370" y="75" width="2" height="2"/>
+    <rect x="580" y="80" width="2" height="2"/>
+    <rect x="160" y="100" width="2" height="2"/>
+    <rect x="470" y="95" width="2" height="2"/>
+  </g>
+  <!-- Twinkling stars -->
+  <g fill="#fff8a0" filter="url(#glow)">
+    <rect x="90" y="45" width="4" height="4"/>
+    <rect x="280" y="30" width="4" height="4"/>
+    <rect x="530" y="50" width="4" height="4"/>
+  </g>
+
+  <!-- === GOLD BORDER === -->
+  <rect x="0" y="0" width="630" height="6" fill="#e8b800"/>
+  <rect x="0" y="494" width="630" height="6" fill="#e8b800"/>
+  <rect x="0" y="0" width="6" height="500" fill="#e8b800"/>
+  <rect x="624" y="0" width="6" height="500" fill="#e8b800"/>
+  <!-- Corner accents -->
+  <rect x="6" y="6" width="6" height="6" fill="#a87000"/>
+  <rect x="618" y="6" width="6" height="6" fill="#a87000"/>
+  <rect x="6" y="488" width="6" height="6" fill="#a87000"/>
+  <rect x="618" y="488" width="6" height="6" fill="#a87000"/>
+
+  <!-- === TITLE: "PIXEL" in cyan === -->
+  <g fill="#50a8e8" transform="translate(95, 25) scale(1.1)">
+    <!-- P -->
+    <rect x="0" y="0" width="7" height="42"/>
+    <rect x="7" y="0" width="14" height="7"/>
+    <rect x="21" y="7" width="7" height="14"/>
+    <rect x="7" y="21" width="14" height="7"/>
+    <!-- I -->
+    <rect x="36" y="0" width="21" height="7"/>
+    <rect x="43" y="7" width="7" height="28"/>
+    <rect x="36" y="35" width="21" height="7"/>
+    <!-- X -->
+    <rect x="64" y="0" width="7" height="7"/>
+    <rect x="84" y="0" width="7" height="7"/>
+    <rect x="71" y="7" width="7" height="7"/>
+    <rect x="77" y="7" width="7" height="7"/>
+    <rect x="74" y="14" width="7" height="14"/>
+    <rect x="67" y="28" width="7" height="7"/>
+    <rect x="81" y="28" width="7" height="7"/>
+    <rect x="64" y="35" width="7" height="7"/>
+    <rect x="84" y="35" width="7" height="7"/>
+    <!-- E -->
+    <rect x="99" y="0" width="7" height="42"/>
+    <rect x="106" y="0" width="21" height="7"/>
+    <rect x="106" y="17" width="14" height="7"/>
+    <rect x="106" y="35" width="21" height="7"/>
+    <!-- L -->
+    <rect x="134" y="0" width="7" height="42"/>
+    <rect x="141" y="35" width="21" height="7"/>
+  </g>
+
+  <!-- === TITLE: "REALM" in gold === -->
+  <g fill="#ffe040" transform="translate(280, 25) scale(1.1)">
+    <!-- R -->
+    <rect x="0" y="0" width="7" height="42"/>
+    <rect x="7" y="0" width="14" height="7"/>
+    <rect x="21" y="7" width="7" height="14"/>
+    <rect x="7" y="21" width="14" height="7"/>
+    <rect x="14" y="28" width="7" height="7"/>
+    <rect x="21" y="35" width="7" height="7"/>
+    <!-- E -->
+    <rect x="36" y="0" width="7" height="42"/>
+    <rect x="43" y="0" width="21" height="7"/>
+    <rect x="43" y="17" width="14" height="7"/>
+    <rect x="43" y="35" width="21" height="7"/>
+    <!-- A -->
+    <rect x="74" y="7" width="7" height="35"/>
+    <rect x="94" y="7" width="7" height="35"/>
+    <rect x="81" y="0" width="13" height="7"/>
+    <rect x="81" y="21" width="13" height="7"/>
+    <!-- L -->
+    <rect x="109" y="0" width="7" height="42"/>
+    <rect x="116" y="35" width="21" height="7"/>
+    <!-- M -->
+    <rect x="144" y="0" width="7" height="42"/>
+    <rect x="179" y="0" width="7" height="42"/>
+    <rect x="151" y="7" width="7" height="7"/>
+    <rect x="172" y="7" width="7" height="7"/>
+    <rect x="158" y="14" width="14" height="7"/>
+  </g>
+
+  <!-- === SUBTITLE === -->
+  <text x="315" y="85" fill="#969696" font-family="monospace" font-size="10" text-anchor="middle" letter-spacing="3">PIXELATED MMORPG ADVENTURE</text>
+
+  <!-- === VERSION BADGE === -->
+  <rect x="245" y="94" width="140" height="18" rx="2" fill="#1a3a1a" stroke="#4c9b4c" stroke-width="1"/>
+  <text x="315" y="107" fill="#78c878" font-family="monospace" font-size="10" text-anchor="middle" font-weight="bold" letter-spacing="2">v1.3.0 UPDATE</text>
+
+  <!-- === GROUND / TERRAIN === -->
+  <!-- Grass layer -->
+  <rect y="380" width="630" height="120" fill="#2d6e2d"/>
+  <rect y="380" width="630" height="6" fill="#4c9b4c"/>
+  <!-- Dirt layer -->
+  <rect y="420" width="630" height="80" fill="#6b3a1f"/>
+  <rect y="420" width="630" height="4" fill="#3b2010"/>
+  <!-- Stone path -->
+  <rect x="180" y="400" width="270" height="10" fill="#6e6e6e"/>
+  <rect x="180" y="400" width="270" height="2" fill="#969696"/>
+
+  <!-- === MOUNTAIN SILHOUETTES === -->
+  <g fill="#1a3a1a" opacity="0.8">
+    <polygon points="0,320 60,220 120,320"/>
+    <polygon points="80,320 160,200 240,320"/>
+    <polygon points="200,320 290,230 380,320"/>
+    <polygon points="340,320 420,210 500,320"/>
+    <polygon points="460,320 540,240 630,320"/>
+  </g>
+  <!-- Mid-ground trees -->
+  <g fill="#2d6e2d">
+    <polygon points="30,380 45,310 60,380"/>
+    <polygon points="70,380 85,320 100,380"/>
+    <polygon points="520,380 535,315 550,380"/>
+    <polygon points="560,380 575,325 590,380"/>
+    <polygon points="600,380 615,330 630,380"/>
+    <polygon points="0,380 15,330 30,380"/>
+  </g>
+
+  <!-- === FEATURE VIGNETTES === -->
+
+  <!-- VIGNETTE 1: Player Housing (left) -->
+  <g transform="translate(30, 250)">
+    <!-- Cottage -->
+    <rect x="10" y="40" width="50" height="40" fill="#8b5c2a"/><!-- walls -->
+    <rect x="10" y="40" width="50" height="4" fill="#6b3a1f"/>
+    <polygon points="10,40 35,15 60,40" fill="#d42020"/><!-- roof -->
+    <polygon points="10,40 35,18 60,40" fill="#a01010"/>
+    <rect x="28" y="55" width="14" height="25" fill="#3b2010"/><!-- door -->
+    <rect x="38" y="65" width="3" height="3" fill="#e8b800"/><!-- doorknob -->
+    <rect x="15" y="50" width="10" height="10" fill="#90d0f8"/><!-- window left -->
+    <rect x="45" y="50" width="10" height="10" fill="#90d0f8"/><!-- window right -->
+    <rect x="30" y="5" width="6" height="15" fill="#4a4a4a"/><!-- chimney -->
+    <rect x="30" y="2" width="8" height="5" fill="#6e6e6e"/>
+    <!-- Smoke particles -->
+    <rect x="33" y="-5" width="3" height="3" fill="#c8c8c8" opacity="0.5"/>
+    <rect x="36" y="-12" width="3" height="3" fill="#c8c8c8" opacity="0.3"/>
+    <!-- Fence -->
+    <rect x="0" y="75" width="70" height="3" fill="#8b5c2a"/>
+    <rect x="5" y="70" width="3" height="10" fill="#8b5c2a"/>
+    <rect x="20" y="70" width="3" height="10" fill="#8b5c2a"/>
+    <rect x="47" y="70" width="3" height="10" fill="#8b5c2a"/>
+    <rect x="62" y="70" width="3" height="10" fill="#8b5c2a"/>
+    <!-- Garden flowers -->
+    <rect x="5" y="85" width="4" height="6" fill="#4c9b4c"/>
+    <rect x="5" y="82" width="4" height="4" fill="#d42020"/>
+    <rect x="15" y="87" width="4" height="4" fill="#4c9b4c"/>
+    <rect x="15" y="84" width="4" height="4" fill="#ffe040"/>
+    <rect x="55" y="85" width="4" height="6" fill="#4c9b4c"/>
+    <rect x="55" y="82" width="4" height="4" fill="#9050e0"/>
+  </g>
+
+  <!-- VIGNETTE 2: Mount (center-left) -->
+  <g transform="translate(140, 295)">
+    <!-- Horse body -->
+    <rect x="10" y="30" width="40" height="25" fill="#6b3a1f"/>
+    <rect x="10" y="28" width="40" height="4" fill="#8b5c2a"/>
+    <!-- Horse head -->
+    <rect x="45" y="15" width="15" height="20" fill="#6b3a1f"/>
+    <rect x="55" y="10" width="8" height="8" fill="#6b3a1f"/>
+    <rect x="60" y="12" width="3" height="3" fill="#0d0d0d"/><!-- eye -->
+    <!-- Mane -->
+    <rect x="42" y="12" width="4" height="20" fill="#3b2010"/>
+    <!-- Legs -->
+    <rect x="14" y="55" width="6" height="18" fill="#3b2010"/>
+    <rect x="24" y="55" width="6" height="18" fill="#3b2010"/>
+    <rect x="34" y="55" width="6" height="18" fill="#3b2010"/>
+    <rect x="44" y="55" width="6" height="18" fill="#3b2010"/>
+    <!-- Hooves -->
+    <rect x="14" y="71" width="6" height="4" fill="#4a4a4a"/>
+    <rect x="24" y="71" width="6" height="4" fill="#4a4a4a"/>
+    <rect x="34" y="71" width="6" height="4" fill="#4a4a4a"/>
+    <rect x="44" y="71" width="6" height="4" fill="#4a4a4a"/>
+    <!-- Saddle -->
+    <rect x="20" y="24" width="20" height="8" fill="#a01010"/>
+    <rect x="18" y="22" width="4" height="6" fill="#a01010"/>
+    <!-- Tail -->
+    <rect x="5" y="30" width="6" height="15" fill="#3b2010"/>
+    <!-- Rider (player character on mount) -->
+    <rect x="24" y="8" width="12" height="16" fill="#50a8e8"/><!-- body -->
+    <rect x="26" y="0" width="8" height="10" fill="#f8a060"/><!-- head -->
+    <rect x="28" y="3" width="2" height="2" fill="#0d0d0d"/><!-- eye -->
+    <!-- Speed lines -->
+    <rect x="-10" y="35" width="12" height="2" fill="#c8f0ff" opacity="0.4"/>
+    <rect x="-15" y="42" width="18" height="2" fill="#c8f0ff" opacity="0.3"/>
+    <rect x="-8" y="50" width="10" height="2" fill="#c8f0ff" opacity="0.2"/>
+  </g>
+
+  <!-- VIGNETTE 3: Fishing (center) -->
+  <g transform="translate(270, 300)">
+    <!-- Water surface -->
+    <rect x="0" y="50" width="90" height="50" fill="#1a4a8a"/>
+    <rect x="0" y="50" width="90" height="4" fill="#2a7ac0"/>
+    <!-- Water ripples -->
+    <rect x="20" y="60" width="12" height="2" fill="#50a8e8" opacity="0.5"/>
+    <rect x="50" y="70" width="10" height="2" fill="#50a8e8" opacity="0.4"/>
+    <rect x="10" y="78" width="8" height="2" fill="#50a8e8" opacity="0.3"/>
+    <!-- Shore/dock -->
+    <rect x="0" y="40" width="40" height="12" fill="#8b5c2a"/>
+    <rect x="0" y="40" width="40" height="3" fill="#b8843f"/>
+    <!-- Dock posts -->
+    <rect x="5" y="45" width="4" height="55" fill="#6b3a1f"/>
+    <rect x="32" y="45" width="4" height="55" fill="#6b3a1f"/>
+    <!-- Player fishing -->
+    <rect x="15" y="16" width="12" height="16" fill="#50a8e8"/><!-- body -->
+    <rect x="17" y="8" width="8" height="10" fill="#f8a060"/><!-- head -->
+    <rect x="19" y="11" width="2" height="2" fill="#0d0d0d"/><!-- eye -->
+    <rect x="15" y="32" width="5" height="8" fill="#1a4a8a"/><!-- legs -->
+    <rect x="22" y="32" width="5" height="8" fill="#1a4a8a"/><!-- legs -->
+    <!-- Fishing rod -->
+    <rect x="27" y="5" width="2" height="35" fill="#8b5c2a" transform="rotate(25, 27, 5)"/>
+    <!-- Fishing line -->
+    <line x1="50" y1="5" x2="60" y2="65" stroke="#c8c8c8" stroke-width="1"/>
+    <!-- Bobber -->
+    <rect x="57" y="48" width="6" height="6" fill="#d42020"/>
+    <rect x="58" y="46" width="4" height="3" fill="#f0f0f0"/>
+    <!-- Fish jumping -->
+    <g transform="translate(65, 40)">
+      <rect x="0" y="0" width="14" height="8" fill="#2a7ac0"/>
+      <rect x="12" y="2" width="6" height="4" fill="#2a7ac0"/><!-- tail -->
+      <rect x="3" y="2" width="2" height="2" fill="#0d0d0d"/><!-- eye -->
+      <!-- Splash -->
+      <rect x="-3" y="8" width="3" height="3" fill="#90d0f8" opacity="0.6"/>
+      <rect x="8" y="10" width="3" height="3" fill="#90d0f8" opacity="0.5"/>
+      <rect x="16" y="7" width="2" height="2" fill="#c8f0ff" opacity="0.4"/>
+    </g>
+  </g>
+
+  <!-- VIGNETTE 4: Auction House (center-right) -->
+  <g transform="translate(390, 260)">
+    <!-- Building -->
+    <rect x="5" y="30" width="60" height="50" fill="#b8843f"/>
+    <rect x="5" y="30" width="60" height="4" fill="#d4a85a"/>
+    <!-- Roof -->
+    <polygon points="0,30 35,5 70,30" fill="#6b3a1f"/>
+    <polygon points="0,30 35,8 70,30" fill="#3b2010"/>
+    <!-- Roof ornament -->
+    <rect x="32" y="0" width="6" height="8" fill="#e8b800"/>
+    <!-- Columns -->
+    <rect x="10" y="34" width="6" height="46" fill="#c8c8c8"/>
+    <rect x="54" y="34" width="6" height="46" fill="#c8c8c8"/>
+    <!-- Door -->
+    <rect x="23" y="50" width="24" height="30" fill="#3b2010"/>
+    <rect x="23" y="50" width="24" height="3" fill="#e8b800"/>
+    <rect x="33" y="60" width="3" height="3" fill="#e8b800"/>
+    <!-- Sign -->
+    <rect x="15" y="36" width="40" height="12" fill="#3b2010"/>
+    <text x="35" y="46" fill="#e8b800" font-family="monospace" font-size="7" text-anchor="middle">AUCTION</text>
+    <!-- Gold coins floating -->
+    <rect x="0" y="40" width="5" height="5" fill="#e8b800" opacity="0.7"/>
+    <rect x="65" y="35" width="5" height="5" fill="#ffe040" opacity="0.6"/>
+    <rect x="-5" y="55" width="4" height="4" fill="#ffe040" opacity="0.5"/>
+  </g>
+
+  <!-- VIGNETTE 5: Dodge Combat (right) -->
+  <g transform="translate(500, 290)">
+    <!-- Player character dodging -->
+    <rect x="10" y="25" width="12" height="16" fill="#50a8e8" transform="rotate(-20, 16, 33)"/>
+    <rect x="12" y="17" width="8" height="10" fill="#f8a060" transform="rotate(-20, 16, 22)"/>
+    <!-- Dodge dust cloud -->
+    <rect x="0" y="45" width="8" height="5" fill="#d4a85a" opacity="0.5"/>
+    <rect x="5" y="42" width="6" height="4" fill="#b8843f" opacity="0.4"/>
+    <rect x="-3" y="48" width="5" height="3" fill="#d4a85a" opacity="0.3"/>
+    <!-- Enemy attacking -->
+    <rect x="55" y="20" width="16" height="20" fill="#d42020"/><!-- body -->
+    <rect x="57" y="12" width="12" height="12" fill="#a01010"/><!-- head -->
+    <rect x="60" y="15" width="3" height="3" fill="#ffe040"/><!-- eye -->
+    <rect x="67" y="15" width="3" height="3" fill="#ffe040"/><!-- eye -->
+    <!-- Enemy sword swing -->
+    <rect x="40" y="15" width="18" height="3" fill="#c8c8c8"/>
+    <rect x="38" y="13" width="4" height="7" fill="#6e6e6e"/>
+    <!-- Dodge VFX flash -->
+    <rect x="25" y="20" width="6" height="6" fill="#c8f0ff" opacity="0.6"/>
+    <rect x="30" y="28" width="4" height="4" fill="#f0f0f0" opacity="0.4"/>
+    <!-- Impact miss sparks -->
+    <rect x="30" y="40" width="3" height="3" fill="#ffe040" opacity="0.7"/>
+    <rect x="35" y="37" width="2" height="2" fill="#f0f0f0" opacity="0.5"/>
+  </g>
+
+  <!-- === FEATURE LABELS === -->
+  <g font-family="monospace" font-size="8" text-anchor="middle" fill="#fff8a0">
+    <text x="65" y="370">HOUSING</text>
+    <text x="180" y="392">MOUNTS</text>
+    <text x="315" y="392">FISHING</text>
+    <text x="425" y="345">AUCTION</text>
+    <text x="545" y="375">DODGE</text>
+  </g>
+
+  <!-- === FEATURE ICON BAR at bottom === -->
+  <rect x="60" y="440" width="510" height="36" rx="3" fill="#0d0d0d" opacity="0.7"/>
+  <rect x="60" y="440" width="510" height="1" fill="#e8b800" opacity="0.5"/>
+
+  <!-- Feature mini-icons -->
+  <!-- Housing icon -->
+  <g transform="translate(90, 446)">
+    <polygon points="0,12 12,0 24,12" fill="#a01010"/>
+    <rect x="4" y="12" width="16" height="12" fill="#8b5c2a"/>
+    <rect x="9" y="16" width="6" height="8" fill="#3b2010"/>
+  </g>
+  <!-- Mount icon -->
+  <g transform="translate(150, 446)">
+    <rect x="4" y="6" width="16" height="10" fill="#6b3a1f"/>
+    <rect x="16" y="0" width="8" height="10" fill="#6b3a1f"/>
+    <rect x="6" y="16" width="3" height="8" fill="#3b2010"/>
+    <rect x="15" y="16" width="3" height="8" fill="#3b2010"/>
+  </g>
+  <!-- Auction icon -->
+  <g transform="translate(210, 446)">
+    <rect x="2" y="0" width="20" height="4" fill="#e8b800"/>
+    <rect x="4" y="4" width="4" height="16" fill="#c8c8c8"/>
+    <rect x="16" y="4" width="4" height="16" fill="#c8c8c8"/>
+    <rect x="0" y="20" width="24" height="4" fill="#6e6e6e"/>
+  </g>
+  <!-- Fishing icon -->
+  <g transform="translate(270, 446)">
+    <rect x="10" y="0" width="2" height="18" fill="#8b5c2a"/>
+    <line x1="12" y1="0" x2="20" y2="10" stroke="#c8c8c8" stroke-width="1"/>
+    <rect x="18" y="10" width="4" height="4" fill="#d42020"/>
+    <rect x="4" y="16" width="8" height="5" fill="#2a7ac0"/>
+  </g>
+  <!-- Combat icon -->
+  <g transform="translate(330, 446)">
+    <rect x="0" y="8" width="20" height="3" fill="#c8c8c8"/>
+    <rect x="8" y="4" width="6" height="4" fill="#6e6e6e"/>
+    <rect x="8" y="18" width="4" height="6" fill="#6b3a1f"/>
+    <!-- Dodge arrow -->
+    <polygon points="18,2 24,8 18,14" fill="#50a8e8"/>
+  </g>
+  <!-- Bestiary icon -->
+  <g transform="translate(390, 446)">
+    <rect x="2" y="0" width="18" height="24" fill="#3b2010"/>
+    <rect x="4" y="2" width="14" height="20" fill="#d4a85a"/>
+    <rect x="6" y="5" width="10" height="6" fill="#a01010"/>
+    <rect x="8" y="14" width="6" height="2" fill="#3b2010"/>
+    <rect x="7" y="17" width="8" height="2" fill="#3b2010"/>
+  </g>
+  <!-- World Map icon -->
+  <g transform="translate(450, 446)">
+    <rect x="0" y="0" width="24" height="20" fill="#d4a85a"/>
+    <rect x="0" y="0" width="24" height="2" fill="#8b5c2a"/>
+    <rect x="0" y="18" width="24" height="2" fill="#8b5c2a"/>
+    <rect x="4" y="4" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="14" y="8" width="6" height="6" fill="#1a4a8a"/>
+    <rect x="8" y="12" width="4" height="4" fill="#d42020"/>
+  </g>
+  <!-- Cosmetics icon -->
+  <g transform="translate(510, 446)">
+    <rect x="4" y="0" width="14" height="18" fill="#9050e0"/>
+    <rect x="6" y="2" width="10" height="6" fill="#d090ff"/>
+    <rect x="8" y="10" width="6" height="4" fill="#e8b800"/>
+    <rect x="0" y="18" width="22" height="4" fill="#5a20a0"/>
+  </g>
+
+  <!-- Feature labels under icons -->
+  <g font-family="monospace" font-size="5" text-anchor="middle" fill="#969696">
+    <text x="102" y="478">HOME</text>
+    <text x="162" y="478">MOUNT</text>
+    <text x="222" y="478">TRADE</text>
+    <text x="282" y="478">FISH</text>
+    <text x="342" y="478">DODGE</text>
+    <text x="402" y="478">BESTIARY</text>
+    <text x="462" y="478">MAP</text>
+    <text x="522" y="478">STYLE</text>
+  </g>
+
+  <!-- === Decorative pixel sparkles around features === -->
+  <g fill="#ffe040" opacity="0.6">
+    <rect x="100" y="240" width="3" height="3"/>
+    <rect x="260" y="285" width="3" height="3"/>
+    <rect x="470" y="250" width="3" height="3"/>
+  </g>
+</svg>
