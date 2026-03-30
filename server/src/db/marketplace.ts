@@ -5,7 +5,7 @@
  * recording for both marketplace and P2P trades.
  */
 
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, or } from "drizzle-orm";
 import { getDb } from "./client";
 import { getPool } from "./client";
 import {
@@ -408,8 +408,9 @@ export async function getTradeHistory(playerId: string): Promise<TradeHistoryRow
     .select()
     .from(tradeHistory)
     .where(
-      and(
+      or(
         eq(tradeHistory.initiatorId, playerId),
+        eq(tradeHistory.counterpartId, playerId),
       ),
     )
     .limit(50) as Promise<TradeHistoryRow[]>;

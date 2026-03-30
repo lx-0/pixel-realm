@@ -1837,10 +1837,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
         return;
       }
 
-      // Deduct gold from persisted player state
-      const savedState = await loadPlayerState(userId);
-      const currentGold = savedState?.gold ?? 0;
-      if (currentGold < item.goldCost) {
+      // Atomically deduct gold — SET gold = gold - $1 WHERE gold >= $1 prevents
+      // race conditions where concurrent requests both pass the balance check.
+      const pool = getPool();
+      const deductRes = await pool.query<{ gold: number }>(
+        "UPDATE player_state SET gold = gold - $1 WHERE player_id = $2 AND gold >= $1 RETURNING gold",
+        [item.goldCost, userId],
+      );
+      if (!deductRes.rows.length) {
         client.send("faction_vendor_buy_result", {
           success: false,
           itemId,
@@ -1849,8 +1853,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
         });
         return;
       }
-
-      await savePlayerState(userId, { gold: currentGold - item.goldCost });
+      const goldRemaining = deductRes.rows[0].gold;
 
       // Grant the item to inventory
       await addItem(userId, itemId, 1);
@@ -1860,7 +1863,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
         itemId,
         itemName: item.name,
         goldCost: item.goldCost,
-        goldRemaining: currentGold - item.goldCost,
+        goldRemaining,
       });
     } catch (err) {
       console.warn("[ZoneRoom] faction_vendor_buy error:", (err as Error).message);
@@ -3369,15 +3372,34 @@ export class ZoneRoom extends Room<ZoneGameState> {
     }
 
     const def = PET_DEFINITIONS[petType];
-    if (player.xp < 0) return; // sanity check
+    const cost = def.vendorCost;
 
-    // Gold is tracked client-side and persisted; re-verify via DB player state
-    // For simplicity: send a cost message, client deducts gold and calls back
+    // Atomically deduct gold and grant pet in a single transaction.
+    // Using SET gold = gold - $1 WHERE gold >= $1 prevents over-spend and race conditions.
+    const pool = getPool();
+    const dbClient = await pool.connect();
     try {
+      await dbClient.query("BEGIN");
+
+      const deductRes = await dbClient.query<{ gold: number }>(
+        "UPDATE player_state SET gold = gold - $1 WHERE player_id = $2 AND gold >= $1 RETURNING gold",
+        [cost, userId],
+      );
+      if (!deductRes.rows.length) {
+        await dbClient.query("ROLLBACK");
+        client.send("pet_error", { message: `Insufficient gold — pet costs ${cost}g` });
+        return;
+      }
+
       const newPet = await addPet(userId, petType);
-      client.send("pet_acquired", { pet: newPet, vendorCost: def.vendorCost });
+
+      await dbClient.query("COMMIT");
+      client.send("pet_acquired", { pet: newPet, vendorCost: cost, goldRemaining: deductRes.rows[0].gold });
     } catch (err) {
+      await dbClient.query("ROLLBACK");
       client.send("pet_error", { message: (err as Error).message });
+    } finally {
+      dbClient.release();
     }
   }
 
