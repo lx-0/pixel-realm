@@ -108,6 +108,29 @@ services:
     networks:
       - frontend
 
+  db-backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    # Runs backup-db.sh daily at 02:00 UTC via busybox crond.
+    # Backups are written to ./backups on the host via the bind mount.
+    entrypoint: >
+      sh -c "
+        echo '0 2 * * * cd /pixelrealm && sh /scripts/backup-db.sh /backups >> /var/log/pixelrealm-backup.log 2>&1' | crontab - &&
+        crond -f -l 6
+      "
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pixelrealm}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pixelrealm}
+      RETENTION_DAILY: "${RETENTION_DAILY:-7}"
+      RETENTION_WEEKLY: "${RETENTION_WEEKLY:-4}"
+    volumes:
+      - ./scripts/backup-db.sh:/scripts/backup-db.sh:ro
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+
 networks:
   backend:
   frontend:
