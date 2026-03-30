@@ -19,6 +19,7 @@
 import Phaser from 'phaser';
 import { CANVAS } from '../config/constants';
 import type { ClientQuest, ClientDialogueChoice } from '../systems/MultiplayerClient';
+import { t } from '../i18n';
 
 const PANEL_W   = 240;
 const BASE_H    = 68;   // height without choices
@@ -201,7 +202,7 @@ export class NpcDialogueOverlay {
     const panelY = CANVAS.HEIGHT - panelH - 8;
 
     const dialogueLine = q ? q.dialogue.greeting : 'Well met, adventurer.';
-    const npcName = 'Quest Giver';
+    const npcName = t('npc.quest_giver');
     const questTitle = q ? q.title : '';
 
     const emotion = q ? detectEmotion(dialogueLine) : 'neutral';
@@ -317,7 +318,7 @@ export class NpcDialogueOverlay {
 
     const hint = this.scene.add.text(
       PANEL_X + PANEL_W - PAD, panelY + panelH - 5,
-      '[1/2/3] choose',
+      t('npc.choose_hint'),
       { fontSize: '3px', color: '#334455', fontFamily: 'monospace' },
     ).setOrigin(1, 0).setScrollFactor(0);
     objects.push(hint);
@@ -338,7 +339,7 @@ export class NpcDialogueOverlay {
     acceptBorder.strokeRect(PANEL_X + PAD, btnY, 55, 12);
     const acceptTxt = this.scene.add.text(
       PANEL_X + PAD + 27, btnY + 6,
-      '[E] Accept',
+      t('npc.accept'),
       { fontSize: '4px', color: '#88ee88', fontFamily: 'monospace' },
     ).setOrigin(0.5).setScrollFactor(0);
 
@@ -354,7 +355,7 @@ export class NpcDialogueOverlay {
     declineBorder.strokeRect(PANEL_X + PAD + 62, btnY, 55, 12);
     const declineTxt = this.scene.add.text(
       PANEL_X + PAD + 89, btnY + 6,
-      '[Esc] Decline',
+      t('npc.decline'),
       { fontSize: '4px', color: '#ee8888', fontFamily: 'monospace' },
     ).setOrigin(0.5).setScrollFactor(0);
 
@@ -364,7 +365,7 @@ export class NpcDialogueOverlay {
 
     const hint = this.scene.add.text(
       PANEL_X + PANEL_W - PAD, panelY + panelH - 6,
-      '[Tab] players',
+      t('npc.tab_players'),
       { fontSize: '3px', color: '#334455', fontFamily: 'monospace' },
     ).setOrigin(1, 0).setScrollFactor(0);
 
@@ -399,7 +400,7 @@ export class NpcDialogueOverlay {
 
     const panelH = BASE_H;
     const panelY = CANVAS.HEIGHT - panelH - 8;
-    const npcName = 'Quest Giver';
+    const npcName = t('npc.quest_giver');
 
     // Emotion reflects the NPC's response to the player's choice
     const responseEmotion: Emotion =
@@ -443,10 +444,10 @@ export class NpcDialogueOverlay {
     let outcomeLabel = '...';
     let outcomeColor = '#556677';
     if (choice.outcome === 'accept' || choice.outcome === 'rep_bonus') {
-      outcomeLabel = '✓ Quest accepted!';
+      outcomeLabel = t('npc.outcome_accepted');
       outcomeColor = '#88ee88';
     } else if (choice.outcome === 'decline') {
-      outcomeLabel = '— Goodbye';
+      outcomeLabel = t('npc.outcome_goodbye');
       outcomeColor = '#ee8888';
     }
 

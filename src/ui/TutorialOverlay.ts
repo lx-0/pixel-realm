@@ -18,6 +18,7 @@
 
 import Phaser from 'phaser';
 import { CANVAS } from '../config/constants';
+import { t } from '../i18n';
 
 // ── Layout ────────────────────────────────────────────────────────────────────
 
@@ -34,66 +35,23 @@ const PAD_Y        = 4;
 type TriggerKind = 'move' | 'attack' | 'dodge' | 'sprint' | 'minimap' | 'inventory' | 'skill_tree' | 'auto';
 
 interface TutorialStep {
-  title:       string;
-  instruction: string;
+  titleKey:       string;
+  instructionKey: string;
   trigger:     TriggerKind;
   autoDelay?:  number; // ms before auto-advance (trigger === 'auto')
 }
 
 const STEPS: TutorialStep[] = [
-  {
-    title:       'Welcome to PixelRealm!',
-    instruction: 'Use WASD (or Arrow Keys) to move your character around the zone.',
-    trigger:     'move',
-  },
-  {
-    title:       'Combat — Attack',
-    instruction: 'Press SPACE to swing your weapon. Hit enemies to score kills!',
-    trigger:     'attack',
-  },
-  {
-    title:       'Combat — Dodge Roll',
-    instruction: 'Press Q to dodge-roll in your movement direction. Costs mana, grants invincibility frames. Hold Shift to sprint (drains stamina bar).',
-    trigger:     'dodge',
-  },
-  {
-    title:       'Combat — Sprint',
-    instruction: 'Hold SHIFT while moving to sprint. You move faster but drain mana.',
-    trigger:     'sprint',
-  },
-  {
-    title:       'Inventory',
-    instruction: 'Press I to open your inventory. Equip gear and use items collected from enemies.',
-    trigger:     'inventory',
-  },
-  {
-    title:       'Skill Tree',
-    instruction: 'Press K to open the Skill Tree. Choose Warrior or Mage and unlock powerful abilities!',
-    trigger:     'skill_tree',
-  },
-  {
-    title:       'HUD Overview',
-    instruction: 'Red = HP  ·  Blue = Mana  ·  Yellow = XP  ·  Top-right = Wave info',
-    trigger:     'auto',
-    autoDelay:   5000,
-  },
-  {
-    title:       'Mini-Map',
-    instruction: 'Press M to toggle the mini-map (top-right). Yellow = you, Red = enemies.',
-    trigger:     'minimap',
-  },
-  {
-    title:       'Quests & NPCs',
-    instruction: 'Press E near an NPC to accept quests. Clear all waves and defeat the boss to unlock new zones!',
-    trigger:     'auto',
-    autoDelay:   5000,
-  },
-  {
-    title:       'Ready for Adventure!',
-    instruction: 'Tutorial complete. Defeat all waves and the zone boss to progress. Good luck!',
-    trigger:     'auto',
-    autoDelay:   3500,
-  },
+  { titleKey: 'tutorial.welcome.title',      instructionKey: 'tutorial.welcome.body',      trigger: 'move' },
+  { titleKey: 'tutorial.combat_attack.title', instructionKey: 'tutorial.combat_attack.body', trigger: 'attack' },
+  { titleKey: 'tutorial.combat_dodge.title',  instructionKey: 'tutorial.combat_dodge.body',  trigger: 'dodge' },
+  { titleKey: 'tutorial.combat_sprint.title', instructionKey: 'tutorial.combat_sprint.body', trigger: 'sprint' },
+  { titleKey: 'tutorial.inventory.title',    instructionKey: 'tutorial.inventory.body',    trigger: 'inventory' },
+  { titleKey: 'tutorial.skill_tree.title',   instructionKey: 'tutorial.skill_tree.body',   trigger: 'skill_tree' },
+  { titleKey: 'tutorial.hud.title',          instructionKey: 'tutorial.hud.body',          trigger: 'auto', autoDelay: 5000 },
+  { titleKey: 'tutorial.minimap.title',      instructionKey: 'tutorial.minimap.body',      trigger: 'minimap' },
+  { titleKey: 'tutorial.quests.title',       instructionKey: 'tutorial.quests.body',       trigger: 'auto', autoDelay: 5000 },
+  { titleKey: 'tutorial.ready.title',        instructionKey: 'tutorial.ready.body',        trigger: 'auto', autoDelay: 3500 },
 ];
 
 // ── Class ─────────────────────────────────────────────────────────────────────
@@ -194,7 +152,7 @@ export class TutorialOverlay {
     this.skipText = scene.add.text(
       PANEL_X + PANEL_W - PAD_X,
       PANEL_Y + PANEL_H - PAD_Y,
-      '[T] Skip Tutorial',
+      t('tutorial.skip'),
       { fontSize: '3px', color: '#556677', fontFamily: 'monospace' },
     ).setScrollFactor(0).setDepth(DEPTH + 1).setOrigin(1, 1);
 
@@ -345,9 +303,9 @@ export class TutorialOverlay {
 
   private renderStep(): void {
     const step = STEPS[this.stepIdx];
-    this.titleText.setText(step.title);
-    this.bodyText.setText(step.instruction);
-    this.progressText.setText(`Step ${this.stepIdx + 1} / ${STEPS.length}`);
+    this.titleText.setText(t(step.titleKey));
+    this.bodyText.setText(t(step.instructionKey));
+    this.progressText.setText(t('tutorial.step', { n: this.stepIdx + 1, total: STEPS.length }));
 
     // Reset auto-advance progress bar
     this.progressBar.width = 0;

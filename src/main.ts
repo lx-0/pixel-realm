@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CANVAS } from './config/constants';
+import { initI18n } from './i18n';
 import { BootScene }        from './scenes/BootScene';
 import { MenuScene }        from './scenes/MenuScene';
 import { LevelSelectScene } from './scenes/LevelSelectScene';
@@ -14,6 +15,9 @@ import { DungeonScene }     from './scenes/DungeonScene';
 import { WorldBossScene }        from './scenes/WorldBossScene';
 import { ZoneTransitionScene }   from './scenes/ZoneTransitionScene';
 import { KeybindOverlay }        from './ui/KeybindOverlay';
+
+// Restore saved language preference before any scenes are created
+initI18n();
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,

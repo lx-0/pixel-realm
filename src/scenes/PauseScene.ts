@@ -3,6 +3,7 @@ import { CANVAS, SCENES } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
 import { SaveManager, NUM_SLOTS, type SlotMeta } from '../systems/SaveManager';
 import type { GameScene } from './GameScene';
+import { t } from '../i18n';
 
 /**
  * PauseScene — overlay that runs in parallel with (paused) GameScene.
@@ -41,7 +42,7 @@ export class PauseScene extends Phaser.Scene {
     // ── Title ────────────────────────────────────────────────────────────────
     const topY = panelCy - panelH / 2 + 8;
     this.add
-      .text(cx, topY, '— PAUSED —', {
+      .text(cx, topY, t('pause.title'), {
         fontSize: '9px', color: '#ffffff', fontFamily: 'monospace',
         stroke: '#000', strokeThickness: 2,
       })
@@ -49,9 +50,9 @@ export class PauseScene extends Phaser.Scene {
 
     // ── Buttons ──────────────────────────────────────────────────────────────
     let y = topY + 18;
-    const resumeBtn   = this.makeButton(cx, y, 'Resume  (ESC)', '#ffe040'); y += 14;
-    const settingsBtn = this.makeButton(cx, y, '⚙ Settings',    '#90d0f8'); y += 14;
-    const menuBtn     = this.makeButton(cx, y, 'Main Menu',      '#cc8888'); y += 14;
+    const resumeBtn   = this.makeButton(cx, y, t('pause.resume'),   '#ffe040'); y += 14;
+    const settingsBtn = this.makeButton(cx, y, t('pause.settings'), '#90d0f8'); y += 14;
+    const menuBtn     = this.makeButton(cx, y, t('pause.main_menu'), '#cc8888'); y += 14;
 
     resumeBtn.on('pointerdown',   () => this.resume());
     settingsBtn.on('pointerdown', () => this.openSettings());
@@ -59,22 +60,22 @@ export class PauseScene extends Phaser.Scene {
 
     // ── Audio section ─────────────────────────────────────────────────────────
     this.addSeparator(cx, y + 2); y += 10;
-    this.add.text(cx, y, 'AUDIO', {
+    this.add.text(cx, y, t('pause.audio'), {
       fontSize: '5px', color: '#88bbdd', fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3); y += 10;
 
-    this.makeVolumeRow(cx, y, 'SFX',
+    this.makeVolumeRow(cx, y, t('pause.sfx'),
       () => this.sfx.sfxVolume,
       (v) => { this.sfx.sfxVolume = v; },
     ); y += 14;
-    this.makeVolumeRow(cx, y, 'BGM',
+    this.makeVolumeRow(cx, y, t('pause.bgm'),
       () => this.sfx.musicVolume,
       (v) => { this.sfx.musicVolume = v; },
     ); y += 16;
 
     // ── Save / Load section ───────────────────────────────────────────────────
     this.addSeparator(cx, y); y += 8;
-    this.add.text(cx, y, 'SAVE / LOAD', {
+    this.add.text(cx, y, t('pause.save_load'), {
       fontSize: '5px', color: '#88bbdd', fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3); y += 10;
 
@@ -107,7 +108,7 @@ export class PauseScene extends Phaser.Scene {
     }).setOrigin(0, 0.5).setDepth(3);
 
     // Slot info
-    const infoStr = meta ? this.formatSlotMeta(meta) : '— empty —';
+    const infoStr = meta ? this.formatSlotMeta(meta) : t('pause.empty_slot');
     const infoColor = meta ? '#ccddcc' : '#445566';
     const infoText = this.add.text(cx - 52, y, infoStr, {
       fontSize: '5px', color: infoColor, fontFamily: 'monospace',

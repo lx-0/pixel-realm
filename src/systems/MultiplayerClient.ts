@@ -6,6 +6,7 @@
  */
 
 import { Client, Room } from 'colyseus.js';
+import { getLanguage } from '../i18n';
 
 // Server coordinate space is half the client world size
 const COORD_SCALE = 2;
@@ -408,7 +409,7 @@ export class MultiplayerClient {
     this.storedUserId     = userId;
 
     try {
-      const opts: Record<string, string> = { zoneId, playerName };
+      const opts: Record<string, string> = { zoneId, playerName, locale: getLanguage() };
       if (userId) opts.userId = userId;
 
       this.room = await this.client.joinOrCreate<any>('zone', opts);
@@ -435,7 +436,7 @@ export class MultiplayerClient {
     token?: string,
   ): Promise<import('colyseus.js').Room | null> {
     try {
-      const opts: Record<string, string | number> = { tier, playerName };
+      const opts: Record<string, string | number> = { tier, playerName, locale: getLanguage() };
       if (userId) opts.userId = userId;
       if (token)  opts.token  = token;
 
@@ -1139,6 +1140,7 @@ export class MultiplayerClient {
         const opts: Record<string, string> = {
           zoneId:     this.storedZoneId,
           playerName: this.storedPlayerName,
+          locale:     getLanguage(),
         };
         if (this.storedUserId) opts.userId = this.storedUserId;
 

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { CANVAS, SCENES } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
 import { KeybindOverlay } from '../ui/KeybindOverlay';
+import { t } from '../i18n';
 
 /**
  * MenuScene — title screen with animated particle background and play prompt.
@@ -43,7 +44,7 @@ export class MenuScene extends Phaser.Scene {
 
     // ── Title ───────────────────────────────────────────────────────────────
     const title = this.add
-      .text(cx, cy - 46, 'PixelRealm', {
+      .text(cx, cy - 46, t('menu.title'), {
         fontSize: '22px',
         color: '#ffd700',
         fontFamily: 'monospace',
@@ -66,7 +67,7 @@ export class MenuScene extends Phaser.Scene {
 
     // ── Subtitle ─────────────────────────────────────────────────────────────
     this.add
-      .text(cx, cy - 22, 'A Living MMORPG World', {
+      .text(cx, cy - 22, t('menu.subtitle'), {
         fontSize: '7px',
         color: '#90d0f8',
         fontFamily: 'monospace',
@@ -75,7 +76,7 @@ export class MenuScene extends Phaser.Scene {
       .setDepth(10);
 
     // ── Feature tags ─────────────────────────────────────────────────────────
-    const features = ['Explore  •  Fight  •  Loot  •  Upgrade'];
+    const features = [t('menu.features')];
     features.forEach((f, i) => {
       this.add
         .text(cx, cy - 6 + i * 9, f, {
@@ -89,7 +90,7 @@ export class MenuScene extends Phaser.Scene {
 
     // ── Play prompt ───────────────────────────────────────────────────────────
     const playText = this.add
-      .text(cx, cy + 22, '▶  Press SPACE or Click to Play  ◀', {
+      .text(cx, cy + 22, t('menu.play_prompt'), {
         fontSize: '6px',
         color: '#ffffff',
         fontFamily: 'monospace',
@@ -108,7 +109,7 @@ export class MenuScene extends Phaser.Scene {
 
     // ── Controls ──────────────────────────────────────────────────────────────
     this.add
-      .text(cx, cy + 50, 'WASD: Move  |  SPACE: Attack  |  ESC: Pause', {
+      .text(cx, cy + 50, t('menu.controls_hint'), {
         fontSize: '4px',
         color: '#444466',
         fontFamily: 'monospace',
@@ -129,7 +130,7 @@ export class MenuScene extends Phaser.Scene {
     // ── Settings button ───────────────────────────────────────────────────────
     let settingsOpen = false;
     const settingsBtn = this.add
-      .text(cx, cy + 36, '⚙  Settings', {
+      .text(cx, cy + 36, t('menu.settings'), {
         fontSize: '5px',
         color: '#888899',
         fontFamily: 'monospace',

@@ -3,6 +3,8 @@ import { CANVAS, SCENES } from '../config/constants';
 import { SettingsManager } from '../systems/SettingsManager';
 import { SoundManager } from '../systems/SoundManager';
 import type { ColorblindMode, UiScale } from '../systems/SettingsManager';
+import { t, getLanguage, changeLanguage, SUPPORTED_LOCALES } from '../i18n';
+import type { Locale } from '../i18n';
 
 export interface SettingsSceneData {
   /** Which scene to return to when settings are closed. */
@@ -14,7 +16,7 @@ type Tab = 'audio' | 'display' | 'controls' | 'access';
 /**
  * SettingsScene — full-screen tabbed settings overlay.
  * Launched from MenuScene or PauseScene; returns to origin on close.
- * Tabs: Audio, Display, Controls, Accessibility
+ * Tabs: Audio, Display, Controls, Accessibility (includes language switcher)
  */
 export class SettingsScene extends Phaser.Scene {
   private settings!: SettingsManager;
@@ -24,12 +26,17 @@ export class SettingsScene extends Phaser.Scene {
   private tabContainers: Record<Tab, Phaser.GameObjects.Container> = {} as never;
   private tabButtons: Record<Tab, Phaser.GameObjects.Text> = {} as never;
 
+  private origin: 'menu' | 'pause' = 'menu';
+  private langChanged = false;
+
   constructor() {
     super(SCENES.SETTINGS);
   }
 
-  init(_data: SettingsSceneData): void {
+  init(data: SettingsSceneData): void {
     this.activeTab = 'audio';
+    this.origin = data?.origin ?? 'menu';
+    this.langChanged = false;
   }
 
   create(): void {
@@ -51,25 +58,25 @@ export class SettingsScene extends Phaser.Scene {
     border.strokeRect(cx - panelW / 2, cy - panelH / 2, panelW, panelH);
 
     // ── Title ─────────────────────────────────────────────────────────────────
-    this.add.text(cx, cy - panelH / 2 + 8, 'SETTINGS', {
+    this.add.text(cx, cy - panelH / 2 + 8, t('settings.title'), {
       fontSize: '8px', color: '#ffd700', fontFamily: 'monospace',
       stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(3);
 
     // ── Tab buttons ───────────────────────────────────────────────────────────
     const tabs: Tab[] = ['audio', 'display', 'controls', 'access'];
-    const tabLabels: Record<Tab, string> = {
-      audio:    'AUDIO',
-      display:  'DISPLAY',
-      controls: 'CONTROLS',
-      access:   'ACCESS',
+    const tabLabelKeys: Record<Tab, string> = {
+      audio:    'settings.tab_audio',
+      display:  'settings.tab_display',
+      controls: 'settings.tab_controls',
+      access:   'settings.tab_access',
     };
     const tabW = 42;
     const tabY = cy - panelH / 2 + 22;
 
     tabs.forEach((tab, i) => {
       const tx = cx - tabW * 1.5 + i * tabW;
-      const btn = this.add.text(tx, tabY, tabLabels[tab], {
+      const btn = this.add.text(tx, tabY, t(tabLabelKeys[tab]), {
         fontSize: '5px', color: '#888899', fontFamily: 'monospace',
       })
         .setOrigin(0.5)
@@ -121,17 +128,17 @@ export class SettingsScene extends Phaser.Scene {
     const items: Phaser.GameObjects.GameObject[] = [];
     let y = startY;
 
-    const addVolRow = (label: string, get: () => number, set: (v: number) => void) => {
+    const addVolRow = (labelKey: string, get: () => number, set: (v: number) => void) => {
       const STEP = 0.1;
-      const row = this.buildSliderRow(cx, y, label, get, set, STEP);
+      const row = this.buildSliderRow(cx, y, t(labelKey), get, set, STEP);
       items.push(...row);
       y += 16;
     };
 
-    addVolRow('Master',  () => this.settings.masterVolume,  (v) => { this.settings.masterVolume  = v; this.settings.save(); });
-    addVolRow('Music',   () => this.settings.musicVolume,   (v) => { this.settings.musicVolume   = v; this.settings.save(); });
-    addVolRow('SFX',     () => this.settings.sfxVolume,     (v) => { this.settings.sfxVolume     = v; this.settings.save(); });
-    addVolRow('Ambient', () => this.settings.ambientVolume, (v) => { this.settings.ambientVolume = v; this.settings.save(); });
+    addVolRow('settings.master',  () => this.settings.masterVolume,  (v) => { this.settings.masterVolume  = v; this.settings.save(); });
+    addVolRow('settings.music',   () => this.settings.musicVolume,   (v) => { this.settings.musicVolume   = v; this.settings.save(); });
+    addVolRow('settings.sfx',     () => this.settings.sfxVolume,     (v) => { this.settings.sfxVolume     = v; this.settings.save(); });
+    addVolRow('settings.ambient', () => this.settings.ambientVolume, (v) => { this.settings.ambientVolume = v; this.settings.save(); });
 
     const c = this.add.container(0, 0, items).setDepth(3);
     return c;
@@ -141,7 +148,7 @@ export class SettingsScene extends Phaser.Scene {
     const items: Phaser.GameObjects.GameObject[] = [];
     let y = startY;
 
-    items.push(...this.buildToggleRow(cx, y, 'Fullscreen',
+    items.push(...this.buildToggleRow(cx, y, t('settings.fullscreen'),
       () => this.settings.fullscreen,
       (v) => {
         this.settings.fullscreen = v;
@@ -151,13 +158,13 @@ export class SettingsScene extends Phaser.Scene {
     ));
     y += 16;
 
-    items.push(...this.buildToggleRow(cx, y, 'Smooth Scale',
+    items.push(...this.buildToggleRow(cx, y, t('settings.smooth_scale'),
       () => this.settings.smoothScale,
       (v) => { this.settings.smoothScale = v; this.settings.save(); },
     ));
     y += 16;
 
-    items.push(...this.buildToggleRow(cx, y, 'Show FPS',
+    items.push(...this.buildToggleRow(cx, y, t('settings.show_fps'),
       () => this.settings.showFPS,
       (v) => { this.settings.showFPS = v; this.settings.save(); },
     ));
@@ -169,24 +176,24 @@ export class SettingsScene extends Phaser.Scene {
     const items: Phaser.GameObjects.GameObject[] = [];
 
     const bindings: [string, string][] = [
-      ['Move',          'W / A / S / D'],
-      ['Attack',        'SPACE'],
-      ['Sprint',        'SHIFT'],
-      ['Dodge',         'Q'],
-      ['NPC Talk',      'E'],
-      ['Inventory',     'I'],
-      ['Quest Log',     'J'],
-      ['Skill Tree',    'K'],
-      ['Achievements',  'H'],
-      ['World Map',     'M'],
-      ['Craft',         'F'],
-      ['Skills 1-6',    '1 - 6'],
-      ['Chat',          'ENTER'],
-      ['Mute',          'N'],
-      ['Close / Pause', 'ESC'],
+      [t('controls.move'),          'W / A / S / D'],
+      [t('controls.attack'),        'SPACE'],
+      [t('controls.sprint'),        'SHIFT'],
+      [t('controls.dodge'),         'Q'],
+      [t('controls.npc_talk'),      'E'],
+      [t('controls.inventory'),     'I'],
+      [t('controls.quest_log'),     'J'],
+      [t('controls.skill_tree'),    'K'],
+      [t('controls.achievements'),  'H'],
+      [t('controls.world_map'),     'M'],
+      [t('controls.craft'),         'F'],
+      [t('controls.skills_hotkeys'), '1 - 6'],
+      [t('controls.chat'),          'ENTER'],
+      [t('controls.mute'),          'N'],
+      [t('controls.close_pause'),   'ESC'],
     ];
 
-    items.push(this.add.text(cx, startY - 2, 'Key Bindings (v1 - read only)', {
+    items.push(this.add.text(cx, startY - 2, t('settings.keybindings_title'), {
       fontSize: '4px', color: '#555577', fontFamily: 'monospace',
     }).setOrigin(0.5));
 
@@ -210,13 +217,16 @@ export class SettingsScene extends Phaser.Scene {
     let y = startY;
 
     // Colorblind Mode
-    items.push(this.add.text(cx - 52, y, 'Colorblind', {
+    items.push(this.add.text(cx - 52, y, t('settings.colorblind'), {
       fontSize: '6px', color: '#aaccee', fontFamily: 'monospace',
     }).setOrigin(0, 0.5));
 
     const MODES: ColorblindMode[] = ['none', 'protanopia', 'deuteranopia', 'tritanopia'];
     const modeLabels: Record<ColorblindMode, string> = {
-      none: 'None', protanopia: 'Protan', deuteranopia: 'Deutan', tritanopia: 'Tritan',
+      none:         t('settings.colorblind_none'),
+      protanopia:   t('settings.colorblind_protan'),
+      deuteranopia: t('settings.colorblind_deutan'),
+      tritanopia:   t('settings.colorblind_tritan'),
     };
 
     const modeValueText = this.add.text(cx, y, modeLabels[this.settings.colorblindMode], {
@@ -249,7 +259,7 @@ export class SettingsScene extends Phaser.Scene {
     y += 16;
 
     // UI Scale
-    items.push(this.add.text(cx - 52, y, 'UI Scale', {
+    items.push(this.add.text(cx - 52, y, t('settings.ui_scale'), {
       fontSize: '6px', color: '#aaccee', fontFamily: 'monospace',
     }).setOrigin(0, 0.5));
 
@@ -286,14 +296,49 @@ export class SettingsScene extends Phaser.Scene {
     y += 16;
 
     // Reduced Motion
-    items.push(...this.buildToggleRow(cx, y, 'Reduced Motion',
+    items.push(...this.buildToggleRow(cx, y, t('settings.reduced_motion'),
       () => this.settings.reducedMotion,
       (v) => { this.settings.reducedMotion = v; this.settings.save(); },
     ));
     y += 16;
 
+    // Language
+    items.push(this.add.text(cx - 52, y, t('settings.language'), {
+      fontSize: '6px', color: '#aaccee', fontFamily: 'monospace',
+    }).setOrigin(0, 0.5));
+
+    const LANGS: Locale[] = SUPPORTED_LOCALES.map(l => l.code);
+    const langValueText = this.add.text(cx, y, t(`lang.${getLanguage()}`), {
+      fontSize: '6px', color: '#ffffff', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5);
+    items.push(langValueText);
+
+    const decLang = this.add.text(cx - 20, y, '<', {
+      fontSize: '6px', color: '#50a8e8', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
+    const incLang = this.add.text(cx + 20, y, '>', {
+      fontSize: '6px', color: '#50a8e8', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
+
+    const stepLang = (dir: 1 | -1) => {
+      this.sfx.playMenuClick();
+      const idx = LANGS.indexOf(getLanguage());
+      const next = LANGS[(idx + dir + LANGS.length) % LANGS.length];
+      changeLanguage(next);
+      langValueText.setText(t(`lang.${next}`));
+      this.langChanged = true;
+    };
+    decLang.on('pointerdown', () => stepLang(-1));
+    incLang.on('pointerdown', () => stepLang(1));
+    decLang.on('pointerover', () => decLang.setColor('#ffffff'));
+    decLang.on('pointerout',  () => decLang.setColor('#50a8e8'));
+    incLang.on('pointerover', () => incLang.setColor('#ffffff'));
+    incLang.on('pointerout',  () => incLang.setColor('#50a8e8'));
+    items.push(decLang, incLang);
+    y += 16;
+
     // Hint
-    items.push(this.add.text(cx, y + 4, 'Press ? or F1 in-game for keybind list', {
+    items.push(this.add.text(cx, y + 4, t('settings.access_hint'), {
       fontSize: '4px', color: '#556688', fontFamily: 'monospace',
     }).setOrigin(0.5, 0.5));
 
@@ -350,7 +395,7 @@ export class SettingsScene extends Phaser.Scene {
       fontSize: '6px', color: '#aaccee', fontFamily: 'monospace',
     }).setOrigin(0, 0.5);
 
-    const stateText = () => get() ? 'ON ' : 'OFF';
+    const stateText = () => get() ? t('settings.on') : t('settings.off');
     const stateColor = () => get() ? '#50e888' : '#888888';
 
     const btn = this.add.text(cx + 40, y, stateText(), {
@@ -389,7 +434,13 @@ export class SettingsScene extends Phaser.Scene {
     this.sfx.playMenuClick();
     this.cameras.main.fadeOut(120, 0, 0, 0);
     this.time.delayedCall(120, () => {
+      const langChanged = this.langChanged;
+      const origin = this.origin;
       this.scene.stop();
+      // If language changed, restart the origin scene so all strings refresh
+      if (langChanged && origin === 'menu') {
+        this.scene.get(SCENES.MENU).scene.restart();
+      }
     });
   }
 }
