@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40" viewBox="0 0 80 40" style="image-rendering: pixelated;">
+  <!-- Dialogue Bubble: Quest — gold-bordered, quest marker style -->
+  <!-- Outer border (gold) -->
+  <rect x="2" y="0" width="76" height="30" fill="#a87000"/>
+  <rect x="0" y="2" width="80" height="26" fill="#a87000"/>
+  <!-- Inner gold border -->
+  <rect x="3" y="1" width="74" height="28" fill="#e8b800"/>
+  <rect x="1" y="3" width="78" height="24" fill="#e8b800"/>
+  <!-- Inner fill (parchment tint) -->
+  <rect x="4" y="2" width="72" height="26" fill="#e8d08a"/>
+  <rect x="2" y="4" width="76" height="22" fill="#e8d08a"/>
+  <!-- Gold shimmer line (top) -->
+  <rect x="5" y="3" width="70" height="1" fill="#ffe040"/>
+
+  <!-- Speech tail (bottom left, gold border) -->
+  <rect x="12" y="30" width="6" height="2" fill="#a87000"/>
+  <rect x="10" y="32" width="6" height="2" fill="#a87000"/>
+  <rect x="8" y="34" width="4" height="2" fill="#a87000"/>
+  <!-- Tail fill -->
+  <rect x="13" y="30" width="4" height="2" fill="#e8d08a"/>
+  <rect x="11" y="32" width="4" height="2" fill="#e8d08a"/>
+  <rect x="9" y="34" width="2" height="2" fill="#e8d08a"/>
+
+  <!-- Quest exclamation icon (top-left corner) -->
+  <rect x="6" y="5" width="3" height="6" fill="#ffe040"/>
+  <rect x="7" y="5" width="1" height="6" fill="#fff8a0"/>
+  <rect x="6" y="13" width="3" height="3" fill="#ffe040"/>
+  <rect x="7" y="13" width="1" height="3" fill="#fff8a0"/>
+
+  <!-- Text placeholder lines (darker for parchment bg) -->
+  <rect x="14" y="8" width="56" height="1" fill="#6b3a1f"/>
+  <rect x="14" y="13" width="52" height="1" fill="#6b3a1f"/>
+  <rect x="14" y="18" width="44" height="1" fill="#6b3a1f"/>
+
+  <!-- Reward hint (bottom area) -->
+  <rect x="56" y="20" width="4" height="4" fill="#e8b800"/>
+  <rect x="57" y="21" width="2" height="2" fill="#ffe040"/>
+</svg>

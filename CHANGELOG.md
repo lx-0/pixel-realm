@@ -2,6 +2,26 @@
 
 All notable changes to PixelRealm are documented in this file.
 
+## [1.4.0] - 2026-03-30
+
+M42 accessibility & launch polish pack: zone loading screens, animated title screen, NPC portrait gallery, accessibility UI art, class showcase art, colorblind mode, keyboard shortcut overlay, and UI scaling.
+
+### M42: Accessibility & Launch Polish
+- **Zone Loading Screens ([PIX-421](/PIX/issues/PIX-421))**: 23 zone-specific loading screen backgrounds for all 19 biomes plus dungeon, coastal, desert, and forest variants.
+- **Animated Title Screen ([PIX-424](/PIX/issues/PIX-424))**: Animated title logo, main menu key art with hero panels for all 4 classes, version badge, decorative divider.
+- **NPC Portrait Gallery ([PIX-425](/PIX/issues/PIX-425))**: 38 NPC portraits (merchant + questgiver per zone), dialogue box frame, dialogue indicator sprites.
+- **Accessibility UI Art ([PIX-426](/PIX/issues/PIX-426))**: High-contrast HUD variants, colorblind-safe status indicators (shape+pattern), input method icons, scalable 1x/2x UI frames.
+- **Class Showcase Art ([PIX-427](/PIX/issues/PIX-427))**: 4 class showcase portraits (64×64), 12 archetype thumbnails (32×32), itch.io feature banner (630×500).
+- **Accessibility Features ([PIX-428](/PIX/issues/PIX-428))**: Colorblind mode (deuteranopia/protanopia/tritanopia), UI scale settings (1x/1.5x/2x), keyboard shortcut overlay (? key), screen reader ARIA hints.
+
+### Tests
+- Total test coverage: **45 test files, 1376 tests** (all passing).
+
+### Distribution
+- Version bumped to 1.4.0.
+- `pixelrealm-v1.4.0.zip` built from production Vite bundle.
+- All M42 assets verified in dist: zone loading screens, animated title, NPC portraits, accessibility UI, class showcase.
+
 ## [1.3.0] - 2026-03-29
 
 M37–M40 feature pack: player housing, mount system, auction house, LLM dynamic UI, world map, bestiary, cosmetic shop, dodge/roll, and fishing mini-game.

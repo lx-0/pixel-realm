@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="56" viewBox="0 0 48 56" style="image-rendering: pixelated;">
+  <!-- NPC Portrait Frame — ornate frame with emotion indicator slot -->
+  <!-- Master palette: gold border, dark wood backing, emotion slot at bottom -->
+
+  <!-- Frame outer border (dark wood) -->
+  <rect x="0" y="0" width="48" height="48" fill="#3b2010"/>
+  <!-- Frame inner gold trim -->
+  <rect x="1" y="1" width="46" height="46" fill="#a87000"/>
+  <!-- Second gold layer -->
+  <rect x="2" y="2" width="44" height="44" fill="#e8b800"/>
+  <!-- Portrait area (inner dark backing) -->
+  <rect x="4" y="4" width="40" height="40" fill="#2b2b2b"/>
+
+  <!-- Gold corner ornaments (top-left) -->
+  <rect x="1" y="1" width="4" height="2" fill="#ffe040"/>
+  <rect x="1" y="1" width="2" height="4" fill="#ffe040"/>
+  <!-- Top-right -->
+  <rect x="43" y="1" width="4" height="2" fill="#ffe040"/>
+  <rect x="45" y="1" width="2" height="4" fill="#ffe040"/>
+  <!-- Bottom-left -->
+  <rect x="1" y="45" width="4" height="2" fill="#ffe040"/>
+  <rect x="1" y="43" width="2" height="4" fill="#ffe040"/>
+  <!-- Bottom-right -->
+  <rect x="43" y="45" width="4" height="2" fill="#ffe040"/>
+  <rect x="45" y="43" width="2" height="4" fill="#ffe040"/>
+
+  <!-- Frame highlight (top edge shimmer) -->
+  <rect x="6" y="1" width="36" height="1" fill="#ffe040"/>
+  <!-- Frame shadow (bottom edge) -->
+  <rect x="6" y="46" width="36" height="1" fill="#6b3a1f"/>
+
+  <!-- Emotion indicator slot (below portrait) -->
+  <rect x="12" y="49" width="24" height="7" fill="#3b2010"/>
+  <rect x="13" y="50" width="22" height="5" fill="#6b3a1f"/>
+  <!-- Emotion slot inner (where emotion icon sits) -->
+  <rect x="14" y="51" width="20" height="3" fill="#4a4a4a"/>
+  <!-- Slot gold trim -->
+  <rect x="12" y="49" width="24" height="1" fill="#a87000"/>
+  <rect x="12" y="55" width="24" height="1" fill="#a87000"/>
+</svg>

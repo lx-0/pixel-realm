@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <!--
+    Colorblind simulation filters for PixelRealm accessibility.
+    Apply via Phaser's pipeline or CSS filter: url(#filter-id).
+
+    Color matrices based on Machado et al. (2009) — severity 1.0.
+    These transform colors to simulate what colorblind users see,
+    helping sighted developers verify that shape/pattern indicators
+    provide sufficient differentiation.
+
+    Usage in Phaser 3 (WebGL):
+      Apply as a PostFX pipeline using the matrix values below,
+      or use the CSS filter approach on the game container div.
+  -->
+  <defs>
+    <!-- Protanopia (red-blind) — reds appear dark/brownish -->
+    <filter id="protanopia">
+      <feColorMatrix type="matrix" values="
+        0.152  1.053 -0.205  0  0
+        0.115  0.786  0.099  0  0
+       -0.004 -0.048  1.052  0  0
+        0      0      0      1  0
+      "/>
+    </filter>
+
+    <!-- Deuteranopia (green-blind) — greens shift to browns/yellows -->
+    <filter id="deuteranopia">
+      <feColorMatrix type="matrix" values="
+        0.367  0.861 -0.228  0  0
+        0.280  0.673  0.047  0  0
+       -0.012  0.043  0.969  0  0
+        0      0      0      1  0
+      "/>
+    </filter>
+
+    <!-- Tritanopia (blue-blind) — blues shift to greens/pinks -->
+    <filter id="tritanopia">
+      <feColorMatrix type="matrix" values="
+        1.256 -0.077 -0.179  0  0
+       -0.078  0.931  0.148  0  0
+        0.005  0.691  0.304  0  0
+        0      0      0      1  0
+      "/>
+    </filter>
+  </defs>
+</svg>

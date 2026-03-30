@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" style="image-rendering: pixelated;">
+  <!-- Font scale icon — 16×16 pixel art, big A + small A -->
+  <!-- Text: #aaccee light blue (matches UI text), Accent: #ffd700 gold -->
+  <rect width="16" height="16" fill="none"/>
+  <!-- Large "A" (left side) -->
+  <rect x="3" y="3" width="2" height="1" fill="#aaccee"/>
+  <rect x="2" y="4" width="1" height="1" fill="#aaccee"/>
+  <rect x="5" y="4" width="1" height="1" fill="#aaccee"/>
+  <rect x="1" y="5" width="1" height="6" fill="#aaccee"/>
+  <rect x="6" y="5" width="1" height="6" fill="#aaccee"/>
+  <!-- Large A crossbar -->
+  <rect x="2" y="8" width="4" height="1" fill="#ffd700"/>
+  <!-- Small "A" (right side) -->
+  <rect x="10" y="6" width="2" height="1" fill="#aaccee"/>
+  <rect x="9" y="7" width="1" height="1" fill="#aaccee"/>
+  <rect x="12" y="7" width="1" height="1" fill="#aaccee"/>
+  <rect x="9" y="8" width="1" height="3" fill="#aaccee"/>
+  <rect x="12" y="8" width="1" height="3" fill="#aaccee"/>
+  <!-- Small A crossbar -->
+  <rect x="10" y="9" width="2" height="1" fill="#ffd700"/>
+  <!-- Scale arrows (↕ between the two A's) -->
+  <rect x="7" y="3" width="1" height="1" fill="#888899"/>
+  <rect x="6" y="4" width="3" height="1" fill="#888899"/>
+  <rect x="7" y="11" width="1" height="1" fill="#888899"/>
+  <rect x="6" y="10" width="3" height="1" fill="#888899"/>
+  <rect x="7" y="5" width="1" height="5" fill="#888899"/>
+</svg>

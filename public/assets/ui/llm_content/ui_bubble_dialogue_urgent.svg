@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40" viewBox="0 0 80 40" style="image-rendering: pixelated;">
+  <!-- Dialogue Bubble: Urgent — red-bordered, exclamation feel -->
+  <!-- Outer border (red) -->
+  <rect x="2" y="0" width="76" height="30" fill="#a01010"/>
+  <rect x="0" y="2" width="80" height="26" fill="#a01010"/>
+  <!-- Inner red border -->
+  <rect x="3" y="1" width="74" height="28" fill="#d42020"/>
+  <rect x="1" y="3" width="78" height="24" fill="#d42020"/>
+  <!-- Inner fill (warm tinted white) -->
+  <rect x="4" y="2" width="72" height="26" fill="#f0f0f0"/>
+  <rect x="2" y="4" width="76" height="22" fill="#f0f0f0"/>
+  <!-- Red inner accent line -->
+  <rect x="5" y="3" width="70" height="1" fill="#f8a060"/>
+  <rect x="5" y="26" width="70" height="1" fill="#f8a060"/>
+
+  <!-- Speech tail (bottom left, red border) -->
+  <rect x="12" y="30" width="6" height="2" fill="#a01010"/>
+  <rect x="10" y="32" width="6" height="2" fill="#a01010"/>
+  <rect x="8" y="34" width="4" height="2" fill="#a01010"/>
+  <!-- Tail fill -->
+  <rect x="13" y="30" width="4" height="2" fill="#f0f0f0"/>
+  <rect x="11" y="32" width="4" height="2" fill="#f0f0f0"/>
+  <rect x="9" y="34" width="2" height="2" fill="#f0f0f0"/>
+
+  <!-- Exclamation marks (top corners) -->
+  <rect x="6" y="5" width="2" height="4" fill="#d42020"/>
+  <rect x="6" y="11" width="2" height="2" fill="#d42020"/>
+  <rect x="72" y="5" width="2" height="4" fill="#d42020"/>
+  <rect x="72" y="11" width="2" height="2" fill="#d42020"/>
+
+  <!-- Text placeholder lines -->
+  <rect x="12" y="8" width="56" height="1" fill="#4a4a4a"/>
+  <rect x="12" y="13" width="52" height="1" fill="#4a4a4a"/>
+  <rect x="12" y="18" width="44" height="1" fill="#4a4a4a"/>
+</svg>

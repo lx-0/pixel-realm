@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" style="image-rendering: pixelated;">
+  <!-- Emotion icon: Happy — yellow/bright, upward smile -->
+  <rect x="4" y="2" width="8" height="12" rx="0" fill="#ffe040"/>
+  <rect x="3" y="4" width="10" height="8" fill="#ffe040"/>
+  <rect x="2" y="5" width="12" height="6" fill="#ffe040"/>
+  <!-- Eyes (bright, open) -->
+  <rect x="5" y="5" width="2" height="2" fill="#3b2010"/>
+  <rect x="9" y="5" width="2" height="2" fill="#3b2010"/>
+  <!-- Smile curve -->
+  <rect x="5" y="9" width="6" height="1" fill="#3b2010"/>
+  <rect x="4" y="8" width="1" height="1" fill="#3b2010"/>
+  <rect x="11" y="8" width="1" height="1" fill="#3b2010"/>
+  <!-- Cheek highlights -->
+  <rect x="3" y="7" width="2" height="2" fill="#fff8a0"/>
+  <rect x="11" y="7" width="2" height="2" fill="#fff8a0"/>
+</svg>

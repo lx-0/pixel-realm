@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" style="image-rendering: pixelated;">
+  <!-- Emotion icon: Surprised — bright purple/magic, wide eyes, open mouth -->
+  <rect x="4" y="2" width="8" height="12" rx="0" fill="#9050e0"/>
+  <rect x="3" y="4" width="10" height="8" fill="#9050e0"/>
+  <rect x="2" y="5" width="12" height="6" fill="#9050e0"/>
+  <!-- Raised brows -->
+  <rect x="4" y="3" width="3" height="1" fill="#1a0a3a"/>
+  <rect x="9" y="3" width="3" height="1" fill="#1a0a3a"/>
+  <!-- Wide eyes -->
+  <rect x="4" y="5" width="3" height="3" fill="#f0f0f0"/>
+  <rect x="5" y="6" width="1" height="1" fill="#1a0a3a"/>
+  <rect x="9" y="5" width="3" height="3" fill="#f0f0f0"/>
+  <rect x="10" y="6" width="1" height="1" fill="#1a0a3a"/>
+  <!-- Open mouth (O shape) -->
+  <rect x="6" y="10" width="4" height="3" fill="#1a0a3a"/>
+  <rect x="7" y="11" width="2" height="1" fill="#5a20a0"/>
+  <!-- Surprise sparkle -->
+  <rect x="13" y="2" width="1" height="1" fill="#d090ff"/>
+  <rect x="14" y="3" width="1" height="1" fill="#d090ff"/>
+  <rect x="2" y="3" width="1" height="1" fill="#d090ff"/>
+</svg>

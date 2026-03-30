@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" style="image-rendering: pixelated;">
+  <!-- World Event Icon: Discovery — compass/map star, gold/adventure -->
+  <rect width="16" height="16" fill="none"/>
+
+  <!-- Compass circle -->
+  <rect x="3" y="3" width="10" height="10" fill="#6b3a1f"/>
+  <rect x="2" y="4" width="12" height="8" fill="#6b3a1f"/>
+  <rect x="4" y="2" width="8" height="12" fill="#6b3a1f"/>
+  <!-- Inner compass -->
+  <rect x="4" y="4" width="8" height="8" fill="#e8d08a"/>
+  <rect x="3" y="5" width="10" height="6" fill="#e8d08a"/>
+  <rect x="5" y="3" width="6" height="10" fill="#e8d08a"/>
+
+  <!-- Compass star (N-S-E-W) -->
+  <!-- North point (gold) -->
+  <rect x="7" y="2" width="2" height="4" fill="#e8b800"/>
+  <rect x="7" y="2" width="2" height="2" fill="#ffe040"/>
+  <!-- South point -->
+  <rect x="7" y="10" width="2" height="4" fill="#a87000"/>
+  <!-- East point -->
+  <rect x="10" y="7" width="4" height="2" fill="#a87000"/>
+  <!-- West point -->
+  <rect x="2" y="7" width="4" height="2" fill="#a87000"/>
+
+  <!-- Center dot -->
+  <rect x="7" y="7" width="2" height="2" fill="#d42020"/>
+  <rect x="7" y="7" width="1" height="1" fill="#f06020"/>
+
+  <!-- Discovery sparkles -->
+  <rect x="0" y="0" width="1" height="1" fill="#ffe040"/>
+  <rect x="15" y="0" width="1" height="1" fill="#ffe040"/>
+  <rect x="0" y="15" width="1" height="1" fill="#ffe040"/>
+  <rect x="15" y="15" width="1" height="1" fill="#ffe040"/>
+  <rect x="1" y="7" width="1" height="1" fill="#fff8a0"/>
+  <rect x="14" y="8" width="1" height="1" fill="#fff8a0"/>
+</svg>
