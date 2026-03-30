@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(24, 16)">
+    <rect x="16" y="0" width="48" height="8" fill="#a87000"/>
+    <rect x="8" y="8" width="64" height="8" fill="#e8b800"/>
+    <rect x="0" y="16" width="80" height="56" fill="#e8b800"/>
+    <rect x="8" y="72" width="64" height="8" fill="#a87000"/>
+    <rect x="16" y="80" width="48" height="8" fill="#a87000"/>
+    <!-- P emblem -->
+    <rect x="28" y="24" width="8" height="40" fill="#ffe040"/>
+    <rect x="36" y="24" width="12" height="8" fill="#ffe040"/>
+    <rect x="48" y="32" width="8" height="8" fill="#ffe040"/>
+    <rect x="36" y="40" width="12" height="8" fill="#ffe040"/>
+    <!-- Highlight -->
+    <rect x="12" y="16" width="4" height="48" fill="#ffe040" opacity="0.5"/>
+  </g>
+</svg>

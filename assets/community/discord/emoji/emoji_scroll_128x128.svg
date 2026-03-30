@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(16, 8)">
+    <!-- Top roll -->
+    <rect x="4" y="0" width="80" height="12" fill="#b8843f"/>
+    <rect x="0" y="4" width="8" height="8" fill="#8b5c2a"/>
+    <rect x="80" y="4" width="8" height="8" fill="#8b5c2a"/>
+    <rect x="4" y="0" width="80" height="4" fill="#d4a85a"/>
+    <!-- Paper body -->
+    <rect x="8" y="12" width="72" height="80" fill="#e8d08a"/>
+    <rect x="8" y="12" width="72" height="4" fill="#d4a85a"/>
+    <!-- Bottom roll -->
+    <rect x="4" y="92" width="80" height="12" fill="#b8843f"/>
+    <rect x="0" y="96" width="8" height="8" fill="#8b5c2a"/>
+    <rect x="80" y="96" width="8" height="8" fill="#8b5c2a"/>
+    <rect x="4" y="100" width="80" height="4" fill="#6b3a1f"/>
+    <!-- Text lines -->
+    <rect x="20" y="24" width="48" height="3" fill="#6b3a1f" opacity="0.5"/>
+    <rect x="20" y="32" width="40" height="3" fill="#6b3a1f" opacity="0.5"/>
+    <rect x="20" y="40" width="44" height="3" fill="#6b3a1f" opacity="0.5"/>
+    <rect x="20" y="48" width="36" height="3" fill="#6b3a1f" opacity="0.5"/>
+    <rect x="20" y="56" width="48" height="3" fill="#6b3a1f" opacity="0.5"/>
+    <rect x="20" y="64" width="32" height="3" fill="#6b3a1f" opacity="0.5"/>
+    <!-- Seal -->
+    <rect x="36" y="72" width="16" height="12" fill="#d42020"/>
+    <rect x="40" y="76" width="8" height="4" fill="#f06020"/>
+  </g>
+</svg>

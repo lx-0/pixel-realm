@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" style="image-rendering: pixelated;">
+  <defs>
+    <clipPath id="circle">
+      <circle cx="256" cy="256" r="256"/>
+    </clipPath>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+  </defs>
+
+  <g clip-path="url(#circle)">
+    <!-- Background -->
+    <rect width="512" height="512" fill="url(#bgGrad)"/>
+
+    <!-- Pixel terrain silhouette -->
+    <g fill="#14142a">
+      <polygon points="0,512 0,380 40,360 80,340 120,370 160,330 200,350 240,310 280,340 320,310 360,350 400,330 440,370 480,340 512,380 512,512"/>
+    </g>
+    <g fill="#1a1a35">
+      <polygon points="0,512 0,420 60,400 120,410 180,380 240,410 300,390 360,410 420,380 480,410 512,420 512,512"/>
+    </g>
+
+    <!-- Stars -->
+    <g fill="#fff8a0" filter="url(#glow)" opacity="0.5">
+      <rect x="80" y="60" width="6" height="6"/>
+      <rect x="180" y="100" width="4" height="4"/>
+      <rect x="350" y="50" width="6" height="6"/>
+      <rect x="420" y="90" width="4" height="4"/>
+      <rect x="130" y="140" width="4" height="4"/>
+      <rect x="300" y="120" width="4" height="4"/>
+    </g>
+
+    <!-- Logo: PIXEL in cyan, compact centered layout -->
+    <!-- Scale: each pixel = 6px, letter grid = 5x7, gap = 1 col -->
+    <!-- Total width of "PIXEL" = 5*6 + 4*6 = 30+24 = 54 cols * 6px = 324px -->
+    <!-- Offset: (512 - 324) / 2 = 94 -->
+    <g fill="#50a8e8" transform="translate(100, 170) scale(1.2)">
+      <!-- P -->
+      <rect x="0" y="0" width="6" height="42"/>
+      <rect x="6" y="0" width="12" height="6"/>
+      <rect x="18" y="6" width="6" height="12"/>
+      <rect x="6" y="18" width="12" height="6"/>
+      <!-- I -->
+      <rect x="36" y="0" width="18" height="6"/>
+      <rect x="42" y="6" width="6" height="30"/>
+      <rect x="36" y="36" width="18" height="6"/>
+      <!-- X -->
+      <rect x="66" y="0" width="6" height="6"/>
+      <rect x="84" y="0" width="6" height="6"/>
+      <rect x="72" y="6" width="12" height="6"/>
+      <rect x="75" y="12" width="6" height="6"/>
+      <rect x="72" y="18" width="12" height="6"/>
+      <rect x="66" y="24" width="6" height="6"/>
+      <rect x="84" y="24" width="6" height="6"/>
+      <rect x="66" y="30" width="6" height="12"/>
+      <rect x="84" y="30" width="6" height="12"/>
+      <!-- E -->
+      <rect x="102" y="0" width="6" height="42"/>
+      <rect x="108" y="0" width="18" height="6"/>
+      <rect x="108" y="18" width="12" height="6"/>
+      <rect x="108" y="36" width="18" height="6"/>
+      <!-- L -->
+      <rect x="138" y="0" width="6" height="42"/>
+      <rect x="144" y="36" width="18" height="6"/>
+    </g>
+
+    <!-- REALM in gold -->
+    <g fill="#ffe040" transform="translate(100, 170) scale(1.2)">
+      <!-- R -->
+      <rect x="174" y="0" width="6" height="42"/>
+      <rect x="180" y="0" width="12" height="6"/>
+      <rect x="192" y="6" width="6" height="12"/>
+      <rect x="180" y="18" width="12" height="6"/>
+      <rect x="186" y="24" width="6" height="6"/>
+      <rect x="192" y="30" width="6" height="12"/>
+      <!-- E -->
+      <rect x="210" y="0" width="6" height="42"/>
+      <rect x="216" y="0" width="18" height="6"/>
+      <rect x="216" y="18" width="12" height="6"/>
+      <rect x="216" y="36" width="18" height="6"/>
+      <!-- A -->
+      <rect x="246" y="6" width="6" height="36"/>
+      <rect x="270" y="6" width="6" height="36"/>
+      <rect x="252" y="0" width="18" height="6"/>
+      <rect x="252" y="18" width="18" height="6"/>
+      <!-- L -->
+      <rect x="288" y="0" width="6" height="42"/>
+      <rect x="294" y="36" width="18" height="6"/>
+      <!-- M -->
+      <rect x="324" y="0" width="6" height="42"/>
+      <rect x="354" y="0" width="6" height="42"/>
+      <rect x="330" y="6" width="6" height="6"/>
+      <rect x="348" y="6" width="6" height="6"/>
+      <rect x="336" y="12" width="12" height="6"/>
+    </g>
+
+    <!-- Subtitle -->
+    <text x="256" y="250" fill="#969696" font-family="monospace" font-size="14" text-anchor="middle" letter-spacing="3">MMORPG</text>
+
+    <!-- Decorative pixel sword below text -->
+    <g fill="#c8c8c8">
+      <rect x="250" y="268" width="4" height="20"/>
+      <rect x="244" y="288" width="16" height="3"/>
+      <rect x="250" y="291" width="4" height="6"/>
+    </g>
+    <rect x="249" y="297" width="6" height="3" fill="#e8b800"/>
+
+    <!-- Border ring -->
+    <circle cx="256" cy="256" r="252" fill="none" stroke="#50a8e8" stroke-width="3" opacity="0.3"/>
+    <circle cx="256" cy="256" r="248" fill="none" stroke="#ffe040" stroke-width="1" opacity="0.2"/>
+  </g>
+</svg>

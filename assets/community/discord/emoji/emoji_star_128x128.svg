@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(16, 12)" filter="url(#glow)">
+    <!-- Star shape pixel art -->
+    <rect x="40" y="0" width="16" height="8" fill="#ffe040"/>
+    <rect x="36" y="8" width="24" height="8" fill="#ffe040"/>
+    <rect x="32" y="16" width="32" height="8" fill="#e8b800"/>
+    <rect x="0" y="24" width="96" height="8" fill="#e8b800"/>
+    <rect x="4" y="32" width="88" height="8" fill="#e8b800"/>
+    <rect x="12" y="40" width="72" height="8" fill="#a87000"/>
+    <rect x="16" y="48" width="64" height="8" fill="#a87000"/>
+    <rect x="20" y="56" width="56" height="8" fill="#a87000"/>
+    <rect x="16" y="64" width="64" height="8" fill="#a87000"/>
+    <rect x="8" y="72" width="32" height="8" fill="#a87000"/>
+    <rect x="56" y="72" width="32" height="8" fill="#a87000"/>
+    <rect x="0" y="80" width="24" height="8" fill="#a87000"/>
+    <rect x="72" y="80" width="24" height="8" fill="#a87000"/>
+    <!-- Center highlight -->
+    <rect x="44" y="28" width="8" height="8" fill="#ffe040"/>
+  </g>
+</svg>

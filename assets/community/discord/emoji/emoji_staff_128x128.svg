@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(36, 4)">
+    <!-- Crystal orb -->
+    <rect x="12" y="0" width="32" height="8" fill="#d090ff" filter="url(#glow)"/>
+    <rect x="8" y="8" width="40" height="24" fill="#9050e0" filter="url(#glow)"/>
+    <rect x="12" y="32" width="32" height="8" fill="#5a20a0"/>
+    <!-- Sparkle in crystal -->
+    <rect x="16" y="12" width="8" height="8" fill="#d090ff" opacity="0.6"/>
+    <!-- Staff shaft -->
+    <rect x="24" y="40" width="8" height="72" fill="#6b3a1f"/>
+    <rect x="24" y="40" width="4" height="72" fill="#8b5c2a"/>
+    <!-- Ring detail -->
+    <rect x="20" y="44" width="16" height="4" fill="#e8b800"/>
+    <rect x="20" y="68" width="16" height="4" fill="#a87000"/>
+    <!-- Bottom cap -->
+    <rect x="20" y="108" width="16" height="8" fill="#4a4a4a"/>
+  </g>
+</svg>

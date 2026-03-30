@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(20, 4)" filter="url(#glow)">
+    <!-- Outer flame (red) -->
+    <rect x="36" y="0" width="8" height="8" fill="#d42020"/>
+    <rect x="32" y="8" width="16" height="8" fill="#d42020"/>
+    <rect x="28" y="16" width="24" height="8" fill="#d42020"/>
+    <rect x="24" y="24" width="40" height="8" fill="#d42020"/>
+    <rect x="16" y="32" width="56" height="8" fill="#d42020"/>
+    <rect x="8" y="40" width="72" height="8" fill="#a01010"/>
+    <rect x="0" y="48" width="88" height="16" fill="#a01010"/>
+    <rect x="0" y="64" width="88" height="16" fill="#a01010"/>
+    <rect x="4" y="80" width="80" height="16" fill="#5a0a0a"/>
+    <rect x="8" y="96" width="72" height="8" fill="#5a0a0a"/>
+    <rect x="16" y="104" width="56" height="8" fill="#5a0a0a"/>
+    <rect x="24" y="112" width="40" height="8" fill="#5a0a0a"/>
+    <!-- Inner flame (orange) -->
+    <rect x="32" y="24" width="16" height="8" fill="#f06020"/>
+    <rect x="24" y="32" width="32" height="8" fill="#f06020"/>
+    <rect x="20" y="40" width="40" height="16" fill="#f06020"/>
+    <rect x="24" y="56" width="32" height="16" fill="#f8a060"/>
+    <!-- Core (yellow) -->
+    <rect x="32" y="48" width="16" height="16" fill="#ffe040"/>
+    <rect x="36" y="40" width="8" height="8" fill="#ffe040"/>
+    <rect x="36" y="64" width="8" height="8" fill="#e8b800"/>
+  </g>
+</svg>

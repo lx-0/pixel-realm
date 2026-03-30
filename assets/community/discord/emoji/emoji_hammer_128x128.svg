@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(24, 8)">
+    <!-- Hammer head -->
+    <rect x="8" y="0" width="64" height="32" fill="#6e6e6e"/>
+    <rect x="8" y="0" width="64" height="8" fill="#969696"/>
+    <rect x="8" y="0" width="8" height="32" fill="#4a4a4a"/>
+    <!-- Handle -->
+    <rect x="36" y="32" width="8" height="72" fill="#6b3a1f"/>
+    <rect x="36" y="32" width="4" height="72" fill="#8b5c2a"/>
+    <!-- Grip wrap -->
+    <rect x="32" y="80" width="16" height="4" fill="#3b2010"/>
+    <rect x="32" y="88" width="16" height="4" fill="#3b2010"/>
+    <rect x="32" y="96" width="16" height="8" fill="#3b2010"/>
+    <!-- Sparkle on hammer -->
+    <rect x="56" y="4" width="4" height="4" fill="#c8c8c8"/>
+  </g>
+</svg>

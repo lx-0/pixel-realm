@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" style="image-rendering: pixelated;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a0a3a"/>
+      <stop offset="50%" stop-color="#0d0d1a"/>
+      <stop offset="100%" stop-color="#1a0a3a"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="1080" fill="url(#bgGrad)"/>
+
+  <!-- Magical particle field -->
+  <g fill="#9050e0" filter="url(#glow)" opacity="0.3">
+    <rect x="100" y="100" width="6" height="6"/>
+    <rect x="300" y="200" width="8" height="8"/>
+    <rect x="500" y="80" width="6" height="6"/>
+    <rect x="700" y="150" width="8" height="8"/>
+    <rect x="900" y="120" width="6" height="6"/>
+    <rect x="150" y="400" width="4" height="4"/>
+    <rect x="850" y="350" width="4" height="4"/>
+    <rect x="200" y="700" width="6" height="6"/>
+    <rect x="800" y="650" width="6" height="6"/>
+    <rect x="400" y="900" width="4" height="4"/>
+    <rect x="650" y="950" width="4" height="4"/>
+  </g>
+
+  <!-- Top border -->
+  <rect x="0" y="0" width="1080" height="8" fill="#9050e0"/>
+
+  <!-- EVENT badge -->
+  <rect x="380" y="60" width="320" height="56" rx="6" fill="#5a20a0" opacity="0.5"/>
+  <rect x="380" y="60" width="320" height="4" fill="#9050e0"/>
+  <text x="540" y="100" fill="#d090ff" font-family="monospace" font-size="32" text-anchor="middle" letter-spacing="8" font-weight="bold" filter="url(#glow)">EVENT</text>
+
+  <!-- Event title placeholder -->
+  <text x="540" y="200" fill="#f0f0f0" font-family="monospace" font-size="44" text-anchor="middle" letter-spacing="4" font-weight="bold">[EVENT NAME]</text>
+  <text x="540" y="240" fill="#d090ff" font-family="monospace" font-size="20" text-anchor="middle" letter-spacing="3">Limited Time Adventure</text>
+
+  <!-- Decorative separator -->
+  <rect x="200" y="270" width="680" height="3" fill="#9050e0" opacity="0.4"/>
+  <rect x="536" y="268" width="8" height="7" fill="#d090ff"/>
+
+  <!-- Event image placeholder -->
+  <rect x="80" y="310" width="920" height="400" rx="8" fill="#14142a" stroke="#5a20a0" stroke-width="2"/>
+  <text x="540" y="520" fill="#5a20a0" font-family="monospace" font-size="18" text-anchor="middle">[EVENT ARTWORK / SCREENSHOT]</text>
+
+  <!-- Event details -->
+  <g transform="translate(80, 760)">
+    <!-- Date -->
+    <rect x="0" y="0" width="440" height="80" rx="6" fill="#1a0a3a" opacity="0.5"/>
+    <rect x="16" y="16" width="12" height="12" fill="#9050e0"/>
+    <text x="44" y="28" fill="#d090ff" font-family="monospace" font-size="14" font-weight="bold">WHEN</text>
+    <text x="44" y="52" fill="#c8c8c8" font-family="monospace" font-size="16">[DATE] - [DATE]</text>
+
+    <!-- Rewards -->
+    <rect x="480" y="0" width="440" height="80" rx="6" fill="#1a0a3a" opacity="0.5"/>
+    <rect x="496" y="16" width="12" height="12" fill="#e8b800"/>
+    <text x="524" y="28" fill="#ffe040" font-family="monospace" font-size="14" font-weight="bold">REWARDS</text>
+    <text x="524" y="52" fill="#c8c8c8" font-family="monospace" font-size="16">[Exclusive rewards list]</text>
+  </g>
+
+  <!-- CTA -->
+  <rect x="340" y="890" width="400" height="60" rx="6" fill="#5a20a0"/>
+  <rect x="340" y="890" width="400" height="4" fill="#9050e0"/>
+  <text x="540" y="928" fill="#f0f0f0" font-family="monospace" font-size="22" text-anchor="middle" letter-spacing="4" font-weight="bold">PLAY NOW</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="1000" width="1080" height="80" fill="#0d0d1a" opacity="0.7"/>
+  <rect x="0" y="1000" width="1080" height="3" fill="#9050e0" opacity="0.3"/>
+
+  <!-- Logo mini bottom -->
+  <text x="440" y="1050" fill="#50a8e8" font-family="monospace" font-size="16" letter-spacing="2">PIXEL</text>
+  <text x="548" y="1050" fill="#ffe040" font-family="monospace" font-size="16" letter-spacing="2">REALM</text>
+
+  <!-- Bottom accent bar -->
+  <rect x="0" y="1072" width="1080" height="8" fill="#9050e0"/>
+</svg>

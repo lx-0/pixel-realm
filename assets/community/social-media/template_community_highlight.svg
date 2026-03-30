@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" style="image-rendering: pixelated;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="1080" fill="url(#bgGrad)"/>
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1080" height="8" fill="#4c9b4c"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1080" height="160" fill="#1a3a1a" opacity="0.3"/>
+
+  <!-- Star icon -->
+  <g fill="#ffe040" filter="url(#glow)" transform="translate(80, 30)">
+    <rect x="20" y="0" width="8" height="4"/>
+    <rect x="16" y="4" width="16" height="4"/>
+    <rect x="0" y="8" width="48" height="4"/>
+    <rect x="4" y="12" width="40" height="4"/>
+    <rect x="8" y="16" width="32" height="4"/>
+    <rect x="12" y="20" width="24" height="4"/>
+    <rect x="4" y="24" width="16" height="4"/>
+    <rect x="28" y="24" width="16" height="4"/>
+    <rect x="0" y="28" width="12" height="4"/>
+    <rect x="36" y="28" width="12" height="4"/>
+  </g>
+
+  <!-- COMMUNITY HIGHLIGHT title -->
+  <text x="540" y="80" fill="#78c878" font-family="monospace" font-size="36" text-anchor="middle" letter-spacing="4" font-weight="bold" filter="url(#glow)">COMMUNITY</text>
+  <text x="540" y="130" fill="#ffe040" font-family="monospace" font-size="36" text-anchor="middle" letter-spacing="4" font-weight="bold" filter="url(#glow)">HIGHLIGHT</text>
+
+  <!-- Separator -->
+  <rect x="80" y="180" width="920" height="3" fill="#4c9b4c" opacity="0.3"/>
+
+  <!-- Featured player/content area -->
+  <rect x="80" y="220" width="920" height="480" rx="8" fill="#14142a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="540" y="470" fill="#2d6e2d" font-family="monospace" font-size="18" text-anchor="middle">[FEATURED SCREENSHOT / CONTENT]</text>
+
+  <!-- Player spotlight section -->
+  <rect x="80" y="740" width="920" height="120" rx="8" fill="#1a3a1a" opacity="0.3"/>
+
+  <!-- Avatar placeholder -->
+  <rect x="100" y="760" width="80" height="80" rx="40" fill="#2d6e2d"/>
+  <text x="140" y="808" fill="#78c878" font-family="monospace" font-size="20" text-anchor="middle">?</text>
+
+  <!-- Player info -->
+  <text x="210" y="790" fill="#f0f0f0" font-family="monospace" font-size="22" font-weight="bold">[PLAYER NAME]</text>
+  <text x="210" y="820" fill="#78c878" font-family="monospace" font-size="14">[Achievement / Notable moment description]</text>
+
+  <!-- Stats row -->
+  <g transform="translate(80, 900)">
+    <rect x="0" y="0" width="290" height="70" rx="6" fill="#14142a"/>
+    <rect x="16" y="16" width="8" height="8" fill="#d42020"/>
+    <text x="40" y="28" fill="#f06020" font-family="monospace" font-size="11" font-weight="bold">COMBAT</text>
+    <text x="40" y="48" fill="#c8c8c8" font-family="monospace" font-size="16">[Stat value]</text>
+
+    <rect x="315" y="0" width="290" height="70" rx="6" fill="#14142a"/>
+    <rect x="331" y="16" width="8" height="8" fill="#e8b800"/>
+    <text x="355" y="28" fill="#ffe040" font-family="monospace" font-size="11" font-weight="bold">LEVEL</text>
+    <text x="355" y="48" fill="#c8c8c8" font-family="monospace" font-size="16">[Level]</text>
+
+    <rect x="630" y="0" width="290" height="70" rx="6" fill="#14142a"/>
+    <rect x="646" y="16" width="8" height="8" fill="#9050e0"/>
+    <text x="670" y="28" fill="#d090ff" font-family="monospace" font-size="11" font-weight="bold">GUILD</text>
+    <text x="670" y="48" fill="#c8c8c8" font-family="monospace" font-size="16">[Guild name]</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="1020" width="1080" height="60" fill="#0d0d1a" opacity="0.7"/>
+  <rect x="0" y="1020" width="1080" height="3" fill="#4c9b4c" opacity="0.3"/>
+  <text x="440" y="1058" fill="#50a8e8" font-family="monospace" font-size="14" letter-spacing="2">PIXEL</text>
+  <text x="534" y="1058" fill="#ffe040" font-family="monospace" font-size="14" letter-spacing="2">REALM</text>
+
+  <!-- Bottom accent bar -->
+  <rect x="0" y="1072" width="1080" height="8" fill="#4c9b4c"/>
+</svg>

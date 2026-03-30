@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" style="image-rendering: pixelated;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="overlayGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d1a" stop-opacity="0"/>
+      <stop offset="60%" stop-color="#0d0d1a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0d0d1a" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bgGrad)"/>
+
+  <!-- Screenshot placeholder -->
+  <rect x="0" y="0" width="1200" height="675" fill="#14142a"/>
+  <text x="600" y="300" fill="#4a4a4a" font-family="monospace" font-size="20" text-anchor="middle">[FULL-WIDTH SCREENSHOT]</text>
+
+  <!-- Bottom gradient overlay for text -->
+  <rect x="0" y="0" width="1200" height="675" fill="url(#overlayGrad)"/>
+
+  <!-- Top-left logo badge -->
+  <rect x="0" y="0" width="200" height="48" fill="#0d0d1a" opacity="0.7"/>
+  <rect x="0" y="44" width="200" height="4" fill="#50a8e8" opacity="0.5"/>
+  <text x="30" y="32" fill="#50a8e8" font-family="monospace" font-size="14" letter-spacing="1">PIXEL</text>
+  <text x="108" y="32" fill="#ffe040" font-family="monospace" font-size="14" letter-spacing="1">REALM</text>
+
+  <!-- Bottom info bar -->
+  <rect x="0" y="595" width="1200" height="80" fill="#0d0d1a" opacity="0.8"/>
+  <rect x="0" y="595" width="1200" height="3" fill="#50a8e8" opacity="0.4"/>
+
+  <!-- Caption area -->
+  <text x="40" y="632" fill="#f0f0f0" font-family="monospace" font-size="22" font-weight="bold">[Caption Title]</text>
+  <text x="40" y="658" fill="#969696" font-family="monospace" font-size="14">[Description text] · pixelforgestudios.com</text>
+
+  <!-- Version tag (right side) -->
+  <rect x="1040" y="610" width="120" height="30" rx="4" fill="#50a8e8" opacity="0.15"/>
+  <text x="1100" y="631" fill="#50a8e8" font-family="monospace" font-size="12" text-anchor="middle" letter-spacing="1">v1.X.X</text>
+
+  <!-- Border frame -->
+  <rect x="0" y="0" width="1200" height="6" fill="#2b2b2b"/>
+  <rect x="0" y="669" width="1200" height="6" fill="#2b2b2b"/>
+  <rect x="0" y="0" width="6" height="675" fill="#2b2b2b"/>
+  <rect x="1194" y="0" width="6" height="675" fill="#2b2b2b"/>
+
+  <!-- Corner accents -->
+  <rect x="0" y="0" width="16" height="16" fill="#1a4a8a"/>
+  <rect x="4" y="4" width="8" height="8" fill="#50a8e8"/>
+  <rect x="1184" y="0" width="16" height="16" fill="#1a4a8a"/>
+  <rect x="1188" y="4" width="8" height="8" fill="#50a8e8"/>
+  <rect x="0" y="659" width="16" height="16" fill="#1a4a8a"/>
+  <rect x="4" y="663" width="8" height="8" fill="#50a8e8"/>
+  <rect x="1184" y="659" width="16" height="16" fill="#1a4a8a"/>
+  <rect x="1188" y="663" width="8" height="8" fill="#50a8e8"/>
+</svg>

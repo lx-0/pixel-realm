@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="128" height="128" fill="none"/>
+  <!-- Badge background -->
+  <rect x="16" y="16" width="96" height="96" rx="8" fill="#5a0a0a"/>
+  <rect x="20" y="20" width="88" height="88" rx="6" fill="#a01010" opacity="0.3"/>
+  <!-- Trophy -->
+  <g fill="#e8b800" filter="url(#glow)">
+    <!-- Cup body -->
+    <rect x="40" y="24" width="48" height="8" fill="#ffe040"/>
+    <rect x="36" y="32" width="56" height="24" fill="#e8b800"/>
+    <rect x="40" y="56" width="48" height="8" fill="#a87000"/>
+    <rect x="48" y="64" width="32" height="4" fill="#a87000"/>
+    <!-- Stem -->
+    <rect x="56" y="68" width="16" height="8" fill="#a87000"/>
+    <!-- Base -->
+    <rect x="44" y="76" width="40" height="8" fill="#e8b800"/>
+    <rect x="40" y="80" width="48" height="4" fill="#a87000"/>
+    <!-- Handles -->
+    <rect x="28" y="32" width="8" height="16" fill="#e8b800"/>
+    <rect x="28" y="32" width="16" height="4" fill="#e8b800"/>
+    <rect x="28" y="44" width="16" height="4" fill="#e8b800"/>
+    <rect x="92" y="32" width="8" height="16" fill="#e8b800"/>
+    <rect x="84" y="32" width="16" height="4" fill="#e8b800"/>
+    <rect x="84" y="44" width="16" height="4" fill="#e8b800"/>
+    <!-- Star emblem -->
+    <rect x="60" y="36" width="8" height="12" fill="#ffe040"/>
+    <rect x="52" y="40" width="24" height="4" fill="#ffe040"/>
+  </g>
+  <!-- Label -->
+  <text x="64" y="100" fill="#f06020" font-family="monospace" font-size="10" text-anchor="middle" font-weight="bold">CHAMP</text>
+</svg>

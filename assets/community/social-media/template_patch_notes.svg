@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" style="image-rendering: pixelated;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="1080" fill="url(#bgGrad)"/>
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1080" height="8" fill="#50a8e8"/>
+
+  <!-- Header area -->
+  <rect x="0" y="0" width="1080" height="200" fill="#0d0d1a" opacity="0.5"/>
+
+  <!-- Logo mini -->
+  <g fill="#50a8e8" transform="translate(40, 30) scale(0.8)">
+    <rect x="0" y="0" width="8" height="56"/>
+    <rect x="8" y="0" width="16" height="8"/>
+    <rect x="24" y="8" width="8" height="16"/>
+    <rect x="8" y="24" width="16" height="8"/>
+    <rect x="48" y="0" width="24" height="8"/>
+    <rect x="56" y="8" width="8" height="40"/>
+    <rect x="48" y="48" width="24" height="8"/>
+    <rect x="88" y="0" width="8" height="8"/>
+    <rect x="112" y="0" width="8" height="8"/>
+    <rect x="96" y="8" width="16" height="8"/>
+    <rect x="100" y="24" width="8" height="8"/>
+    <rect x="96" y="32" width="16" height="8"/>
+    <rect x="88" y="40" width="8" height="16"/>
+    <rect x="112" y="40" width="8" height="16"/>
+    <rect x="136" y="0" width="8" height="56"/>
+    <rect x="144" y="0" width="24" height="8"/>
+    <rect x="144" y="24" width="16" height="8"/>
+    <rect x="144" y="48" width="24" height="8"/>
+    <rect x="184" y="0" width="8" height="56"/>
+    <rect x="192" y="48" width="24" height="8"/>
+  </g>
+  <g fill="#ffe040" transform="translate(40, 30) scale(0.8)">
+    <rect x="240" y="0" width="8" height="56"/>
+    <rect x="248" y="0" width="16" height="8"/>
+    <rect x="264" y="8" width="8" height="16"/>
+    <rect x="248" y="24" width="16" height="8"/>
+    <rect x="256" y="32" width="8" height="8"/>
+    <rect x="264" y="40" width="8" height="16"/>
+    <rect x="288" y="0" width="8" height="56"/>
+    <rect x="296" y="0" width="24" height="8"/>
+    <rect x="296" y="24" width="16" height="8"/>
+    <rect x="296" y="48" width="24" height="8"/>
+    <rect x="344" y="8" width="8" height="48"/>
+    <rect x="368" y="8" width="8" height="48"/>
+    <rect x="352" y="0" width="16" height="8"/>
+    <rect x="352" y="24" width="16" height="8"/>
+    <rect x="392" y="0" width="8" height="56"/>
+    <rect x="400" y="48" width="24" height="8"/>
+    <rect x="440" y="0" width="8" height="56"/>
+    <rect x="480" y="0" width="8" height="56"/>
+    <rect x="448" y="8" width="8" height="8"/>
+    <rect x="472" y="8" width="8" height="8"/>
+    <rect x="456" y="16" width="16" height="8"/>
+  </g>
+
+  <!-- PATCH NOTES header -->
+  <text x="540" y="160" fill="#ffe040" font-family="monospace" font-size="48" text-anchor="middle" letter-spacing="6" font-weight="bold" filter="url(#glow)">PATCH NOTES</text>
+
+  <!-- Version placeholder -->
+  <rect x="380" y="180" width="320" height="36" rx="4" fill="#50a8e8" opacity="0.15"/>
+  <text x="540" y="205" fill="#50a8e8" font-family="monospace" font-size="20" text-anchor="middle" letter-spacing="4">VERSION X.X.X</text>
+
+  <!-- Separator -->
+  <rect x="80" y="240" width="920" height="3" fill="#50a8e8" opacity="0.3"/>
+  <rect x="536" y="238" width="8" height="7" fill="#e8b800"/>
+
+  <!-- Content area - placeholder sections -->
+  <!-- New Features section -->
+  <rect x="80" y="280" width="12" height="12" fill="#4c9b4c"/>
+  <text x="108" y="292" fill="#78c878" font-family="monospace" font-size="22" font-weight="bold">NEW FEATURES</text>
+  <rect x="108" y="310" width="8" height="8" fill="#969696"/>
+  <text x="130" y="318" fill="#c8c8c8" font-family="monospace" font-size="16">Feature description goes here</text>
+  <rect x="108" y="340" width="8" height="8" fill="#969696"/>
+  <text x="130" y="348" fill="#c8c8c8" font-family="monospace" font-size="16">Another new feature</text>
+  <rect x="108" y="370" width="8" height="8" fill="#969696"/>
+  <text x="130" y="378" fill="#c8c8c8" font-family="monospace" font-size="16">Third feature highlight</text>
+
+  <!-- Balance Changes section -->
+  <rect x="80" y="430" width="12" height="12" fill="#e8b800"/>
+  <text x="108" y="442" fill="#ffe040" font-family="monospace" font-size="22" font-weight="bold">BALANCE CHANGES</text>
+  <rect x="108" y="460" width="8" height="8" fill="#969696"/>
+  <text x="130" y="468" fill="#c8c8c8" font-family="monospace" font-size="16">Adjustment description</text>
+  <rect x="108" y="490" width="8" height="8" fill="#969696"/>
+  <text x="130" y="498" fill="#c8c8c8" font-family="monospace" font-size="16">Another balance tweak</text>
+
+  <!-- Bug Fixes section -->
+  <rect x="80" y="550" width="12" height="12" fill="#d42020"/>
+  <text x="108" y="562" fill="#f06020" font-family="monospace" font-size="22" font-weight="bold">BUG FIXES</text>
+  <rect x="108" y="580" width="8" height="8" fill="#969696"/>
+  <text x="130" y="588" fill="#c8c8c8" font-family="monospace" font-size="16">Fixed issue description</text>
+  <rect x="108" y="610" width="8" height="8" fill="#969696"/>
+  <text x="130" y="618" fill="#c8c8c8" font-family="monospace" font-size="16">Another bug squashed</text>
+
+  <!-- Screenshot placeholder area -->
+  <rect x="80" y="680" width="920" height="300" rx="8" fill="#14142a" stroke="#4a4a4a" stroke-width="2"/>
+  <text x="540" y="840" fill="#4a4a4a" font-family="monospace" font-size="18" text-anchor="middle">[SCREENSHOT / PREVIEW IMAGE]</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="1020" width="1080" height="60" fill="#0d0d1a" opacity="0.7"/>
+  <rect x="0" y="1020" width="1080" height="3" fill="#50a8e8" opacity="0.3"/>
+  <text x="540" y="1058" fill="#505060" font-family="monospace" font-size="12" text-anchor="middle" letter-spacing="3">PLAY FREE  ·  pixelforgestudios.com</text>
+
+  <!-- Bottom accent bar -->
+  <rect x="0" y="1072" width="1080" height="8" fill="#50a8e8"/>
+</svg>

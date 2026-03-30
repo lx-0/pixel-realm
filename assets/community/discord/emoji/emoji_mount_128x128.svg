@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(8, 16)">
+    <!-- Horse body -->
+    <rect x="24" y="24" width="64" height="32" fill="#8b5c2a"/>
+    <rect x="24" y="24" width="64" height="8" fill="#b8843f"/>
+    <!-- Neck -->
+    <rect x="80" y="0" width="16" height="24" fill="#8b5c2a"/>
+    <rect x="80" y="0" width="8" height="24" fill="#b8843f"/>
+    <!-- Head -->
+    <rect x="88" y="0" width="24" height="16" fill="#8b5c2a"/>
+    <rect x="88" y="0" width="24" height="4" fill="#b8843f"/>
+    <!-- Eye -->
+    <rect x="100" y="4" width="4" height="4" fill="#0d0d0d"/>
+    <!-- Ear -->
+    <rect x="92" y="-8" width="4" height="8" fill="#6b3a1f"/>
+    <!-- Mane -->
+    <rect x="76" y="0" width="4" height="32" fill="#3b2010"/>
+    <!-- Legs -->
+    <rect x="28" y="56" width="8" height="28" fill="#6b3a1f"/>
+    <rect x="44" y="56" width="8" height="28" fill="#6b3a1f"/>
+    <rect x="64" y="56" width="8" height="28" fill="#6b3a1f"/>
+    <rect x="80" y="56" width="8" height="28" fill="#6b3a1f"/>
+    <!-- Hooves -->
+    <rect x="28" y="84" width="8" height="4" fill="#4a4a4a"/>
+    <rect x="44" y="84" width="8" height="4" fill="#4a4a4a"/>
+    <rect x="64" y="84" width="8" height="4" fill="#4a4a4a"/>
+    <rect x="80" y="84" width="8" height="4" fill="#4a4a4a"/>
+    <!-- Tail -->
+    <rect x="16" y="24" width="8" height="4" fill="#3b2010"/>
+    <rect x="12" y="28" width="8" height="4" fill="#3b2010"/>
+    <rect x="8" y="32" width="8" height="8" fill="#3b2010"/>
+    <!-- Saddle -->
+    <rect x="48" y="20" width="24" height="8" fill="#d42020"/>
+    <rect x="44" y="16" width="4" height="12" fill="#a87000"/>
+    <rect x="72" y="16" width="4" height="12" fill="#a87000"/>
+  </g>
+</svg>

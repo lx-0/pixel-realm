@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(12, 20)">
+    <!-- Lid -->
+    <rect x="8" y="0" width="88" height="8" fill="#8b5c2a"/>
+    <rect x="0" y="8" width="104" height="24" fill="#6b3a1f"/>
+    <rect x="0" y="8" width="104" height="8" fill="#8b5c2a"/>
+    <!-- Body -->
+    <rect x="0" y="32" width="104" height="40" fill="#6b3a1f"/>
+    <rect x="0" y="72" width="104" height="8" fill="#3b2010"/>
+    <!-- Lock -->
+    <rect x="40" y="24" width="24" height="24" fill="#e8b800"/>
+    <rect x="48" y="32" width="8" height="8" fill="#a87000"/>
+    <!-- Metal bands -->
+    <rect x="0" y="28" width="104" height="4" fill="#4a4a4a"/>
+    <rect x="0" y="64" width="104" height="4" fill="#4a4a4a"/>
+    <!-- Corner studs -->
+    <rect x="4" y="12" width="4" height="4" fill="#e8b800"/>
+    <rect x="96" y="12" width="4" height="4" fill="#e8b800"/>
+    <rect x="4" y="68" width="4" height="4" fill="#e8b800"/>
+    <rect x="96" y="68" width="4" height="4" fill="#e8b800"/>
+  </g>
+</svg>

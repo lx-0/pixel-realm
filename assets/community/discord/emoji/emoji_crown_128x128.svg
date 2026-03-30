@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(12, 20)">
+    <!-- Crown points -->
+    <rect x="8" y="0" width="8" height="8" fill="#ffe040"/>
+    <rect x="44" y="0" width="8" height="8" fill="#ffe040"/>
+    <rect x="80" y="0" width="8" height="8" fill="#ffe040"/>
+    <!-- Crown body -->
+    <rect x="0" y="8" width="96" height="8" fill="#e8b800"/>
+    <rect x="0" y="16" width="96" height="40" fill="#e8b800"/>
+    <!-- Jewels -->
+    <rect x="12" y="24" width="8" height="8" fill="#d42020"/>
+    <rect x="42" y="24" width="12" height="12" fill="#50a8e8"/>
+    <rect x="76" y="24" width="8" height="8" fill="#4c9b4c"/>
+    <!-- Base band -->
+    <rect x="0" y="56" width="96" height="12" fill="#a87000"/>
+    <!-- Highlight -->
+    <rect x="4" y="16" width="4" height="32" fill="#ffe040" opacity="0.5"/>
+    <!-- Band detail -->
+    <rect x="0" y="56" width="96" height="4" fill="#e8b800"/>
+  </g>
+</svg>

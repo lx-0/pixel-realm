@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" style="image-rendering: pixelated;">
+  <rect width="128" height="128" fill="none"/>
+  <g transform="translate(32, 8)">
+    <!-- Blade -->
+    <rect x="28" y="0" width="8" height="8" fill="#90d0f8"/>
+    <rect x="28" y="8" width="8" height="56" fill="#c8c8c8"/>
+    <rect x="24" y="8" width="4" height="56" fill="#969696"/>
+    <!-- Crossguard -->
+    <rect x="12" y="64" width="40" height="8" fill="#6b3a1f"/>
+    <rect x="12" y="64" width="40" height="4" fill="#8b5c2a"/>
+    <!-- Grip -->
+    <rect x="28" y="72" width="8" height="20" fill="#3b2010"/>
+    <rect x="28" y="72" width="4" height="20" fill="#6b3a1f"/>
+    <!-- Pommel -->
+    <rect x="24" y="92" width="16" height="8" fill="#e8b800"/>
+    <rect x="28" y="92" width="8" height="4" fill="#ffe040"/>
+  </g>
+</svg>
