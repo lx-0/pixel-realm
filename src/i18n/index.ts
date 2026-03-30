@@ -16,8 +16,11 @@
 
 import en from './locales/en.json';
 import es from './locales/es.json';
+import fr from './locales/fr.json';
+import de from './locales/de.json';
+import ja from './locales/ja.json';
 
-export type Locale = 'en' | 'es';
+export type Locale = 'en' | 'es' | 'fr' | 'de' | 'ja';
 
 export interface LocaleInfo {
   code: Locale;
@@ -27,9 +30,12 @@ export interface LocaleInfo {
 export const SUPPORTED_LOCALES: LocaleInfo[] = [
   { code: 'en', name: 'English' },
   { code: 'es', name: 'Español' },
+  { code: 'fr', name: 'Français' },
+  { code: 'de', name: 'Deutsch' },
+  { code: 'ja', name: '日本語' },
 ];
 
-const LOCALE_MAP: Record<Locale, Record<string, string>> = { en, es };
+const LOCALE_MAP: Record<Locale, Record<string, string>> = { en, es, fr, de, ja };
 const LS_KEY = 'pixelrealm_lang';
 
 let _lang: Locale = 'en';
