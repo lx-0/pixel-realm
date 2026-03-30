@@ -1,0 +1,367 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softglow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050820"/>
+      <stop offset="40%" stop-color="#0a1a3a"/>
+      <stop offset="70%" stop-color="#1a2a50"/>
+      <stop offset="100%" stop-color="#2a1a40"/>
+    </linearGradient>
+  </defs>
+
+  <!-- === BACKGROUND: Night sky with gradient === -->
+  <rect width="960" height="540" fill="url(#skyGrad)"/>
+
+  <!-- === STARS field === -->
+  <g fill="#f0f0f0" opacity="0.7">
+    <rect x="45" y="25" width="3" height="3"/>
+    <rect x="120" y="60" width="2" height="2"/>
+    <rect x="200" y="15" width="3" height="3"/>
+    <rect x="310" y="40" width="2" height="2"/>
+    <rect x="420" y="20" width="3" height="3"/>
+    <rect x="500" y="55" width="2" height="2"/>
+    <rect x="560" y="30" width="3" height="3"/>
+    <rect x="80" y="90" width="2" height="2"/>
+    <rect x="370" y="75" width="2" height="2"/>
+    <rect x="580" y="80" width="2" height="2"/>
+    <rect x="160" y="100" width="2" height="2"/>
+    <rect x="470" y="95" width="2" height="2"/>
+    <rect x="650" y="35" width="2" height="2"/>
+    <rect x="730" y="65" width="3" height="3"/>
+    <rect x="810" y="25" width="2" height="2"/>
+    <rect x="880" y="50" width="3" height="3"/>
+    <rect x="920" y="85" width="2" height="2"/>
+    <rect x="30" y="130" width="2" height="2"/>
+    <rect x="250" y="110" width="2" height="2"/>
+    <rect x="700" y="100" width="2" height="2"/>
+    <rect x="840" y="90" width="2" height="2"/>
+    <rect x="150" y="45" width="2" height="2"/>
+    <rect x="600" y="15" width="2" height="2"/>
+  </g>
+  <!-- Twinkling stars (bright) -->
+  <g fill="#fff8a0" filter="url(#glow)">
+    <rect x="90" y="45" width="4" height="4"/>
+    <rect x="280" y="30" width="4" height="4"/>
+    <rect x="530" y="50" width="4" height="4"/>
+    <rect x="760" y="40" width="4" height="4"/>
+    <rect x="400" y="80" width="4" height="4"/>
+    <rect x="680" y="70" width="3" height="3"/>
+  </g>
+
+  <!-- === MOON === -->
+  <g transform="translate(780, 40)">
+    <rect width="48" height="48" rx="24" fill="#ffe8c0" filter="url(#softglow)"/>
+    <rect x="12" y="8" width="24" height="32" rx="12" fill="#050820" opacity="0.2"/>
+    <!-- Moon craters -->
+    <rect x="18" y="14" width="6" height="6" rx="3" fill="#e8d0a0" opacity="0.4"/>
+    <rect x="28" y="26" width="4" height="4" rx="2" fill="#e8d0a0" opacity="0.3"/>
+  </g>
+
+  <!-- === MOUNTAIN SILHOUETTES (layered) === -->
+  <!-- Far mountains -->
+  <g fill="#1a1a3a" opacity="0.6">
+    <polygon points="0,320 80,200 160,320"/>
+    <polygon points="120,320 220,210 320,320"/>
+    <polygon points="280,320 380,190 480,320"/>
+    <polygon points="440,320 540,205 640,320"/>
+    <polygon points="600,320 700,195 800,320"/>
+    <polygon points="760,320 860,215 960,320"/>
+  </g>
+  <!-- Near mountains -->
+  <g fill="#1a2a1a" opacity="0.7">
+    <polygon points="0,360 100,260 200,360"/>
+    <polygon points="160,360 280,240 400,360"/>
+    <polygon points="560,360 680,250 800,360"/>
+    <polygon points="750,360 870,270 960,360"/>
+  </g>
+
+  <!-- === CASTLE SILHOUETTE (center back) === -->
+  <g transform="translate(380, 220)" fill="#1a1a30" opacity="0.8">
+    <!-- Main tower -->
+    <rect x="70" y="40" width="60" height="100"/>
+    <rect x="65" y="30" width="70" height="14"/>
+    <!-- Battlements -->
+    <rect x="65" y="24" width="10" height="10"/>
+    <rect x="80" y="24" width="10" height="10"/>
+    <rect x="95" y="24" width="10" height="10"/>
+    <rect x="110" y="24" width="10" height="10"/>
+    <rect x="125" y="24" width="10" height="10"/>
+    <!-- Spire -->
+    <polygon points="95,0 105,0 110,24 90,24" fill="#1a1a30"/>
+    <rect x="97" y="-10" width="6" height="14" fill="#1a1a30"/>
+    <!-- Side towers -->
+    <rect x="30" y="70" width="40" height="70"/>
+    <rect x="25" y="60" width="50" height="14"/>
+    <rect x="25" y="54" width="10" height="10"/>
+    <rect x="40" y="54" width="10" height="10"/>
+    <rect x="55" y="54" width="10" height="10"/>
+    <rect x="65" y="54" width="10" height="10"/>
+    <rect x="130" y="70" width="40" height="70"/>
+    <rect x="125" y="60" width="50" height="14"/>
+    <rect x="125" y="54" width="10" height="10"/>
+    <rect x="140" y="54" width="10" height="10"/>
+    <rect x="155" y="54" width="10" height="10"/>
+    <!-- Windows (glowing) -->
+    <rect x="85" y="60" width="8" height="12" fill="#ff8040" opacity="0.6" filter="url(#glow)"/>
+    <rect x="107" y="60" width="8" height="12" fill="#ff8040" opacity="0.5" filter="url(#glow)"/>
+    <rect x="45" y="90" width="6" height="8" fill="#ff8040" opacity="0.4" filter="url(#glow)"/>
+    <rect x="145" y="90" width="6" height="8" fill="#ff8040" opacity="0.4" filter="url(#glow)"/>
+  </g>
+
+  <!-- === FOREGROUND TREES === -->
+  <g fill="#1a3a1a">
+    <polygon points="0,400 30,300 60,400"/>
+    <polygon points="40,400 70,310 100,400"/>
+    <polygon points="830,400 860,305 890,400"/>
+    <polygon points="870,400 900,295 930,400"/>
+    <polygon points="920,400 945,320 960,400"/>
+  </g>
+  <!-- Tree trunks -->
+  <g fill="#3b2010">
+    <rect x="24" y="390" width="12" height="30"/>
+    <rect x="64" y="395" width="12" height="25"/>
+    <rect x="854" y="385" width="12" height="35"/>
+    <rect x="894" y="380" width="12" height="40"/>
+    <rect x="938" y="400" width="10" height="20"/>
+  </g>
+
+  <!-- === GROUND === -->
+  <rect y="400" width="960" height="140" fill="#1a3a1a"/>
+  <rect y="400" width="960" height="6" fill="#2d6e2d"/>
+
+  <!-- Path -->
+  <g fill="#4a3a20">
+    <rect x="350" y="410" width="260" height="8"/>
+    <rect x="340" y="418" width="280" height="6"/>
+    <rect x="360" y="424" width="240" height="8"/>
+  </g>
+
+  <!-- === TITLE LOGO: "PIXEL REALM" === -->
+  <!-- Glow behind title -->
+  <rect x="180" y="90" width="600" height="80" rx="8" fill="#e8b800" opacity="0.05" filter="url(#softglow)"/>
+
+  <!-- "PIXEL" in cyan -->
+  <g fill="#50a8e8" filter="url(#glow)" transform="translate(195, 100) scale(1.8)">
+    <!-- P -->
+    <rect x="0" y="0" width="7" height="42"/>
+    <rect x="7" y="0" width="14" height="7"/>
+    <rect x="21" y="7" width="7" height="14"/>
+    <rect x="7" y="21" width="14" height="7"/>
+    <!-- I -->
+    <rect x="36" y="0" width="21" height="7"/>
+    <rect x="43" y="7" width="7" height="28"/>
+    <rect x="36" y="35" width="21" height="7"/>
+    <!-- X -->
+    <rect x="64" y="0" width="7" height="7"/>
+    <rect x="84" y="0" width="7" height="7"/>
+    <rect x="71" y="7" width="7" height="7"/>
+    <rect x="77" y="7" width="7" height="7"/>
+    <rect x="74" y="14" width="7" height="14"/>
+    <rect x="67" y="28" width="7" height="7"/>
+    <rect x="81" y="28" width="7" height="7"/>
+    <rect x="64" y="35" width="7" height="7"/>
+    <rect x="84" y="35" width="7" height="7"/>
+    <!-- E -->
+    <rect x="99" y="0" width="7" height="42"/>
+    <rect x="106" y="0" width="21" height="7"/>
+    <rect x="106" y="17" width="14" height="7"/>
+    <rect x="106" y="35" width="21" height="7"/>
+    <!-- L -->
+    <rect x="134" y="0" width="7" height="42"/>
+    <rect x="141" y="35" width="21" height="7"/>
+  </g>
+
+  <!-- "REALM" in gold -->
+  <g fill="#ffe040" filter="url(#glow)" transform="translate(505, 100) scale(1.8)">
+    <!-- R -->
+    <rect x="0" y="0" width="7" height="42"/>
+    <rect x="7" y="0" width="14" height="7"/>
+    <rect x="21" y="7" width="7" height="14"/>
+    <rect x="7" y="21" width="14" height="7"/>
+    <rect x="14" y="28" width="7" height="7"/>
+    <rect x="21" y="35" width="7" height="7"/>
+    <!-- E -->
+    <rect x="36" y="0" width="7" height="42"/>
+    <rect x="43" y="0" width="21" height="7"/>
+    <rect x="43" y="17" width="14" height="7"/>
+    <rect x="43" y="35" width="21" height="7"/>
+    <!-- A -->
+    <rect x="74" y="7" width="7" height="35"/>
+    <rect x="94" y="7" width="7" height="35"/>
+    <rect x="81" y="0" width="13" height="7"/>
+    <rect x="81" y="21" width="13" height="7"/>
+    <!-- L -->
+    <rect x="109" y="0" width="7" height="42"/>
+    <rect x="116" y="35" width="21" height="7"/>
+    <!-- M -->
+    <rect x="144" y="0" width="7" height="42"/>
+    <rect x="179" y="0" width="7" height="42"/>
+    <rect x="151" y="7" width="7" height="7"/>
+    <rect x="172" y="7" width="7" height="7"/>
+    <rect x="158" y="14" width="14" height="7"/>
+  </g>
+
+  <!-- Subtitle -->
+  <text x="480" y="195" fill="#969696" font-family="monospace" font-size="12" text-anchor="middle" letter-spacing="4">PIXELATED MMORPG ADVENTURE</text>
+
+  <!-- Version badge -->
+  <g transform="translate(400, 205)">
+    <rect width="160" height="22" rx="3" fill="#1a3a1a" stroke="#4c9b4c" stroke-width="1"/>
+    <text x="80" y="16" fill="#78c878" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold" letter-spacing="3">v1.4.0 UPDATE</text>
+  </g>
+
+  <!-- === ANIMATED SPARKLE INDICATORS (showing this is animated) === -->
+  <!-- Sparkle burst left of title -->
+  <g fill="#fff8a0" filter="url(#glow)" transform="translate(170, 120)">
+    <rect x="0" y="8" width="18" height="4"/>
+    <rect x="8" y="0" width="4" height="18"/>
+    <rect x="2" y="2" width="4" height="4" opacity="0.5"/>
+    <rect x="14" y="2" width="4" height="4" opacity="0.5"/>
+    <rect x="2" y="14" width="4" height="4" opacity="0.5"/>
+    <rect x="14" y="14" width="4" height="4" opacity="0.5"/>
+  </g>
+  <!-- Sparkle burst right of title -->
+  <g fill="#fff8a0" filter="url(#glow)" transform="translate(860, 130)">
+    <rect x="0" y="6" width="14" height="3"/>
+    <rect x="6" y="0" width="3" height="14"/>
+    <rect x="2" y="2" width="3" height="3" opacity="0.5"/>
+    <rect x="10" y="2" width="3" height="3" opacity="0.5"/>
+    <rect x="2" y="10" width="3" height="3" opacity="0.5"/>
+    <rect x="10" y="10" width="3" height="3" opacity="0.5"/>
+  </g>
+  <!-- Floating particles -->
+  <g fill="#e8b800" opacity="0.4">
+    <rect x="300" y="160" width="3" height="3"/>
+    <rect x="650" y="170" width="3" height="3"/>
+    <rect x="420" y="180" width="2" height="2"/>
+    <rect x="560" y="150" width="2" height="2"/>
+  </g>
+
+  <!-- === HERO SHOWCASE (four classes at bottom) === -->
+  <!-- Warrior -->
+  <g transform="translate(260, 350)">
+    <ellipse cx="18" cy="48" rx="14" ry="4" fill="#0d0d0d" opacity="0.3"/>
+    <rect x="6" y="20" width="24" height="24" fill="#50a8e8"/>
+    <rect x="6" y="20" width="24" height="4" fill="#3888c8"/>
+    <rect x="8" y="4" width="20" height="18" fill="#f8a060"/>
+    <rect x="12" y="10" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="20" y="10" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="6" y="0" width="24" height="6" fill="#c8c8c8"/><!-- helmet -->
+    <rect x="32" y="14" width="4" height="28" fill="#c8c8c8"/><!-- sword -->
+    <rect x="30" y="26" width="8" height="4" fill="#e8b800"/>
+    <rect x="8" y="44" width="8" height="10" fill="#1a4a8a"/>
+    <rect x="20" y="44" width="8" height="10" fill="#1a4a8a"/>
+    <rect x="-4" y="24" width="12" height="16" fill="#c8c8c8"/><!-- shield -->
+    <rect x="0" y="28" width="4" height="8" fill="#d42020"/>
+    <text x="18" y="66" fill="#50a8e8" font-family="monospace" font-size="8" text-anchor="middle">WARRIOR</text>
+  </g>
+
+  <!-- Ranger -->
+  <g transform="translate(400, 355)">
+    <ellipse cx="18" cy="48" rx="14" ry="4" fill="#0d0d0d" opacity="0.3"/>
+    <rect x="6" y="20" width="24" height="24" fill="#4c9b4c"/>
+    <rect x="6" y="20" width="24" height="4" fill="#2d6e2d"/>
+    <rect x="8" y="4" width="20" height="18" fill="#f8a060"/>
+    <rect x="12" y="10" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="20" y="10" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="8" y="0" width="20" height="6" fill="#2d6e2d"/><!-- hood -->
+    <rect x="6" y="0" width="4" height="8" fill="#2d6e2d"/>
+    <rect x="26" y="0" width="4" height="8" fill="#2d6e2d"/>
+    <rect x="32" y="8" width="4" height="36" fill="#6b3a1f"/><!-- bow -->
+    <line x1="34" y1="8" x2="34" y2="44" stroke="#c8c8c8" stroke-width="1"/>
+    <rect x="8" y="44" width="8" height="10" fill="#3b2010"/>
+    <rect x="20" y="44" width="8" height="10" fill="#3b2010"/>
+    <text x="18" y="66" fill="#4c9b4c" font-family="monospace" font-size="8" text-anchor="middle">RANGER</text>
+  </g>
+
+  <!-- Mage -->
+  <g transform="translate(530, 350)">
+    <ellipse cx="18" cy="48" rx="14" ry="4" fill="#0d0d0d" opacity="0.3"/>
+    <rect x="6" y="20" width="24" height="24" fill="#9050e0"/>
+    <rect x="6" y="20" width="24" height="4" fill="#6020b0"/>
+    <rect x="8" y="4" width="20" height="18" fill="#f8a060"/>
+    <rect x="12" y="10" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="20" y="10" width="4" height="4" fill="#0d0d0d"/>
+    <!-- Wizard hat -->
+    <polygon points="18,-8 8,4 28,4" fill="#9050e0"/>
+    <rect x="4" y="2" width="28" height="4" fill="#6020b0"/>
+    <!-- Staff -->
+    <rect x="32" y="0" width="4" height="48" fill="#6b3a1f"/>
+    <rect x="30" y="-4" width="8" height="8" fill="#50a8e8" filter="url(#glow)"/>
+    <rect x="8" y="44" width="8" height="10" fill="#5a20a0"/>
+    <rect x="20" y="44" width="8" height="10" fill="#5a20a0"/>
+    <text x="18" y="66" fill="#9050e0" font-family="monospace" font-size="8" text-anchor="middle">MAGE</text>
+  </g>
+
+  <!-- Artisan -->
+  <g transform="translate(660, 355)">
+    <ellipse cx="18" cy="48" rx="14" ry="4" fill="#0d0d0d" opacity="0.3"/>
+    <rect x="6" y="20" width="24" height="24" fill="#d4a85a"/>
+    <rect x="6" y="20" width="24" height="4" fill="#b8843f"/>
+    <rect x="8" y="4" width="20" height="18" fill="#f8a060"/>
+    <rect x="12" y="10" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="20" y="10" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="8" y="0" width="20" height="6" fill="#8b5c2a"/><!-- hat -->
+    <rect x="4" y="4" width="28" height="3" fill="#6b3a1f"/>
+    <!-- Hammer -->
+    <rect x="32" y="10" width="4" height="30" fill="#6b3a1f"/>
+    <rect x="28" y="6" width="12" height="8" fill="#6e6e6e"/>
+    <rect x="8" y="44" width="8" height="10" fill="#6b3a1f"/>
+    <rect x="20" y="44" width="8" height="10" fill="#6b3a1f"/>
+    <text x="18" y="66" fill="#d4a85a" font-family="monospace" font-size="8" text-anchor="middle">ARTISAN</text>
+  </g>
+
+  <!-- === MENU BUTTONS === -->
+  <g transform="translate(380, 440)">
+    <!-- Play button (highlighted) -->
+    <rect width="200" height="30" rx="3" fill="#2d6e2d" stroke="#78c878" stroke-width="2"/>
+    <rect x="2" y="2" width="196" height="26" rx="2" fill="#1a3a1a"/>
+    <!-- Selection arrow -->
+    <polygon points="12,10 20,15 12,20" fill="#78c878"/>
+    <text x="100" y="20" fill="#78c878" font-family="monospace" font-size="13" text-anchor="middle" font-weight="bold">PLAY</text>
+
+    <!-- Settings button -->
+    <rect y="36" width="200" height="26" rx="3" fill="#1a1a2a" stroke="#4a4a5a" stroke-width="1"/>
+    <text x="100" y="54" fill="#969696" font-family="monospace" font-size="11" text-anchor="middle">SETTINGS</text>
+
+    <!-- Credits button -->
+    <rect y="68" width="200" height="26" rx="3" fill="#1a1a2a" stroke="#4a4a5a" stroke-width="1"/>
+    <text x="100" y="86" fill="#969696" font-family="monospace" font-size="11" text-anchor="middle">CREDITS</text>
+  </g>
+
+  <!-- === ANIMATED INDICATOR (bottom right) === -->
+  <g transform="translate(780, 490)">
+    <rect width="160" height="36" rx="3" fill="#0d0d0d" opacity="0.8"/>
+    <rect x="2" y="2" width="156" height="32" rx="2" fill="#1a1a2a"/>
+    <!-- Film strip icon -->
+    <g fill="#e8b800" transform="translate(8, 8)">
+      <rect x="0" y="0" width="16" height="16"/>
+      <rect x="2" y="2" width="4" height="4" fill="#1a1a2a"/>
+      <rect x="10" y="2" width="4" height="4" fill="#1a1a2a"/>
+      <rect x="2" y="10" width="4" height="4" fill="#1a1a2a"/>
+      <rect x="10" y="10" width="4" height="4" fill="#1a1a2a"/>
+    </g>
+    <text x="32" y="20" fill="#e8b800" font-family="monospace" font-size="9" font-weight="bold">ANIMATED</text>
+    <text x="32" y="30" fill="#969696" font-family="monospace" font-size="7">Logo + particles + stars</text>
+  </g>
+
+  <!-- === V1.4.0 BADGE === -->
+  <g transform="translate(0, 0)">
+    <rect width="100" height="30" fill="#e8b800"/>
+    <rect x="0" y="27" width="100" height="3" fill="#a87000"/>
+    <text x="50" y="19" fill="#0d0d0d" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">v1.4.0</text>
+  </g>
+</svg>

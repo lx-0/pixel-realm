@@ -1,0 +1,347 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- === BACKGROUND: Dungeon biome gameplay (dimmed) === -->
+  <rect width="960" height="540" fill="#1a1a2a"/>
+
+  <!-- Dungeon floor tiles -->
+  <g fill="#2a2a3a">
+    <rect x="0" y="200" width="960" height="340"/>
+  </g>
+  <!-- Floor tile grid -->
+  <g stroke="#1a1a2a" stroke-width="1" fill="none" opacity="0.3">
+    <rect x="0" y="200" width="48" height="48"/><rect x="48" y="200" width="48" height="48"/>
+    <rect x="96" y="200" width="48" height="48"/><rect x="144" y="200" width="48" height="48"/>
+    <rect x="192" y="200" width="48" height="48"/><rect x="240" y="200" width="48" height="48"/>
+    <rect x="288" y="200" width="48" height="48"/><rect x="336" y="200" width="48" height="48"/>
+    <rect x="384" y="200" width="48" height="48"/><rect x="432" y="200" width="48" height="48"/>
+    <rect x="480" y="200" width="48" height="48"/><rect x="528" y="200" width="48" height="48"/>
+    <rect x="576" y="200" width="48" height="48"/><rect x="624" y="200" width="48" height="48"/>
+    <rect x="672" y="200" width="48" height="48"/><rect x="720" y="200" width="48" height="48"/>
+    <rect x="768" y="200" width="48" height="48"/><rect x="816" y="200" width="48" height="48"/>
+    <rect x="864" y="200" width="48" height="48"/><rect x="912" y="200" width="48" height="48"/>
+    <rect x="0" y="248" width="48" height="48"/><rect x="48" y="248" width="48" height="48"/>
+    <rect x="96" y="248" width="48" height="48"/><rect x="144" y="248" width="48" height="48"/>
+    <rect x="192" y="248" width="48" height="48"/><rect x="240" y="248" width="48" height="48"/>
+    <rect x="288" y="248" width="48" height="48"/><rect x="336" y="248" width="48" height="48"/>
+    <rect x="384" y="248" width="48" height="48"/><rect x="432" y="248" width="48" height="48"/>
+    <rect x="480" y="248" width="48" height="48"/><rect x="528" y="248" width="48" height="48"/>
+    <rect x="576" y="248" width="48" height="48"/><rect x="624" y="248" width="48" height="48"/>
+    <rect x="672" y="248" width="48" height="48"/><rect x="720" y="248" width="48" height="48"/>
+    <rect x="768" y="248" width="48" height="48"/><rect x="816" y="248" width="48" height="48"/>
+    <rect x="864" y="248" width="48" height="48"/><rect x="912" y="248" width="48" height="48"/>
+  </g>
+
+  <!-- Dungeon walls -->
+  <g fill="#3a3a4a">
+    <rect x="0" y="160" width="960" height="40"/>
+    <rect x="0" y="160" width="960" height="4" fill="#4a4a5a"/>
+  </g>
+  <!-- Wall torches -->
+  <g>
+    <rect x="100" y="150" width="6" height="14" fill="#6b3a1f"/>
+    <rect x="98" y="142" width="10" height="10" fill="#ff8040"/>
+    <rect x="100" y="138" width="6" height="6" fill="#ffe040" opacity="0.8"/>
+    <rect x="400" y="150" width="6" height="14" fill="#6b3a1f"/>
+    <rect x="398" y="142" width="10" height="10" fill="#ff8040"/>
+    <rect x="400" y="138" width="6" height="6" fill="#ffe040" opacity="0.8"/>
+    <rect x="700" y="150" width="6" height="14" fill="#6b3a1f"/>
+    <rect x="698" y="142" width="10" height="10" fill="#ff8040"/>
+    <rect x="700" y="138" width="6" height="6" fill="#ffe040" opacity="0.8"/>
+  </g>
+
+  <!-- Ceiling -->
+  <rect width="960" height="160" fill="#0d0d1a"/>
+
+  <!-- Player character -->
+  <g transform="translate(440, 280)">
+    <ellipse cx="18" cy="72" rx="14" ry="4" fill="#0d0d0d" opacity="0.3"/>
+    <rect x="6" y="30" width="24" height="30" fill="#50a8e8"/>
+    <rect x="6" y="30" width="24" height="4" fill="#3888c8"/>
+    <rect x="8" y="8" width="20" height="22" fill="#f8a060"/>
+    <rect x="12" y="16" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="20" y="16" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="6" y="4" width="24" height="8" fill="#6b3a1f"/>
+    <rect x="32" y="20" width="4" height="36" fill="#c8c8c8"/>
+    <rect x="30" y="34" width="8" height="4" fill="#e8b800"/>
+    <rect x="8" y="60" width="8" height="12" fill="#1a4a8a"/>
+    <rect x="20" y="60" width="8" height="12" fill="#1a4a8a"/>
+  </g>
+
+  <!-- === SEMI-TRANSPARENT OVERLAY (darken for overlay visibility) === -->
+  <rect width="960" height="540" fill="#0d0d0d" opacity="0.45"/>
+
+  <!-- === KEYBIND OVERLAY PANEL === -->
+
+  <!-- Title banner -->
+  <g transform="translate(280, 20)">
+    <rect width="400" height="40" rx="4" fill="#0d0d0d" opacity="0.9"/>
+    <rect x="2" y="2" width="396" height="36" rx="3" fill="#1a2a3a"/>
+    <rect x="2" y="2" width="396" height="2" fill="#e8b800"/>
+    <text x="198" y="26" fill="#e8b800" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">KEYBOARD SHORTCUTS</text>
+  </g>
+
+  <!-- === MOVEMENT KEYS (left section) === -->
+  <g transform="translate(40, 90)">
+    <text x="100" y="0" fill="#78c878" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">MOVEMENT</text>
+
+    <!-- W key -->
+    <g transform="translate(72, 14)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#50a8e8" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">W</text>
+    </g>
+    <!-- A key -->
+    <g transform="translate(18, 68)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#50a8e8" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">A</text>
+    </g>
+    <!-- S key -->
+    <g transform="translate(72, 68)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#50a8e8" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">S</text>
+    </g>
+    <!-- D key -->
+    <g transform="translate(126, 68)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#50a8e8" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">D</text>
+    </g>
+
+    <!-- Arrow lines from WASD -->
+    <line x1="96" y1="16" x2="96" y2="6" stroke="#50a8e8" stroke-width="2" marker-end="none"/>
+    <text x="96" y="4" fill="#969696" font-family="monospace" font-size="8" text-anchor="middle">UP</text>
+    <line x1="20" y1="90" x2="10" y2="90" stroke="#50a8e8" stroke-width="2"/>
+    <text x="6" y="93" fill="#969696" font-family="monospace" font-size="8" text-anchor="end">LEFT</text>
+    <line x1="174" y1="90" x2="184" y2="90" stroke="#50a8e8" stroke-width="2"/>
+    <text x="190" y="93" fill="#969696" font-family="monospace" font-size="8">RIGHT</text>
+    <line x1="96" y1="116" x2="96" y2="126" stroke="#50a8e8" stroke-width="2"/>
+    <text x="96" y="136" fill="#969696" font-family="monospace" font-size="8" text-anchor="middle">DOWN</text>
+  </g>
+
+  <!-- === COMBAT KEYS (center section) === -->
+  <g transform="translate(310, 90)">
+    <text x="150" y="0" fill="#d42020" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">COMBAT</text>
+
+    <!-- Row 1: Attack keys -->
+    <!-- 1 key -->
+    <g transform="translate(0, 14)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#d42020" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">1</text>
+    </g>
+    <text x="24" y="76" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Skill 1</text>
+
+    <!-- 2 key -->
+    <g transform="translate(56, 14)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#d42020" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">2</text>
+    </g>
+    <text x="80" y="76" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Skill 2</text>
+
+    <!-- 3 key -->
+    <g transform="translate(112, 14)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#d42020" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">3</text>
+    </g>
+    <text x="136" y="76" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Skill 3</text>
+
+    <!-- 4 key -->
+    <g transform="translate(168, 14)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#d42020" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">4</text>
+    </g>
+    <text x="192" y="76" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Skill 4</text>
+
+    <!-- 5 key -->
+    <g transform="translate(224, 14)">
+      <rect width="48" height="48" rx="4" fill="#2a2a4a" stroke="#d42020" stroke-width="2"/>
+      <text x="24" y="32" fill="#f0f0f0" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">5</text>
+    </g>
+    <text x="248" y="76" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Potion</text>
+
+    <!-- Row 2: Special keys -->
+    <!-- SPACE key -->
+    <g transform="translate(30, 92)">
+      <rect width="120" height="44" rx="4" fill="#2a2a4a" stroke="#ff8040" stroke-width="2"/>
+      <text x="60" y="28" fill="#f0f0f0" font-family="monospace" font-size="14" text-anchor="middle" font-weight="bold">SPACE</text>
+    </g>
+    <text x="90" y="150" fill="#ff8040" font-family="monospace" font-size="9" text-anchor="middle">Dodge Roll</text>
+
+    <!-- SHIFT key -->
+    <g transform="translate(160, 92)">
+      <rect width="100" height="44" rx="4" fill="#2a2a4a" stroke="#9050e0" stroke-width="2"/>
+      <text x="50" y="28" fill="#f0f0f0" font-family="monospace" font-size="14" text-anchor="middle" font-weight="bold">SHIFT</text>
+    </g>
+    <text x="210" y="150" fill="#9050e0" font-family="monospace" font-size="9" text-anchor="middle">Sprint</text>
+  </g>
+
+  <!-- === MENU / UI KEYS (right section) === -->
+  <g transform="translate(660, 90)">
+    <text x="130" y="0" fill="#ffe040" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">MENUS &amp; UI</text>
+
+    <!-- I key -->
+    <g transform="translate(0, 14)">
+      <rect width="48" height="40" rx="4" fill="#2a2a4a" stroke="#ffe040" stroke-width="2"/>
+      <text x="24" y="28" fill="#f0f0f0" font-family="monospace" font-size="18" text-anchor="middle" font-weight="bold">I</text>
+    </g>
+    <text x="24" y="66" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Inventory</text>
+
+    <!-- M key -->
+    <g transform="translate(60, 14)">
+      <rect width="48" height="40" rx="4" fill="#2a2a4a" stroke="#ffe040" stroke-width="2"/>
+      <text x="24" y="28" fill="#f0f0f0" font-family="monospace" font-size="18" text-anchor="middle" font-weight="bold">M</text>
+    </g>
+    <text x="84" y="66" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Map</text>
+
+    <!-- C key -->
+    <g transform="translate(120, 14)">
+      <rect width="48" height="40" rx="4" fill="#2a2a4a" stroke="#ffe040" stroke-width="2"/>
+      <text x="24" y="28" fill="#f0f0f0" font-family="monospace" font-size="18" text-anchor="middle" font-weight="bold">C</text>
+    </g>
+    <text x="144" y="66" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Character</text>
+
+    <!-- P key -->
+    <g transform="translate(180, 14)">
+      <rect width="48" height="40" rx="4" fill="#2a2a4a" stroke="#ffe040" stroke-width="2"/>
+      <text x="24" y="28" fill="#f0f0f0" font-family="monospace" font-size="18" text-anchor="middle" font-weight="bold">P</text>
+    </g>
+    <text x="204" y="66" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Party</text>
+
+    <!-- Second row -->
+    <!-- TAB key -->
+    <g transform="translate(0, 80)">
+      <rect width="70" height="40" rx="4" fill="#2a2a4a" stroke="#ffe040" stroke-width="2"/>
+      <text x="35" y="28" fill="#f0f0f0" font-family="monospace" font-size="14" text-anchor="middle" font-weight="bold">TAB</text>
+    </g>
+    <text x="35" y="132" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Target</text>
+
+    <!-- ESC key -->
+    <g transform="translate(80, 80)">
+      <rect width="70" height="40" rx="4" fill="#2a2a4a" stroke="#ffe040" stroke-width="2"/>
+      <text x="35" y="28" fill="#f0f0f0" font-family="monospace" font-size="14" text-anchor="middle" font-weight="bold">ESC</text>
+    </g>
+    <text x="115" y="132" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Menu</text>
+
+    <!-- ENTER key -->
+    <g transform="translate(160, 80)">
+      <rect width="70" height="40" rx="4" fill="#2a2a4a" stroke="#ffe040" stroke-width="2"/>
+      <text x="35" y="28" fill="#f0f0f0" font-family="monospace" font-size="14" text-anchor="middle" font-weight="bold">RET</text>
+    </g>
+    <text x="195" y="132" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Chat</text>
+  </g>
+
+  <!-- === INTERACTION KEYS (bottom panel) === -->
+  <g transform="translate(40, 280)">
+    <rect width="880" height="70" rx="4" fill="#0d0d0d" opacity="0.85"/>
+    <rect x="2" y="2" width="876" height="66" rx="3" fill="#1a2a3a"/>
+    <text x="438" y="20" fill="#78c878" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">INTERACTIONS &amp; SOCIAL</text>
+
+    <!-- E key -->
+    <g transform="translate(30, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">E</text>
+    </g>
+    <text x="52" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Interact</text>
+
+    <!-- F key -->
+    <g transform="translate(110, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">F</text>
+    </g>
+    <text x="132" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Fish</text>
+
+    <!-- G key -->
+    <g transform="translate(190, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">G</text>
+    </g>
+    <text x="212" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Guild</text>
+
+    <!-- T key -->
+    <g transform="translate(270, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">T</text>
+    </g>
+    <text x="292" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Trade</text>
+
+    <!-- B key -->
+    <g transform="translate(350, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">B</text>
+    </g>
+    <text x="372" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Bestiary</text>
+
+    <!-- K key -->
+    <g transform="translate(430, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">K</text>
+    </g>
+    <text x="452" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Skills</text>
+
+    <!-- H key -->
+    <g transform="translate(510, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">H</text>
+    </g>
+    <text x="532" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Housing</text>
+
+    <!-- J key -->
+    <g transform="translate(590, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">J</text>
+    </g>
+    <text x="612" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Journal</text>
+
+    <!-- L key -->
+    <g transform="translate(670, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">L</text>
+    </g>
+    <text x="692" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Leaderboard</text>
+
+    <!-- N key -->
+    <g transform="translate(760, 30)">
+      <rect width="44" height="30" rx="3" fill="#2a2a4a" stroke="#78c878" stroke-width="2"/>
+      <text x="22" y="22" fill="#f0f0f0" font-family="monospace" font-size="16" text-anchor="middle" font-weight="bold">N</text>
+    </g>
+    <text x="782" y="72" fill="#c8c8c8" font-family="monospace" font-size="8" text-anchor="middle">Emotes</text>
+  </g>
+
+  <!-- === "FULLY REBINDABLE" callout === -->
+  <g transform="translate(280, 400)">
+    <rect width="400" height="50" rx="4" fill="#0d0d0d" opacity="0.9"/>
+    <rect x="2" y="2" width="396" height="46" rx="3" fill="#1a2a1a"/>
+    <rect x="2" y="2" width="396" height="2" fill="#78c878"/>
+    <!-- Gear icon -->
+    <g fill="#78c878" transform="translate(12, 12)">
+      <rect x="8" y="0" width="8" height="24"/>
+      <rect x="0" y="8" width="24" height="8"/>
+      <rect x="4" y="4" width="16" height="16" fill="#1a2a1a"/>
+      <rect x="8" y="8" width="8" height="8" fill="#78c878"/>
+    </g>
+    <text x="46" y="22" fill="#78c878" font-family="monospace" font-size="12" font-weight="bold">ALL KEYBINDINGS FULLY REBINDABLE</text>
+    <text x="46" y="38" fill="#969696" font-family="monospace" font-size="9">Customize controls in Settings &gt; Keybindings &gt; Press F1 for quick overlay</text>
+  </g>
+
+  <!-- === FEATURE LABEL BANNER === -->
+  <g transform="translate(200, 475)">
+    <rect width="560" height="50" rx="4" fill="#0d0d0d" opacity="0.85"/>
+    <rect x="2" y="2" width="556" height="46" rx="3" fill="#1a1a2a"/>
+    <rect x="2" y="2" width="556" height="2" fill="#e8b800" opacity="0.5"/>
+    <text x="278" y="20" fill="#e8b800" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">ACCESSIBILITY: KEYBOARD SHORTCUT OVERLAY</text>
+    <text x="278" y="38" fill="#969696" font-family="monospace" font-size="9" text-anchor="middle">Press F1 anytime to view all controls - fully rebindable from the settings menu</text>
+  </g>
+
+  <!-- === V1.4.0 BADGE === -->
+  <g transform="translate(0, 0)">
+    <rect width="100" height="30" fill="#e8b800"/>
+    <rect x="0" y="27" width="100" height="3" fill="#a87000"/>
+    <text x="50" y="19" fill="#0d0d0d" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">v1.4.0</text>
+  </g>
+</svg>

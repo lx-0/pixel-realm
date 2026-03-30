@@ -2,6 +2,8 @@
 
 *Ready for copy-paste into the itch.io game page editor.*
 
+*Last updated: v1.4.0 — Accessibility & Launch Polish*
+
 ---
 
 ## Game Description
@@ -10,7 +12,7 @@
 
 Built in the tradition of SNES-era RPGs with a modern twist, PixelRealm features 16×16 pixel art across 13+ hand-designed zones spanning lush forests, scorching deserts, frozen peaks, haunted bogs, and floating sky islands. Fight in real-time combat with skills and cooldowns, team up with friends for dungeon boss raids, or challenge rivals in the PvP arena. Between adventures, craft powerful gear, decorate your player house, and trade on the open marketplace.
 
-Whether you're a solo explorer chasing LLM-generated storylines or a guild leader commanding territory wars, PixelRealm has something for you. Jump in — all you need is a browser.
+Whether you're a solo explorer chasing LLM-generated storylines or a guild leader commanding territory wars, PixelRealm has something for you. **v1.4.0** brings full accessibility support — colorblind modes, scalable UI, and a complete keybind overlay — plus an animated title screen and zone-specific loading screens for a polished entry experience. Jump in — all you need is a browser.
 
 ---
 
@@ -29,6 +31,15 @@ Whether you're a solo explorer chasing LLM-generated storylines or a guild leade
 - **Day/Night Cycle** — Palette-swapped lighting that shifts from warm dusk to cool moonlit nights
 - **NPC Reputation** — Faction standings with Merchants, Mages Guild, Bandit Clans, and more alter NPC behavior and unlock unique content
 - **Seasonal Content** — New story arcs, classes, and biomes every season keep the world fresh
+
+### ✨ New in v1.4.0 — Accessibility & Polish
+
+- **Colorblind Modes** — Full support for Protanopia, Deuteranopia, and Tritanopia via GPU color-matrix filters, with colorblind-safe status indicators using distinct shapes and patterns
+- **Scalable UI** — Choose 1×, 1.5×, or 2× UI scale to match your display and preference; all HUD elements adapt seamlessly
+- **Keybind Overlay** — Press `?` or `F1` in-game to view all keybindings grouped by Movement, Combat, UI, and Social — never forget a shortcut
+- **Reduced Motion Toggle** — Opt out of animations for a more comfortable experience
+- **Animated Title Screen** — A hand-crafted animated main menu with key art sets the tone before you enter the world
+- **Zone-Specific Loading Screens** — Each of the 13+ zones displays its own atmospheric loading art during transitions, bringing the world to life from the very first step
 
 ---
 
@@ -50,6 +61,7 @@ Whether you're a solo explorer chasing LLM-generated storylines or a guild leade
 | Sprint | Hold Shift |
 | Dodge / Roll | Q |
 | Target Nearest | Tab |
+| Keybind Overlay | ? or F1 |
 
 ### Touch Controls (Mobile)
 
@@ -62,6 +74,22 @@ Whether you're a solo explorer chasing LLM-generated storylines or a guild leade
 | Sprint | Double-tap D-pad |
 | Dodge | Swipe |
 | Menus | Tap bag / map / quest icons |
+
+---
+
+## Accessibility (v1.4.0)
+
+PixelRealm is built to be playable by everyone. Access all accessibility settings from the **Settings → Accessibility** tab in-game.
+
+| Feature | Options |
+|---|---|
+| **Colorblind Mode** | Off / Protanopia / Deuteranopia / Tritanopia |
+| **UI Scale** | 1× (default) / 1.5× / 2× |
+| **Reduced Motion** | Toggle on/off |
+| **Keybind Overlay** | Press `?` or `F1` in-game |
+| **Screen Reader Hints** | Live region announcements for key game events |
+
+Status indicators in combat use both **color and shape/pattern** to remain distinguishable under all colorblind modes.
 
 ---
 
@@ -93,6 +121,16 @@ Use these captions when uploading screenshots to the itch.io page. Display in th
 | `cover_itchio_630x500.png` | *itch.io cover image* |
 | `banner_promo_960x540.png` | *PixelRealm — Pixelated MMORPG Adventure* |
 | `logo_pixelrealm.png` | *PixelRealm logo* |
+
+#### v1.4.0 Accessibility & Polish Screenshots (`assets/promo/`)
+
+| File | Caption |
+|---|---|
+| `promo_v140_title_screen_960x540.svg` | The new animated title screen — a cinematic welcome to PixelRealm. |
+| `promo_v140_loading_screens_960x540.svg` | Zone-specific loading screens bring each biome to life during transitions. |
+| `promo_v140_colorblind_960x540.svg` | Full colorblind support: Protanopia, Deuteranopia, and Tritanopia modes with safe-by-shape indicators. |
+| `promo_v140_ui_scaling_960x540.svg` | UI scale options (1×, 1.5×, 2×) — every display, every player. |
+| `promo_v140_keybind_overlay_960x540.svg` | Press ? or F1 to open the keybind overlay — all controls at a glance. |
 
 ### Gameplay Screenshots (`assets/marketing/`)
 

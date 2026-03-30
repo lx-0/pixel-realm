@@ -1,0 +1,342 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- === BACKGROUND: Forest biome gameplay scene === -->
+  <rect width="960" height="540" fill="#1a3a1a"/>
+
+  <!-- Sky -->
+  <rect width="960" height="180" fill="#2a5a8a"/>
+  <rect y="180" width="960" height="60" fill="#1a4a6a"/>
+
+  <!-- Parallax trees background -->
+  <g fill="#0d2e0d" opacity="0.6">
+    <polygon points="0,240 30,160 60,240"/>
+    <polygon points="50,240 85,170 120,240"/>
+    <polygon points="110,240 145,155 180,240"/>
+    <polygon points="170,240 205,165 240,240"/>
+    <polygon points="700,240 735,150 770,240"/>
+    <polygon points="760,240 795,160 830,240"/>
+    <polygon points="820,240 855,170 890,240"/>
+    <polygon points="880,240 915,155 960,240"/>
+  </g>
+
+  <!-- Ground tiles -->
+  <rect y="240" width="960" height="300" fill="#2d6e2d"/>
+  <rect y="240" width="960" height="6" fill="#4c9b4c"/>
+
+  <!-- Grass tufts -->
+  <g fill="#4c9b4c">
+    <rect x="80" y="300" width="6" height="3"/>
+    <rect x="200" y="350" width="6" height="3"/>
+    <rect x="400" y="280" width="6" height="3"/>
+    <rect x="550" y="330" width="6" height="3"/>
+    <rect x="700" y="290" width="6" height="3"/>
+    <rect x="850" y="360" width="6" height="3"/>
+  </g>
+
+  <!-- Stone path -->
+  <g fill="#6e6e6e" opacity="0.5">
+    <rect x="250" y="340" width="24" height="6"/>
+    <rect x="280" y="344" width="18" height="6"/>
+    <rect x="300" y="340" width="24" height="6"/>
+    <rect x="330" y="342" width="20" height="6"/>
+    <rect x="355" y="340" width="24" height="6"/>
+  </g>
+
+  <!-- === PLAYER CHARACTER (center) === -->
+  <g transform="translate(350, 280)">
+    <!-- Shadow -->
+    <ellipse cx="18" cy="72" rx="14" ry="4" fill="#0d0d0d" opacity="0.3"/>
+    <!-- Body -->
+    <rect x="6" y="30" width="24" height="30" fill="#50a8e8"/>
+    <rect x="6" y="30" width="24" height="4" fill="#3888c8"/>
+    <!-- Head -->
+    <rect x="8" y="8" width="20" height="22" fill="#f8a060"/>
+    <rect x="12" y="16" width="4" height="4" fill="#0d0d0d"/><!-- left eye -->
+    <rect x="20" y="16" width="4" height="4" fill="#0d0d0d"/><!-- right eye -->
+    <!-- Hair -->
+    <rect x="6" y="4" width="24" height="8" fill="#6b3a1f"/>
+    <!-- Sword -->
+    <rect x="32" y="20" width="4" height="36" fill="#c8c8c8"/>
+    <rect x="30" y="34" width="8" height="4" fill="#e8b800"/>
+    <rect x="32" y="54" width="4" height="6" fill="#6b3a1f"/>
+    <!-- Legs -->
+    <rect x="8" y="60" width="8" height="12" fill="#1a4a8a"/>
+    <rect x="20" y="60" width="8" height="12" fill="#1a4a8a"/>
+    <!-- Shield -->
+    <rect x="-6" y="32" width="14" height="18" fill="#4c9b4c"/>
+    <rect x="-2" y="36" width="6" height="10" fill="#e8b800"/>
+  </g>
+
+  <!-- === ENEMY: Fire Imp (right of player) === -->
+  <g transform="translate(520, 305)">
+    <ellipse cx="12" cy="48" rx="10" ry="3" fill="#0d0d0d" opacity="0.3"/>
+    <rect x="0" y="10" width="24" height="24" fill="#d42020"/>
+    <rect x="4" y="0" width="16" height="14" fill="#a01010"/>
+    <rect x="6" y="4" width="4" height="4" fill="#ffe040"/>
+    <rect x="14" y="4" width="4" height="4" fill="#ffe040"/>
+    <!-- Horns -->
+    <rect x="2" y="-4" width="4" height="6" fill="#6b3a1f"/>
+    <rect x="18" y="-4" width="4" height="6" fill="#6b3a1f"/>
+    <rect x="4" y="34" width="6" height="10" fill="#a01010"/>
+    <rect x="14" y="34" width="6" height="10" fill="#a01010"/>
+    <!-- Fire aura -->
+    <rect x="-4" y="6" width="4" height="8" fill="#ff8040" opacity="0.5"/>
+    <rect x="24" y="8" width="4" height="6" fill="#ff8040" opacity="0.5"/>
+  </g>
+
+  <!-- === ENEMY: Poison Slime (far right) === -->
+  <g transform="translate(640, 330)">
+    <ellipse cx="12" cy="28" rx="12" ry="3" fill="#0d0d0d" opacity="0.3"/>
+    <rect x="0" y="6" width="24" height="18" rx="4" fill="#50b848"/>
+    <rect x="4" y="0" width="16" height="10" fill="#78c878"/>
+    <rect x="6" y="8" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="14" y="8" width="4" height="4" fill="#0d0d0d"/>
+    <!-- Drip -->
+    <rect x="10" y="24" width="4" height="6" fill="#50b848" opacity="0.6"/>
+  </g>
+
+  <!-- === HUD: COLORBLIND-SAFE UI === -->
+
+  <!-- HP Bar (high contrast with pattern) -->
+  <g transform="translate(20, 16)">
+    <rect width="200" height="24" rx="2" fill="#0d0d0d" opacity="0.8"/>
+    <rect x="2" y="2" width="196" height="20" rx="1" fill="#1a1a1a"/>
+    <!-- HP fill with hatching for colorblind -->
+    <rect x="4" y="4" width="140" height="16" fill="#d42020"/>
+    <!-- Shape indicator: heart for HP -->
+    <g fill="#f0f0f0" transform="translate(6, 6)">
+      <rect x="1" y="0" width="3" height="3"/>
+      <rect x="6" y="0" width="3" height="3"/>
+      <rect x="0" y="3" width="10" height="3"/>
+      <rect x="1" y="6" width="8" height="3"/>
+      <rect x="2" y="9" width="6" height="2"/>
+      <rect x="3" y="11" width="4" height="1"/>
+    </g>
+    <text x="170" y="17" fill="#f0f0f0" font-family="monospace" font-size="10" text-anchor="end">72/100</text>
+    <!-- CB border distinction: double-lined -->
+    <rect x="2" y="2" width="196" height="20" rx="1" fill="none" stroke="#ff6060" stroke-width="2"/>
+  </g>
+
+  <!-- MP Bar -->
+  <g transform="translate(20, 46)">
+    <rect width="200" height="24" rx="2" fill="#0d0d0d" opacity="0.8"/>
+    <rect x="2" y="2" width="196" height="20" rx="1" fill="#1a1a1a"/>
+    <rect x="4" y="4" width="160" height="16" fill="#2a7ac0"/>
+    <!-- Shape indicator: diamond for MP -->
+    <g fill="#f0f0f0" transform="translate(6, 6)">
+      <rect x="4" y="0" width="3" height="3"/>
+      <rect x="1" y="3" width="9" height="3"/>
+      <rect x="4" y="6" width="3" height="3"/>
+    </g>
+    <text x="170" y="17" fill="#f0f0f0" font-family="monospace" font-size="10" text-anchor="end">83/100</text>
+    <rect x="2" y="2" width="196" height="20" rx="1" fill="none" stroke="#50a8e8" stroke-width="2" stroke-dasharray="4,2"/>
+  </g>
+
+  <!-- === COLORBLIND-SAFE BUFF/DEBUFF ICONS (top bar) === -->
+  <g transform="translate(240, 16)">
+    <!-- Label -->
+    <text x="0" y="-2" fill="#c8c8c8" font-family="monospace" font-size="8">ACTIVE EFFECTS</text>
+
+    <!-- Buff: Attack Up (triangle up + warm) -->
+    <g transform="translate(0, 4)">
+      <rect width="36" height="36" rx="2" fill="#0d0d0d" opacity="0.8"/>
+      <rect x="2" y="2" width="32" height="32" fill="#1a1a1a"/>
+      <!-- Orange sword icon with UP triangle shape indicator -->
+      <rect x="14" y="6" width="8" height="20" fill="#ff8040"/>
+      <rect x="10" y="12" width="16" height="4" fill="#ff8040"/>
+      <!-- Triangle UP shape indicator -->
+      <polygon points="18,4 24,12 12,12" fill="#f0f0f0" opacity="0.8"/>
+      <!-- Border glow -->
+      <rect x="2" y="2" width="32" height="32" fill="none" stroke="#ff8040" stroke-width="2"/>
+    </g>
+
+    <!-- Buff: Defense Up (square + cool) -->
+    <g transform="translate(42, 4)">
+      <rect width="36" height="36" rx="2" fill="#0d0d0d" opacity="0.8"/>
+      <rect x="2" y="2" width="32" height="32" fill="#1a1a1a"/>
+      <!-- Blue shield icon with SQUARE shape indicator -->
+      <rect x="8" y="6" width="20" height="24" fill="#50a8e8"/>
+      <rect x="12" y="10" width="12" height="8" fill="#2a7ac0"/>
+      <!-- Square shape indicator -->
+      <rect x="12" y="24" width="12" height="6" fill="#f0f0f0" opacity="0.8"/>
+      <rect x="2" y="2" width="32" height="32" fill="none" stroke="#50a8e8" stroke-width="2"/>
+    </g>
+
+    <!-- Debuff: Poison (diamond + green) -->
+    <g transform="translate(84, 4)">
+      <rect width="36" height="36" rx="2" fill="#0d0d0d" opacity="0.8"/>
+      <rect x="2" y="2" width="32" height="32" fill="#1a1a1a"/>
+      <!-- Poison drip icon with DIAMOND shape indicator -->
+      <rect x="12" y="6" width="12" height="18" fill="#50b848"/>
+      <rect x="14" y="24" width="8" height="4" fill="#50b848" opacity="0.6"/>
+      <!-- Diamond shape indicator -->
+      <g fill="#f0f0f0" opacity="0.8">
+        <rect x="16" y="4" width="4" height="4"/>
+        <rect x="12" y="8" width="12" height="4"/>
+        <rect x="16" y="12" width="4" height="4"/>
+      </g>
+      <rect x="2" y="2" width="32" height="32" fill="none" stroke="#50b848" stroke-width="2" stroke-dasharray="3,3"/>
+    </g>
+
+    <!-- Debuff: Bleed (circle + red, dashed border) -->
+    <g transform="translate(126, 4)">
+      <rect width="36" height="36" rx="2" fill="#0d0d0d" opacity="0.8"/>
+      <rect x="2" y="2" width="32" height="32" fill="#1a1a1a"/>
+      <!-- Blood drip icon with CIRCLE shape indicator -->
+      <rect x="10" y="6" width="16" height="16" fill="#d42020"/>
+      <rect x="14" y="22" width="8" height="6" fill="#a01010"/>
+      <!-- Circle shape indicator -->
+      <circle cx="18" cy="28" r="5" fill="#f0f0f0" opacity="0.8"/>
+      <rect x="2" y="2" width="32" height="32" fill="none" stroke="#d42020" stroke-width="2" stroke-dasharray="3,3"/>
+    </g>
+  </g>
+
+  <!-- === DAMAGE NUMBERS (colorblind-safe with shape prefixes) === -->
+  <!-- Fire damage on enemy -->
+  <g transform="translate(520, 280)">
+    <text x="0" y="0" fill="#ff8040" font-family="monospace" font-size="16" font-weight="bold">-24</text>
+    <!-- Triangle indicator for fire -->
+    <polygon points="-10,-8 -4,0 -16,0" fill="#ff8040"/>
+  </g>
+
+  <!-- Poison damage on enemy -->
+  <g transform="translate(645, 310)">
+    <text x="0" y="0" fill="#50b848" font-family="monospace" font-size="14" font-weight="bold">-8</text>
+    <!-- Diamond indicator for poison -->
+    <g fill="#50b848" transform="translate(-12, -8)">
+      <rect x="3" y="0" width="3" height="3"/>
+      <rect x="0" y="3" width="9" height="3"/>
+      <rect x="3" y="6" width="3" height="3"/>
+    </g>
+  </g>
+
+  <!-- Heal on player -->
+  <g transform="translate(360, 265)">
+    <text x="0" y="0" fill="#78c878" font-family="monospace" font-size="14" font-weight="bold">+15</text>
+    <!-- Cross/plus indicator for healing -->
+    <g fill="#78c878" transform="translate(-10, -8)">
+      <rect x="2" y="0" width="4" height="8"/>
+      <rect x="0" y="2" width="8" height="4"/>
+    </g>
+  </g>
+
+  <!-- === MINIMAP (top right) === -->
+  <g transform="translate(780, 16)">
+    <rect width="160" height="120" rx="3" fill="#0d0d0d" opacity="0.85"/>
+    <rect x="4" y="4" width="152" height="112" fill="#1a3a1a"/>
+    <!-- Terrain dots -->
+    <g fill="#4c9b4c" opacity="0.6">
+      <rect x="20" y="20" width="40" height="30" fill="#2d6e2d"/>
+      <rect x="80" y="40" width="30" height="40" fill="#1a4a8a"/>
+      <rect x="120" y="20" width="20" height="20" fill="#6e6e6e"/>
+    </g>
+    <!-- Player dot (white with pulse ring) -->
+    <rect x="78" y="58" width="6" height="6" fill="#f0f0f0"/>
+    <rect x="76" y="56" width="10" height="10" fill="none" stroke="#f0f0f0" stroke-width="1" opacity="0.5"/>
+    <!-- Enemy dots (with distinct shapes) -->
+    <rect x="100" y="50" width="4" height="4" fill="#d42020"/><!-- square = normal -->
+    <g fill="#d42020" transform="translate(60, 70)"><!-- triangle = ranged -->
+      <polygon points="2,0 4,4 0,4"/>
+    </g>
+    <!-- Colorblind border -->
+    <rect x="4" y="4" width="152" height="112" fill="none" stroke="#e8b800" stroke-width="2"/>
+    <text x="80" y="112" fill="#969696" font-family="monospace" font-size="7" text-anchor="middle">VERDANT HOLLOW</text>
+  </g>
+
+  <!-- === COLORBLIND MODE INDICATOR BADGE === -->
+  <g transform="translate(580, 20)">
+    <rect width="180" height="30" rx="3" fill="#0d0d0d" opacity="0.85"/>
+    <rect x="2" y="2" width="176" height="26" rx="2" fill="#1a2a3a"/>
+    <!-- Eye icon with color filter -->
+    <g fill="#f0f0f0" transform="translate(8, 7)">
+      <rect x="4" y="2" width="8" height="8" rx="4"/>
+      <rect x="6" y="4" width="4" height="4" fill="#50a8e8"/>
+      <rect x="0" y="4" width="16" height="4" fill="#50a8e8" opacity="0.3"/>
+    </g>
+    <text x="30" y="19" fill="#78c878" font-family="monospace" font-size="9" font-weight="bold">COLORBLIND MODE</text>
+    <rect x="146" y="8" width="10" height="10" fill="#78c878" rx="2"/>
+    <text x="149" y="16" fill="#0d0d0d" font-family="monospace" font-size="8" font-weight="bold">ON</text>
+  </g>
+
+  <!-- === SHAPE LEGEND (bottom-left) === -->
+  <g transform="translate(20, 430)">
+    <rect width="320" height="90" rx="3" fill="#0d0d0d" opacity="0.85"/>
+    <rect x="2" y="2" width="316" height="86" rx="2" fill="#1a1a2a"/>
+    <text x="10" y="18" fill="#e8b800" font-family="monospace" font-size="10" font-weight="bold">COLORBLIND SHAPE INDICATORS</text>
+
+    <!-- Legend row 1 -->
+    <polygon points="18,30 24,38 12,38" fill="#ff8040"/>
+    <text x="32" y="37" fill="#c8c8c8" font-family="monospace" font-size="9">Fire / Attack Up</text>
+
+    <g fill="#50a8e8"><rect x="170" y="28" width="10" height="10"/></g>
+    <text x="186" y="37" fill="#c8c8c8" font-family="monospace" font-size="9">Ice / Defense Up</text>
+
+    <!-- Legend row 2 -->
+    <g fill="#50b848" transform="translate(12, 44)">
+      <rect x="3" y="0" width="5" height="5"/>
+      <rect x="0" y="3" width="11" height="5"/>
+      <rect x="3" y="6" width="5" height="5"/>
+    </g>
+    <text x="32" y="55" fill="#c8c8c8" font-family="monospace" font-size="9">Poison / Slow</text>
+
+    <circle cx="175" cy="52" r="5" fill="#d42020"/>
+    <text x="186" y="55" fill="#c8c8c8" font-family="monospace" font-size="9">Bleed / Weaken</text>
+
+    <!-- Legend row 3 -->
+    <g fill="#f0f0f0" transform="translate(12, 64)">
+      <rect x="2" y="0" width="7" height="11"/>
+      <rect x="0" y="3" width="11" height="5"/>
+    </g>
+    <text x="32" y="73" fill="#c8c8c8" font-family="monospace" font-size="9">Heal / Buff</text>
+
+    <g fill="#9050e0" transform="translate(168, 64)">
+      <rect x="0" y="0" width="3" height="11"/>
+      <rect x="8" y="0" width="3" height="11"/>
+      <rect x="0" y="0" width="11" height="3"/>
+      <rect x="0" y="8" width="11" height="3"/>
+    </g>
+    <text x="186" y="73" fill="#c8c8c8" font-family="monospace" font-size="9">Physical</text>
+  </g>
+
+  <!-- === TOOLTIP (showing colorblind info on hover) === -->
+  <g transform="translate(410, 100)">
+    <rect width="220" height="80" rx="3" fill="#0d0d0d" opacity="0.9"/>
+    <rect x="2" y="2" width="216" height="76" rx="2" fill="#1a2a1a"/>
+    <rect x="2" y="2" width="216" height="76" rx="2" fill="none" stroke="#50b848" stroke-width="2" stroke-dasharray="3,3"/>
+    <!-- Diamond icon -->
+    <g fill="#50b848" transform="translate(10, 10)">
+      <rect x="6" y="0" width="8" height="8"/>
+      <rect x="0" y="6" width="20" height="8"/>
+      <rect x="6" y="12" width="8" height="8"/>
+    </g>
+    <text x="38" y="22" fill="#78c878" font-family="monospace" font-size="11" font-weight="bold">POISON</text>
+    <text x="10" y="40" fill="#c8c8c8" font-family="monospace" font-size="9">DMG: 8/tick for 5s</text>
+    <text x="10" y="54" fill="#c8c8c8" font-family="monospace" font-size="9">Shape: Diamond (distinct</text>
+    <text x="10" y="66" fill="#c8c8c8" font-family="monospace" font-size="9">from red bleed circle)</text>
+  </g>
+
+  <!-- === FEATURE LABEL BANNER === -->
+  <g transform="translate(380, 470)">
+    <rect width="560" height="50" rx="4" fill="#0d0d0d" opacity="0.85"/>
+    <rect x="2" y="2" width="556" height="46" rx="3" fill="#1a1a2a"/>
+    <rect x="2" y="2" width="556" height="2" fill="#e8b800" opacity="0.5"/>
+    <text x="278" y="20" fill="#e8b800" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">ACCESSIBILITY: COLORBLIND MODE</text>
+    <text x="278" y="38" fill="#969696" font-family="monospace" font-size="9" text-anchor="middle">Shape indicators + unique borders distinguish all status effects without relying on color alone</text>
+  </g>
+
+  <!-- === V1.4.0 BADGE (top-left corner) === -->
+  <g transform="translate(0, 0)">
+    <rect width="100" height="30" fill="#e8b800"/>
+    <rect x="0" y="27" width="100" height="3" fill="#a87000"/>
+    <text x="50" y="19" fill="#0d0d0d" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">v1.4.0</text>
+  </g>
+</svg>
