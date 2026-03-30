@@ -1,0 +1,279 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- === BACKGROUND: Town/village scene === -->
+  <rect width="960" height="540" fill="#1a3a1a"/>
+
+  <!-- Sky -->
+  <rect width="960" height="200" fill="#2a5a8a"/>
+  <rect y="160" width="960" height="40" fill="#1a4a6a"/>
+
+  <!-- Clouds -->
+  <g fill="#c8e8ff" opacity="0.4">
+    <rect x="100" y="30" width="60" height="20" rx="10"/>
+    <rect x="80" y="35" width="30" height="15" rx="7"/>
+    <rect x="140" y="35" width="30" height="15" rx="7"/>
+    <rect x="500" y="50" width="80" height="24" rx="12"/>
+    <rect x="480" y="55" width="40" height="18" rx="9"/>
+    <rect x="550" y="55" width="40" height="18" rx="9"/>
+    <rect x="780" y="40" width="50" height="16" rx="8"/>
+  </g>
+
+  <!-- Town buildings background -->
+  <g fill="#8b5c2a">
+    <!-- Left building -->
+    <rect x="50" y="140" width="100" height="100"/>
+    <polygon points="50,140 100,100 150,140" fill="#a01010"/>
+    <rect x="80" y="160" width="20" height="20" fill="#90d0f8"/>
+    <rect x="80" y="200" width="20" height="40" fill="#3b2010"/>
+    <rect x="96" y="215" width="4" height="4" fill="#e8b800"/>
+    <!-- Right building -->
+    <rect x="750" y="130" width="120" height="110"/>
+    <polygon points="750,130 810,85 870,130" fill="#d42020"/>
+    <rect x="780" y="150" width="20" height="20" fill="#90d0f8"/>
+    <rect x="820" y="150" width="20" height="20" fill="#90d0f8"/>
+    <rect x="795" y="200" width="24" height="40" fill="#3b2010"/>
+    <!-- Sign -->
+    <rect x="760" y="135" width="60" height="12" fill="#3b2010"/>
+    <text x="790" y="145" fill="#e8b800" font-family="monospace" font-size="7" text-anchor="middle">INN</text>
+  </g>
+
+  <!-- Ground / cobblestone -->
+  <rect y="240" width="960" height="300" fill="#6e6e6e"/>
+  <rect y="240" width="960" height="4" fill="#969696"/>
+  <!-- Cobblestone pattern -->
+  <g fill="#5a5a5a" opacity="0.3">
+    <rect x="10" y="255" width="30" height="20" rx="2"/>
+    <rect x="45" y="255" width="25" height="20" rx="2"/>
+    <rect x="75" y="255" width="35" height="20" rx="2"/>
+    <rect x="15" y="280" width="28" height="18" rx="2"/>
+    <rect x="48" y="280" width="32" height="18" rx="2"/>
+    <rect x="85" y="280" width="26" height="18" rx="2"/>
+    <rect x="200" y="260" width="30" height="20" rx="2"/>
+    <rect x="235" y="260" width="28" height="20" rx="2"/>
+    <rect x="700" y="255" width="32" height="20" rx="2"/>
+    <rect x="737" y="255" width="28" height="20" rx="2"/>
+    <rect x="770" y="255" width="34" height="20" rx="2"/>
+  </g>
+
+  <!-- === PLAYER CHARACTER (left of center) === -->
+  <g transform="translate(340, 230)">
+    <ellipse cx="18" cy="72" rx="14" ry="4" fill="#0d0d0d" opacity="0.3"/>
+    <rect x="6" y="30" width="24" height="30" fill="#50a8e8"/>
+    <rect x="6" y="30" width="24" height="4" fill="#3888c8"/>
+    <rect x="8" y="8" width="20" height="22" fill="#f8a060"/>
+    <rect x="12" y="16" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="20" y="16" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="6" y="4" width="24" height="8" fill="#6b3a1f"/>
+    <rect x="8" y="60" width="8" height="12" fill="#1a4a8a"/>
+    <rect x="20" y="60" width="8" height="12" fill="#1a4a8a"/>
+  </g>
+
+  <!-- === NPC CHARACTER (Elder, right of center) === -->
+  <g transform="translate(500, 220)">
+    <ellipse cx="18" cy="78" rx="14" ry="4" fill="#0d0d0d" opacity="0.3"/>
+    <!-- Robe -->
+    <rect x="4" y="28" width="28" height="38" fill="#9050e0"/>
+    <rect x="4" y="28" width="28" height="4" fill="#6020b0"/>
+    <!-- Head -->
+    <rect x="6" y="4" width="24" height="24" fill="#f8a060"/>
+    <rect x="10" y="14" width="4" height="4" fill="#0d0d0d"/>
+    <rect x="22" y="14" width="4" height="4" fill="#0d0d0d"/>
+    <!-- Beard -->
+    <rect x="10" y="22" width="16" height="8" fill="#c8c8c8"/>
+    <rect x="14" y="28" width="8" height="4" fill="#c8c8c8"/>
+    <!-- Hat -->
+    <polygon points="18,-8 6,4 30,4" fill="#6020b0"/>
+    <rect x="2" y="2" width="32" height="4" fill="#9050e0"/>
+    <!-- Staff -->
+    <rect x="34" y="-4" width="4" height="82" fill="#6b3a1f"/>
+    <rect x="32" y="-8" width="8" height="8" fill="#ffe040" filter="url(#glow)"/>
+    <!-- Legs -->
+    <rect x="8" y="66" width="8" height="12" fill="#5a20a0"/>
+    <rect x="20" y="66" width="8" height="12" fill="#5a20a0"/>
+    <!-- Quest indicator -->
+    <g transform="translate(12, -24)">
+      <rect x="0" y="0" width="12" height="14" fill="#ffe040" opacity="0.8"/>
+      <text x="6" y="11" fill="#0d0d0d" font-family="monospace" font-size="10" text-anchor="middle" font-weight="bold">!</text>
+    </g>
+  </g>
+
+  <!-- === NPC PORTRAIT DIALOGUE BOX === -->
+  <!-- Dialogue frame - forest biome themed -->
+  <g transform="translate(80, 350)">
+    <!-- Main dialogue frame -->
+    <rect width="800" height="170" rx="4" fill="#0d0d0d" opacity="0.92"/>
+    <rect x="3" y="3" width="794" height="164" rx="3" fill="#1a2a1a"/>
+
+    <!-- Decorative border (forest themed - vine pattern) -->
+    <rect x="3" y="3" width="794" height="4" fill="#4c9b4c"/>
+    <rect x="3" y="163" width="794" height="4" fill="#4c9b4c"/>
+    <rect x="3" y="3" width="4" height="164" fill="#4c9b4c"/>
+    <rect x="793" y="3" width="4" height="164" fill="#4c9b4c"/>
+    <!-- Corner leaves -->
+    <g fill="#2d6e2d">
+      <rect x="7" y="7" width="8" height="8"/>
+      <rect x="785" y="7" width="8" height="8"/>
+      <rect x="7" y="155" width="8" height="8"/>
+      <rect x="785" y="155" width="8" height="8"/>
+    </g>
+    <g fill="#4c9b4c">
+      <rect x="9" y="9" width="4" height="4"/>
+      <rect x="787" y="9" width="4" height="4"/>
+      <rect x="9" y="157" width="4" height="4"/>
+      <rect x="787" y="157" width="4" height="4"/>
+    </g>
+
+    <!-- NPC PORTRAIT (left side) -->
+    <g transform="translate(20, 15)">
+      <!-- Portrait frame -->
+      <rect width="120" height="140" rx="3" fill="#0d0d0d"/>
+      <rect x="3" y="3" width="114" height="134" rx="2" fill="#2a1a3a"/>
+
+      <!-- Large NPC portrait: Elder Sage -->
+      <!-- Background gradient -->
+      <rect x="3" y="3" width="114" height="80" fill="#1a0830"/>
+
+      <!-- Elder face (large pixel portrait) -->
+      <!-- Head -->
+      <rect x="28" y="20" width="64" height="68" fill="#f8a060"/>
+      <!-- Hair/Hat -->
+      <polygon points="50,4 68,4 90,20 28,20" fill="#6020b0"/>
+      <rect x="20" y="16" width="80" height="8" fill="#9050e0"/>
+      <!-- Eyes -->
+      <rect x="38" y="38" width="12" height="10" fill="#f0f0f0"/>
+      <rect x="42" y="42" width="6" height="6" fill="#0d0d0d"/>
+      <rect x="68" y="38" width="12" height="10" fill="#f0f0f0"/>
+      <rect x="72" y="42" width="6" height="6" fill="#0d0d0d"/>
+      <!-- Eyebrows -->
+      <rect x="36" y="32" width="16" height="4" fill="#6b3a1f"/>
+      <rect x="66" y="32" width="16" height="4" fill="#6b3a1f"/>
+      <!-- Nose -->
+      <rect x="54" y="50" width="8" height="10" fill="#e08050"/>
+      <!-- Beard -->
+      <rect x="32" y="62" width="56" height="20" fill="#c8c8c8"/>
+      <rect x="36" y="80" width="48" height="12" fill="#b0b0b0"/>
+      <rect x="42" y="90" width="36" height="8" fill="#969696"/>
+      <rect x="48" y="96" width="24" height="6" fill="#969696"/>
+      <!-- Mouth (hidden by beard, small gap) -->
+      <rect x="46" y="64" width="20" height="4" fill="#a01010" opacity="0.4"/>
+
+      <!-- Robe collar visible -->
+      <rect x="20" y="100" width="80" height="37" fill="#9050e0"/>
+      <rect x="40" y="100" width="40" height="6" fill="#6020b0"/>
+
+      <!-- Portrait nameplate -->
+      <rect x="3" y="118" width="114" height="19" fill="#0d0d0d" opacity="0.8"/>
+      <text x="60" y="131" fill="#d090ff" font-family="monospace" font-size="9" text-anchor="middle" font-weight="bold">ELDER OAKHEART</text>
+    </g>
+
+    <!-- Emotion indicator -->
+    <g transform="translate(105, 15)">
+      <rect width="30" height="16" rx="2" fill="#0d0d0d" opacity="0.7"/>
+      <text x="15" y="12" fill="#78c878" font-family="monospace" font-size="8" text-anchor="middle">CALM</text>
+    </g>
+
+    <!-- Dialogue text area -->
+    <g transform="translate(160, 20)">
+      <!-- NPC name header -->
+      <text x="0" y="12" fill="#d090ff" font-family="monospace" font-size="12" font-weight="bold">Elder Oakheart</text>
+      <rect x="0" y="18" width="300" height="1" fill="#4c9b4c" opacity="0.5"/>
+
+      <!-- Dialogue text -->
+      <text x="0" y="38" fill="#f0f0f0" font-family="monospace" font-size="11">"Ah, young adventurer. The Verdant Hollow</text>
+      <text x="0" y="54" fill="#f0f0f0" font-family="monospace" font-size="11">has not seen such troubled times in an age.</text>
+      <text x="0" y="70" fill="#f0f0f0" font-family="monospace" font-size="11">Dark creatures stir in the eastern woods...</text>
+      <text x="0" y="86" fill="#f0f0f0" font-family="monospace" font-size="11">Will you help us restore the ancient ward?"</text>
+
+      <!-- Dialogue options -->
+      <g transform="translate(20, 100)">
+        <!-- Option 1 (selected) -->
+        <rect x="-4" y="-2" width="320" height="18" rx="2" fill="#2d6e2d" opacity="0.5"/>
+        <polygon points="0,4 8,8 0,12" fill="#78c878"/>
+        <text x="14" y="12" fill="#78c878" font-family="monospace" font-size="10" font-weight="bold">I'll help. What do I need to do?</text>
+
+        <!-- Option 2 -->
+        <text x="14" y="30" fill="#969696" font-family="monospace" font-size="10">Tell me more about the ancient ward.</text>
+
+        <!-- Option 3 -->
+        <text x="14" y="48" fill="#969696" font-family="monospace" font-size="10">Not right now, thanks.</text>
+      </g>
+    </g>
+
+    <!-- Quest reward preview (right side) -->
+    <g transform="translate(620, 15)">
+      <rect width="160" height="145" rx="3" fill="#0d0d0d" opacity="0.7"/>
+      <rect x="2" y="2" width="156" height="141" rx="2" fill="#1a2a1a"/>
+      <text x="80" y="18" fill="#e8b800" font-family="monospace" font-size="9" text-anchor="middle" font-weight="bold">QUEST REWARD</text>
+      <rect x="10" y="24" width="140" height="1" fill="#e8b800" opacity="0.3"/>
+
+      <!-- Reward item -->
+      <g transform="translate(15, 32)">
+        <rect width="28" height="28" rx="2" fill="#2a2a4a" stroke="#e8b800" stroke-width="1"/>
+        <!-- Sword icon -->
+        <rect x="12" y="4" width="4" height="18" fill="#c8c8c8"/>
+        <rect x="8" y="12" width="12" height="4" fill="#e8b800"/>
+        <rect x="12" y="20" width="4" height="4" fill="#6b3a1f"/>
+      </g>
+      <text x="50" y="44" fill="#e8b800" font-family="monospace" font-size="8">Oakguard Blade</text>
+      <text x="50" y="54" fill="#78c878" font-family="monospace" font-size="7">ATK +12 | Nature DMG</text>
+
+      <!-- XP reward -->
+      <g transform="translate(15, 68)">
+        <rect width="28" height="28" rx="2" fill="#2a2a4a" stroke="#50a8e8" stroke-width="1"/>
+        <text x="14" y="19" fill="#50a8e8" font-family="monospace" font-size="10" text-anchor="middle" font-weight="bold">XP</text>
+      </g>
+      <text x="50" y="82" fill="#50a8e8" font-family="monospace" font-size="8">250 Experience</text>
+
+      <!-- Gold reward -->
+      <g transform="translate(15, 104)">
+        <rect width="28" height="28" rx="2" fill="#2a2a4a" stroke="#ffe040" stroke-width="1"/>
+        <!-- Coin -->
+        <rect x="8" y="6" width="12" height="16" rx="6" fill="#e8b800"/>
+        <rect x="12" y="10" width="4" height="8" fill="#ffe040"/>
+      </g>
+      <text x="50" y="118" fill="#ffe040" font-family="monospace" font-size="8">150 Gold</text>
+    </g>
+  </g>
+
+  <!-- === SPEECH BUBBLE INDICATOR (above NPC) === -->
+  <g transform="translate(506, 195)">
+    <rect width="24" height="20" rx="3" fill="#f0f0f0"/>
+    <polygon points="8,20 12,26 16,20" fill="#f0f0f0"/>
+    <text x="12" y="15" fill="#0d0d0d" font-family="monospace" font-size="11" text-anchor="middle">...</text>
+  </g>
+
+  <!-- === FEATURE CALLOUTS === -->
+  <!-- Callout: Portrait emotions -->
+  <g transform="translate(20, 10)">
+    <rect width="260" height="50" rx="3" fill="#0d0d0d" opacity="0.85"/>
+    <rect x="2" y="2" width="256" height="46" rx="2" fill="#1a1a2a"/>
+    <text x="10" y="18" fill="#e8b800" font-family="monospace" font-size="10" font-weight="bold">NPC PORTRAIT SYSTEM</text>
+    <text x="10" y="32" fill="#c8c8c8" font-family="monospace" font-size="8">40+ unique portraits with emotions</text>
+    <text x="10" y="43" fill="#c8c8c8" font-family="monospace" font-size="8">Biome-themed dialogue frames</text>
+  </g>
+
+  <!-- Callout: Quest dialogue choices -->
+  <g transform="translate(660, 10)">
+    <rect width="280" height="50" rx="3" fill="#0d0d0d" opacity="0.85"/>
+    <rect x="2" y="2" width="276" height="46" rx="2" fill="#1a1a2a"/>
+    <text x="10" y="18" fill="#e8b800" font-family="monospace" font-size="10" font-weight="bold">DIALOGUE CHOICES</text>
+    <text x="10" y="32" fill="#c8c8c8" font-family="monospace" font-size="8">Branching quest dialogues with</text>
+    <text x="10" y="43" fill="#c8c8c8" font-family="monospace" font-size="8">reward previews and lore options</text>
+  </g>
+
+  <!-- === V1.4.0 BADGE === -->
+  <g transform="translate(0, 0)">
+    <rect width="100" height="30" fill="#e8b800"/>
+    <rect x="0" y="27" width="100" height="3" fill="#a87000"/>
+    <text x="50" y="19" fill="#0d0d0d" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">v1.4.0</text>
+  </g>
+</svg>
