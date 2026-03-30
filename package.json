@@ -11,7 +11,9 @@
     "test": "cd server && vitest run",
     "lint": "eslint src/",
     "deploy": "butler push dist ${ITCH_GAME:-pixelforgestudios/pixelrealm}:html5 --userversion $npm_package_version",
-    "deploy:fresh": "npm run build && npm run deploy"
+    "deploy:fresh": "npm run build && npm run deploy",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "colyseus.js": "^0.15.28",
@@ -19,6 +21,7 @@
     "sharp": "^0.34.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.44.0",
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
     "canvas": "^3.2.2",

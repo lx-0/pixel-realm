@@ -48,13 +48,69 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
 
-| Command          | Description                                    |
-| ---------------- | ---------------------------------------------- |
-| `npm run dev`    | Start Vite dev server with HMR (port 3000)     |
-| `npm run build`  | TypeScript check + production bundle → `dist/` |
-| `npm run preview`| Serve the production build locally             |
-| `npm run typecheck` | Type-check without emitting files           |
-| `npm run test`   | Run unit tests via Vitest                      |
+| Command               | Description                                    |
+| --------------------- | ---------------------------------------------- |
+| `npm run dev`         | Start Vite dev server with HMR (port 3000)     |
+| `npm run build`       | TypeScript check + production bundle → `dist/` |
+| `npm run preview`     | Serve the production build locally             |
+| `npm run typecheck`   | Type-check without emitting files              |
+| `npm run test`        | Run unit tests via Vitest                      |
+| `npm run test:e2e`    | Run E2E smoke tests (Playwright, headless)     |
+| `npm run test:e2e:ui` | Open Playwright UI for interactive test runs   |
+
+---
+
+## E2E Smoke Tests
+
+The smoke suite (`tests/e2e/smoke.spec.ts`) covers the critical gameplay path end-to-end using [Playwright](https://playwright.dev). Eight tests are included:
+
+| # | Test | Requires |
+|---|------|----------|
+| 1 | Game client loads without JS errors | Vite only |
+| 2 | Register + login returns JWT | Auth server (`E2E_AUTH_URL`) |
+| 3 | Menu loads and Play is reachable | Vite only |
+| 4 | Tutorial zone starts (solo mode) | Vite only |
+| 5 | WASD input moves player | Vite only |
+| 6 | Attacking an enemy awards XP | Vite only |
+| 7 | Inventory panel opens without crash | Vite only |
+| 8 | Save state persists across reload | Vite only |
+
+### Running locally (Vite only)
+
+```bash
+# Install Playwright browsers on first run
+npx playwright install --with-deps chromium
+
+# Run smoke tests (Vite dev server starts automatically)
+npm run test:e2e
+
+# Interactive UI mode
+npm run test:e2e:ui
+```
+
+### Running with the full stack (auth + Colyseus + DB)
+
+Test 2 requires the auth server. Start the full stack first:
+
+```bash
+# Start postgres + redis
+docker compose up -d
+
+# Start the game + auth server
+cd server && npm run dev &
+
+# Run with auth URL configured
+E2E_AUTH_URL=http://localhost:3001 npm run test:e2e
+```
+
+### CI
+
+E2E tests run automatically on every push and pull request via GitHub Actions:
+
+- **`smoke-client`** — Vite-only tests, no external services (fast, <5 min)
+- **`smoke-fullstack`** — Full stack with postgres + redis service containers
+
+Playwright HTML reports and failure screenshots are uploaded as CI artifacts.
 
 ---
 

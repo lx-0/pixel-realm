@@ -47,4 +47,10 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [BootScene, MenuScene, LevelSelectScene, ZoneTransitionScene, GameScene, PauseScene, SettingsScene, GameOverScene, CreditsScene, ArenaScene, HousingScene, DungeonScene, WorldBossScene, KeybindOverlay],
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+// Expose game instance for E2E test hooks (no-op in production builds
+// where test code strips dead references, but harmless to leave in).
+if (typeof window !== 'undefined') {
+  (window as Record<string, unknown>).__pixelrealm = game;
+}
