@@ -387,11 +387,18 @@ Expand locale coverage to Spanish, Portuguese, and Korean, and add client-side t
 - [x] PIX-453 — Add Korean locale translation
 - [x] PIX-454 — Implement client-side telemetry and error reporting
 
-### M48: v1.6.0 Distribution & Launch Final — IN PROGRESS
+### M48: v1.6.0 Distribution & Launch Final — COMPLETE
 Package v1.6.0 with M47 localization and telemetry content. Final QA and distribution rebuild as the last pre-launch milestone.
 
 - [x] PIX-456 — Rebuild distribution as v1.6.0 with M47 extended localization and telemetry content
-- [ ] PIX-457 — Full v1.6.0 QA sweep (8-locale i18n verification, telemetry integration, regression tests)
+- [x] PIX-457 — Full v1.6.0 QA sweep (8-locale i18n verification, telemetry integration, regression tests)
+
+### M49: Launch Infrastructure Hardening — IN PROGRESS
+Operational readiness before the game hits real users. Monitoring, automated testing, and data protection.
+
+- [ ] PIX-461 — Server health monitoring, structured logging, and alerting for production launch
+- [ ] PIX-462 — Automated E2E smoke test suite for critical gameplay path
+- [ ] PIX-463 — Database backup automation and disaster recovery runbook
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -486,4 +493,5 @@ M5 → M6 ──────────────────┘
 - **M45: Community Readiness & Launch Marketing** — All complete. Community platform branding (PIX-441) and promotional gallery (PIX-442) done as of 2026-03-30.
 - **M46: Localization & v1.5.0 Release** — All 3 tasks complete: French/German/Japanese translations (PIX-445), v1.5.0 distribution rebuild (PIX-444), full QA sweep (PIX-446). Complete as of 2026-03-30.
 - **M47: Extended Localization & Observability** — All 4 tasks complete: Spanish (PIX-451), Portuguese (PIX-452), Korean (PIX-453) translations, and client-side telemetry (PIX-454). Complete as of 2026-03-30.
-- **M48: v1.6.0 Distribution & Launch Final** — PIX-456 complete: v1.6.0 rebuilt with 7-locale bundle and telemetry; pixelrealm-v1.6.0.zip shipped 2026-03-30. PIX-457 (QA sweep) in progress.
+- **M48: v1.6.0 Distribution & Launch Final** — All complete as of 2026-03-30. v1.6.0 rebuilt with 7-locale bundle and telemetry (PIX-456). Full QA sweep passed (PIX-457).
+- **M49: Launch Infrastructure Hardening** — Operational readiness before go-live: server monitoring/alerting (PIX-461), automated E2E smoke tests (PIX-462), database backup/recovery (PIX-463). Created 2026-03-30 to keep team productive while PIX-19 distribution remains board-blocked.
