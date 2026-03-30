@@ -358,19 +358,26 @@ Package v1.4.0 with M42 accessibility and polish content. Final QA sweep and pro
 - [x] PIX-432 — Create v1.4.0 promotional screenshots showcasing accessibility features and new title screen
 - [x] PIX-433 — Update itch.io store page description with v1.4.0 accessibility and polish highlights
 
-### M44: Pre-Launch Readiness & Marketing — IN PROGRESS
+### M44: Pre-Launch Readiness & Marketing — COMPLETE
 Internationalization, performance validation, and marketing assets while awaiting distribution unblock (PIX-19).
 
 - [x] PIX-436 — Implement i18n framework and extract English strings into locale files
-- [ ] PIX-437 — Server load testing and performance benchmarking for launch readiness
+- [x] PIX-437 — Server load testing and performance benchmarking for launch readiness
 - [x] PIX-438 — Create press kit and marketing asset package for launch
 - [x] PIX-439 — Create animated pixel art game trailer sequence for launch promotion
 
 ### M45: Community Readiness & Launch Marketing — IN PROGRESS
-Community platform branding and promotional gallery while awaiting distribution unblock (PIX-19) and load testing completion (PIX-437).
+Community platform branding and promotional gallery while awaiting distribution unblock (PIX-19).
 
-- [ ] PIX-441 — Create community platform branding package (Discord, streaming, social media)
+- [x] PIX-441 — Create community platform branding package (Discord, streaming, social media)
 - [ ] PIX-442 — Create character spotlight and biome showcase promotional gallery
+
+### M46: Localization & v1.5.0 Release — IN PROGRESS
+Expand locale support, rebuild distribution, and final QA before launch. Keeps Engineer productive while awaiting PIX-19 unblock.
+
+- [ ] PIX-445 — Add French, German, and Japanese locale translations
+- [ ] PIX-444 — Rebuild distribution as v1.5.0 with M44-M45 pre-launch content
+- [ ] PIX-446 — Full v1.5.0 QA sweep (regression tests, i18n verification, load test review)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -460,5 +467,6 @@ M5 → M6 ──────────────────┘
 - **Feature-complete & v1.3.0 shipped** — As of 2026-03-29, all GDD features through M40 are fully implemented and packaged in v1.3.0. Game is feature-complete. Pending itch.io launch (PIX-19, board-blocked).
 - **M42: Accessibility & Launch Polish** — Complete as of 2026-03-30. Added colorblind mode, keyboard shortcut overlay, UI scaling (PIX-428), zone-specific loading screens (PIX-421, PIX-423), animated title screen (PIX-424), NPC portrait refresh (PIX-425), accessibility UI art (PIX-426), and class showcase art (PIX-427).
 - **M43: v1.4.0 Distribution & Pre-Launch Hardening** — Rebuild distribution with M42 content, full QA sweep, promotional screenshots, and itch.io page update. All complete as of 2026-03-30.
-- **M44: Pre-Launch Readiness & Marketing** — i18n framework (PIX-436 done), press kit (PIX-438 done), animated trailer (PIX-439 done). Server load testing (PIX-437) assigned to Engineer, in progress. 3/4 complete as of 2026-03-30.
-- **M45: Community Readiness & Launch Marketing** — Community platform branding (PIX-441) and promotional gallery (PIX-442) assigned to Game Artist. Keeps team productive while awaiting PIX-19 distribution unblock and PIX-437 load testing. Created 2026-03-30.
+- **M44: Pre-Launch Readiness & Marketing** — All 4 tasks complete: i18n framework (PIX-436), load testing (PIX-437), press kit (PIX-438), animated trailer (PIX-439). All complete as of 2026-03-30.
+- **M45: Community Readiness & Launch Marketing** — Community platform branding (PIX-441) complete. Promotional gallery (PIX-442) reset to todo after Game Artist error. 1/2 complete as of 2026-03-30.
+- **M46: Localization & v1.5.0 Release** — Expand i18n to 5 locales (PIX-445), rebuild v1.5.0 distribution (PIX-444), and full QA sweep (PIX-446). Engineer assigned. Created 2026-03-30.
