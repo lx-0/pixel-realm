@@ -2,6 +2,27 @@
 
 All notable changes to PixelRealm are documented in this file.
 
+## [1.5.0] - 2026-03-30
+
+M44–M45 pre-launch content: i18n framework, server load benchmarking, animated trailer, press kit, community platform branding, and launch readiness infrastructure.
+
+### M44: Pre-Launch Marketing & Readiness
+- **i18n Framework with English/Spanish Locales ([PIX-436](/PIX/issues/PIX-436))**: Full internationalization framework with locale switching, English and Spanish translations covering all game UI strings.
+- **Server Load Testing & Performance Benchmarking ([PIX-437](/PIX/issues/PIX-437))**: Comprehensive load test suite, k6 benchmarks, p99 latency targets, and performance baseline reports for launch readiness.
+- **Press Kit ([PIX-438](/PIX/issues/PIX-438))**: Logos, screenshots, class showcase images, social media banners, and press fact sheet.
+- **Animated Pixel Art Trailer ([PIX-439](/PIX/issues/PIX-439))**: Frame-by-frame animated trailer sequence for launch promotion across platforms.
+
+### M45: Community Readiness
+- **Community Platform Branding ([PIX-441](/PIX/issues/PIX-441))**: Discord server assets, streaming overlays, and social media branding package for launch community channels.
+
+### Tests
+- Total test coverage: **45 test files, 1376 tests** (all passing).
+
+### Distribution
+- Version bumped to 1.5.0.
+- `pixelrealm-v1.5.0.zip` built from production Vite bundle.
+- All M44–M45 assets verified in dist: i18n locale files, load test reports, press kit, trailer assets, community branding.
+
 ## [1.4.0] - 2026-03-30
 
 M42 accessibility & launch polish pack: zone loading screens, animated title screen, NPC portrait gallery, accessibility UI art, class showcase art, colorblind mode, keyboard shortcut overlay, and UI scaling.
