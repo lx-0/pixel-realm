@@ -387,10 +387,10 @@ Expand locale coverage to Spanish, Portuguese, and Korean, and add client-side t
 - [x] PIX-453 — Add Korean locale translation
 - [x] PIX-454 — Implement client-side telemetry and error reporting
 
-### M48: v1.6.0 Distribution & Launch Final — TODO
+### M48: v1.6.0 Distribution & Launch Final — IN PROGRESS
 Package v1.6.0 with M47 localization and telemetry content. Final QA and distribution rebuild as the last pre-launch milestone.
 
-- [ ] PIX-456 — Rebuild distribution as v1.6.0 with M47 extended localization and telemetry content
+- [x] PIX-456 — Rebuild distribution as v1.6.0 with M47 extended localization and telemetry content
 - [ ] PIX-457 — Full v1.6.0 QA sweep (8-locale i18n verification, telemetry integration, regression tests)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
@@ -486,4 +486,4 @@ M5 → M6 ──────────────────┘
 - **M45: Community Readiness & Launch Marketing** — All complete. Community platform branding (PIX-441) and promotional gallery (PIX-442) done as of 2026-03-30.
 - **M46: Localization & v1.5.0 Release** — All 3 tasks complete: French/German/Japanese translations (PIX-445), v1.5.0 distribution rebuild (PIX-444), full QA sweep (PIX-446). Complete as of 2026-03-30.
 - **M47: Extended Localization & Observability** — All 4 tasks complete: Spanish (PIX-451), Portuguese (PIX-452), Korean (PIX-453) translations, and client-side telemetry (PIX-454). Complete as of 2026-03-30.
-- **M48: v1.6.0 Distribution & Launch Final** — Distribution rebuild (PIX-456) and final QA sweep (PIX-457) to package M47 content. Last milestone before launch. Created 2026-03-30.
+- **M48: v1.6.0 Distribution & Launch Final** — PIX-456 complete: v1.6.0 rebuilt with 7-locale bundle and telemetry; pixelrealm-v1.6.0.zip shipped 2026-03-30. PIX-457 (QA sweep) in progress.

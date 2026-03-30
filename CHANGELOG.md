@@ -2,6 +2,29 @@
 
 All notable changes to PixelRealm are documented in this file.
 
+## [1.6.0] - 2026-03-30
+
+M47 extended localization + telemetry: Spanish, Portuguese, and Korean locale translations plus client-side telemetry and error reporting.
+
+### M47: Extended Localization & Telemetry
+- **Spanish Locale ([PIX-450](/PIX/issues/PIX-450))**: Full Spanish (es) translation covering all game UI strings.
+- **Portuguese & Korean Locales ([PIX-452](/PIX/issues/PIX-452), [PIX-453](/PIX/issues/PIX-453))**: Full Portuguese (pt) and Korean (ko) translations.
+- **Client-Side Telemetry & Error Reporting ([PIX-454](/PIX/issues/PIX-454))**: `TelemetryClient` singleton with session tracking, zone analytics, global error capture, opt-out support, and anonymous player IDs.
+- **Character Spotlight & Biome Showcase Gallery ([PIX-442](/PIX/issues/PIX-442))**: Promotional gallery assets for all character classes and biomes.
+- **Localization Expansion Milestone ([PIX-445](/PIX/issues/PIX-445))**: French, German, and Japanese locale translations added.
+
+### Localization Coverage
+- 7 locales fully supported: **en, fr, de, ja, es, pt, ko**
+- All locales verified in production bundle.
+
+### Tests
+- Total test coverage: **45 test files, 1376 tests** (all passing).
+
+### Distribution
+- Version bumped to 1.6.0.
+- `pixelrealm-v1.6.0.zip` built from production Vite bundle.
+- All M47 content verified in dist: 7-locale i18n bundle, telemetry integration, promotional gallery.
+
 ## [1.5.0] - 2026-03-30
 
 M44–M45 pre-launch content: i18n framework, server load benchmarking, animated trailer, press kit, community platform branding, and launch readiness infrastructure.
