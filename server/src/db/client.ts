@@ -33,6 +33,16 @@ export function getDb(): ReturnType<typeof drizzle<typeof schema>> {
   return _db;
 }
 
+/** Returns current pg pool utilisation stats, or null if the pool is not yet initialised. */
+export function getPoolStats(): { totalCount: number; idleCount: number; waitingCount: number } | null {
+  if (!_pool) return null;
+  return {
+    totalCount:   _pool.totalCount,
+    idleCount:    _pool.idleCount,
+    waitingCount: _pool.waitingCount,
+  };
+}
+
 /** Close the pool (used in graceful shutdown). */
 export async function closeDb(): Promise<void> {
   if (_pool) {

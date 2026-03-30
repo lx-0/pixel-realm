@@ -116,8 +116,12 @@ import {
   expireOldMail,
   createNotification,
 } from "./db/mailbox";
-import { getUptimeSeconds, recordHttpRequest, renderPrometheusMetrics } from "./metrics";
+import { getUptimeSeconds, recordHttpRequest, renderPrometheusMetrics, setDbPoolStats } from "./metrics";
 import { ensureSeasonalEvents, syncSeasonalActivation } from "./seasons/rotation";
+import { logger, logUnhandledException } from "./logger";
+import { startAlertLoop } from "./alerting";
+import { getPoolStats } from "./db/client";
+import { getRedis } from "./db/redis";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
 
@@ -150,6 +154,23 @@ initDb().then(() => {
   );
 });
 
+// ── Global unhandled exception handlers ───────────────────────────────────────
+// Log structured events before the process crashes so the error is captured
+// by any log aggregator draining stdout.
+
+process.on("uncaughtException", (err: Error) => {
+  logUnhandledException({ type: "uncaughtException", err });
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason: unknown) => {
+  logUnhandledException({ type: "unhandledRejection", err: reason });
+  // Do not exit — unhandled promise rejections are recoverable
+});
+
+// ── Start alert evaluation loop ────────────────────────────────────────────────
+startAlertLoop();
+
 // Re-sync seasonal activation once per hour (handles day-boundary rollovers)
 setInterval(() => {
   syncSeasonalActivation().catch(err =>
@@ -178,42 +199,96 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   res.on("finish", () => {
     const durationMs = Date.now() - start;
     recordHttpRequest(durationMs, res.statusCode);
-    if (config.isProduction) {
-      // Structured JSON for log aggregators (e.g. Datadog, CloudWatch)
-      process.stdout.write(
-        JSON.stringify({
-          level: "info",
-          time: new Date().toISOString(),
-          msg: "request",
-          method: req.method,
-          path: req.path,
-          status: res.statusCode,
-          durationMs,
-        }) + "\n",
-      );
-    } else {
-      console.log(`[HTTP] ${req.method} ${req.path} ${res.statusCode} ${durationMs}ms`);
-    }
+    // Update pool stats snapshot on every request so metrics/health see fresh data
+    setDbPoolStats(getPoolStats());
+    const level = res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info";
+    logger[level](
+      { event: "http_request", method: req.method, path: req.path, status: res.statusCode, durationMs },
+      "http request",
+    );
   });
   next();
 });
 
-// Health check — returns server status, uptime, and live Colyseus room stats
-app.get("/health", async (_req: Request, res: Response) => {
+// ── Helper: probe DB connectivity ─────────────────────────────────────────────
+async function probeDb(): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
+  const start = Date.now();
   try {
-    const rooms = await matchMaker.query({});
-    const connectedPlayers = rooms.reduce((sum, r) => sum + (r.clients ?? 0), 0);
-    res.json({
-      status:           "ok",
-      ts:               Date.now(),
-      uptimeSeconds:    getUptimeSeconds(),
-      activeRooms:      rooms.length,
-      connectedPlayers,
-    });
-  } catch {
-    // matchMaker not yet ready — still healthy, just no room stats
-    res.json({ status: "ok", ts: Date.now(), uptimeSeconds: getUptimeSeconds(), activeRooms: 0, connectedPlayers: 0 });
+    const pool = getPoolStats();
+    // Run a trivial query to confirm the connection is live
+    const { getPool } = await import("./db/client");
+    const client = await getPool().connect();
+    await client.query("SELECT 1");
+    client.release();
+    return { ok: true, latencyMs: Date.now() - start, poolStats: pool } as { ok: boolean; latencyMs: number };
+  } catch (err) {
+    return { ok: false, latencyMs: Date.now() - start, error: (err as Error).message };
   }
+}
+
+// ── Helper: probe Redis connectivity ──────────────────────────────────────────
+async function probeRedis(): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
+  const start = Date.now();
+  try {
+    const redis = getRedis();
+    await redis.ping();
+    return { ok: true, latencyMs: Date.now() - start };
+  } catch (err) {
+    return { ok: false, latencyMs: Date.now() - start, error: (err as Error).message };
+  }
+}
+
+// ── /health — server status, uptime, and component health ────────────────────
+// Includes DB + Redis probe results, memory/CPU snapshot, and Colyseus room stats.
+// Returns HTTP 200 even when individual components are degraded so load-balancer
+// health checks don't cycle the process; use /ready for strict liveness.
+app.get("/health", async (_req: Request, res: Response) => {
+  const mem = process.memoryUsage();
+  const cpuUsage = process.cpuUsage();
+
+  let rooms: Awaited<ReturnType<typeof matchMaker.query>> = [];
+  try { rooms = await matchMaker.query({}); } catch { /* not yet ready */ }
+  const connectedPlayers = rooms.reduce((sum, r) => sum + (r.clients ?? 0), 0);
+
+  const [db, redis] = await Promise.all([probeDb(), probeRedis()]);
+  const poolStats = getPoolStats();
+
+  res.json({
+    status:           db.ok && redis.ok ? "ok" : "degraded",
+    ts:               Date.now(),
+    uptimeSeconds:    getUptimeSeconds(),
+    activeRooms:      rooms.length,
+    connectedPlayers,
+    components: {
+      database: { ok: db.ok, latencyMs: db.latencyMs, ...(db.error ? { error: db.error } : {}), pool: poolStats },
+      redis:    { ok: redis.ok, latencyMs: redis.latencyMs, ...(redis.error ? { error: redis.error } : {}) },
+    },
+    memory: {
+      rssBytes:       mem.rss,
+      heapUsedBytes:  mem.heapUsed,
+      heapTotalBytes: mem.heapTotal,
+    },
+    cpu: {
+      userMs:   Math.round(cpuUsage.user / 1000),
+      systemMs: Math.round(cpuUsage.system / 1000),
+    },
+  });
+});
+
+// ── /ready — strict readiness probe ──────────────────────────────────────────
+// Returns 200 only when all critical components (DB, Redis) are reachable.
+// Use this for Kubernetes readinessProbe / itch.io health gating.
+app.get("/ready", async (_req: Request, res: Response) => {
+  const [db, redis] = await Promise.all([probeDb(), probeRedis()]);
+  const ready = db.ok && redis.ok;
+  res.status(ready ? 200 : 503).json({
+    ready,
+    ts: Date.now(),
+    components: {
+      database: { ok: db.ok, ...(db.error ? { error: db.error } : {}) },
+      redis:    { ok: redis.ok, ...(redis.error ? { error: redis.error } : {}) },
+    },
+  });
 });
 
 // Metrics — Prometheus text format for monitoring dashboards / Grafana scrape
@@ -1721,10 +1796,15 @@ gameServer.define("world_boss", WorldBossRoom);
 // ── Start ─────────────────────────────────────────────────────────────────────
 
 gameServer.listen(config.port).then(() => {
-  console.log(`[PixelRealm] Colyseus server listening on ws://0.0.0.0:${config.port}`);
-  console.log(`[PixelRealm] HTTP health at http://0.0.0.0:${config.port}/health`);
+  logger.info(
+    { event: "server_start", port: config.port },
+    `PixelRealm server listening on ws://0.0.0.0:${config.port}`,
+  );
+  logger.info(`  /health  → http://0.0.0.0:${config.port}/health`);
+  logger.info(`  /ready   → http://0.0.0.0:${config.port}/ready`);
+  logger.info(`  /metrics → http://0.0.0.0:${config.port}/metrics`);
 }).catch((err) => {
-  console.error("[PixelRealm] Failed to start server:", err);
+  logger.fatal({ event: "server_start_failed", err }, "failed to start server");
   process.exit(1);
 });
 

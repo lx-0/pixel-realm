@@ -63,4 +63,22 @@ export const config = {
       .map((u) => u.trim().toLowerCase())
       .filter(Boolean),
   ),
+
+  // Logging
+  logLevel: optional("LOG_LEVEL", "info"),
+
+  // Alert thresholds — used by alerting.ts to fire structured log events.
+  // All thresholds can be overridden at deploy time via environment variables.
+  alerts: {
+    /** Fraction of HTTP requests returning 5xx in the last 60 s (default 0.05 = 5%). */
+    errorRateThreshold:  Number(optional("ALERT_ERROR_RATE",     "0.05")),
+    /** p95 HTTP response latency in milliseconds (default 2000). */
+    p95LatencyMs:        Number(optional("ALERT_P95_LATENCY_MS", "2000")),
+    /** Process memory RSS as a fraction of system total (default 0.80 = 80%). */
+    memoryRssFraction:   Number(optional("ALERT_MEMORY_FRACTION", "0.80")),
+    /** DB pool total connection count that triggers a pool-exhaustion alert (default 24/25). */
+    dbPoolExhaustedCount: Number(optional("ALERT_DB_POOL_EXHAUSTED", "24")),
+    /** How often (ms) to evaluate alert thresholds (default 30 s). */
+    checkIntervalMs:     Number(optional("ALERT_CHECK_INTERVAL_MS", "30000")),
+  },
 } as const;

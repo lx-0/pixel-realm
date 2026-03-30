@@ -24,6 +24,8 @@ import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from "fastify"
 import fastifyCors from "@fastify/cors";
 import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyJwt from "@fastify/jwt";
+import { logAuthFailure } from "../logger";
+import { incrementAuthFailure } from "../metrics";
 import {
   createUser,
   findUserByUsername,
@@ -221,12 +223,16 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
       const user = await findUserByUsername(username);
       if (!user || !(await verifyPassword(user, password))) {
         // Constant-time-ish: always return same error to prevent user enumeration
+        incrementAuthFailure();
+        logAuthFailure({ username, reason: "invalid_credentials", ip: req.ip });
         return reply.code(401).send({ error: "Invalid credentials" });
       }
 
       // Reject banned players at login
       const banned = await isPlayerBanned(user.id).catch(() => false);
       if (banned) {
+        incrementAuthFailure();
+        logAuthFailure({ username, reason: "account_banned", ip: req.ip });
         return reply.code(403).send({ error: "Account banned" });
       }
 

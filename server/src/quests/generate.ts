@@ -14,6 +14,8 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { logLlmRequest } from "../logger";
+import { recordLlmRequest } from "../metrics";
 import { getRedis } from "../auth/redis";
 import type {
   QuestType,
@@ -276,7 +278,8 @@ export async function generateQuestLLM(ctx: QuestGenerationContext): Promise<Raw
   const rewards = calcRewards(ctx.levelBucket, ctx.questType);
 
   // ── Attempt helper ──────────────────────────────────────────────────────────
-  async function attempt(): Promise<{ raw: string; inputTokens: number; outputTokens: number } | null> {
+  async function attempt(): Promise<{ raw: string; inputTokens: number; outputTokens: number; latencyMs: number } | null> {
+    const t0 = Date.now();
     try {
       const client = getClient();
       const message = await client.messages.create({
@@ -285,11 +288,23 @@ export async function generateQuestLLM(ctx: QuestGenerationContext): Promise<Raw
         messages: [{ role: "user", content: prompt }],
       });
 
+      const latencyMs = Date.now() - t0;
       const raw = message.content.find((b) => b.type === "text")?.text ?? "";
       const inputTokens  = message.usage?.input_tokens  ?? 0;
       const outputTokens = message.usage?.output_tokens ?? 0;
-      return { raw, inputTokens, outputTokens };
-    } catch {
+      recordLlmRequest(latencyMs, true);
+      return { raw, inputTokens, outputTokens, latencyMs };
+    } catch (err) {
+      const latencyMs = Date.now() - t0;
+      recordLlmRequest(latencyMs, false);
+      logLlmRequest({
+        zoneId: ctx.zoneId,
+        questType: ctx.questType,
+        latencyMs,
+        success: false,
+        fallback: false,
+        error: (err as Error).message,
+      });
       return null;
     }
   }
@@ -327,6 +342,7 @@ export async function generateQuestLLM(ctx: QuestGenerationContext): Promise<Raw
 
       if (modResult.safe) {
         emitAuditLog(audit);
+        logLlmRequest({ zoneId: ctx.zoneId, questType: ctx.questType, latencyMs: first.latencyMs, success: true, fallback: false, inputTokens: first.inputTokens, outputTokens: first.outputTokens });
         return { ...questData, rewards };
       }
 
@@ -363,6 +379,7 @@ export async function generateQuestLLM(ctx: QuestGenerationContext): Promise<Raw
 
           if (modResult.safe) {
             emitAuditLog(audit);
+            logLlmRequest({ zoneId: ctx.zoneId, questType: ctx.questType, latencyMs: second.latencyMs, success: true, fallback: false, inputTokens: second.inputTokens, outputTokens: second.outputTokens });
             return { ...questData, rewards };
           }
         } else {
@@ -378,6 +395,7 @@ export async function generateQuestLLM(ctx: QuestGenerationContext): Promise<Raw
   audit.moderationSafe  = true; // fallbacks are pre-approved
   emitAuditLog(audit);
 
+  logLlmRequest({ zoneId: ctx.zoneId, questType: ctx.questType, latencyMs: 0, success: false, fallback: true });
   const fallback = getFallbackQuest(ctx.zoneId, ctx.questType);
   return { ...fallback, rewards };
 }

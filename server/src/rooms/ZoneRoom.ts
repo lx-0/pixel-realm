@@ -1,5 +1,6 @@
 import { Room, Client, Delayed } from "@colyseus/core";
-import { incrementMessageCount } from "../metrics";
+import { incrementMessageCount, incrementRoomCreated, incrementRoomDisposed, incrementConnectionCount, incrementDisconnectionCount } from "../metrics";
+import { logPlayerConnect, logPlayerDisconnect, logRoomCreate, logRoomDispose } from "../logger";
 import { ZoneGameState, Player, Enemy, Projectile } from "./schema/GameState";
 import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players";
 import { performPrestigeReset, getPrestigeBonuses, MAX_PRESTIGE } from "../db/prestige";
@@ -617,7 +618,8 @@ export class ZoneRoom extends Room<ZoneGameState> {
       }
     });
 
-    console.log(`[ZoneRoom] created room ${this.roomId} for zone ${zoneId}`);
+    incrementRoomCreated("zone");
+    logRoomCreate({ roomType: "zone", roomId: this.roomId, options: { zoneId } });
   }
 
   async onJoin(client: Client, options: JoinOptions) {
@@ -753,7 +755,14 @@ export class ZoneRoom extends Room<ZoneGameState> {
       }
     }
 
-    console.log(`[ZoneRoom] ${client.sessionId} (${auth?.username}) joined zone ${this.state.zoneId} (${this.clients.length} players)`);
+    incrementConnectionCount();
+    logPlayerConnect({
+      userId: auth?.userId ?? "unknown",
+      username: auth?.username ?? player.name,
+      roomType: "zone",
+      roomId: this.roomId,
+      sessionId: client.sessionId,
+    });
   }
 
   async onLeave(client: Client, consented: boolean) {
@@ -805,13 +814,23 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.petStateMap.delete(client.sessionId);
     sessionUserMap.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
-    console.log(`[ZoneRoom] ${client.sessionId} left (consented=${consented})`);
+    const leavingAuth = client.auth as AuthPayload | undefined;
+    incrementDisconnectionCount();
+    logPlayerDisconnect({
+      userId: leavingAuth?.userId ?? "unknown",
+      username: leavingAuth?.username ?? client.sessionId,
+      roomType: "zone",
+      roomId: this.roomId,
+      sessionId: client.sessionId,
+      consented,
+    });
   }
 
   async onDispose() {
     // Persist all remaining players on room teardown
     await this.persistAllPlayers();
-    console.log(`[ZoneRoom] disposing room ${this.roomId}`);
+    incrementRoomDisposed("zone");
+    logRoomDispose({ roomType: "zone", roomId: this.roomId });
   }
 
   // ── Persistence Helpers ───────────────────────────────────────────────────────
