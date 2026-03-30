@@ -19,8 +19,10 @@ import es from './locales/es.json';
 import fr from './locales/fr.json';
 import de from './locales/de.json';
 import ja from './locales/ja.json';
+import pt from './locales/pt.json';
+import ko from './locales/ko.json';
 
-export type Locale = 'en' | 'es' | 'fr' | 'de' | 'ja';
+export type Locale = 'en' | 'es' | 'fr' | 'de' | 'ja' | 'pt' | 'ko';
 
 export interface LocaleInfo {
   code: Locale;
@@ -33,9 +35,11 @@ export const SUPPORTED_LOCALES: LocaleInfo[] = [
   { code: 'fr', name: 'Français' },
   { code: 'de', name: 'Deutsch' },
   { code: 'ja', name: '日本語' },
+  { code: 'pt', name: 'Português' },
+  { code: 'ko', name: '한국어' },
 ];
 
-const LOCALE_MAP: Record<Locale, Record<string, string>> = { en, es, fr, de, ja };
+const LOCALE_MAP: Record<Locale, Record<string, string>> = { en, es, fr, de, ja, pt, ko };
 const LS_KEY = 'pixelrealm_lang';
 
 let _lang: Locale = 'en';
