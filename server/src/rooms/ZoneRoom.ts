@@ -662,104 +662,91 @@ export class ZoneRoom extends Room<ZoneGameState> {
         this.applySkillPassives(player, skillState);
         this.syncSkillState(player, skillState);
 
-        // Load guild membership (best-effort — non-blocking)
-        try {
-          const guildInfo = await getPlayerGuild(userId);
-          if (guildInfo) {
-            player.guildId  = guildInfo.guildId;
-            player.guildTag = `[${guildInfo.guildTag}]`;
-          }
-        } catch (_guildErr) {
-          // Non-fatal: guild data unavailable, player continues without tag
-        }
+        // Load all best-effort data in parallel to minimise DB pool hold time
+        const playerName = player.name;
+        const activeSeasonalEvent = this.activeSeasonalEvent;
+        await Promise.allSettled([
+          // Guild membership
+          getPlayerGuild(userId).then((guildInfo) => {
+            if (guildInfo) {
+              player.guildId  = guildInfo.guildId;
+              player.guildTag = `[${guildInfo.guildTag}]`;
+            }
+          }),
 
-        // Load companion pet (best-effort — non-blocking)
-        try {
-          const equippedPet = await getEquippedPet(userId);
-          if (equippedPet) {
-            this.petStateMap.set(client.sessionId, {
-              petId:       equippedPet.id,
-              petType:     equippedPet.petType,
-              level:       equippedPet.level,
-              happiness:   equippedPet.happiness,
-              lastDecayAt: Date.now(),
+          // Companion pet
+          getEquippedPet(userId).then(async (equippedPet) => {
+            if (equippedPet) {
+              this.petStateMap.set(client.sessionId, {
+                petId:       equippedPet.id,
+                petType:     equippedPet.petType,
+                level:       equippedPet.level,
+                happiness:   equippedPet.happiness,
+                lastDecayAt: Date.now(),
+              });
+              player.equippedPetType = equippedPet.petType;
+              player.petHappiness    = equippedPet.happiness;
+              player.petLevel        = equippedPet.level;
+              this.applyPetBonuses(player);
+            }
+            const allPets = await getPlayerPets(userId);
+            client.send("pet_list", { pets: allPets });
+          }),
+
+          // Faction reputations and daily tasks
+          initPlayerFactionReputations(userId).then(async () => {
+            const reps = await getPlayerFactionReputations(userId);
+            client.send("faction_reputations", { reputations: reps });
+            const dailyTasks = await getPlayerDailyTaskStatus(userId);
+            client.send("faction_daily_tasks", { tasks: dailyTasks });
+          }),
+
+          // Seasonal event participation
+          activeSeasonalEvent
+            ? getOrJoinEvent(userId, activeSeasonalEvent.id).then((participation) => {
+                client.send("seasonal_event", {
+                  event: {
+                    id:          activeSeasonalEvent.id,
+                    name:        activeSeasonalEvent.name,
+                    description: activeSeasonalEvent.description,
+                    endsAt:      activeSeasonalEvent.endsAt,
+                    rewardTiers: activeSeasonalEvent.rewardTiers,
+                  },
+                  participation: {
+                    points:         participation.points,
+                    claimedRewards: participation.claimedRewards,
+                  },
+                });
+                if (SEASONAL_FEATURED_ZONES.has(this.state.zoneId)) {
+                  const season = getSeasonForDate(new Date());
+                  client.send("season_overlay", {
+                    overlayKey: SEASONAL_OVERLAY_KEY[season],
+                    season,
+                  });
+                }
+              })
+            : Promise.resolve(),
+
+          // Friend list + online notifications
+          getFriendList(userId).then((friends) => {
+            client.send("friends_list", { friends });
+            const friendIds = new Set(friends.filter(f => f.status === "accepted").map(f => f.playerId));
+            this.clients.forEach((other) => {
+              if (other.sessionId === client.sessionId) return;
+              const otherId = sessionUserMap.get(other.sessionId);
+              if (otherId && friendIds.has(otherId)) {
+                other.send("friend_online", { username: playerName });
+              }
             });
-            player.equippedPetType = equippedPet.petType;
-            player.petHappiness    = equippedPet.happiness;
-            player.petLevel        = equippedPet.level;
-            this.applyPetBonuses(player);
-          }
-          // Send full pet list to the joining player
-          const allPets = await getPlayerPets(userId);
-          client.send("pet_list", { pets: allPets });
-        } catch (_petErr) {
-          // Non-fatal: pet data unavailable
-        }
+          }),
+        ]);
 
-        // Load faction reputations, daily tasks, and send to client (best-effort)
-        try {
-          await initPlayerFactionReputations(userId);
-          const reps = await getPlayerFactionReputations(userId);
-          client.send("faction_reputations", { reputations: reps });
-          const dailyTasks = await getPlayerDailyTaskStatus(userId);
-          client.send("faction_daily_tasks", { tasks: dailyTasks });
-        } catch (_factionErr) {
-          // Non-fatal: faction data unavailable
-        }
-
-        // Send world events and active season to the joining player
+        // Send world events and active season to the joining player (in-memory, no DB)
         if (this.activeWorldEvents.length) {
           client.send("world_events", { events: this.activeWorldEvents });
         }
         if (this.activeSeason) {
           client.send("season_info", { name: this.activeSeason.name });
-        }
-
-        // Send active seasonal event info + player participation state
-        if (this.activeSeasonalEvent) {
-          try {
-            const participation = await getOrJoinEvent(userId, this.activeSeasonalEvent.id);
-            client.send("seasonal_event", {
-              event: {
-                id:          this.activeSeasonalEvent.id,
-                name:        this.activeSeasonalEvent.name,
-                description: this.activeSeasonalEvent.description,
-                endsAt:      this.activeSeasonalEvent.endsAt,
-                rewardTiers: this.activeSeasonalEvent.rewardTiers,
-              },
-              participation: {
-                points:         participation.points,
-                claimedRewards: participation.claimedRewards,
-              },
-            });
-            // Send zone overlay key so client can apply seasonal decorations
-            if (SEASONAL_FEATURED_ZONES.has(this.state.zoneId)) {
-              const season = getSeasonForDate(new Date());
-              client.send("season_overlay", {
-                overlayKey: SEASONAL_OVERLAY_KEY[season],
-                season,
-              });
-            }
-          } catch (_evErr) { /* non-fatal */ }
-        }
-
-        // Friend list — send to joining player and notify friends they're online
-        try {
-          const friends = await getFriendList(userId);
-          client.send("friends_list", { friends });
-
-          // Notify accepted friends who are currently in this room
-          const playerName = player.name;
-          const friendIds = new Set(friends.filter(f => f.status === "accepted").map(f => f.playerId));
-          this.clients.forEach((other) => {
-            if (other.sessionId === client.sessionId) return;
-            const otherId = sessionUserMap.get(other.sessionId);
-            if (otherId && friendIds.has(otherId)) {
-              other.send("friend_online", { username: playerName });
-            }
-          });
-        } catch (_socialErr) {
-          // Non-fatal
         }
       } catch (err) {
         console.warn(`[ZoneRoom] Failed to load state for ${userId}:`, (err as Error).message);

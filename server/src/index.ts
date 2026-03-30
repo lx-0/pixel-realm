@@ -16,6 +16,7 @@ import {
   WORLD_BOSS_DEFS,
 } from "./db/worldBoss";
 import { getDungeonCooldownRemainingDb } from "./db/cooldowns";
+import { closeDb } from "./db/client";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
 import { seed } from "./db/seed";
@@ -1718,10 +1719,13 @@ async function shutdown(signal: string): Promise<void> {
   try {
     // Drain all Colyseus rooms (saves state, disconnects clients cleanly)
     await gameServer.gracefullyShutdown(false);
+    // Close DB pool after all room saves have completed
+    await closeDb();
     console.log("[PixelRealm] Graceful shutdown complete");
     process.exit(0);
   } catch (err) {
     console.error("[PixelRealm] Error during shutdown:", (err as Error).message);
+    await closeDb().catch(() => {});
     process.exit(1);
   }
 }

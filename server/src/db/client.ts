@@ -13,7 +13,7 @@ export function getPool(): Pool {
   if (!_pool) {
     _pool = new Pool({
       connectionString: DATABASE_URL,
-      max: 10,
+      max: 25,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
     });

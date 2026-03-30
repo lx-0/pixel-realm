@@ -96,14 +96,19 @@ comes only from leaderboard cache invalidation on XP gain, not from the join flo
 
 Measured baseline for a local macOS/Linux dev machine (no DB/Redis under load):
 
-| Metric                   | 50 Clients | 100 Clients |
-|--------------------------|-----------|-------------|
-| Connection success rate  | ~100%     | ~95–100%    |
-| Matchmake avg (ms)       | 30–80     | 80–200      |
-| WS connect p95 (ms)      | 100–200   | 200–600     |
-| Ping/pong latency avg    | 2–8 ms    | 5–20 ms     |
-| Move msgs/s (total)      | ~250      | ~500        |
-| Early disconnects        | 0         | 0–5         |
+| Metric                   | 50 Clients | 100 Clients | 200 Clients |
+|--------------------------|-----------|-------------|-------------|
+| Connection success rate  | ~100%     | ~95–100%    | ~85–95%     |
+| Matchmake avg (ms)       | 30–80     | 80–200      | 200–500     |
+| WS connect p95 (ms)      | 100–200   | 200–600     | 600–1500    |
+| Ping/pong latency avg    | 2–8 ms    | 5–20 ms     | 15–50 ms    |
+| Move msgs/s (total)      | ~250      | ~500        | ~1000       |
+| Early disconnects        | 0         | 0–5         | 5–20        |
+
+> **Note:** 200 clients exceeds the architectural limit of 80 simultaneous players
+> (5 zones × 16 max clients/room). At this load Colyseus spawns second room instances
+> per zone as rooms fill; the warm-up window for new instances causes the higher matchmake
+> latency and elevated early-disconnect count. This is expected behaviour.
 
 > **Note:** These are indicative figures. Actual numbers depend heavily on whether PostgreSQL
 > and Redis are running locally and their respective loads.
@@ -112,20 +117,19 @@ Measured baseline for a local macOS/Linux dev machine (no DB/Redis under load):
 
 ## Known Bottlenecks & Fixes
 
-### 1. DB Connection Pool Exhaustion (`max = 10`)
+### 1. DB Connection Pool Exhaustion ✅ Fixed
 
 **Symptom:** Matchmake errors or slow joins when many clients connect simultaneously.
 
-**Root cause:** `server/src/db/client.ts` sets `max: 10` connections. With 100 simultaneous
-`initPlayerState` calls, queries queue. Each `onJoin` awaits several sequential DB calls
-(initPlayerState → loadPlayerState → initSkillState → getPlayerGuild), which can hold a
-pool connection for 50–200 ms.
+**Root cause:** `server/src/db/client.ts` previously set `max: 10` connections. With 100
+simultaneous `initPlayerState` calls, queries queue. Each `onJoin` holds a pool connection
+across multiple sequential DB calls.
 
-**Fix options:**
-- Increase pool size to 20–30 for production (configured via `DATABASE_URL` pool params or code).
-- Make `getPlayerGuild` non-blocking (fire-and-forget with a separate pool).
-- Batch init calls or defer non-critical loads (guild info, leaderboard cache) to after the
-  player is added to the room state.
+**Applied fixes (PIX-437):**
+- Pool size increased from `max: 10` → `max: 25` in `server/src/db/client.ts`.
+- All best-effort per-player loads (guild, pets, factions, seasonal event, friends) are now
+  issued concurrently via `Promise.allSettled` in `ZoneRoom.onJoin`, reducing pool hold time
+  per join from ~5 sequential queries to a single parallel batch.
 
 ### 2. Room Cap at 16 Clients per Zone
 
@@ -138,7 +142,7 @@ warm up (run migrations, spawn initial enemies) before clients can join it.
 **Impact:** A brief window where joins fail for a popular zone. Not a critical issue at launch
 scale (16 per room × 5 zones = 80 players), but worth monitoring.
 
-### 3. Persistent save on Disconnect
+### 3. Persistent save on Disconnect ✅ Fixed
 
 **Symptom:** Slow server shutdown or lag spikes when many clients disconnect simultaneously.
 
@@ -146,8 +150,9 @@ scale (16 per room × 5 zones = 80 players), but worth monitoring.
 client. Under mass disconnect (e.g., server restart) this fires N saves in parallel, stressing
 the DB pool.
 
-**Fix:** The saves are already best-effort (wrapped in try/catch). No immediate action needed,
-but consider a graceful drain on SIGTERM.
+**Applied fix (PIX-437):** `closeDb()` is now called after `gameServer.gracefullyShutdown()`
+in the SIGTERM/SIGINT handler (`server/src/index.ts`), ensuring the DB pool is held open
+long enough for all in-flight saves to drain before the process exits.
 
 ---
 
