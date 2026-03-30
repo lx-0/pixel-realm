@@ -132,6 +132,11 @@ export class BootScene extends Phaser.Scene {
     this.load.image('mount_frost_elk',     'assets/sprites/mounts/mount_frost_elk.png');
     this.load.image('mount_crystal_drake', 'assets/sprites/mounts/mount_crystal_drake.png');
     this.load.image('mount_mech_golem',    'assets/sprites/mounts/mount_mech_golem.png');
+    // Mount skin variants (PIX-418)
+    this.load.image('mount_war_horse_golden',      'assets/sprites/mounts/mount_war_horse_golden.png');
+    this.load.image('mount_shadow_wolf_frost',     'assets/sprites/mounts/mount_shadow_wolf_frost.png');
+    this.load.image('mount_crystal_drake_fire',    'assets/sprites/mounts/mount_crystal_drake_fire.png');
+    this.load.image('mount_frost_elk_verdant',     'assets/sprites/mounts/mount_frost_elk_verdant.png');
     // Stable building and stablemaster NPC
     this.load.image('sprite_stable_building', 'assets/sprites/mounts/sprite_stable_building.png');
     this.load.image('char_npc_stablemaster',  'assets/sprites/mounts/char_npc_stablemaster.png');
@@ -186,6 +191,13 @@ export class BootScene extends Phaser.Scene {
     this.load.image('cosmetic_outfit_ranger_frost',     'assets/cosmetics/cosmetic_outfit_ranger_frost.png');
     this.load.image('cosmetic_outfit_ranger_shadow',    'assets/cosmetics/cosmetic_outfit_ranger_shadow.png');
     this.load.image('cosmetic_outfit_warrior_royal',    'assets/cosmetics/cosmetic_outfit_warrior_royal.png');
+    // Expanded cosmetic outfits (PIX-418)
+    this.load.image('cosmetic_outfit_mage_scholar',      'assets/cosmetics/cosmetic_outfit_mage_scholar.png');
+    this.load.image('cosmetic_outfit_warrior_knight',    'assets/cosmetics/cosmetic_outfit_warrior_knight.png');
+    this.load.image('cosmetic_outfit_ranger_woodland',   'assets/cosmetics/cosmetic_outfit_ranger_woodland.png');
+    this.load.image('cosmetic_outfit_artisan_master',    'assets/cosmetics/cosmetic_outfit_artisan_master.png');
+    this.load.image('cosmetic_outfit_mage_void',         'assets/cosmetics/cosmetic_outfit_mage_void.png');
+    this.load.image('cosmetic_outfit_artisan_festival',  'assets/cosmetics/cosmetic_outfit_artisan_festival.png');
     // Portrait frames
     this.load.image('frame_gold',      'assets/ui/cosmetic_shop/frame_gold.png');
     this.load.image('frame_celestial', 'assets/ui/cosmetic_shop/frame_celestial.png');

@@ -5202,6 +5202,10 @@ export class GameScene extends Phaser.Scene {
     cheer: '🎉 Cheer',
     bow:   '🙇 Bow',
     angry: '😠 Angry',
+    laugh: '😂 Laugh',
+    cry:   '😢 Cry',
+    clap:  '👏 Clap',
+    flex:  '💪 Flex',
   };
   private static readonly EMOTE_DURATION_MS = 2500;
 

@@ -49,6 +49,12 @@ export const COSMETICS: CosmeticDef[] = [
   { id: 'outfit_frost',      name: 'Frost Cloak',      slot: 'outfit', assetKey: 'cosmetic_outfit_ranger_frost',    goldCost: 600,  achievementId: '', rarity: 'rare',      description: 'Shimmers like ice in winter light.' },
   { id: 'outfit_shadow',     name: 'Shadow Silk',      slot: 'outfit', assetKey: 'cosmetic_outfit_ranger_shadow',   goldCost: 500,  achievementId: '', rarity: 'common',    description: 'Blends into darkness effortlessly.' },
   { id: 'outfit_royal',      name: 'Royal Vestments',  slot: 'outfit', assetKey: 'cosmetic_outfit_warrior_royal',   goldCost: 1200, achievementId: '', rarity: 'legendary', description: 'Worn only by champions of the realm.' },
+  { id: 'outfit_scholar',    name: 'Arcane Scholar',   slot: 'outfit', assetKey: 'cosmetic_outfit_mage_scholar',    goldCost: 500,  achievementId: '', rarity: 'common',    description: 'Teal robes favoured by academy mages.' },
+  { id: 'outfit_knight',     name: 'Knight Ceremonial',slot: 'outfit', assetKey: 'cosmetic_outfit_warrior_knight',  goldCost: 700,  achievementId: '', rarity: 'rare',      description: 'Polished silver plate for formal occasions.' },
+  { id: 'outfit_woodland',   name: 'Woodland Garb',    slot: 'outfit', assetKey: 'cosmetic_outfit_ranger_woodland', goldCost: 500,  achievementId: '', rarity: 'common',    description: 'Bark-brown and leaf-green, one with the forest.' },
+  { id: 'outfit_master',     name: 'Master Artisan',   slot: 'outfit', assetKey: 'cosmetic_outfit_artisan_master',  goldCost: 700,  achievementId: '', rarity: 'rare',      description: 'Golden-trimmed apron of a master craftsman.' },
+  { id: 'outfit_void',       name: 'Void Weaver',      slot: 'outfit', assetKey: 'cosmetic_outfit_mage_void',       goldCost: 1000, achievementId: '', rarity: 'epic',      description: 'Woven from the threads between dimensions.' },
+  { id: 'outfit_festival',   name: 'Festival Finery',  slot: 'outfit', assetKey: 'cosmetic_outfit_artisan_festival',goldCost: 400,  achievementId: '', rarity: 'common',    description: 'Bright and festive, perfect for celebrations.' },
   // Hats
   { id: 'hat_wizard',        name: 'Wizard Hat',       slot: 'hat',    assetKey: 'hat_wizard',      goldCost: 200, achievementId: '', rarity: 'common',    description: 'The classic pointy hat of arcane tradition.' },
   { id: 'hat_crown',         name: 'Golden Crown',     slot: 'hat',    assetKey: 'hat_crown',       goldCost: 800, achievementId: '', rarity: 'epic',      description: 'Gleams like a king\'s own diadem.' },

@@ -202,7 +202,7 @@ export interface TradeOffer {
 
 // ── Emote / world event shapes ────────────────────────────────────────────────
 
-export type EmoteId = "wave" | "dance" | "sit" | "cheer" | "bow" | "angry";
+export type EmoteId = "wave" | "dance" | "sit" | "cheer" | "bow" | "angry" | "laugh" | "cry" | "clap" | "flex";
 
 export interface EmoteEvent {
   sessionId:  string;
