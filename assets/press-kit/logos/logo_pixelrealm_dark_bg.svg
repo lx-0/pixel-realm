@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="200" viewBox="0 0 640 200" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Dark background -->
+  <rect width="640" height="200" fill="#1a1a2e" rx="4"/>
+
+  <!-- P -->
+  <g fill="#60c0ff">
+    <rect x="24" y="40" width="8" height="56"/>
+    <rect x="32" y="40" width="16" height="8"/>
+    <rect x="48" y="48" width="8" height="16"/>
+    <rect x="32" y="64" width="16" height="8"/>
+  </g>
+
+  <!-- I -->
+  <g fill="#60c0ff">
+    <rect x="72" y="40" width="24" height="8"/>
+    <rect x="80" y="48" width="8" height="40"/>
+    <rect x="72" y="88" width="24" height="8"/>
+  </g>
+
+  <!-- X -->
+  <g fill="#60c0ff">
+    <rect x="112" y="40" width="8" height="8"/>
+    <rect x="136" y="40" width="8" height="8"/>
+    <rect x="120" y="48" width="8" height="8"/>
+    <rect x="128" y="48" width="8" height="8"/>
+    <rect x="128" y="56" width="8" height="8"/>
+    <rect x="120" y="56" width="8" height="8"/>
+    <rect x="124" y="64" width="8" height="8"/>
+    <rect x="120" y="72" width="8" height="8"/>
+    <rect x="128" y="72" width="8" height="8"/>
+    <rect x="112" y="80" width="8" height="8"/>
+    <rect x="136" y="80" width="8" height="8"/>
+    <rect x="112" y="88" width="8" height="8"/>
+    <rect x="136" y="88" width="8" height="8"/>
+  </g>
+
+  <!-- E -->
+  <g fill="#60c0ff">
+    <rect x="160" y="40" width="8" height="56"/>
+    <rect x="168" y="40" width="24" height="8"/>
+    <rect x="168" y="64" width="16" height="8"/>
+    <rect x="168" y="88" width="24" height="8"/>
+  </g>
+
+  <!-- L -->
+  <g fill="#60c0ff">
+    <rect x="208" y="40" width="8" height="56"/>
+    <rect x="216" y="88" width="24" height="8"/>
+  </g>
+
+  <!-- R -->
+  <g fill="#ffd700">
+    <rect x="264" y="40" width="8" height="56"/>
+    <rect x="272" y="40" width="16" height="8"/>
+    <rect x="288" y="48" width="8" height="16"/>
+    <rect x="272" y="64" width="16" height="8"/>
+    <rect x="280" y="72" width="8" height="8"/>
+    <rect x="288" y="80" width="8" height="16"/>
+  </g>
+
+  <!-- E -->
+  <g fill="#ffd700">
+    <rect x="312" y="40" width="8" height="56"/>
+    <rect x="320" y="40" width="24" height="8"/>
+    <rect x="320" y="64" width="16" height="8"/>
+    <rect x="320" y="88" width="24" height="8"/>
+  </g>
+
+  <!-- A -->
+  <g fill="#ffd700">
+    <rect x="368" y="48" width="8" height="48"/>
+    <rect x="392" y="48" width="8" height="48"/>
+    <rect x="376" y="40" width="16" height="8"/>
+    <rect x="376" y="64" width="16" height="8"/>
+  </g>
+
+  <!-- L -->
+  <g fill="#ffd700">
+    <rect x="416" y="40" width="8" height="56"/>
+    <rect x="424" y="88" width="24" height="8"/>
+  </g>
+
+  <!-- M -->
+  <g fill="#ffd700">
+    <rect x="464" y="40" width="8" height="56"/>
+    <rect x="504" y="40" width="8" height="56"/>
+    <rect x="472" y="48" width="8" height="8"/>
+    <rect x="496" y="48" width="8" height="8"/>
+    <rect x="480" y="56" width="8" height="8"/>
+    <rect x="488" y="56" width="8" height="8"/>
+  </g>
+
+  <!-- Sword icon -->
+  <g fill="#d0d0d0">
+    <rect x="4" y="56" width="4" height="28"/>
+    <rect x="0" y="84" width="12" height="4"/>
+    <rect x="4" y="88" width="4" height="8"/>
+  </g>
+  <rect x="2" y="96" width="8" height="4" fill="#ffd700"/>
+
+  <!-- Shield icon -->
+  <g fill="#3a8ad0">
+    <rect x="524" y="52" width="24" height="4"/>
+    <rect x="520" y="56" width="32" height="24"/>
+    <rect x="524" y="80" width="24" height="4"/>
+    <rect x="528" y="84" width="16" height="4"/>
+    <rect x="532" y="88" width="8" height="4"/>
+  </g>
+  <rect x="532" y="64" width="8" height="8" fill="#ffd700"/>
+
+  <!-- Sparkles -->
+  <g fill="#fff8a0" filter="url(#glow)">
+    <rect x="56" y="32" width="4" height="4"/>
+    <rect x="200" y="28" width="4" height="4"/>
+    <rect x="340" y="32" width="4" height="4"/>
+    <rect x="460" y="28" width="4" height="4"/>
+  </g>
+
+  <!-- Subtitle -->
+  <text x="280" y="124" fill="#b0b0b0" font-family="monospace" font-size="11" text-anchor="middle" letter-spacing="4">PIXELATED  MMORPG  ADVENTURE</text>
+
+  <!-- Bottom line -->
+  <g fill="#555555">
+    <rect x="80" y="136" width="400" height="2"/>
+  </g>
+  <g fill="#ffd700">
+    <rect x="276" y="134" width="8" height="6"/>
+  </g>
+</svg>

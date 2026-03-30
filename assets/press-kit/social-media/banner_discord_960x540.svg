@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" style="image-rendering: pixelated;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d1a"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#bgGrad)"/>
+
+  <!-- Pixel landscape silhouette -->
+  <g fill="#14142a">
+    <polygon points="0,540 0,380 60,340 120,360 180,300 240,320 300,280 360,340 420,300 480,260 540,300 600,320 660,280 720,340 780,300 840,360 900,320 960,380 960,540"/>
+  </g>
+  <g fill="#1a1a35">
+    <polygon points="0,540 0,420 80,380 160,400 240,360 320,400 400,380 480,340 560,380 640,400 720,360 800,400 880,380 960,420 960,540"/>
+  </g>
+
+  <!-- Stars -->
+  <g fill="#fff8a0" filter="url(#glow)" opacity="0.6">
+    <rect x="100" y="60" width="3" height="3"/>
+    <rect x="250" y="90" width="4" height="4"/>
+    <rect x="400" y="40" width="3" height="3"/>
+    <rect x="580" y="70" width="4" height="4"/>
+    <rect x="700" y="50" width="3" height="3"/>
+    <rect x="820" y="80" width="4" height="4"/>
+    <rect x="150" y="130" width="2" height="2"/>
+    <rect x="500" y="110" width="2" height="2"/>
+    <rect x="760" y="120" width="2" height="2"/>
+  </g>
+
+  <!-- Logo: PIXEL in cyan -->
+  <g fill="#50a8e8" transform="translate(200, 140) scale(1.5)">
+    <rect x="0" y="0" width="8" height="56"/>
+    <rect x="8" y="0" width="16" height="8"/>
+    <rect x="24" y="8" width="8" height="16"/>
+    <rect x="8" y="24" width="16" height="8"/>
+    <rect x="48" y="0" width="24" height="8"/>
+    <rect x="56" y="8" width="8" height="40"/>
+    <rect x="48" y="48" width="24" height="8"/>
+    <rect x="88" y="0" width="8" height="8"/>
+    <rect x="112" y="0" width="8" height="8"/>
+    <rect x="96" y="8" width="16" height="8"/>
+    <rect x="100" y="24" width="8" height="8"/>
+    <rect x="96" y="32" width="16" height="8"/>
+    <rect x="88" y="40" width="8" height="16"/>
+    <rect x="112" y="40" width="8" height="16"/>
+    <rect x="136" y="0" width="8" height="56"/>
+    <rect x="144" y="0" width="24" height="8"/>
+    <rect x="144" y="24" width="16" height="8"/>
+    <rect x="144" y="48" width="24" height="8"/>
+    <rect x="184" y="0" width="8" height="56"/>
+    <rect x="192" y="48" width="24" height="8"/>
+  </g>
+
+  <!-- REALM in gold -->
+  <g fill="#ffe040" transform="translate(200, 140) scale(1.5)">
+    <rect x="240" y="0" width="8" height="56"/>
+    <rect x="248" y="0" width="16" height="8"/>
+    <rect x="264" y="8" width="8" height="16"/>
+    <rect x="248" y="24" width="16" height="8"/>
+    <rect x="256" y="32" width="8" height="8"/>
+    <rect x="264" y="40" width="8" height="16"/>
+    <rect x="288" y="0" width="8" height="56"/>
+    <rect x="296" y="0" width="24" height="8"/>
+    <rect x="296" y="24" width="16" height="8"/>
+    <rect x="296" y="48" width="24" height="8"/>
+    <rect x="344" y="8" width="8" height="48"/>
+    <rect x="368" y="8" width="8" height="48"/>
+    <rect x="352" y="0" width="16" height="8"/>
+    <rect x="352" y="24" width="16" height="8"/>
+    <rect x="392" y="0" width="8" height="56"/>
+    <rect x="400" y="48" width="24" height="8"/>
+    <rect x="440" y="0" width="8" height="56"/>
+    <rect x="480" y="0" width="8" height="56"/>
+    <rect x="448" y="8" width="8" height="8"/>
+    <rect x="472" y="8" width="8" height="8"/>
+    <rect x="456" y="16" width="16" height="8"/>
+  </g>
+
+  <!-- Subtitle -->
+  <text x="480" y="260" fill="#b0b0c0" font-family="monospace" font-size="14" text-anchor="middle" letter-spacing="5">PIXELATED  MMORPG  ADVENTURE</text>
+
+  <!-- Tagline -->
+  <text x="480" y="295" fill="#707080" font-family="monospace" font-size="11" text-anchor="middle" letter-spacing="2">Explore · Fight · Craft · Trade · Build</text>
+
+  <!-- Class icons row -->
+  <g transform="translate(280, 340)">
+    <!-- Warrior sword -->
+    <rect x="0" y="0" width="40" height="40" rx="4" fill="#c0392b" opacity="0.3"/>
+    <rect x="18" y="5" width="4" height="24" fill="#bdc3c7"/>
+    <rect x="12" y="27" width="16" height="3" fill="#8e6c2e"/>
+    <text x="20" y="52" fill="#c0392b" font-family="monospace" font-size="7" text-anchor="middle">WAR</text>
+
+    <!-- Mage staff -->
+    <rect x="100" y="0" width="40" height="40" rx="4" fill="#8e44ad" opacity="0.3"/>
+    <rect x="118" y="5" width="4" height="28" fill="#8b4513"/>
+    <rect x="114" y="2" width="12" height="8" fill="#e040ff" filter="url(#glow)"/>
+    <text x="120" y="52" fill="#9b59b6" font-family="monospace" font-size="7" text-anchor="middle">MAG</text>
+
+    <!-- Ranger bow -->
+    <rect x="200" y="0" width="40" height="40" rx="4" fill="#27ae60" opacity="0.3"/>
+    <rect x="216" y="5" width="3" height="30" fill="#8b4513"/>
+    <rect x="220" y="4" width="1" height="32" fill="#bdc3c7" opacity="0.6"/>
+    <text x="220" y="52" fill="#2ecc71" font-family="monospace" font-size="7" text-anchor="middle">RNG</text>
+
+    <!-- Artisan hammer -->
+    <rect x="300" y="0" width="40" height="40" rx="4" fill="#d4a017" opacity="0.3"/>
+    <rect x="318" y="12" width="4" height="22" fill="#8b4513"/>
+    <rect x="312" y="5" width="16" height="10" fill="#7f8c8d"/>
+    <text x="320" y="52" fill="#f0c040" font-family="monospace" font-size="7" text-anchor="middle">ART</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <rect x="80" y="480" width="800" height="1" fill="#404060" opacity="0.4"/>
+  <text x="480" y="510" fill="#505060" font-family="monospace" font-size="9" text-anchor="middle" letter-spacing="3">JOIN THE ADVENTURE  ·  PLAY FREE IN YOUR BROWSER</text>
+</svg>

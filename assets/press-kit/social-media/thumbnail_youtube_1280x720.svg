@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" style="image-rendering: pixelated;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d0d1a"/>
+      <stop offset="40%" stop-color="#1a1028"/>
+      <stop offset="100%" stop-color="#0d1a1a"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="bigGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bgGrad)"/>
+
+  <!-- Dramatic light rays from center -->
+  <g opacity="0.06">
+    <polygon points="640,200 400,720 500,720" fill="#50a8e8"/>
+    <polygon points="640,200 540,720 640,720" fill="#ffe040"/>
+    <polygon points="640,200 680,720 780,720" fill="#ffe040"/>
+    <polygon points="640,200 820,720 920,720" fill="#50a8e8"/>
+    <polygon points="640,200 200,720 300,720" fill="#9b59b6"/>
+    <polygon points="640,200 960,720 1060,720" fill="#2ecc71"/>
+  </g>
+
+  <!-- Pixel landscape -->
+  <g fill="#14142a" opacity="0.8">
+    <polygon points="0,720 0,520 80,480 160,500 240,460 320,480 400,440 480,400 560,440 640,420 720,440 800,400 880,460 960,420 1040,480 1120,440 1200,500 1280,480 1280,720"/>
+  </g>
+
+  <!-- Stars -->
+  <g fill="#fff8a0" filter="url(#glow)" opacity="0.5">
+    <rect x="120" y="60" width="4" height="4"/>
+    <rect x="300" y="100" width="3" height="3"/>
+    <rect x="500" y="50" width="4" height="4"/>
+    <rect x="750" y="80" width="5" height="5"/>
+    <rect x="950" y="60" width="3" height="3"/>
+    <rect x="1100" y="90" width="4" height="4"/>
+    <rect x="1200" y="50" width="3" height="3"/>
+    <rect x="200" y="150" width="2" height="2"/>
+    <rect x="680" y="130" width="2" height="2"/>
+    <rect x="1050" y="140" width="2" height="2"/>
+  </g>
+
+  <!-- Center logo -->
+  <!-- PIXEL -->
+  <g fill="#50a8e8" transform="translate(240, 160) scale(2.5)">
+    <rect x="0" y="0" width="8" height="56"/>
+    <rect x="8" y="0" width="16" height="8"/>
+    <rect x="24" y="8" width="8" height="16"/>
+    <rect x="8" y="24" width="16" height="8"/>
+    <rect x="48" y="0" width="24" height="8"/>
+    <rect x="56" y="8" width="8" height="40"/>
+    <rect x="48" y="48" width="24" height="8"/>
+    <rect x="88" y="0" width="8" height="8"/>
+    <rect x="112" y="0" width="8" height="8"/>
+    <rect x="96" y="8" width="16" height="8"/>
+    <rect x="100" y="24" width="8" height="8"/>
+    <rect x="96" y="32" width="16" height="8"/>
+    <rect x="88" y="40" width="8" height="16"/>
+    <rect x="112" y="40" width="8" height="16"/>
+    <rect x="136" y="0" width="8" height="56"/>
+    <rect x="144" y="0" width="24" height="8"/>
+    <rect x="144" y="24" width="16" height="8"/>
+    <rect x="144" y="48" width="24" height="8"/>
+    <rect x="184" y="0" width="8" height="56"/>
+    <rect x="192" y="48" width="24" height="8"/>
+  </g>
+
+  <!-- REALM -->
+  <g fill="#ffe040" transform="translate(240, 160) scale(2.5)">
+    <rect x="240" y="0" width="8" height="56"/>
+    <rect x="248" y="0" width="16" height="8"/>
+    <rect x="264" y="8" width="8" height="16"/>
+    <rect x="248" y="24" width="16" height="8"/>
+    <rect x="256" y="32" width="8" height="8"/>
+    <rect x="264" y="40" width="8" height="16"/>
+    <rect x="288" y="0" width="8" height="56"/>
+    <rect x="296" y="0" width="24" height="8"/>
+    <rect x="296" y="24" width="16" height="8"/>
+    <rect x="296" y="48" width="24" height="8"/>
+    <rect x="344" y="8" width="8" height="48"/>
+    <rect x="368" y="8" width="8" height="48"/>
+    <rect x="352" y="0" width="16" height="8"/>
+    <rect x="352" y="24" width="16" height="8"/>
+    <rect x="392" y="0" width="8" height="56"/>
+    <rect x="400" y="48" width="24" height="8"/>
+    <rect x="440" y="0" width="8" height="56"/>
+    <rect x="480" y="0" width="8" height="56"/>
+    <rect x="448" y="8" width="8" height="8"/>
+    <rect x="472" y="8" width="8" height="8"/>
+    <rect x="456" y="16" width="16" height="8"/>
+  </g>
+
+  <!-- Subtitle -->
+  <text x="640" y="370" fill="#c0c0d0" font-family="monospace" font-size="22" text-anchor="middle" letter-spacing="8">PIXELATED  MMORPG  ADVENTURE</text>
+
+  <!-- Big tagline for YouTube -->
+  <text x="640" y="430" fill="#ffe040" font-family="monospace" font-size="32" font-weight="bold" text-anchor="middle" letter-spacing="3" filter="url(#glow)">A LIVING WORLD AWAITS</text>
+
+  <!-- Feature row -->
+  <g font-family="monospace" font-size="14" text-anchor="middle">
+    <rect x="140" y="490" width="200" height="36" rx="18" fill="#c0392b" opacity="0.2" stroke="#c0392b" stroke-width="1"/>
+    <text x="240" y="513" fill="#ff6040">4 Unique Classes</text>
+
+    <rect x="380" y="490" width="200" height="36" rx="18" fill="#27ae60" opacity="0.2" stroke="#27ae60" stroke-width="1"/>
+    <text x="480" y="513" fill="#40ff80">19 Biomes</text>
+
+    <rect x="620" y="490" width="200" height="36" rx="18" fill="#8e44ad" opacity="0.2" stroke="#8e44ad" stroke-width="1"/>
+    <text x="720" y="513" fill="#c080ff">AI Quests</text>
+
+    <rect x="860" y="490" width="220" height="36" rx="18" fill="#d4a017" opacity="0.2" stroke="#d4a017" stroke-width="1"/>
+    <text x="970" y="513" fill="#ffe040">Player Economy</text>
+  </g>
+
+  <!-- Play free badge -->
+  <rect x="480" y="560" width="320" height="44" rx="22" fill="#50a8e8" opacity="0.15" stroke="#50a8e8" stroke-width="1.5"/>
+  <text x="640" y="588" fill="#60c0ff" font-family="monospace" font-size="16" font-weight="bold" text-anchor="middle" letter-spacing="4">PLAY FREE IN BROWSER</text>
+
+  <!-- Corner accents -->
+  <rect x="20" y="20" width="60" height="4" fill="#50a8e8" opacity="0.4"/>
+  <rect x="20" y="20" width="4" height="60" fill="#50a8e8" opacity="0.4"/>
+  <rect x="1200" y="20" width="60" height="4" fill="#ffe040" opacity="0.4"/>
+  <rect x="1256" y="20" width="4" height="60" fill="#ffe040" opacity="0.4"/>
+  <rect x="20" y="696" width="60" height="4" fill="#2ecc71" opacity="0.4"/>
+  <rect x="20" y="640" width="4" height="60" fill="#2ecc71" opacity="0.4"/>
+  <rect x="1200" y="696" width="60" height="4" fill="#9b59b6" opacity="0.4"/>
+  <rect x="1256" y="640" width="4" height="60" fill="#9b59b6" opacity="0.4"/>
+</svg>

@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="816" height="1056" viewBox="0 0 816 1056" style="image-rendering: pixelated;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Page background -->
+  <rect width="816" height="1056" fill="#0d0d1a"/>
+
+  <!-- Header bar -->
+  <rect x="0" y="0" width="816" height="120" fill="#111122"/>
+  <rect x="0" y="118" width="816" height="2" fill="#ffe040" opacity="0.6"/>
+
+  <!-- Logo text in header -->
+  <!-- PIXEL -->
+  <g fill="#50a8e8" transform="translate(148, 28) scale(1.2)">
+    <rect x="0" y="0" width="8" height="56"/>
+    <rect x="8" y="0" width="16" height="8"/>
+    <rect x="24" y="8" width="8" height="16"/>
+    <rect x="8" y="24" width="16" height="8"/>
+    <rect x="48" y="0" width="24" height="8"/>
+    <rect x="56" y="8" width="8" height="40"/>
+    <rect x="48" y="48" width="24" height="8"/>
+    <rect x="88" y="0" width="8" height="8"/>
+    <rect x="112" y="0" width="8" height="8"/>
+    <rect x="96" y="8" width="16" height="8"/>
+    <rect x="100" y="24" width="8" height="8"/>
+    <rect x="96" y="32" width="16" height="8"/>
+    <rect x="88" y="40" width="8" height="16"/>
+    <rect x="112" y="40" width="8" height="16"/>
+    <rect x="136" y="0" width="8" height="56"/>
+    <rect x="144" y="0" width="24" height="8"/>
+    <rect x="144" y="24" width="16" height="8"/>
+    <rect x="144" y="48" width="24" height="8"/>
+    <rect x="184" y="0" width="8" height="56"/>
+    <rect x="192" y="48" width="24" height="8"/>
+  </g>
+  <!-- REALM -->
+  <g fill="#ffe040" transform="translate(148, 28) scale(1.2)">
+    <rect x="240" y="0" width="8" height="56"/>
+    <rect x="248" y="0" width="16" height="8"/>
+    <rect x="264" y="8" width="8" height="16"/>
+    <rect x="248" y="24" width="16" height="8"/>
+    <rect x="256" y="32" width="8" height="8"/>
+    <rect x="264" y="40" width="8" height="16"/>
+    <rect x="288" y="0" width="8" height="56"/>
+    <rect x="296" y="0" width="24" height="8"/>
+    <rect x="296" y="24" width="16" height="8"/>
+    <rect x="296" y="48" width="24" height="8"/>
+    <rect x="344" y="8" width="8" height="48"/>
+    <rect x="368" y="8" width="8" height="48"/>
+    <rect x="352" y="0" width="16" height="8"/>
+    <rect x="352" y="24" width="16" height="8"/>
+    <rect x="392" y="0" width="8" height="56"/>
+    <rect x="400" y="48" width="24" height="8"/>
+  </g>
+  <text x="408" y="108" fill="#808090" font-family="monospace" font-size="11" text-anchor="middle" letter-spacing="4">PRESS  FACT  SHEET</text>
+
+  <!-- ===== SECTION: Game Overview ===== -->
+  <rect x="40" y="140" width="736" height="3" fill="#50a8e8" opacity="0.4"/>
+  <text x="40" y="170" fill="#50a8e8" font-family="monospace" font-size="14" font-weight="bold" letter-spacing="3">GAME OVERVIEW</text>
+
+  <text x="40" y="200" fill="#e0e0e0" font-family="monospace" font-size="11">
+    <tspan x="40" dy="0">PixelRealm is a browser-based pixelated MMORPG where the world, quests,</tspan>
+    <tspan x="40" dy="18">and NPCs perpetually evolve through LLM-generated content. Explore biome-</tspan>
+    <tspan x="40" dy="18">rich zones, battle monsters, craft gear, and form guilds - all in a living</tspan>
+    <tspan x="40" dy="18">world that writes new stories every day.</tspan>
+  </text>
+
+  <!-- ===== SECTION: Key Facts ===== -->
+  <rect x="40" y="280" width="736" height="3" fill="#ffe040" opacity="0.4"/>
+  <text x="40" y="310" fill="#ffe040" font-family="monospace" font-size="14" font-weight="bold" letter-spacing="3">KEY FACTS</text>
+
+  <!-- Two-column layout -->
+  <g font-family="monospace" font-size="11">
+    <!-- Left column -->
+    <text x="40" y="340" fill="#808090">Title</text>
+    <text x="220" y="340" fill="#e0e0e0">PixelRealm</text>
+
+    <text x="40" y="364" fill="#808090">Genre</text>
+    <text x="220" y="364" fill="#e0e0e0">MMORPG (Pixelated, Browser-based)</text>
+
+    <text x="40" y="388" fill="#808090">Platform</text>
+    <text x="220" y="388" fill="#e0e0e0">Web (HTML5) - Any modern browser</text>
+
+    <text x="40" y="412" fill="#808090">Price</text>
+    <text x="220" y="412" fill="#e0e0e0">Free to play</text>
+
+    <text x="40" y="436" fill="#808090">Version</text>
+    <text x="220" y="436" fill="#e0e0e0">1.4.0 (March 2026)</text>
+
+    <text x="40" y="460" fill="#808090">Engine</text>
+    <text x="220" y="460" fill="#e0e0e0">Phaser 3.80 (2D WebGL/Canvas)</text>
+
+    <text x="40" y="484" fill="#808090">Developer</text>
+    <text x="220" y="484" fill="#e0e0e0">Pixel Forge Studios</text>
+
+    <text x="40" y="508" fill="#808090">Target Audience</text>
+    <text x="220" y="508" fill="#e0e0e0">Mid-core gamers, 18-35</text>
+  </g>
+
+  <!-- ===== SECTION: Key Features ===== -->
+  <rect x="40" y="540" width="736" height="3" fill="#2ecc71" opacity="0.4"/>
+  <text x="40" y="570" fill="#2ecc71" font-family="monospace" font-size="14" font-weight="bold" letter-spacing="3">KEY FEATURES</text>
+
+  <g font-family="monospace" font-size="11" fill="#e0e0e0">
+    <!-- Feature bullets with pixel diamonds -->
+    <rect x="40" y="590" width="6" height="6" fill="#50a8e8" transform="rotate(45, 43, 593)"/>
+    <text x="60" y="597">LLM-Generated Content - AI-crafted quests, NPC dialogue, and world events</text>
+
+    <rect x="40" y="616" width="6" height="6" fill="#ffe040" transform="rotate(45, 43, 619)"/>
+    <text x="60" y="623">4 Playable Classes - Warrior, Mage, Ranger, Artisan (12 archetypes total)</text>
+
+    <rect x="40" y="642" width="6" height="6" fill="#2ecc71" transform="rotate(45, 43, 645)"/>
+    <text x="60" y="649">19 Unique Biomes - From forests and deserts to volcanic peaks and abyssal depths</text>
+
+    <rect x="40" y="668" width="6" height="6" fill="#e74c3c" transform="rotate(45, 43, 671)"/>
+    <text x="60" y="675">PvP Arena - Competitive combat with leaderboards and seasonal rankings</text>
+
+    <rect x="40" y="694" width="6" height="6" fill="#9b59b6" transform="rotate(45, 43, 697)"/>
+    <text x="60" y="701">Deep Crafting System - Craft gear, potions, and enchanted items</text>
+
+    <rect x="40" y="720" width="6" height="6" fill="#d4a017" transform="rotate(45, 43, 723)"/>
+    <text x="60" y="727">Player Housing - Buy land, build and decorate your home</text>
+
+    <rect x="40" y="746" width="6" height="6" fill="#50a8e8" transform="rotate(45, 43, 749)"/>
+    <text x="60" y="753">Mount System - Collect and ride 6 unique mounts</text>
+
+    <rect x="40" y="772" width="6" height="6" fill="#ffe040" transform="rotate(45, 43, 775)"/>
+    <text x="60" y="779">Auction House - Player-driven economy with marketplace trading</text>
+
+    <rect x="40" y="798" width="6" height="6" fill="#2ecc71" transform="rotate(45, 43, 801)"/>
+    <text x="60" y="805">Procedural Dungeons - Dynamically generated dungeon encounters</text>
+
+    <rect x="40" y="824" width="6" height="6" fill="#e74c3c" transform="rotate(45, 43, 827)"/>
+    <text x="60" y="831">Full Accessibility - Colorblind modes, UI scaling, keyboard shortcuts</text>
+  </g>
+
+  <!-- ===== SECTION: Tech Specs ===== -->
+  <rect x="40" y="860" width="340" height="3" fill="#9b59b6" opacity="0.4"/>
+  <text x="40" y="890" fill="#9b59b6" font-family="monospace" font-size="14" font-weight="bold" letter-spacing="3">TECH SPECS</text>
+
+  <g font-family="monospace" font-size="10" fill="#b0b0b0">
+    <text x="40" y="912">TypeScript 5.x · Phaser 3.80 · Vite 5.x</text>
+    <text x="40" y="928">Colyseus 0.15 (multiplayer) · Fastify 4.x</text>
+    <text x="40" y="944">PostgreSQL 16 · Redis 7.x · Node.js 20</text>
+    <text x="40" y="960">LLM: Anthropic Claude (server-side)</text>
+  </g>
+
+  <!-- ===== SECTION: Contact ===== -->
+  <rect x="430" y="860" width="346" height="3" fill="#d4a017" opacity="0.4"/>
+  <text x="430" y="890" fill="#d4a017" font-family="monospace" font-size="14" font-weight="bold" letter-spacing="3">CONTACT</text>
+
+  <g font-family="monospace" font-size="10" fill="#b0b0b0">
+    <text x="430" y="912">Developer: Pixel Forge Studios</text>
+    <text x="430" y="928">Web: pixelforgestudios.com</text>
+    <text x="430" y="944">Press: press@pixelforgestudios.com</text>
+    <text x="430" y="960">itch.io: pixelforgestudios.itch.io/pixelrealm</text>
+  </g>
+
+  <!-- Footer -->
+  <rect x="40" y="990" width="736" height="1" fill="#404050"/>
+  <text x="408" y="1012" fill="#505060" font-family="monospace" font-size="9" text-anchor="middle" letter-spacing="2">PIXELREALM  ·  PIXEL FORGE STUDIOS  ·  2026</text>
+  <text x="408" y="1032" fill="#404050" font-family="monospace" font-size="8" text-anchor="middle" letter-spacing="1">All assets in this press kit may be used for editorial coverage of PixelRealm.</text>
+
+  <!-- Decorative corners -->
+  <rect x="20" y="10" width="30" height="3" fill="#50a8e8" opacity="0.3"/>
+  <rect x="20" y="10" width="3" height="30" fill="#50a8e8" opacity="0.3"/>
+  <rect x="766" y="10" width="30" height="3" fill="#ffe040" opacity="0.3"/>
+  <rect x="793" y="10" width="3" height="30" fill="#ffe040" opacity="0.3"/>
+</svg>
