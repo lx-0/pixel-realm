@@ -339,13 +339,24 @@ Updated promotional art, achievement icons, tutorial visuals, and final distribu
 - [x] PIX-410 — Create tutorial and tooltip art for M37-M40 game systems
 - [x] PIX-411 — Rebuild distribution as v1.3.0 with M37-M40 feature content
 
-### M42: Accessibility & Launch Polish — IN PROGRESS
+### M42: Accessibility & Launch Polish — COMPLETE
 Accessibility features and upgraded marketing art to broaden reach and strengthen the itch.io launch. Parallel to distribution unblock (PIX-19).
 
-- [ ] PIX-423 — Integrate zone-specific loading screen backgrounds into zone transitions
-- [ ] PIX-426 — Create accessibility UI art (high-contrast sprites, colorblind-safe indicators, input method icons)
-- [ ] PIX-427 — Create class showcase portraits and itch.io feature banner art for v1.3.0 launch
-- [ ] PIX-428 — Implement accessibility features (colorblind mode, keyboard shortcut overlay, UI scaling)
+- [x] PIX-421 — Create zone-specific loading screen art for all 19 biomes
+- [x] PIX-423 — Integrate zone-specific loading screen backgrounds into zone transitions
+- [x] PIX-424 — Create animated title screen and main menu key art for v1.3.0 launch
+- [x] PIX-425 — Create NPC portrait gallery and dialogue box art refresh
+- [x] PIX-426 — Create accessibility UI art (high-contrast sprites, colorblind-safe indicators, input method icons)
+- [x] PIX-427 — Create class showcase portraits and itch.io feature banner art for v1.3.0 launch
+- [x] PIX-428 — Implement accessibility features (colorblind mode, keyboard shortcut overlay, UI scaling)
+
+### M43: v1.4.0 Distribution & Pre-Launch Hardening — IN PROGRESS
+Package v1.4.0 with M42 accessibility and polish content. Final QA sweep and promotional updates before launch.
+
+- [ ] PIX-430 — Rebuild distribution as v1.4.0 with M42 accessibility and launch polish content
+- [ ] PIX-431 — Full v1.4.0 QA (regression test suite, accessibility feature verification, build check)
+- [ ] PIX-432 — Create v1.4.0 promotional screenshots showcasing accessibility features and new title screen
+- [ ] PIX-433 — Update itch.io store page description with v1.4.0 accessibility and polish highlights
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -433,4 +444,5 @@ M5 → M6 ──────────────────┘
 - **Engineer unblocked** — As of 2026-03-29, Engineer completed M35–M40 code. All GDD features implemented. Only PIX-411 (v1.3.0 rebuild) remains.
 - **M41: Art Polish & v1.3.0** — All M41 tasks complete. v1.3.0 distribution rebuilt with all M37-M40 features (player housing, mounts, auction house, LLM UI, world map, bestiary, cosmetic shop, dodge/roll, fishing). 1122 tests pass. All complete as of 2026-03-29.
 - **Feature-complete & v1.3.0 shipped** — As of 2026-03-29, all GDD features through M40 are fully implemented and packaged in v1.3.0. Game is feature-complete. Pending itch.io launch (PIX-19, board-blocked).
-- **M42: Accessibility & Launch Polish** — While awaiting distribution unblock, adding accessibility features (colorblind mode, keyboard shortcut overlay, UI scaling) and upgraded class showcase/marketing art. Zone loading screen integration (PIX-423) also in progress. Created 2026-03-30.
+- **M42: Accessibility & Launch Polish** — Complete as of 2026-03-30. Added colorblind mode, keyboard shortcut overlay, UI scaling (PIX-428), zone-specific loading screens (PIX-421, PIX-423), animated title screen (PIX-424), NPC portrait refresh (PIX-425), accessibility UI art (PIX-426), and class showcase art (PIX-427).
+- **M43: v1.4.0 Distribution & Pre-Launch Hardening** — Rebuild distribution with M42 content, full QA sweep, promotional screenshots, and itch.io page update. Created 2026-03-30.
