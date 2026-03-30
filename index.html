@@ -54,10 +54,55 @@
         display: block;
         touch-action: none;
       }
+      /* Visually-hidden skip link — visible only on focus for keyboard users */
+      .sr-skip-link {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+        z-index: 9999;
+        background: #0a0a2e;
+        color: #ffd700;
+        padding: 4px 8px;
+        font-family: monospace;
+        font-size: 14px;
+        text-decoration: none;
+        border: 1px solid #50a8e8;
+      }
+      .sr-skip-link:focus {
+        top: 4px;
+        left: 4px;
+      }
     </style>
   </head>
   <body>
-    <div id="game-container"></div>
+    <!--
+      Screen reader skip link — hidden visually but available to assistive tech.
+      Points to the game canvas region.
+    -->
+    <a href="#game-container" class="sr-skip-link">Skip to game</a>
+
+    <!--
+      Main game container. role="application" signals that keyboard interactions
+      are handled by the application, not the browser. aria-label names the region.
+    -->
+    <div
+      id="game-container"
+      role="application"
+      aria-label="PixelRealm game canvas"
+    ></div>
+
+    <!--
+      Live region for important in-game announcements (quest complete, level up, etc.)
+      Populated by JS when accessibility mode is active.
+    -->
+    <div
+      id="game-announcer"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      style="position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"
+    ></div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

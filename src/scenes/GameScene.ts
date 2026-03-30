@@ -53,6 +53,7 @@ import { WeatherSystem }   from '../systems/WeatherSystem';
 import { type BiomeKey }   from '../config/dayNightPalette';
 import { AdaptiveMusicSystem } from '../systems/AdaptiveMusicSystem';
 import { MobileTouchControls } from '../systems/MobileTouchControls';
+import { KeybindOverlay } from '../ui/KeybindOverlay';
 import {
   SKILL_BY_ID, computePassiveBonuses,
   type ClassId, type PassiveBonus,
@@ -442,6 +443,9 @@ export class GameScene extends Phaser.Scene {
   private statsOverlayVisible = false;
   private statsOverlayContainer?: Phaser.GameObjects.Container;
   private statsKey?: Phaser.Input.Keyboard.Key;
+
+  /** Keyboard shortcut help overlay (? / F1 toggle). */
+  private helpF1Key?: Phaser.Input.Keyboard.Key;
 
   /** Faction reputation panel (multiplayer only, R to open). */
   private factionPanel?: FactionReputationPanel;
@@ -880,6 +884,11 @@ export class GameScene extends Phaser.Scene {
       const settings = SettingsManager.getInstance();
       settings.muted = muted;
       settings.save();
+    }
+
+    // Keybind help overlay (F1) — '?' is handled via raw keydown listener in setupInput
+    if (this.helpF1Key && Phaser.Input.Keyboard.JustDown(this.helpF1Key)) {
+      KeybindOverlay.toggle(this);
     }
 
     // Escape Scroll (T key) — teleport to zone spawn / nearest waystone
@@ -4868,6 +4877,11 @@ export class GameScene extends Phaser.Scene {
     this.prestigeKey     = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Y);
     this.statsKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F);
     this.mountKey        = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+    this.helpF1Key       = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F1);
+    // '?' key (Shift+/) — listen via raw keydown since Phaser has no QUESTION_MARK code
+    this.input.keyboard!.on('keydown', (ev: KeyboardEvent) => {
+      if (ev.key === '?') KeybindOverlay.toggle(this);
+    });
     // Hotbar skill keys 1–6
     const hotbarKeyCodes = [
       Phaser.Input.Keyboard.KeyCodes.ONE,

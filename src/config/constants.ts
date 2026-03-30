@@ -282,6 +282,7 @@ export const SCENES = {
   DUNGEON: 'DungeonScene',
   WORLD_BOSS: 'WorldBossScene',
   ZONE_TRANSITION: 'ZoneTransitionScene',
+  KEYBIND_OVERLAY: 'KeybindOverlay',
 } as const;
 
 // ── Housing ───────────────────────────────────────────────────────────────────

@@ -13,6 +13,7 @@ import { HousingScene }     from './scenes/HousingScene';
 import { DungeonScene }     from './scenes/DungeonScene';
 import { WorldBossScene }        from './scenes/WorldBossScene';
 import { ZoneTransitionScene }   from './scenes/ZoneTransitionScene';
+import { KeybindOverlay }        from './ui/KeybindOverlay';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -34,7 +35,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [BootScene, MenuScene, LevelSelectScene, ZoneTransitionScene, GameScene, PauseScene, SettingsScene, GameOverScene, CreditsScene, ArenaScene, HousingScene, DungeonScene, WorldBossScene],
+  scene: [BootScene, MenuScene, LevelSelectScene, ZoneTransitionScene, GameScene, PauseScene, SettingsScene, GameOverScene, CreditsScene, ArenaScene, HousingScene, DungeonScene, WorldBossScene, KeybindOverlay],
 };
 
 new Phaser.Game(config);

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CANVAS, SCENES } from '../config/constants';
 import { SoundManager } from '../systems/SoundManager';
+import { KeybindOverlay } from '../ui/KeybindOverlay';
 
 /**
  * MenuScene — title screen with animated particle background and play prompt.
@@ -155,6 +156,11 @@ export class MenuScene extends Phaser.Scene {
     const tryStart = () => { if (!settingsOpen && !gameStarted) { gameStarted = true; this.startGame(); } };
     this.input.keyboard?.on('keydown-SPACE', tryStart);
     this.input.on('pointerdown', tryStart);
+
+    // ? / F1 — open keybind help overlay
+    this.input.keyboard?.on('keydown', (ev: KeyboardEvent) => {
+      if (ev.key === '?' || ev.key === 'F1') KeybindOverlay.toggle(this);
+    });
   }
 
   private startGame(): void {

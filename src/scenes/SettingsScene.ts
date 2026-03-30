@@ -2,17 +2,19 @@ import Phaser from 'phaser';
 import { CANVAS, SCENES } from '../config/constants';
 import { SettingsManager } from '../systems/SettingsManager';
 import { SoundManager } from '../systems/SoundManager';
+import type { ColorblindMode, UiScale } from '../systems/SettingsManager';
 
 export interface SettingsSceneData {
   /** Which scene to return to when settings are closed. */
   origin: 'menu' | 'pause';
 }
 
-type Tab = 'audio' | 'display' | 'controls';
+type Tab = 'audio' | 'display' | 'controls' | 'access';
 
 /**
  * SettingsScene — full-screen tabbed settings overlay.
  * Launched from MenuScene or PauseScene; returns to origin on close.
+ * Tabs: Audio, Display, Controls, Accessibility
  */
 export class SettingsScene extends Phaser.Scene {
   private settings!: SettingsManager;
@@ -55,13 +57,19 @@ export class SettingsScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(3);
 
     // ── Tab buttons ───────────────────────────────────────────────────────────
-    const tabs: Tab[] = ['audio', 'display', 'controls'];
-    const tabW = 54;
+    const tabs: Tab[] = ['audio', 'display', 'controls', 'access'];
+    const tabLabels: Record<Tab, string> = {
+      audio:    'AUDIO',
+      display:  'DISPLAY',
+      controls: 'CONTROLS',
+      access:   'ACCESS',
+    };
+    const tabW = 42;
     const tabY = cy - panelH / 2 + 22;
 
     tabs.forEach((tab, i) => {
-      const tx = cx - tabW + i * tabW;
-      const btn = this.add.text(tx, tabY, tab.toUpperCase(), {
+      const tx = cx - tabW * 1.5 + i * tabW;
+      const btn = this.add.text(tx, tabY, tabLabels[tab], {
         fontSize: '5px', color: '#888899', fontFamily: 'monospace',
       })
         .setOrigin(0.5)
@@ -88,9 +96,10 @@ export class SettingsScene extends Phaser.Scene {
     this.tabContainers.audio    = this.buildAudioTab(cx, contentY);
     this.tabContainers.display  = this.buildDisplayTab(cx, contentY);
     this.tabContainers.controls = this.buildControlsTab(cx, contentY);
+    this.tabContainers.access   = this.buildAccessibilityTab(cx, contentY);
 
     // ── Close button ──────────────────────────────────────────────────────────
-    const closeBtn = this.add.text(cx + panelW / 2 - 6, cy - panelH / 2 + 5, '✕', {
+    const closeBtn = this.add.text(cx + panelW / 2 - 6, cy - panelH / 2 + 5, 'X', {
       fontSize: '6px', color: '#cc4444', fontFamily: 'monospace',
     }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(3);
 
@@ -132,38 +141,25 @@ export class SettingsScene extends Phaser.Scene {
     const items: Phaser.GameObjects.GameObject[] = [];
     let y = startY;
 
-    // Fullscreen toggle
     items.push(...this.buildToggleRow(cx, y, 'Fullscreen',
       () => this.settings.fullscreen,
       (v) => {
         this.settings.fullscreen = v;
         this.settings.save();
-        if (v) {
-          this.scale.startFullscreen();
-        } else {
-          this.scale.stopFullscreen();
-        }
+        if (v) { this.scale.startFullscreen(); } else { this.scale.stopFullscreen(); }
       },
     ));
     y += 16;
 
-    // Smooth scaling toggle
     items.push(...this.buildToggleRow(cx, y, 'Smooth Scale',
       () => this.settings.smoothScale,
-      (v) => {
-        this.settings.smoothScale = v;
-        this.settings.save();
-      },
+      (v) => { this.settings.smoothScale = v; this.settings.save(); },
     ));
     y += 16;
 
-    // Show FPS toggle
     items.push(...this.buildToggleRow(cx, y, 'Show FPS',
       () => this.settings.showFPS,
-      (v) => {
-        this.settings.showFPS = v;
-        this.settings.save();
-      },
+      (v) => { this.settings.showFPS = v; this.settings.save(); },
     ));
 
     return this.add.container(0, 0, items).setDepth(3);
@@ -173,24 +169,24 @@ export class SettingsScene extends Phaser.Scene {
     const items: Phaser.GameObjects.GameObject[] = [];
 
     const bindings: [string, string][] = [
-      ['Move',       'W / A / S / D'],
-      ['Attack',     'SPACE'],
-      ['Sprint',     'SHIFT'],
-      ['Dodge',      'Q'],
-      ['NPC Talk',   'E'],
-      ['Inventory',  'I'],
-      ['Quest Log',  'J'],
-      ['Skill Tree', 'K'],
-      ['Achievements','H'],
-      ['World Map',  'M'],
-      ['Craft',      'F'],
-      ['Skills 1–6', '1 – 6'],
-      ['Chat',       'ENTER'],
-      ['Mute',       'N'],
+      ['Move',          'W / A / S / D'],
+      ['Attack',        'SPACE'],
+      ['Sprint',        'SHIFT'],
+      ['Dodge',         'Q'],
+      ['NPC Talk',      'E'],
+      ['Inventory',     'I'],
+      ['Quest Log',     'J'],
+      ['Skill Tree',    'K'],
+      ['Achievements',  'H'],
+      ['World Map',     'M'],
+      ['Craft',         'F'],
+      ['Skills 1-6',    '1 - 6'],
+      ['Chat',          'ENTER'],
+      ['Mute',          'N'],
       ['Close / Pause', 'ESC'],
     ];
 
-    items.push(this.add.text(cx, startY - 2, 'Key Bindings (v1 — read only)', {
+    items.push(this.add.text(cx, startY - 2, 'Key Bindings (v1 - read only)', {
       fontSize: '4px', color: '#555577', fontFamily: 'monospace',
     }).setOrigin(0.5));
 
@@ -209,6 +205,101 @@ export class SettingsScene extends Phaser.Scene {
     return this.add.container(0, 0, items).setDepth(3);
   }
 
+  private buildAccessibilityTab(cx: number, startY: number): Phaser.GameObjects.Container {
+    const items: Phaser.GameObjects.GameObject[] = [];
+    let y = startY;
+
+    // Colorblind Mode
+    items.push(this.add.text(cx - 52, y, 'Colorblind', {
+      fontSize: '6px', color: '#aaccee', fontFamily: 'monospace',
+    }).setOrigin(0, 0.5));
+
+    const MODES: ColorblindMode[] = ['none', 'protanopia', 'deuteranopia', 'tritanopia'];
+    const modeLabels: Record<ColorblindMode, string> = {
+      none: 'None', protanopia: 'Protan', deuteranopia: 'Deutan', tritanopia: 'Tritan',
+    };
+
+    const modeValueText = this.add.text(cx, y, modeLabels[this.settings.colorblindMode], {
+      fontSize: '6px', color: '#ffffff', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5);
+    items.push(modeValueText);
+
+    const decMode = this.add.text(cx - 20, y, '<', {
+      fontSize: '6px', color: '#50a8e8', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
+    const incMode = this.add.text(cx + 20, y, '>', {
+      fontSize: '6px', color: '#50a8e8', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
+
+    const stepMode = (dir: 1 | -1) => {
+      this.sfx.playMenuClick();
+      const idx = MODES.indexOf(this.settings.colorblindMode);
+      const next = MODES[(idx + dir + MODES.length) % MODES.length];
+      this.settings.colorblindMode = next;
+      this.settings.save();
+      modeValueText.setText(modeLabels[next]);
+    };
+    decMode.on('pointerdown', () => stepMode(-1));
+    incMode.on('pointerdown', () => stepMode(1));
+    decMode.on('pointerover', () => decMode.setColor('#ffffff'));
+    decMode.on('pointerout',  () => decMode.setColor('#50a8e8'));
+    incMode.on('pointerover', () => incMode.setColor('#ffffff'));
+    incMode.on('pointerout',  () => incMode.setColor('#50a8e8'));
+    items.push(decMode, incMode);
+    y += 16;
+
+    // UI Scale
+    items.push(this.add.text(cx - 52, y, 'UI Scale', {
+      fontSize: '6px', color: '#aaccee', fontFamily: 'monospace',
+    }).setOrigin(0, 0.5));
+
+    const SCALES: UiScale[] = [1, 1.5, 2];
+    const scaleLabel = (s: UiScale) => s + 'x';
+
+    const scaleValueText = this.add.text(cx, y, scaleLabel(this.settings.uiScale), {
+      fontSize: '6px', color: '#ffffff', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5);
+    items.push(scaleValueText);
+
+    const decScale = this.add.text(cx - 20, y, '<', {
+      fontSize: '6px', color: '#50a8e8', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
+    const incScale = this.add.text(cx + 20, y, '>', {
+      fontSize: '6px', color: '#50a8e8', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
+
+    const stepScale = (dir: 1 | -1) => {
+      this.sfx.playMenuClick();
+      const idx = SCALES.indexOf(this.settings.uiScale);
+      const next = SCALES[Math.max(0, Math.min(SCALES.length - 1, idx + dir))];
+      this.settings.uiScale = next;
+      this.settings.save();
+      scaleValueText.setText(scaleLabel(next));
+    };
+    decScale.on('pointerdown', () => stepScale(-1));
+    incScale.on('pointerdown', () => stepScale(1));
+    decScale.on('pointerover', () => decScale.setColor('#ffffff'));
+    decScale.on('pointerout',  () => decScale.setColor('#50a8e8'));
+    incScale.on('pointerover', () => incScale.setColor('#ffffff'));
+    incScale.on('pointerout',  () => incScale.setColor('#50a8e8'));
+    items.push(decScale, incScale);
+    y += 16;
+
+    // Reduced Motion
+    items.push(...this.buildToggleRow(cx, y, 'Reduced Motion',
+      () => this.settings.reducedMotion,
+      (v) => { this.settings.reducedMotion = v; this.settings.save(); },
+    ));
+    y += 16;
+
+    // Hint
+    items.push(this.add.text(cx, y + 4, 'Press ? or F1 in-game for keybind list', {
+      fontSize: '4px', color: '#556688', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5));
+
+    return this.add.container(0, 0, items).setDepth(3);
+  }
+
   // ── Reusable row builders ──────────────────────────────────────────────────
 
   private buildSliderRow(
@@ -219,17 +310,17 @@ export class SettingsScene extends Phaser.Scene {
       fontSize: '6px', color: '#aaccee', fontFamily: 'monospace',
     }).setOrigin(0, 0.5);
 
-    const pct = () => `${Math.round(get() * 100)}%`;
+    const pct = () => Math.round(get() * 100) + '%';
 
     const valueText = this.add.text(cx, y, pct(), {
       fontSize: '6px', color: '#ffffff', fontFamily: 'monospace',
     }).setOrigin(0.5, 0.5);
 
-    const decBtn = this.add.text(cx - 20, y, '◄', {
+    const decBtn = this.add.text(cx - 20, y, '<', {
       fontSize: '6px', color: '#50a8e8', fontFamily: 'monospace',
     }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
 
-    const incBtn = this.add.text(cx + 20, y, '►', {
+    const incBtn = this.add.text(cx + 20, y, '>', {
       fontSize: '6px', color: '#50a8e8', fontFamily: 'monospace',
     }).setOrigin(0.5, 0.5).setInteractive({ useHandCursor: true });
 
@@ -243,7 +334,6 @@ export class SettingsScene extends Phaser.Scene {
       set(Math.min(1, get() + step));
       valueText.setText(pct());
     });
-
     decBtn.on('pointerover', () => decBtn.setColor('#ffffff'));
     decBtn.on('pointerout',  () => decBtn.setColor('#50a8e8'));
     incBtn.on('pointerover', () => incBtn.setColor('#ffffff'));
@@ -284,13 +374,10 @@ export class SettingsScene extends Phaser.Scene {
   private switchTab(tab: Tab): void {
     this.activeTab = tab;
 
-    // Update tab button colours
-    const tabs: Tab[] = ['audio', 'display', 'controls'];
+    const tabs: Tab[] = ['audio', 'display', 'controls', 'access'];
     tabs.forEach((t) => {
       this.tabButtons[t].setColor(t === tab ? '#ffd700' : '#888899');
     });
-
-    // Show / hide containers
     tabs.forEach((t) => {
       this.tabContainers[t].setVisible(t === tab);
     });
