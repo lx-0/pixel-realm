@@ -42,7 +42,7 @@ export interface CosmeticDef {
   description:   string;
 }
 
-const COSMETICS: CosmeticDef[] = [
+export const COSMETICS: CosmeticDef[] = [
   // Outfits
   { id: 'outfit_celestial',  name: 'Celestial Robe',   slot: 'outfit', assetKey: 'cosmetic_outfit_mage_celestial',  goldCost: 800,  achievementId: '', rarity: 'epic',      description: 'An ethereal garb woven from starlight.' },
   { id: 'outfit_ember',      name: 'Ember Plate',      slot: 'outfit', assetKey: 'cosmetic_outfit_warrior_ember',   goldCost: 600,  achievementId: '', rarity: 'rare',      description: 'Forged in the heart of a volcano.' },
