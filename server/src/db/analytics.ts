@@ -48,6 +48,30 @@ export async function enterZone(
   return result.rows[0].id;
 }
 
+/** Log a client-side error report from TelemetryClient. */
+export async function logClientError(error: {
+  playerId: string;
+  sessionId?: string;
+  message: string;
+  source?: string;
+  line?: number;
+  col?: number;
+}): Promise<void> {
+  const pool = getPool();
+  await pool.query(
+    `INSERT INTO client_errors (player_id, session_id, message, source, line, col)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [
+      error.playerId,
+      error.sessionId ?? null,
+      error.message,
+      error.source ?? null,
+      error.line ?? null,
+      error.col ?? null,
+    ],
+  );
+}
+
 /** Record a player leaving a zone, computing time-in-zone. */
 export async function exitZone(visitId: string): Promise<void> {
   const pool = getPool();

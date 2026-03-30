@@ -99,6 +99,7 @@ import {
   enterZone,
   exitZone,
   getAnalyticsSummary,
+  logClientError,
 } from "./db/analytics";
 import { claimDailyReward, getStreakStatus } from "./db/dailyRewards";
 import {
@@ -1244,6 +1245,41 @@ app.post("/api/analytics/zone/exit", async (req, res) => {
   } catch (err) {
     console.warn("[Analytics] zone/exit failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to record zone exit" });
+  }
+});
+
+// POST /api/analytics/client-error — record an unhandled client-side JS error
+// Body: { sessionId?: string, playerId: string, message: string, source?: string, line?: number, col?: number }
+app.post("/api/analytics/client-error", async (req, res) => {
+  const { sessionId, playerId, message, source, line, col } = req.body as {
+    sessionId?: string;
+    playerId?: string;
+    message?: string;
+    source?: string;
+    line?: number;
+    col?: number;
+  };
+  if (!playerId || typeof playerId !== "string" || playerId.length > 100) {
+    res.status(400).json({ error: "Invalid playerId" });
+    return;
+  }
+  if (!message || typeof message !== "string" || message.length > 2000) {
+    res.status(400).json({ error: "Invalid message" });
+    return;
+  }
+  try {
+    await logClientError({
+      playerId,
+      sessionId: typeof sessionId === "string" ? sessionId : undefined,
+      message,
+      source:    typeof source === "string" ? source : undefined,
+      line:      typeof line   === "number" ? line   : undefined,
+      col:       typeof col    === "number" ? col    : undefined,
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.warn("[Analytics] client-error failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to record client error" });
   }
 });
 

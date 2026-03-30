@@ -714,6 +714,17 @@ export const zoneVisits = pgTable("zone_visits", {
   durationSeconds: integer("duration_seconds"),
 });
 
+export const clientErrors = pgTable("client_errors", {
+  id:        uuid("id").defaultRandom().primaryKey(),
+  playerId:  text("player_id").notNull(),
+  sessionId: text("session_id"),
+  message:   text("message").notNull(),
+  source:    text("source"),
+  line:      integer("line"),
+  col:       integer("col"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type Player = typeof players.$inferSelect;
