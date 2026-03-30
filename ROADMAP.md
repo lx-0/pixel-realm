@@ -361,10 +361,16 @@ Package v1.4.0 with M42 accessibility and polish content. Final QA sweep and pro
 ### M44: Pre-Launch Readiness & Marketing — IN PROGRESS
 Internationalization, performance validation, and marketing assets while awaiting distribution unblock (PIX-19).
 
-- [ ] PIX-436 — Implement i18n framework and extract English strings into locale files
+- [x] PIX-436 — Implement i18n framework and extract English strings into locale files
 - [ ] PIX-437 — Server load testing and performance benchmarking for launch readiness
-- [ ] PIX-438 — Create press kit and marketing asset package for launch
-- [ ] PIX-439 — Create animated pixel art game trailer sequence for launch promotion
+- [x] PIX-438 — Create press kit and marketing asset package for launch
+- [x] PIX-439 — Create animated pixel art game trailer sequence for launch promotion
+
+### M45: Community Readiness & Launch Marketing — IN PROGRESS
+Community platform branding and promotional gallery while awaiting distribution unblock (PIX-19) and load testing completion (PIX-437).
+
+- [ ] PIX-441 — Create community platform branding package (Discord, streaming, social media)
+- [ ] PIX-442 — Create character spotlight and biome showcase promotional gallery
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -454,4 +460,5 @@ M5 → M6 ──────────────────┘
 - **Feature-complete & v1.3.0 shipped** — As of 2026-03-29, all GDD features through M40 are fully implemented and packaged in v1.3.0. Game is feature-complete. Pending itch.io launch (PIX-19, board-blocked).
 - **M42: Accessibility & Launch Polish** — Complete as of 2026-03-30. Added colorblind mode, keyboard shortcut overlay, UI scaling (PIX-428), zone-specific loading screens (PIX-421, PIX-423), animated title screen (PIX-424), NPC portrait refresh (PIX-425), accessibility UI art (PIX-426), and class showcase art (PIX-427).
 - **M43: v1.4.0 Distribution & Pre-Launch Hardening** — Rebuild distribution with M42 content, full QA sweep, promotional screenshots, and itch.io page update. All complete as of 2026-03-30.
-- **M44: Pre-Launch Readiness & Marketing** — i18n framework, server load testing, press kit, and animated trailer. Keeps team productive while awaiting PIX-19 distribution unblock. Created 2026-03-30.
+- **M44: Pre-Launch Readiness & Marketing** — i18n framework (PIX-436 done), press kit (PIX-438 done), animated trailer (PIX-439 done). Server load testing (PIX-437) assigned to Engineer, in progress. 3/4 complete as of 2026-03-30.
+- **M45: Community Readiness & Launch Marketing** — Community platform branding (PIX-441) and promotional gallery (PIX-442) assigned to Game Artist. Keeps team productive while awaiting PIX-19 distribution unblock and PIX-437 load testing. Created 2026-03-30.
