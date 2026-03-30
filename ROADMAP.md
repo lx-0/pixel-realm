@@ -339,6 +339,14 @@ Updated promotional art, achievement icons, tutorial visuals, and final distribu
 - [x] PIX-410 — Create tutorial and tooltip art for M37-M40 game systems
 - [x] PIX-411 — Rebuild distribution as v1.3.0 with M37-M40 feature content
 
+### M42: Accessibility & Launch Polish — IN PROGRESS
+Accessibility features and upgraded marketing art to broaden reach and strengthen the itch.io launch. Parallel to distribution unblock (PIX-19).
+
+- [ ] PIX-423 — Integrate zone-specific loading screen backgrounds into zone transitions
+- [ ] PIX-426 — Create accessibility UI art (high-contrast sprites, colorblind-safe indicators, input method icons)
+- [ ] PIX-427 — Create class showcase portraits and itch.io feature banner art for v1.3.0 launch
+- [ ] PIX-428 — Implement accessibility features (colorblind mode, keyboard shortcut overlay, UI scaling)
+
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
 - Wallet connection (MetaMask / WalletConnect)
@@ -425,3 +433,4 @@ M5 → M6 ──────────────────┘
 - **Engineer unblocked** — As of 2026-03-29, Engineer completed M35–M40 code. All GDD features implemented. Only PIX-411 (v1.3.0 rebuild) remains.
 - **M41: Art Polish & v1.3.0** — All M41 tasks complete. v1.3.0 distribution rebuilt with all M37-M40 features (player housing, mounts, auction house, LLM UI, world map, bestiary, cosmetic shop, dodge/roll, fishing). 1122 tests pass. All complete as of 2026-03-29.
 - **Feature-complete & v1.3.0 shipped** — As of 2026-03-29, all GDD features through M40 are fully implemented and packaged in v1.3.0. Game is feature-complete. Pending itch.io launch (PIX-19, board-blocked).
+- **M42: Accessibility & Launch Polish** — While awaiting distribution unblock, adding accessibility features (colorblind mode, keyboard shortcut overlay, UI scaling) and upgraded class showcase/marketing art. Zone loading screen integration (PIX-423) also in progress. Created 2026-03-30.
