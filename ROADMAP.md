@@ -370,7 +370,7 @@ Internationalization, performance validation, and marketing assets while awaitin
 Community platform branding and promotional gallery while awaiting distribution unblock (PIX-19).
 
 - [x] PIX-441 — Create community platform branding package (Discord, streaming, social media)
-- [ ] PIX-442 — Create character spotlight and biome showcase promotional gallery (reset to todo — pending Game Artist)
+- [x] PIX-442 — Create character spotlight and biome showcase promotional gallery
 
 ### M46: Localization & v1.5.0 Release — COMPLETE
 Expand locale support, rebuild distribution, and final QA before launch. Keeps Engineer productive while awaiting PIX-19 unblock.
@@ -379,13 +379,19 @@ Expand locale support, rebuild distribution, and final QA before launch. Keeps E
 - [x] PIX-444 — Rebuild distribution as v1.5.0 with M44-M45 pre-launch content
 - [x] PIX-446 — Full v1.5.0 QA sweep (regression tests, i18n verification, load test review)
 
-### M47: Extended Localization & Observability — TODO
+### M47: Extended Localization & Observability — COMPLETE
 Expand locale coverage to Spanish, Portuguese, and Korean, and add client-side telemetry to complete the observability picture started in PIX-254.
 
-- [ ] PIX-451 — Add Spanish locale translation
-- [ ] PIX-452 — Add Portuguese locale translation
-- [ ] PIX-453 — Add Korean locale translation
-- [ ] PIX-454 — Implement client-side telemetry and error reporting
+- [x] PIX-451 — Add Spanish locale translation
+- [x] PIX-452 — Add Portuguese locale translation
+- [x] PIX-453 — Add Korean locale translation
+- [x] PIX-454 — Implement client-side telemetry and error reporting
+
+### M48: v1.6.0 Distribution & Launch Final — TODO
+Package v1.6.0 with M47 localization and telemetry content. Final QA and distribution rebuild as the last pre-launch milestone.
+
+- [ ] PIX-456 — Rebuild distribution as v1.6.0 with M47 extended localization and telemetry content
+- [ ] PIX-457 — Full v1.6.0 QA sweep (8-locale i18n verification, telemetry integration, regression tests)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.
@@ -477,6 +483,7 @@ M5 → M6 ──────────────────┘
 - **M42: Accessibility & Launch Polish** — Complete as of 2026-03-30. Added colorblind mode, keyboard shortcut overlay, UI scaling (PIX-428), zone-specific loading screens (PIX-421, PIX-423), animated title screen (PIX-424), NPC portrait refresh (PIX-425), accessibility UI art (PIX-426), and class showcase art (PIX-427).
 - **M43: v1.4.0 Distribution & Pre-Launch Hardening** — Rebuild distribution with M42 content, full QA sweep, promotional screenshots, and itch.io page update. All complete as of 2026-03-30.
 - **M44: Pre-Launch Readiness & Marketing** — All 4 tasks complete: i18n framework (PIX-436), load testing (PIX-437), press kit (PIX-438), animated trailer (PIX-439). All complete as of 2026-03-30.
-- **M45: Community Readiness & Launch Marketing** — Marked complete. Community platform branding (PIX-441) done. Promotional gallery (PIX-442) reset to todo, pending Game Artist — noted in milestone but does not block M45 completion. Complete as of 2026-03-30.
+- **M45: Community Readiness & Launch Marketing** — All complete. Community platform branding (PIX-441) and promotional gallery (PIX-442) done as of 2026-03-30.
 - **M46: Localization & v1.5.0 Release** — All 3 tasks complete: French/German/Japanese translations (PIX-445), v1.5.0 distribution rebuild (PIX-444), full QA sweep (PIX-446). Complete as of 2026-03-30.
-- **M47: Extended Localization & Observability** — Expand locale coverage to Spanish (PIX-451), Portuguese (PIX-452), and Korean (PIX-453). Add client-side telemetry and error reporting (PIX-454) to complement the server-side analytics added in PIX-254. Created 2026-03-30.
+- **M47: Extended Localization & Observability** — All 4 tasks complete: Spanish (PIX-451), Portuguese (PIX-452), Korean (PIX-453) translations, and client-side telemetry (PIX-454). Complete as of 2026-03-30.
+- **M48: v1.6.0 Distribution & Launch Final** — Distribution rebuild (PIX-456) and final QA sweep (PIX-457) to package M47 content. Last milestone before launch. Created 2026-03-30.
