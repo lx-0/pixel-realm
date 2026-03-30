@@ -1,0 +1,361 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated;">
+  <defs>
+    <style>
+      text { font-family: monospace; image-rendering: pixelated; }
+    </style>
+    <!-- Crystal glow filter -->
+    <filter id="crystalGlow6">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Soft aurora filter -->
+    <filter id="auroraBlur6">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <!-- Star twinkle glow -->
+    <filter id="starGlow6">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Particle glow -->
+    <filter id="particleGlow6">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ===== DEEP COSMIC VOID BACKGROUND ===== -->
+  <rect x="0" y="0" width="630" height="500" fill="#0d0d0d"/>
+  <!-- Deep purple cosmic bands -->
+  <rect x="0" y="0" width="630" height="60" fill="#0d0d0d"/>
+  <rect x="0" y="60" width="630" height="48" fill="#1a0a3a"/>
+  <rect x="0" y="108" width="630" height="36" fill="#0d0d0d"/>
+  <rect x="0" y="144" width="630" height="48" fill="#1a0a3a"/>
+  <rect x="0" y="192" width="630" height="36" fill="#0d0d0d"/>
+  <rect x="0" y="228" width="630" height="48" fill="#1a0a3a"/>
+  <rect x="0" y="276" width="630" height="30" fill="#0d0d0d"/>
+  <rect x="0" y="306" width="630" height="42" fill="#1a0a3a"/>
+  <rect x="0" y="348" width="630" height="30" fill="#0a1a3a"/>
+  <rect x="0" y="378" width="630" height="122" fill="#0a1a3a"/>
+
+  <!-- ===== STAR FIELD ===== -->
+  <!-- Bright white stars -->
+  <rect x="42" y="18" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="126" y="42" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="234" y="12" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="378" y="30" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="510" y="18" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="582" y="48" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="66" y="78" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="186" y="66" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="450" y="72" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="540" y="96" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="24" y="138" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="312" y="54" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="606" y="132" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="150" y="162" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="486" y="150" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="564" y="180" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="78" y="204" width="6" height="6" fill="#f0f0f0"/>
+  <rect x="414" y="198" width="6" height="6" fill="#f0f0f0"/>
+  <!-- Cyan-tinted stars -->
+  <rect x="96" y="36" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="270" y="24" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="420" y="54" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="18" y="102" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="348" y="84" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="528" y="66" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="174" y="108" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="462" y="114" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="600" y="78" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="294" y="138" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="54" y="174" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="504" y="168" width="6" height="6" fill="#c8f0ff"/>
+  <!-- Golden accent stars -->
+  <rect x="162" y="30" width="6" height="6" fill="#fff8a0"/>
+  <rect x="390" y="90" width="6" height="6" fill="#fff8a0"/>
+  <rect x="552" y="42" width="6" height="6" fill="#fff8a0"/>
+  <rect x="108" y="126" width="6" height="6" fill="#fff8a0"/>
+  <rect x="336" y="174" width="6" height="6" fill="#fff8a0"/>
+  <rect x="594" y="156" width="6" height="6" fill="#fff8a0"/>
+  <!-- Dim distant stars -->
+  <rect x="204" y="48" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="480" y="36" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="36" y="156" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="258" y="96" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="432" y="144" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="138" y="186" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="366" y="60" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="612" y="108" width="6" height="6" fill="#4a4a4a"/>
+
+  <!-- ===== DISTANT CELESTIAL BODY / MOON ===== -->
+  <!-- Large moon upper-right -->
+  <rect x="498" y="36" width="6" height="48" fill="#1a0a3a"/>
+  <rect x="504" y="24" width="6" height="66" fill="#5a20a0"/>
+  <rect x="510" y="18" width="6" height="78" fill="#5a20a0"/>
+  <rect x="516" y="12" width="6" height="84" fill="#9050e0"/>
+  <rect x="522" y="12" width="6" height="84" fill="#9050e0"/>
+  <rect x="528" y="12" width="6" height="84" fill="#d090ff"/>
+  <rect x="534" y="12" width="6" height="84" fill="#d090ff"/>
+  <rect x="540" y="12" width="6" height="84" fill="#9050e0"/>
+  <rect x="546" y="18" width="6" height="78" fill="#9050e0"/>
+  <rect x="552" y="24" width="6" height="66" fill="#5a20a0"/>
+  <rect x="558" y="36" width="6" height="48" fill="#1a0a3a"/>
+  <!-- Moon craters -->
+  <rect x="522" y="36" width="6" height="6" fill="#5a20a0"/>
+  <rect x="534" y="48" width="6" height="6" fill="#5a20a0"/>
+  <rect x="516" y="60" width="6" height="6" fill="#5a20a0"/>
+  <rect x="540" y="72" width="6" height="6" fill="#5a20a0"/>
+  <!-- Moon glow -->
+  <rect x="492" y="30" width="6" height="60" fill="#1a0a3a" opacity="0.5"/>
+  <rect x="564" y="30" width="6" height="60" fill="#1a0a3a" opacity="0.5"/>
+
+  <!-- ===== AURORA / NEBULA BANDS ===== -->
+  <!-- Green aurora band -->
+  <rect x="0" y="108" width="240" height="18" fill="#4c9b4c" opacity="0.12" filter="url(#auroraBlur6)"/>
+  <rect x="180" y="114" width="300" height="18" fill="#4c9b4c" opacity="0.1" filter="url(#auroraBlur6)"/>
+  <rect x="420" y="108" width="210" height="18" fill="#4c9b4c" opacity="0.08" filter="url(#auroraBlur6)"/>
+  <!-- Blue aurora band -->
+  <rect x="0" y="132" width="270" height="18" fill="#50a8e8" opacity="0.12" filter="url(#auroraBlur6)"/>
+  <rect x="210" y="138" width="240" height="18" fill="#50a8e8" opacity="0.1" filter="url(#auroraBlur6)"/>
+  <rect x="390" y="132" width="240" height="18" fill="#50a8e8" opacity="0.08" filter="url(#auroraBlur6)"/>
+  <!-- Purple aurora band -->
+  <rect x="60" y="156" width="210" height="18" fill="#9050e0" opacity="0.14" filter="url(#auroraBlur6)"/>
+  <rect x="240" y="162" width="210" height="18" fill="#9050e0" opacity="0.1" filter="url(#auroraBlur6)"/>
+  <rect x="420" y="156" width="210" height="18" fill="#9050e0" opacity="0.12" filter="url(#auroraBlur6)"/>
+  <!-- Secondary green wisps higher -->
+  <rect x="120" y="84" width="180" height="12" fill="#4c9b4c" opacity="0.08" filter="url(#auroraBlur6)"/>
+  <rect x="360" y="90" width="180" height="12" fill="#4c9b4c" opacity="0.06" filter="url(#auroraBlur6)"/>
+  <!-- Secondary purple wisps -->
+  <rect x="0" y="180" width="180" height="12" fill="#d090ff" opacity="0.08" filter="url(#auroraBlur6)"/>
+  <rect x="300" y="186" width="180" height="12" fill="#d090ff" opacity="0.06" filter="url(#auroraBlur6)"/>
+
+  <!-- ===== CLOUD LAYER BELOW ISLANDS ===== -->
+  <rect x="0" y="378" width="630" height="24" fill="#1a4a8a" opacity="0.25" filter="url(#auroraBlur6)"/>
+  <rect x="0" y="396" width="630" height="30" fill="#1a4a8a" opacity="0.35" filter="url(#auroraBlur6)"/>
+  <rect x="0" y="420" width="630" height="36" fill="#2a7ac0" opacity="0.2" filter="url(#auroraBlur6)"/>
+  <rect x="0" y="450" width="630" height="30" fill="#1a4a8a" opacity="0.3" filter="url(#auroraBlur6)"/>
+  <rect x="0" y="474" width="630" height="26" fill="#0a1a3a" opacity="0.5"/>
+  <!-- Wispy cloud patches -->
+  <rect x="60" y="372" width="120" height="12" fill="#2a7ac0" opacity="0.15" filter="url(#auroraBlur6)"/>
+  <rect x="270" y="366" width="150" height="12" fill="#2a7ac0" opacity="0.12" filter="url(#auroraBlur6)"/>
+  <rect x="480" y="378" width="120" height="12" fill="#2a7ac0" opacity="0.14" filter="url(#auroraBlur6)"/>
+  <rect x="150" y="390" width="180" height="12" fill="#1a4a8a" opacity="0.18" filter="url(#auroraBlur6)"/>
+  <rect x="390" y="396" width="150" height="12" fill="#1a4a8a" opacity="0.15" filter="url(#auroraBlur6)"/>
+
+  <!-- ===== ISLAND 1: FAR-LEFT SMALL ISLAND (distant) ===== -->
+  <!-- Island surface -->
+  <rect x="30" y="270" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="36" y="264" width="6" height="12" fill="#4a4a4a"/>
+  <rect x="42" y="258" width="6" height="18" fill="#6e6e6e"/>
+  <rect x="48" y="252" width="6" height="24" fill="#6e6e6e"/>
+  <rect x="54" y="252" width="6" height="24" fill="#6e6e6e"/>
+  <rect x="60" y="252" width="6" height="30" fill="#4a4a4a"/>
+  <rect x="66" y="252" width="6" height="30" fill="#6e6e6e"/>
+  <rect x="72" y="252" width="6" height="30" fill="#6e6e6e"/>
+  <rect x="78" y="252" width="6" height="24" fill="#4a4a4a"/>
+  <rect x="84" y="258" width="6" height="18" fill="#4a4a4a"/>
+  <rect x="90" y="264" width="6" height="12" fill="#4a4a4a"/>
+  <rect x="96" y="270" width="6" height="6" fill="#4a4a4a"/>
+  <!-- Island underside (darker) -->
+  <rect x="42" y="276" width="48" height="12" fill="#2b2b2b"/>
+  <rect x="48" y="288" width="36" height="6" fill="#2b2b2b"/>
+  <rect x="54" y="294" width="24" height="6" fill="#1a0a3a"/>
+  <!-- Small crystal on island -->
+  <rect x="66" y="240" width="6" height="12" fill="#90d0f8" filter="url(#crystalGlow6)"/>
+  <rect x="60" y="246" width="6" height="6" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+  <rect x="72" y="246" width="6" height="6" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+
+  <!-- ===== ISLAND 2: FAR-RIGHT SMALL ISLAND (distant, high) ===== -->
+  <rect x="528" y="216" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="534" y="210" width="6" height="12" fill="#6e6e6e"/>
+  <rect x="540" y="204" width="6" height="18" fill="#6e6e6e"/>
+  <rect x="546" y="204" width="6" height="24" fill="#6e6e6e"/>
+  <rect x="552" y="204" width="6" height="24" fill="#4a4a4a"/>
+  <rect x="558" y="204" width="6" height="24" fill="#6e6e6e"/>
+  <rect x="564" y="204" width="6" height="18" fill="#6e6e6e"/>
+  <rect x="570" y="210" width="6" height="12" fill="#4a4a4a"/>
+  <rect x="576" y="216" width="6" height="6" fill="#4a4a4a"/>
+  <!-- Underside -->
+  <rect x="540" y="228" width="30" height="12" fill="#2b2b2b"/>
+  <rect x="546" y="240" width="18" height="6" fill="#1a0a3a"/>
+  <!-- Small crystal cluster -->
+  <rect x="552" y="192" width="6" height="12" fill="#90d0f8" filter="url(#crystalGlow6)"/>
+  <rect x="558" y="198" width="6" height="6" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+  <rect x="546" y="198" width="6" height="6" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+
+  <!-- ===== ISLAND 3: LEFT-SIDE MEDIUM ISLAND ===== -->
+  <rect x="108" y="318" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="114" y="312" width="6" height="12" fill="#6e6e6e"/>
+  <rect x="120" y="306" width="6" height="18" fill="#6e6e6e"/>
+  <rect x="126" y="300" width="6" height="30" fill="#6e6e6e"/>
+  <rect x="132" y="294" width="6" height="36" fill="#969696"/>
+  <rect x="138" y="294" width="6" height="36" fill="#6e6e6e"/>
+  <rect x="144" y="288" width="6" height="42" fill="#969696"/>
+  <rect x="150" y="288" width="6" height="42" fill="#969696"/>
+  <rect x="156" y="288" width="6" height="42" fill="#6e6e6e"/>
+  <rect x="162" y="288" width="6" height="42" fill="#969696"/>
+  <rect x="168" y="288" width="6" height="36" fill="#6e6e6e"/>
+  <rect x="174" y="294" width="6" height="30" fill="#6e6e6e"/>
+  <rect x="180" y="300" width="6" height="24" fill="#4a4a4a"/>
+  <rect x="186" y="306" width="6" height="18" fill="#4a4a4a"/>
+  <rect x="192" y="312" width="6" height="12" fill="#4a4a4a"/>
+  <rect x="198" y="318" width="6" height="6" fill="#4a4a4a"/>
+  <!-- Underside -->
+  <rect x="126" y="330" width="66" height="12" fill="#2b2b2b"/>
+  <rect x="132" y="342" width="54" height="12" fill="#2b2b2b"/>
+  <rect x="138" y="354" width="42" height="6" fill="#1a0a3a"/>
+  <rect x="144" y="360" width="30" height="6" fill="#1a0a3a"/>
+  <!-- Crystal formations on island 3 -->
+  <rect x="150" y="264" width="6" height="24" fill="#90d0f8" filter="url(#crystalGlow6)"/>
+  <rect x="156" y="270" width="6" height="18" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+  <rect x="144" y="276" width="6" height="12" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+  <rect x="162" y="276" width="6" height="12" fill="#90d0f8" filter="url(#crystalGlow6)"/>
+  <rect x="138" y="282" width="6" height="6" fill="#50a8e8"/>
+
+  <!-- ===== ISLAND 4: MAIN CENTRAL ISLAND (largest, with crystal spire) ===== -->
+  <!-- Left edge -->
+  <rect x="252" y="318" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="258" y="312" width="6" height="12" fill="#4a4a4a"/>
+  <rect x="264" y="306" width="6" height="18" fill="#6e6e6e"/>
+  <rect x="270" y="300" width="6" height="30" fill="#6e6e6e"/>
+  <rect x="276" y="294" width="6" height="36" fill="#6e6e6e"/>
+  <!-- Main surface -->
+  <rect x="282" y="288" width="6" height="42" fill="#969696"/>
+  <rect x="288" y="282" width="6" height="48" fill="#969696"/>
+  <rect x="294" y="276" width="6" height="54" fill="#6e6e6e"/>
+  <rect x="300" y="276" width="6" height="54" fill="#969696"/>
+  <rect x="306" y="270" width="6" height="60" fill="#969696"/>
+  <rect x="312" y="270" width="6" height="60" fill="#c8c8c8"/>
+  <rect x="318" y="270" width="6" height="60" fill="#969696"/>
+  <rect x="324" y="270" width="6" height="60" fill="#c8c8c8"/>
+  <rect x="330" y="270" width="6" height="60" fill="#969696"/>
+  <rect x="336" y="270" width="6" height="60" fill="#969696"/>
+  <rect x="342" y="270" width="6" height="60" fill="#c8c8c8"/>
+  <rect x="348" y="270" width="6" height="60" fill="#969696"/>
+  <rect x="354" y="270" width="6" height="60" fill="#969696"/>
+  <rect x="360" y="276" width="6" height="54" fill="#969696"/>
+  <rect x="366" y="276" width="6" height="54" fill="#6e6e6e"/>
+  <rect x="372" y="282" width="6" height="48" fill="#969696"/>
+  <rect x="378" y="288" width="6" height="42" fill="#6e6e6e"/>
+  <!-- Right edge -->
+  <rect x="384" y="294" width="6" height="36" fill="#6e6e6e"/>
+  <rect x="390" y="300" width="6" height="30" fill="#4a4a4a"/>
+  <rect x="396" y="306" width="6" height="18" fill="#4a4a4a"/>
+  <rect x="402" y="312" width="6" height="12" fill="#4a4a4a"/>
+  <rect x="408" y="318" width="6" height="6" fill="#4a4a4a"/>
+  <!-- Island underside -->
+  <rect x="276" y="330" width="120" height="18" fill="#2b2b2b"/>
+  <rect x="288" y="348" width="96" height="12" fill="#2b2b2b"/>
+  <rect x="300" y="360" width="72" height="12" fill="#1a0a3a"/>
+  <rect x="312" y="372" width="48" height="6" fill="#1a0a3a"/>
+  <rect x="318" y="378" width="36" height="6" fill="#0d0d0d"/>
+
+  <!-- ===== CRYSTAL SPIRE ON MAIN ISLAND ===== -->
+  <!-- Central tall spire -->
+  <rect x="324" y="186" width="6" height="84" fill="#90d0f8" filter="url(#crystalGlow6)"/>
+  <rect x="330" y="192" width="6" height="78" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+  <rect x="318" y="198" width="6" height="72" fill="#90d0f8" filter="url(#crystalGlow6)"/>
+  <rect x="336" y="210" width="6" height="60" fill="#50a8e8" filter="url(#crystalGlow6)"/>
+  <rect x="312" y="216" width="6" height="54" fill="#50a8e8" filter="url(#crystalGlow6)"/>
+  <!-- Spire tip glow -->
+  <rect x="324" y="174" width="6" height="12" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+  <rect x="318" y="180" width="6" height="6" fill="#d090ff" filter="url(#crystalGlow6)"/>
+  <rect x="330" y="180" width="6" height="6" fill="#d090ff" filter="url(#crystalGlow6)"/>
+  <rect x="324" y="168" width="6" height="6" fill="#f0f0f0" filter="url(#crystalGlow6)"/>
+  <!-- Left crystal wing -->
+  <rect x="300" y="240" width="6" height="30" fill="#90d0f8" filter="url(#crystalGlow6)"/>
+  <rect x="306" y="234" width="6" height="36" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+  <rect x="294" y="246" width="6" height="24" fill="#50a8e8"/>
+  <!-- Right crystal wing -->
+  <rect x="348" y="234" width="6" height="36" fill="#c8f0ff" filter="url(#crystalGlow6)"/>
+  <rect x="354" y="240" width="6" height="30" fill="#90d0f8" filter="url(#crystalGlow6)"/>
+  <rect x="360" y="246" width="6" height="24" fill="#50a8e8"/>
+  <!-- Crystal base cluster -->
+  <rect x="312" y="264" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="336" y="264" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="342" y="258" width="6" height="12" fill="#90d0f8"/>
+  <rect x="306" y="258" width="6" height="12" fill="#90d0f8"/>
+
+  <!-- ===== ARCANE LIGHT BRIDGES ===== -->
+  <!-- Bridge: Left island (3) to Main island (4) -->
+  <rect x="198" y="306" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#particleGlow6)"/>
+  <rect x="204" y="300" width="6" height="6" fill="#9050e0" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="210" y="300" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#particleGlow6)"/>
+  <rect x="216" y="294" width="6" height="6" fill="#9050e0" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="222" y="294" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#particleGlow6)"/>
+  <rect x="228" y="288" width="6" height="6" fill="#d090ff" opacity="0.8" filter="url(#particleGlow6)"/>
+  <rect x="234" y="288" width="6" height="6" fill="#9050e0" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="240" y="282" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#particleGlow6)"/>
+  <rect x="246" y="282" width="6" height="6" fill="#9050e0" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="252" y="276" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#particleGlow6)"/>
+
+  <!-- Bridge: Main island (4) to Right island (2) - ascending -->
+  <rect x="408" y="300" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#particleGlow6)"/>
+  <rect x="414" y="294" width="6" height="6" fill="#9050e0" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="420" y="288" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#particleGlow6)"/>
+  <rect x="426" y="282" width="6" height="6" fill="#9050e0" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="432" y="276" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#particleGlow6)"/>
+  <rect x="438" y="270" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="444" y="264" width="6" height="6" fill="#9050e0" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="450" y="258" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="456" y="252" width="6" height="6" fill="#9050e0" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="462" y="246" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="468" y="240" width="6" height="6" fill="#d090ff" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="474" y="234" width="6" height="6" fill="#9050e0" opacity="0.4" filter="url(#particleGlow6)"/>
+  <rect x="480" y="228" width="6" height="6" fill="#d090ff" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="486" y="228" width="6" height="6" fill="#9050e0" opacity="0.4" filter="url(#particleGlow6)"/>
+  <rect x="492" y="222" width="6" height="6" fill="#d090ff" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="498" y="222" width="6" height="6" fill="#9050e0" opacity="0.4" filter="url(#particleGlow6)"/>
+  <rect x="504" y="216" width="6" height="6" fill="#d090ff" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="510" y="216" width="6" height="6" fill="#9050e0" opacity="0.4" filter="url(#particleGlow6)"/>
+  <rect x="516" y="210" width="6" height="6" fill="#d090ff" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="522" y="210" width="6" height="6" fill="#d090ff" opacity="0.4" filter="url(#particleGlow6)"/>
+
+  <!-- Bridge: Far-left island (1) to island (3) -->
+  <rect x="96" y="264" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="102" y="270" width="6" height="6" fill="#9050e0" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="108" y="276" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#particleGlow6)"/>
+  <rect x="114" y="282" width="6" height="6" fill="#9050e0" opacity="0.5" filter="url(#particleGlow6)"/>
+  <rect x="120" y="288" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#particleGlow6)"/>
+
+  <!-- ===== MAGICAL PARTICLE TRAILS ===== -->
+  <!-- Purple/gold particles floating between islands -->
+  <rect x="210" y="282" width="6" height="6" fill="#d090ff" opacity="0.8" filter="url(#starGlow6)"/>
+  <rect x="240" y="270" width="6" height="6" fill="#ffe040" opacity="0.7" filter="url(#starGlow6)"/>
+  <rect x="270" y="258" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#starGlow6)"/>
+  <rect x="390" y="276" width="6" height="6" fill="#ffe040" opacity="0.7" filter="url(#starGlow6)"/>
+  <rect x="444" y="252" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#starGlow6)"/>
+  <rect x="474" y="240" width="6" height="6" fill="#ffe040" opacity="0.5" filter="url(#starGlow6)"/>
+  <!-- Particles around crystal spire -->
+  <rect x="300" y="192" width="6" height="6" fill="#ffe040" opacity="0.8" filter="url(#starGlow6)"/>
+  <rect x="354" y="204" width="6" height="6" fill="#ffe040" opacity="0.7" filter="url(#starGlow6)"/>
+  <rect x="288" y="222" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#starGlow6)"/>
+  <rect x="366" y="216" width="6" height="6" fill="#d090ff" opacity="0.7" filter="url(#starGlow6)"/>
+  <rect x="312" y="162" width="6" height="6" fill="#ffe040" opacity="0.9" filter="url(#starGlow6)"/>
+  <rect x="336" y="168" width="6" height="6" fill="#fff8a0" opacity="0.8" filter="url(#starGlow6)"/>
+  <!-- Particles near far islands -->
+  <rect x="54" y="240" width="6" height="6" fill="#d090ff" opacity="0.5" filter="url(#starGlow6)"/>
+  <rect x="84" y="252" width="6" height="6" fill="#ffe040" opacity="0.4" filter="url(#starGlow6)"/>
+  <rect x="540" y="192" width="6" height="6" fill="#ffe040" opacity="0.5" filter="url(#starGlow6)"/>
+  <rect x="570" y="204" width="6" height="6" fill="#d090ff" opacity="0.4" filter="url(#starGlow6)"/>
+  <!-- Rising particles from below -->
+  <rect x="330" y="348" width="6" height="6" fill="#d090ff" opacity="0.3" filter="url(#starGlow6)"/>
+  <rect x="318" y="360" width="6" height="6" fill="#9050e0" opacity="0.25" filter="url(#starGlow6)"/>
+  <rect x="342" y="372" width="6" height="6" fill="#d090ff" opacity="0.2" filter="url(#starGlow6)"/>
+  <rect x="156" y="342" width="6" height="6" fill="#9050e0" opacity="0.25" filter="url(#starGlow6)"/>
+  <rect x="162" y="354" width="6" height="6" fill="#d090ff" opacity="0.2" filter="url(#starGlow6)"/>
+
+  <!-- ===== TITLE TEXT: "ASTRAL PINNACLE" ===== -->
+  <!-- Dark backing panel -->
+  <rect x="18" y="432" width="300" height="54" fill="#0d0d0d" opacity="0.85"/>
+  <rect x="18" y="432" width="300" height="3" fill="#9050e0" opacity="0.6"/>
+  <!-- Title -->
+  <text x="30" y="456" fill="#ffe040" font-size="20" font-weight="bold" font-family="monospace" letter-spacing="3">ASTRAL PINNACLE</text>
+  <!-- Subtitle / Biome descriptor -->
+  <text x="30" y="474" fill="#d090ff" font-size="10" font-family="monospace" letter-spacing="1">Where the world ends and the cosmos begins</text>
+
+  <!-- ===== PIXELREALM WATERMARK ===== -->
+  <text x="612" y="490" fill="#c8c8c8" font-size="10" font-family="monospace" text-anchor="end" opacity="0.3">PixelRealm</text>
+
+</svg>

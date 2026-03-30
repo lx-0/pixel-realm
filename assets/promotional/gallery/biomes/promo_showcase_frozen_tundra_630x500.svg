@@ -1,0 +1,410 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated;">
+  <defs>
+    <style>
+      text { font-family: monospace; image-rendering: pixelated; }
+    </style>
+    <!-- Aurora glow filter -->
+    <filter id="auroraGlow6">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Ice sparkle filter -->
+    <filter id="iceSparkle6">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Soft glow for reflections -->
+    <filter id="reflectGlow6">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!-- ===== POLAR SKY BACKGROUND ===== -->
+  <!-- Dark sky gradient from deep space to polar horizon -->
+  <rect x="0" y="0" width="630" height="30" fill="#0a1a3a"/>
+  <rect x="0" y="30" width="630" height="30" fill="#0a1a3a"/>
+  <rect x="0" y="60" width="630" height="24" fill="#0d0d0d"/>
+  <rect x="0" y="84" width="630" height="24" fill="#0a1a3a"/>
+  <rect x="0" y="108" width="630" height="24" fill="#0a1a3a"/>
+  <rect x="0" y="132" width="630" height="24" fill="#1a4a8a"/>
+  <rect x="0" y="156" width="630" height="24" fill="#1a4a8a"/>
+  <rect x="0" y="180" width="630" height="24" fill="#1a4a8a"/>
+  <rect x="0" y="204" width="630" height="18" fill="#2a7ac0"/>
+
+  <!-- ===== AURORA BOREALIS ===== -->
+  <!-- Green aurora bands - sweeping across the sky -->
+  <rect x="60" y="24" width="120" height="6" fill="#4c9b4c" opacity="0.25" filter="url(#auroraGlow6)"/>
+  <rect x="48" y="30" width="150" height="6" fill="#78c878" opacity="0.3" filter="url(#auroraGlow6)"/>
+  <rect x="36" y="36" width="180" height="6" fill="#4c9b4c" opacity="0.35" filter="url(#auroraGlow6)"/>
+  <rect x="54" y="42" width="144" height="6" fill="#78c878" opacity="0.25" filter="url(#auroraGlow6)"/>
+  <rect x="72" y="48" width="108" height="6" fill="#a8e4a0" opacity="0.15" filter="url(#auroraGlow6)"/>
+
+  <!-- Second green aurora band -->
+  <rect x="240" y="18" width="180" height="6" fill="#78c878" opacity="0.2" filter="url(#auroraGlow6)"/>
+  <rect x="228" y="24" width="204" height="6" fill="#4c9b4c" opacity="0.3" filter="url(#auroraGlow6)"/>
+  <rect x="216" y="30" width="228" height="6" fill="#78c878" opacity="0.35" filter="url(#auroraGlow6)"/>
+  <rect x="234" y="36" width="192" height="6" fill="#4c9b4c" opacity="0.3" filter="url(#auroraGlow6)"/>
+  <rect x="252" y="42" width="156" height="6" fill="#78c878" opacity="0.2" filter="url(#auroraGlow6)"/>
+  <rect x="270" y="48" width="120" height="6" fill="#a8e4a0" opacity="0.1" filter="url(#auroraGlow6)"/>
+
+  <!-- Purple aurora accents -->
+  <rect x="420" y="30" width="150" height="6" fill="#d090ff" opacity="0.2" filter="url(#auroraGlow6)"/>
+  <rect x="408" y="36" width="174" height="6" fill="#d090ff" opacity="0.3" filter="url(#auroraGlow6)"/>
+  <rect x="396" y="42" width="186" height="6" fill="#9050e0" opacity="0.25" filter="url(#auroraGlow6)"/>
+  <rect x="414" y="48" width="150" height="6" fill="#d090ff" opacity="0.2" filter="url(#auroraGlow6)"/>
+  <rect x="432" y="54" width="114" height="6" fill="#9050e0" opacity="0.15" filter="url(#auroraGlow6)"/>
+
+  <!-- Connecting aurora wisps between bands -->
+  <rect x="180" y="30" width="60" height="6" fill="#78c878" opacity="0.15" filter="url(#auroraGlow6)"/>
+  <rect x="390" y="36" width="30" height="6" fill="#d090ff" opacity="0.15" filter="url(#auroraGlow6)"/>
+  <rect x="444" y="24" width="72" height="6" fill="#78c878" opacity="0.1" filter="url(#auroraGlow6)"/>
+
+  <!-- ===== STARS in polar sky ===== -->
+  <rect x="30" y="12" width="6" height="6" fill="#f0f0f0" opacity="0.6"/>
+  <rect x="150" y="6" width="6" height="6" fill="#c8f0ff" opacity="0.5"/>
+  <rect x="300" y="12" width="6" height="6" fill="#f0f0f0" opacity="0.4"/>
+  <rect x="480" y="6" width="6" height="6" fill="#f0f0f0" opacity="0.5"/>
+  <rect x="540" y="18" width="6" height="6" fill="#c8f0ff" opacity="0.4"/>
+  <rect x="600" y="12" width="6" height="6" fill="#f0f0f0" opacity="0.3"/>
+  <rect x="90" y="72" width="6" height="6" fill="#f0f0f0" opacity="0.3"/>
+  <rect x="510" y="66" width="6" height="6" fill="#f0f0f0" opacity="0.35"/>
+  <rect x="360" y="78" width="6" height="6" fill="#c8f0ff" opacity="0.25"/>
+
+  <!-- ===== DISTANT FROZEN MOUNTAIN RANGE ===== -->
+  <!-- Far left mountain -->
+  <rect x="0" y="156" width="6" height="66" fill="#0a1a3a"/>
+  <rect x="6" y="150" width="6" height="72" fill="#0a1a3a"/>
+  <rect x="12" y="144" width="6" height="78" fill="#0a1a3a"/>
+  <rect x="18" y="138" width="6" height="84" fill="#0a1a3a"/>
+  <rect x="24" y="132" width="6" height="90" fill="#1a4a8a"/>
+  <rect x="30" y="126" width="6" height="96" fill="#1a4a8a"/>
+  <rect x="36" y="120" width="6" height="102" fill="#1a4a8a"/>
+  <rect x="42" y="114" width="6" height="108" fill="#1a4a8a"/>
+  <rect x="48" y="120" width="6" height="102" fill="#1a4a8a"/>
+  <rect x="54" y="126" width="6" height="96" fill="#1a4a8a"/>
+  <rect x="60" y="132" width="6" height="90" fill="#0a1a3a"/>
+  <rect x="66" y="138" width="6" height="84" fill="#0a1a3a"/>
+  <rect x="72" y="144" width="6" height="78" fill="#0a1a3a"/>
+  <rect x="78" y="150" width="6" height="72" fill="#0a1a3a"/>
+  <!-- Snow caps on left mountain -->
+  <rect x="30" y="126" width="6" height="6" fill="#c8f0ff" opacity="0.6"/>
+  <rect x="36" y="120" width="6" height="6" fill="#f0f0f0" opacity="0.7"/>
+  <rect x="42" y="114" width="6" height="6" fill="#c8f0ff" opacity="0.8"/>
+  <rect x="48" y="120" width="6" height="6" fill="#f0f0f0" opacity="0.6"/>
+
+  <!-- Central tall peak -->
+  <rect x="150" y="150" width="6" height="72" fill="#0a1a3a"/>
+  <rect x="156" y="144" width="6" height="78" fill="#0a1a3a"/>
+  <rect x="162" y="138" width="6" height="84" fill="#1a4a8a"/>
+  <rect x="168" y="132" width="6" height="90" fill="#1a4a8a"/>
+  <rect x="174" y="126" width="6" height="96" fill="#1a4a8a"/>
+  <rect x="180" y="120" width="6" height="102" fill="#1a4a8a"/>
+  <rect x="186" y="114" width="6" height="108" fill="#1a4a8a"/>
+  <rect x="192" y="108" width="6" height="114" fill="#1a4a8a"/>
+  <rect x="198" y="102" width="6" height="120" fill="#2a7ac0"/>
+  <rect x="204" y="96" width="6" height="126" fill="#2a7ac0"/>
+  <rect x="210" y="102" width="6" height="120" fill="#1a4a8a"/>
+  <rect x="216" y="108" width="6" height="114" fill="#1a4a8a"/>
+  <rect x="222" y="114" width="6" height="108" fill="#1a4a8a"/>
+  <rect x="228" y="120" width="6" height="102" fill="#1a4a8a"/>
+  <rect x="234" y="126" width="6" height="96" fill="#0a1a3a"/>
+  <rect x="240" y="132" width="6" height="90" fill="#0a1a3a"/>
+  <rect x="246" y="138" width="6" height="84" fill="#0a1a3a"/>
+  <rect x="252" y="144" width="6" height="78" fill="#0a1a3a"/>
+  <rect x="258" y="150" width="6" height="72" fill="#0a1a3a"/>
+  <!-- Snow caps on central peak -->
+  <rect x="192" y="108" width="6" height="6" fill="#c8f0ff" opacity="0.7"/>
+  <rect x="198" y="102" width="6" height="6" fill="#f0f0f0" opacity="0.9"/>
+  <rect x="204" y="96" width="6" height="6" fill="#f0f0f0" opacity="0.9"/>
+  <rect x="210" y="102" width="6" height="6" fill="#c8f0ff" opacity="0.7"/>
+  <rect x="186" y="114" width="6" height="6" fill="#90d0f8" opacity="0.5"/>
+  <rect x="216" y="108" width="6" height="6" fill="#90d0f8" opacity="0.5"/>
+
+  <!-- Right mountain cluster -->
+  <rect x="360" y="150" width="6" height="72" fill="#0a1a3a"/>
+  <rect x="366" y="138" width="6" height="84" fill="#0a1a3a"/>
+  <rect x="372" y="132" width="6" height="90" fill="#1a4a8a"/>
+  <rect x="378" y="126" width="6" height="96" fill="#1a4a8a"/>
+  <rect x="384" y="120" width="6" height="102" fill="#1a4a8a"/>
+  <rect x="390" y="114" width="6" height="108" fill="#1a4a8a"/>
+  <rect x="396" y="108" width="6" height="114" fill="#2a7ac0"/>
+  <rect x="402" y="114" width="6" height="108" fill="#1a4a8a"/>
+  <rect x="408" y="120" width="6" height="102" fill="#1a4a8a"/>
+  <rect x="414" y="126" width="6" height="96" fill="#1a4a8a"/>
+  <rect x="420" y="132" width="6" height="90" fill="#0a1a3a"/>
+  <rect x="426" y="138" width="6" height="84" fill="#0a1a3a"/>
+  <!-- Secondary peak -->
+  <rect x="432" y="144" width="6" height="78" fill="#0a1a3a"/>
+  <rect x="438" y="138" width="6" height="84" fill="#0a1a3a"/>
+  <rect x="444" y="132" width="6" height="90" fill="#1a4a8a"/>
+  <rect x="450" y="126" width="6" height="96" fill="#1a4a8a"/>
+  <rect x="456" y="132" width="6" height="90" fill="#1a4a8a"/>
+  <rect x="462" y="138" width="6" height="84" fill="#0a1a3a"/>
+  <rect x="468" y="144" width="6" height="78" fill="#0a1a3a"/>
+  <!-- Snow caps on right mountains -->
+  <rect x="390" y="114" width="6" height="6" fill="#c8f0ff" opacity="0.7"/>
+  <rect x="396" y="108" width="6" height="6" fill="#f0f0f0" opacity="0.8"/>
+  <rect x="402" y="114" width="6" height="6" fill="#c8f0ff" opacity="0.6"/>
+  <rect x="444" y="132" width="6" height="6" fill="#f0f0f0" opacity="0.7"/>
+  <rect x="450" y="126" width="6" height="6" fill="#f0f0f0" opacity="0.8"/>
+
+  <!-- Far right ridge -->
+  <rect x="540" y="162" width="6" height="60" fill="#0a1a3a"/>
+  <rect x="546" y="156" width="6" height="66" fill="#0a1a3a"/>
+  <rect x="552" y="150" width="6" height="72" fill="#1a4a8a"/>
+  <rect x="558" y="144" width="6" height="78" fill="#1a4a8a"/>
+  <rect x="564" y="138" width="6" height="84" fill="#1a4a8a"/>
+  <rect x="570" y="144" width="6" height="78" fill="#1a4a8a"/>
+  <rect x="576" y="150" width="6" height="72" fill="#0a1a3a"/>
+  <rect x="582" y="156" width="6" height="66" fill="#0a1a3a"/>
+  <rect x="588" y="162" width="6" height="60" fill="#0a1a3a"/>
+  <rect x="594" y="168" width="6" height="54" fill="#0a1a3a"/>
+  <rect x="600" y="174" width="6" height="48" fill="#0a1a3a"/>
+  <rect x="606" y="180" width="6" height="42" fill="#0a1a3a"/>
+  <rect x="612" y="186" width="6" height="36" fill="#0a1a3a"/>
+  <rect x="618" y="192" width="6" height="30" fill="#0a1a3a"/>
+  <rect x="624" y="198" width="6" height="24" fill="#0a1a3a"/>
+  <!-- Snow cap -->
+  <rect x="558" y="144" width="6" height="6" fill="#c8f0ff" opacity="0.6"/>
+  <rect x="564" y="138" width="6" height="6" fill="#f0f0f0" opacity="0.7"/>
+
+  <!-- Mountain range base fill -->
+  <rect x="0" y="222" width="630" height="6" fill="#1a4a8a"/>
+  <rect x="78" y="156" width="72" height="66" fill="#0a1a3a"/>
+  <rect x="258" y="150" width="102" height="72" fill="#0a1a3a"/>
+  <rect x="468" y="144" width="72" height="78" fill="#0a1a3a"/>
+
+  <!-- ===== SNOW-COVERED GROUND ===== -->
+  <!-- Transition from sky to ground -->
+  <rect x="0" y="228" width="630" height="6" fill="#2a7ac0"/>
+  <rect x="0" y="234" width="630" height="6" fill="#50a8e8"/>
+  <rect x="0" y="240" width="630" height="12" fill="#90d0f8"/>
+  <rect x="0" y="252" width="630" height="248" fill="#c8f0ff"/>
+
+  <!-- Subtle snow terrain variation -->
+  <rect x="0" y="252" width="180" height="6" fill="#f0f0f0"/>
+  <rect x="240" y="258" width="120" height="6" fill="#f0f0f0"/>
+  <rect x="420" y="252" width="210" height="6" fill="#f0f0f0"/>
+  <rect x="60" y="276" width="90" height="6" fill="#f0f0f0"/>
+  <rect x="300" y="282" width="150" height="6" fill="#f0f0f0"/>
+  <rect x="510" y="270" width="120" height="6" fill="#f0f0f0"/>
+  <rect x="0" y="300" width="60" height="6" fill="#f0f0f0"/>
+  <rect x="150" y="306" width="72" height="6" fill="#f0f0f0"/>
+  <rect x="480" y="300" width="150" height="6" fill="#f0f0f0"/>
+
+  <!-- Snow drifts (raised bumps) -->
+  <rect x="90" y="270" width="36" height="6" fill="#f0f0f0"/>
+  <rect x="96" y="264" width="24" height="6" fill="#f0f0f0"/>
+  <rect x="348" y="276" width="42" height="6" fill="#f0f0f0"/>
+  <rect x="354" y="270" width="30" height="6" fill="#f0f0f0"/>
+  <rect x="540" y="264" width="30" height="6" fill="#f0f0f0"/>
+  <rect x="546" y="258" width="18" height="6" fill="#f0f0f0"/>
+
+  <!-- ===== FROZEN LAKE / RIVER SURFACE ===== -->
+  <!-- Central frozen lake reflecting aurora -->
+  <rect x="180" y="330" width="270" height="48" fill="#90d0f8"/>
+  <rect x="192" y="324" width="246" height="6" fill="#90d0f8"/>
+  <rect x="174" y="378" width="282" height="6" fill="#50a8e8"/>
+  <!-- Ice surface texture -->
+  <rect x="198" y="336" width="30" height="6" fill="#c8f0ff" opacity="0.5"/>
+  <rect x="270" y="342" width="42" height="6" fill="#c8f0ff" opacity="0.4"/>
+  <rect x="360" y="336" width="36" height="6" fill="#c8f0ff" opacity="0.5"/>
+  <rect x="228" y="354" width="48" height="6" fill="#c8f0ff" opacity="0.3"/>
+  <rect x="336" y="360" width="54" height="6" fill="#c8f0ff" opacity="0.4"/>
+  <!-- Aurora reflections on the ice -->
+  <rect x="240" y="342" width="24" height="6" fill="#78c878" opacity="0.15" filter="url(#reflectGlow6)"/>
+  <rect x="300" y="348" width="30" height="6" fill="#4c9b4c" opacity="0.12" filter="url(#reflectGlow6)"/>
+  <rect x="378" y="342" width="24" height="6" fill="#d090ff" opacity="0.12" filter="url(#reflectGlow6)"/>
+  <rect x="210" y="360" width="18" height="6" fill="#78c878" opacity="0.1" filter="url(#reflectGlow6)"/>
+  <rect x="330" y="354" width="24" height="6" fill="#d090ff" opacity="0.1" filter="url(#reflectGlow6)"/>
+  <!-- Lake border snow -->
+  <rect x="174" y="330" width="6" height="48" fill="#c8f0ff"/>
+  <rect x="450" y="330" width="6" height="48" fill="#c8f0ff"/>
+
+  <!-- ===== EXPOSED ROCK ===== -->
+  <!-- Gray rock poking through snow (left area) -->
+  <rect x="30" y="294" width="12" height="12" fill="#4a4a4a"/>
+  <rect x="24" y="300" width="6" height="6" fill="#6e6e6e"/>
+  <rect x="42" y="300" width="6" height="6" fill="#4a4a4a"/>
+  <rect x="36" y="288" width="6" height="6" fill="#6e6e6e"/>
+  <!-- Rock cluster right -->
+  <rect x="498" y="288" width="18" height="12" fill="#4a4a4a"/>
+  <rect x="492" y="294" width="6" height="6" fill="#6e6e6e"/>
+  <rect x="516" y="294" width="6" height="6" fill="#6e6e6e"/>
+  <rect x="504" y="282" width="6" height="6" fill="#4a4a4a"/>
+  <!-- Small rocks near lake -->
+  <rect x="162" y="342" width="6" height="12" fill="#4a4a4a"/>
+  <rect x="456" y="348" width="6" height="6" fill="#6e6e6e"/>
+
+  <!-- ===== FROZEN WATERFALL (left side, cascading down rocky cliff) ===== -->
+  <!-- Rocky cliff face -->
+  <rect x="0" y="240" width="36" height="120" fill="#4a4a4a"/>
+  <rect x="36" y="252" width="12" height="96" fill="#4a4a4a"/>
+  <rect x="48" y="264" width="6" height="72" fill="#6e6e6e"/>
+  <rect x="0" y="234" width="24" height="6" fill="#6e6e6e"/>
+  <!-- Ice waterfall frozen mid-cascade -->
+  <rect x="6" y="240" width="12" height="6" fill="#c8f0ff"/>
+  <rect x="6" y="246" width="18" height="6" fill="#90d0f8"/>
+  <rect x="6" y="252" width="18" height="6" fill="#c8f0ff"/>
+  <rect x="12" y="258" width="12" height="6" fill="#90d0f8"/>
+  <rect x="6" y="264" width="18" height="6" fill="#c8f0ff"/>
+  <rect x="12" y="270" width="18" height="6" fill="#90d0f8"/>
+  <rect x="6" y="276" width="24" height="6" fill="#c8f0ff"/>
+  <rect x="12" y="282" width="18" height="6" fill="#90d0f8"/>
+  <rect x="6" y="288" width="24" height="6" fill="#c8f0ff"/>
+  <rect x="12" y="294" width="18" height="6" fill="#90d0f8"/>
+  <rect x="6" y="300" width="30" height="6" fill="#c8f0ff"/>
+  <rect x="6" y="306" width="24" height="6" fill="#90d0f8"/>
+  <rect x="12" y="312" width="24" height="6" fill="#c8f0ff"/>
+  <rect x="6" y="318" width="30" height="6" fill="#90d0f8"/>
+  <rect x="6" y="324" width="36" height="6" fill="#c8f0ff"/>
+  <rect x="6" y="330" width="30" height="6" fill="#90d0f8"/>
+  <rect x="6" y="336" width="36" height="6" fill="#c8f0ff"/>
+  <rect x="0" y="342" width="42" height="6" fill="#c8f0ff"/>
+  <rect x="0" y="348" width="48" height="6" fill="#90d0f8"/>
+  <!-- Icy splashpool at base -->
+  <rect x="0" y="354" width="60" height="12" fill="#90d0f8"/>
+  <rect x="0" y="366" width="48" height="6" fill="#c8f0ff"/>
+  <!-- Ice sparkle highlights on waterfall -->
+  <rect x="12" y="258" width="6" height="6" fill="#f0f0f0" opacity="0.8" filter="url(#iceSparkle6)"/>
+  <rect x="18" y="288" width="6" height="6" fill="#f0f0f0" opacity="0.7" filter="url(#iceSparkle6)"/>
+  <rect x="6" y="318" width="6" height="6" fill="#f0f0f0" opacity="0.9" filter="url(#iceSparkle6)"/>
+
+  <!-- ===== ICE CRYSTAL FORMATIONS (mid-ground) ===== -->
+  <!-- Large crystal cluster (center-right) -->
+  <!-- Crystal 1 - tallest -->
+  <rect x="462" y="228" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="456" y="234" width="18" height="6" fill="#90d0f8"/>
+  <rect x="456" y="240" width="18" height="6" fill="#c8f0ff"/>
+  <rect x="450" y="246" width="30" height="6" fill="#90d0f8"/>
+  <rect x="450" y="252" width="30" height="6" fill="#c8f0ff"/>
+  <rect x="450" y="258" width="30" height="6" fill="#90d0f8"/>
+  <rect x="456" y="264" width="18" height="6" fill="#c8f0ff"/>
+  <rect x="456" y="270" width="18" height="6" fill="#90d0f8"/>
+  <rect x="462" y="276" width="6" height="6" fill="#c8f0ff"/>
+  <!-- Crystal sparkle -->
+  <rect x="462" y="234" width="6" height="6" fill="#f0f0f0" filter="url(#iceSparkle6)"/>
+  <rect x="456" y="252" width="6" height="6" fill="#f0f0f0" opacity="0.8" filter="url(#iceSparkle6)"/>
+
+  <!-- Crystal 2 - medium, tilted -->
+  <rect x="486" y="240" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="480" y="246" width="18" height="6" fill="#90d0f8"/>
+  <rect x="480" y="252" width="18" height="6" fill="#c8f0ff"/>
+  <rect x="480" y="258" width="24" height="6" fill="#90d0f8"/>
+  <rect x="480" y="264" width="18" height="6" fill="#c8f0ff"/>
+  <rect x="486" y="270" width="12" height="6" fill="#90d0f8"/>
+  <rect x="486" y="276" width="6" height="6" fill="#c8f0ff"/>
+  <!-- Sparkle -->
+  <rect x="486" y="246" width="6" height="6" fill="#f0f0f0" opacity="0.9" filter="url(#iceSparkle6)"/>
+
+  <!-- Crystal 3 - small -->
+  <rect x="444" y="258" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="438" y="264" width="18" height="6" fill="#90d0f8"/>
+  <rect x="438" y="270" width="12" height="6" fill="#c8f0ff"/>
+  <rect x="444" y="276" width="6" height="6" fill="#90d0f8"/>
+
+  <!-- Second crystal formation (left of lake) -->
+  <rect x="144" y="246" width="6" height="6" fill="#c8f0ff"/>
+  <rect x="138" y="252" width="18" height="6" fill="#90d0f8"/>
+  <rect x="138" y="258" width="18" height="6" fill="#c8f0ff"/>
+  <rect x="138" y="264" width="24" height="6" fill="#90d0f8"/>
+  <rect x="138" y="270" width="18" height="6" fill="#c8f0ff"/>
+  <rect x="144" y="276" width="6" height="6" fill="#90d0f8"/>
+  <!-- Sparkle -->
+  <rect x="144" y="252" width="6" height="6" fill="#f0f0f0" opacity="0.8" filter="url(#iceSparkle6)"/>
+
+  <!-- ===== SNOW-DUSTED EVERGREEN TREES ===== -->
+  <!-- Tree 1 (left area) -->
+  <rect x="78" y="264" width="6" height="6" fill="#1a3a1a"/>
+  <rect x="72" y="270" width="18" height="6" fill="#1a3a1a"/>
+  <rect x="66" y="276" width="30" height="6" fill="#2d6e2d"/>
+  <rect x="72" y="282" width="18" height="6" fill="#1a3a1a"/>
+  <rect x="60" y="288" width="42" height="6" fill="#2d6e2d"/>
+  <rect x="78" y="294" width="6" height="18" fill="#3b2010"/>
+  <!-- Snow on tree -->
+  <rect x="78" y="264" width="6" height="6" fill="#f0f0f0" opacity="0.7"/>
+  <rect x="72" y="270" width="6" height="6" fill="#c8f0ff" opacity="0.6"/>
+  <rect x="66" y="276" width="6" height="6" fill="#f0f0f0" opacity="0.5"/>
+  <rect x="60" y="288" width="6" height="6" fill="#c8f0ff" opacity="0.5"/>
+
+  <!-- Tree 2 (right area, smaller) -->
+  <rect x="528" y="252" width="6" height="6" fill="#1a3a1a"/>
+  <rect x="522" y="258" width="18" height="6" fill="#1a3a1a"/>
+  <rect x="516" y="264" width="30" height="6" fill="#2d6e2d"/>
+  <rect x="522" y="270" width="18" height="6" fill="#1a3a1a"/>
+  <rect x="510" y="276" width="42" height="6" fill="#2d6e2d"/>
+  <rect x="528" y="282" width="6" height="12" fill="#3b2010"/>
+  <!-- Snow on tree -->
+  <rect x="528" y="252" width="6" height="6" fill="#f0f0f0" opacity="0.7"/>
+  <rect x="522" y="258" width="6" height="6" fill="#c8f0ff" opacity="0.5"/>
+  <rect x="516" y="264" width="6" height="6" fill="#f0f0f0" opacity="0.4"/>
+
+  <!-- Tree 3 (far background, tiny) -->
+  <rect x="318" y="240" width="6" height="6" fill="#1a3a1a"/>
+  <rect x="312" y="246" width="18" height="6" fill="#1a3a1a"/>
+  <rect x="318" y="252" width="6" height="6" fill="#3b2010"/>
+  <rect x="318" y="240" width="6" height="6" fill="#f0f0f0" opacity="0.6"/>
+
+  <!-- Tree 4 (mid-right foreground) -->
+  <rect x="582" y="270" width="6" height="6" fill="#1a3a1a"/>
+  <rect x="576" y="276" width="18" height="6" fill="#2d6e2d"/>
+  <rect x="570" y="282" width="30" height="6" fill="#1a3a1a"/>
+  <rect x="582" y="288" width="6" height="12" fill="#3b2010"/>
+  <rect x="582" y="270" width="6" height="6" fill="#f0f0f0" opacity="0.6"/>
+  <rect x="576" y="276" width="6" height="6" fill="#c8f0ff" opacity="0.4"/>
+
+  <!-- ===== SNOWFLAKE PARTICLES IN AIR ===== -->
+  <!-- Scattered small snow particles -->
+  <rect x="24" y="90" width="6" height="6" fill="#f0f0f0" opacity="0.5"/>
+  <rect x="102" y="114" width="6" height="6" fill="#c8f0ff" opacity="0.4"/>
+  <rect x="174" y="78" width="6" height="6" fill="#f0f0f0" opacity="0.3"/>
+  <rect x="252" y="150" width="6" height="6" fill="#f0f0f0" opacity="0.45"/>
+  <rect x="300" y="108" width="6" height="6" fill="#c8f0ff" opacity="0.35"/>
+  <rect x="354" y="174" width="6" height="6" fill="#f0f0f0" opacity="0.4"/>
+  <rect x="420" y="96" width="6" height="6" fill="#c8f0ff" opacity="0.3"/>
+  <rect x="462" y="162" width="6" height="6" fill="#f0f0f0" opacity="0.5"/>
+  <rect x="540" y="132" width="6" height="6" fill="#f0f0f0" opacity="0.35"/>
+  <rect x="600" y="108" width="6" height="6" fill="#c8f0ff" opacity="0.4"/>
+  <rect x="66" y="186" width="6" height="6" fill="#f0f0f0" opacity="0.4"/>
+  <rect x="192" y="168" width="6" height="6" fill="#c8f0ff" opacity="0.35"/>
+  <rect x="480" y="138" width="6" height="6" fill="#f0f0f0" opacity="0.3"/>
+  <rect x="576" y="186" width="6" height="6" fill="#c8f0ff" opacity="0.45"/>
+  <rect x="138" y="198" width="6" height="6" fill="#f0f0f0" opacity="0.3"/>
+  <rect x="330" y="192" width="6" height="6" fill="#f0f0f0" opacity="0.35"/>
+  <rect x="510" y="204" width="6" height="6" fill="#c8f0ff" opacity="0.3"/>
+  <!-- Lower snowflakes -->
+  <rect x="72" y="384" width="6" height="6" fill="#f0f0f0" opacity="0.4"/>
+  <rect x="222" y="396" width="6" height="6" fill="#c8f0ff" opacity="0.35"/>
+  <rect x="378" y="390" width="6" height="6" fill="#f0f0f0" opacity="0.3"/>
+  <rect x="522" y="384" width="6" height="6" fill="#f0f0f0" opacity="0.4"/>
+  <rect x="114" y="408" width="6" height="6" fill="#c8f0ff" opacity="0.3"/>
+  <rect x="468" y="402" width="6" height="6" fill="#f0f0f0" opacity="0.35"/>
+
+  <!-- ===== FOREGROUND SNOW DETAIL ===== -->
+  <!-- Gentle snow undulations in foreground -->
+  <rect x="0" y="390" width="630" height="6" fill="#f0f0f0"/>
+  <rect x="0" y="396" width="630" height="104" fill="#c8f0ff"/>
+  <rect x="60" y="396" width="72" height="6" fill="#f0f0f0"/>
+  <rect x="240" y="396" width="90" height="6" fill="#f0f0f0"/>
+  <rect x="420" y="396" width="60" height="6" fill="#f0f0f0"/>
+  <rect x="540" y="396" width="90" height="6" fill="#f0f0f0"/>
+  <!-- Deep snow shadows -->
+  <rect x="120" y="408" width="48" height="6" fill="#90d0f8" opacity="0.3"/>
+  <rect x="360" y="414" width="36" height="6" fill="#90d0f8" opacity="0.3"/>
+  <rect x="510" y="408" width="30" height="6" fill="#90d0f8" opacity="0.25"/>
+
+  <!-- ===== TITLE TEXT ===== -->
+  <!-- Dark backing for title -->
+  <rect x="12" y="430" width="330" height="54" fill="#0d0d0d" opacity="0.85"/>
+  <rect x="18" y="436" width="318" height="42" fill="#0a1a3a" opacity="0.5"/>
+
+  <!-- Title: FROZEN TUNDRA -->
+  <text x="24" y="456" fill="#ffe040" font-size="22" font-family="monospace" font-weight="bold" letter-spacing="2">FROZEN TUNDRA</text>
+
+  <!-- Descriptor -->
+  <text x="24" y="472" fill="#90d0f8" font-size="9" font-family="monospace" opacity="0.9">Crystalline beauty masks a land of unforgiving cold</text>
+
+  <!-- ===== PIXELREALM WATERMARK (bottom-right, 30% opacity) ===== -->
+  <text x="510" y="488" fill="#c8c8c8" font-size="11" font-family="monospace" opacity="0.3">PixelRealm</text>
+
+</svg>

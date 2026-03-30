@@ -1,0 +1,386 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated; font-family: monospace;">
+  <defs>
+    <!-- Forge glow gradient -->
+    <radialGradient id="forgeGlow" cx="50%" cy="65%" r="55%">
+      <stop offset="0%" stop-color="#f06020" stop-opacity="0.25"/>
+      <stop offset="50%" stop-color="#f06020" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0d0d0d" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Furnace radial -->
+    <radialGradient id="furnaceHeat" cx="20%" cy="70%" r="35%">
+      <stop offset="0%" stop-color="#f8a060" stop-opacity="0.3"/>
+      <stop offset="60%" stop-color="#f06020" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#0d0d0d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ==================== BACKGROUND ==================== -->
+  <rect width="630" height="500" fill="#2b2b2b"/>
+  <rect width="630" height="500" fill="url(#forgeGlow)"/>
+  <rect width="630" height="500" fill="url(#furnaceHeat)"/>
+
+  <!-- Background wall bricks (pixel grid 6px) -->
+  <g opacity="0.15">
+    <rect x="0" y="72" width="630" height="6" fill="#4a4a4a"/>
+    <rect x="0" y="138" width="630" height="6" fill="#4a4a4a"/>
+    <rect x="0" y="204" width="630" height="6" fill="#4a4a4a"/>
+    <rect x="0" y="270" width="630" height="6" fill="#4a4a4a"/>
+    <!-- Vertical mortar lines offset per row -->
+    <rect x="60" y="72" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="180" y="72" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="300" y="72" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="420" y="72" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="540" y="72" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="120" y="138" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="240" y="138" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="360" y="138" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="480" y="138" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="600" y="138" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="60" y="204" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="180" y="204" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="300" y="204" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="420" y="204" width="6" height="66" fill="#4a4a4a"/>
+    <rect x="540" y="204" width="6" height="66" fill="#4a4a4a"/>
+  </g>
+
+  <!-- Floor -->
+  <rect x="0" y="396" width="630" height="104" fill="#3b2010"/>
+  <rect x="0" y="396" width="630" height="6" fill="#6b3a1f"/>
+  <!-- Floor tiles -->
+  <g opacity="0.2">
+    <rect x="0" y="420" width="66" height="6" fill="#6b3a1f"/>
+    <rect x="78" y="420" width="66" height="6" fill="#6b3a1f"/>
+    <rect x="156" y="420" width="66" height="6" fill="#6b3a1f"/>
+    <rect x="234" y="420" width="66" height="6" fill="#6b3a1f"/>
+    <rect x="312" y="420" width="66" height="6" fill="#6b3a1f"/>
+    <rect x="390" y="420" width="66" height="6" fill="#6b3a1f"/>
+    <rect x="468" y="420" width="66" height="6" fill="#6b3a1f"/>
+    <rect x="546" y="420" width="66" height="6" fill="#6b3a1f"/>
+  </g>
+
+  <!-- ==================== FURNACE (left side) ==================== -->
+  <!-- Furnace body -->
+  <rect x="24" y="228" width="120" height="168" fill="#4a4a4a"/>
+  <rect x="30" y="234" width="108" height="156" fill="#2b2b2b"/>
+  <!-- Furnace opening -->
+  <rect x="42" y="288" width="84" height="90" fill="#0d0d0d"/>
+  <!-- Fire inside furnace -->
+  <rect x="48" y="330" width="12" height="48" fill="#d42020"/>
+  <rect x="60" y="318" width="12" height="60" fill="#f06020"/>
+  <rect x="72" y="324" width="12" height="54" fill="#f8a060"/>
+  <rect x="84" y="336" width="12" height="42" fill="#f06020"/>
+  <rect x="96" y="342" width="12" height="36" fill="#d42020"/>
+  <rect x="60" y="306" width="12" height="12" fill="#ffe040"/>
+  <rect x="72" y="312" width="12" height="12" fill="#ffe040"/>
+  <rect x="54" y="312" width="6" height="18" fill="#e8b800"/>
+  <rect x="90" y="318" width="6" height="18" fill="#e8b800"/>
+  <!-- Furnace chimney -->
+  <rect x="54" y="192" width="60" height="42" fill="#4a4a4a"/>
+  <rect x="60" y="186" width="48" height="12" fill="#6e6e6e"/>
+  <!-- Smoke from chimney -->
+  <rect x="72" y="168" width="12" height="12" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="78" y="150" width="12" height="12" fill="#6e6e6e" opacity="0.2"/>
+  <rect x="66" y="132" width="12" height="12" fill="#6e6e6e" opacity="0.12"/>
+
+  <!-- Furnace glow on ground -->
+  <rect x="30" y="396" width="108" height="18" fill="#f06020" opacity="0.15"/>
+
+  <!-- ==================== ANVIL (center-right of character) ==================== -->
+  <!-- Anvil base -->
+  <rect x="348" y="360" width="72" height="36" fill="#6b3a1f"/>
+  <!-- Anvil body -->
+  <rect x="342" y="336" width="84" height="30" fill="#6e6e6e"/>
+  <rect x="336" y="330" width="96" height="12" fill="#969696"/>
+  <!-- Anvil horn -->
+  <rect x="330" y="330" width="12" height="6" fill="#969696"/>
+  <rect x="324" y="330" width="12" height="6" fill="#6e6e6e"/>
+  <!-- Anvil heel -->
+  <rect x="426" y="336" width="12" height="6" fill="#6e6e6e"/>
+  <!-- Anvil highlight -->
+  <rect x="342" y="330" width="84" height="6" fill="#c8c8c8" opacity="0.3"/>
+
+  <!-- ==================== ARTISAN CHARACTER (center, ~150px tall = 30% of 500) ==================== -->
+  <!-- Character positioned center, standing behind anvil -->
+  <!-- Body origin roughly x=252, feet at y=396, head top at y=246 -->
+
+  <!-- === BOOTS === -->
+  <rect x="264" y="378" width="24" height="18" fill="#3b2010"/>
+  <rect x="300" y="378" width="24" height="18" fill="#3b2010"/>
+  <!-- Boot soles -->
+  <rect x="258" y="390" width="30" height="6" fill="#6b3a1f"/>
+  <rect x="300" y="390" width="30" height="6" fill="#6b3a1f"/>
+
+  <!-- === LEGS (trousers) === -->
+  <rect x="270" y="348" width="18" height="30" fill="#6b3a1f"/>
+  <rect x="300" y="348" width="18" height="30" fill="#6b3a1f"/>
+  <!-- Belt -->
+  <rect x="264" y="342" width="60" height="6" fill="#3b2010"/>
+  <rect x="288" y="342" width="12" height="6" fill="#e8b800"/>
+
+  <!-- === TORSO === -->
+  <rect x="258" y="288" width="72" height="54" fill="#8b5c2a"/>
+  <!-- Leather apron -->
+  <rect x="264" y="294" width="60" height="54" fill="#6b3a1f"/>
+  <rect x="270" y="300" width="48" height="42" fill="#3b2010"/>
+  <!-- Apron straps -->
+  <rect x="270" y="282" width="6" height="18" fill="#3b2010"/>
+  <rect x="312" y="282" width="6" height="18" fill="#3b2010"/>
+  <!-- Apron pocket -->
+  <rect x="282" y="318" width="24" height="12" fill="#6b3a1f"/>
+
+  <!-- === SHOULDERS === -->
+  <rect x="246" y="282" width="96" height="12" fill="#8b5c2a"/>
+
+  <!-- === HEAD === -->
+  <rect x="270" y="246" width="48" height="42" fill="#d4a85a"/>
+  <!-- Hair -->
+  <rect x="270" y="246" width="48" height="12" fill="#6b3a1f"/>
+  <rect x="264" y="252" width="6" height="18" fill="#6b3a1f"/>
+  <rect x="318" y="252" width="6" height="18" fill="#6b3a1f"/>
+  <!-- Eyes -->
+  <rect x="282" y="264" width="6" height="6" fill="#0d0d0d"/>
+  <rect x="300" y="264" width="6" height="6" fill="#0d0d0d"/>
+  <!-- Mouth -->
+  <rect x="288" y="276" width="12" height="6" fill="#b8843f"/>
+  <!-- Beard -->
+  <rect x="276" y="276" width="36" height="12" fill="#8b5c2a"/>
+  <rect x="282" y="288" width="24" height="6" fill="#8b5c2a"/>
+
+  <!-- === LEFT ARM (holding tongs, towards furnace) === -->
+  <rect x="246" y="294" width="12" height="42" fill="#d4a85a"/>
+  <!-- Hand -->
+  <rect x="234" y="330" width="18" height="12" fill="#d4a85a"/>
+  <!-- Glove -->
+  <rect x="234" y="330" width="18" height="12" fill="#6b3a1f"/>
+  <!-- Tongs -->
+  <rect x="222" y="324" width="6" height="48" fill="#6e6e6e"/>
+  <rect x="228" y="324" width="6" height="48" fill="#4a4a4a"/>
+  <!-- Glowing metal in tongs -->
+  <rect x="216" y="366" width="18" height="12" fill="#f06020"/>
+  <rect x="222" y="366" width="6" height="12" fill="#ffe040"/>
+
+  <!-- === RIGHT ARM (raised with hammer) === -->
+  <rect x="330" y="282" width="12" height="18" fill="#d4a85a"/>
+  <!-- Upper arm raised -->
+  <rect x="336" y="258" width="12" height="30" fill="#d4a85a"/>
+  <!-- Glove -->
+  <rect x="336" y="246" width="12" height="18" fill="#6b3a1f"/>
+
+  <!-- === HAMMER (raised above head) === -->
+  <!-- Handle -->
+  <rect x="339" y="204" width="6" height="48" fill="#8b5c2a"/>
+  <!-- Hammer head -->
+  <rect x="324" y="192" width="36" height="18" fill="#6e6e6e"/>
+  <rect x="324" y="192" width="36" height="6" fill="#969696"/>
+  <!-- Hammer highlight -->
+  <rect x="330" y="192" width="6" height="18" fill="#c8c8c8" opacity="0.4"/>
+
+  <!-- ==================== SPARKS FROM ANVIL ==================== -->
+  <g>
+    <rect x="366" y="318" width="6" height="6" fill="#ffe040"/>
+    <rect x="378" y="306" width="6" height="6" fill="#f8a060"/>
+    <rect x="390" y="312" width="6" height="6" fill="#ffe040"/>
+    <rect x="354" y="306" width="6" height="6" fill="#f06020"/>
+    <rect x="402" y="300" width="6" height="6" fill="#ffe040"/>
+    <rect x="372" y="294" width="6" height="6" fill="#f8a060"/>
+    <rect x="396" y="288" width="6" height="6" fill="#ffe040" opacity="0.8"/>
+    <rect x="348" y="294" width="6" height="6" fill="#f06020" opacity="0.7"/>
+    <rect x="384" y="282" width="6" height="6" fill="#ffe040" opacity="0.6"/>
+    <rect x="414" y="294" width="6" height="6" fill="#f8a060" opacity="0.5"/>
+    <rect x="360" y="282" width="6" height="6" fill="#e8b800" opacity="0.7"/>
+    <rect x="408" y="276" width="6" height="6" fill="#ffe040" opacity="0.4"/>
+  </g>
+
+  <!-- ==================== FLOATING CRAFTING MATERIALS ==================== -->
+  <!-- Gem (right side) - purple -->
+  <g>
+    <rect x="516" y="192" width="6" height="18" fill="#5a20a0"/>
+    <rect x="522" y="186" width="12" height="30" fill="#9050e0"/>
+    <rect x="534" y="192" width="6" height="18" fill="#5a20a0"/>
+    <rect x="528" y="186" width="6" height="6" fill="#d090ff"/>
+    <!-- Gem sparkle -->
+    <rect x="528" y="180" width="6" height="6" fill="#fff8a0" opacity="0.8"/>
+  </g>
+
+  <!-- Gem (left upper) - blue -->
+  <g>
+    <rect x="162" y="138" width="6" height="18" fill="#1a4a8a"/>
+    <rect x="168" y="132" width="12" height="30" fill="#2a7ac0"/>
+    <rect x="180" y="138" width="6" height="18" fill="#1a4a8a"/>
+    <rect x="174" y="132" width="6" height="6" fill="#50a8e8"/>
+    <rect x="174" y="126" width="6" height="6" fill="#fff8a0" opacity="0.7"/>
+  </g>
+
+  <!-- Gold ingot (right side) -->
+  <g>
+    <rect x="486" y="300" width="36" height="18" fill="#e8b800"/>
+    <rect x="492" y="294" width="24" height="6" fill="#ffe040"/>
+    <rect x="486" y="300" width="36" height="6" fill="#a87000"/>
+    <rect x="498" y="300" width="12" height="6" fill="#ffe040" opacity="0.3"/>
+  </g>
+
+  <!-- Silver ingot (far right) -->
+  <g>
+    <rect x="534" y="324" width="36" height="18" fill="#969696"/>
+    <rect x="540" y="318" width="24" height="6" fill="#c8c8c8"/>
+    <rect x="534" y="324" width="36" height="6" fill="#6e6e6e"/>
+  </g>
+
+  <!-- Iron ingot (left) -->
+  <g>
+    <rect x="174" y="324" width="36" height="18" fill="#6e6e6e"/>
+    <rect x="180" y="318" width="24" height="6" fill="#969696"/>
+    <rect x="174" y="324" width="36" height="6" fill="#4a4a4a"/>
+  </g>
+
+  <!-- Red gem (upper right) -->
+  <g>
+    <rect x="480" y="156" width="6" height="18" fill="#a01010"/>
+    <rect x="486" y="150" width="12" height="30" fill="#d42020"/>
+    <rect x="498" y="156" width="6" height="18" fill="#a01010"/>
+    <rect x="492" y="150" width="6" height="6" fill="#f06020"/>
+    <rect x="492" y="144" width="6" height="6" fill="#fff8a0" opacity="0.6"/>
+  </g>
+
+  <!-- ==================== FORGE FIRE PARTICLES ==================== -->
+  <g>
+    <rect x="48" y="258" width="6" height="6" fill="#ffe040" opacity="0.7"/>
+    <rect x="108" y="246" width="6" height="6" fill="#f8a060" opacity="0.5"/>
+    <rect x="78" y="234" width="6" height="6" fill="#f06020" opacity="0.6"/>
+    <rect x="132" y="270" width="6" height="6" fill="#ffe040" opacity="0.4"/>
+    <rect x="36" y="240" width="6" height="6" fill="#f8a060" opacity="0.5"/>
+    <rect x="90" y="222" width="6" height="6" fill="#e8b800" opacity="0.4"/>
+    <rect x="60" y="216" width="6" height="6" fill="#ffe040" opacity="0.3"/>
+    <rect x="114" y="228" width="6" height="6" fill="#f06020" opacity="0.35"/>
+  </g>
+
+  <!-- Heat shimmer lines -->
+  <g opacity="0.08">
+    <rect x="36" y="204" width="6" height="30" fill="#f8a060"/>
+    <rect x="66" y="192" width="6" height="36" fill="#f8a060"/>
+    <rect x="96" y="198" width="6" height="30" fill="#f8a060"/>
+    <rect x="126" y="210" width="6" height="24" fill="#f8a060"/>
+  </g>
+
+  <!-- ==================== GLOWING ITEM ON ANVIL ==================== -->
+  <rect x="360" y="324" width="30" height="6" fill="#f06020"/>
+  <rect x="366" y="318" width="18" height="6" fill="#ffe040"/>
+  <rect x="360" y="324" width="30" height="6" fill="#f8a060" opacity="0.5"/>
+  <!-- Glow around item -->
+  <rect x="354" y="318" width="42" height="18" fill="#f06020" opacity="0.15"/>
+
+  <!-- ==================== SHELF WITH ITEMS (back wall, right) ==================== -->
+  <rect x="468" y="222" width="132" height="6" fill="#6b3a1f"/>
+  <!-- Bottles on shelf -->
+  <rect x="480" y="204" width="12" height="18" fill="#2a7ac0" opacity="0.7"/>
+  <rect x="480" y="204" width="12" height="6" fill="#50a8e8" opacity="0.5"/>
+  <rect x="504" y="210" width="12" height="12" fill="#2d6e2d" opacity="0.7"/>
+  <rect x="504" y="210" width="12" height="4" fill="#4c9b4c" opacity="0.5"/>
+  <rect x="528" y="198" width="12" height="24" fill="#5a20a0" opacity="0.6"/>
+  <rect x="528" y="198" width="12" height="6" fill="#9050e0" opacity="0.4"/>
+
+  <!-- ==================== TITLE TEXT "ARTISAN" ==================== -->
+  <!-- Pixel font "ARTISAN" built from 6px rects -->
+  <!-- Centered at top, each letter approx 30px wide, 36px tall, 6px gap -->
+  <!-- Total width: 7 letters * 30 + 6 gaps * 6 = 210+36 = 246. Start x = (630-246)/2 = 192 -->
+
+  <!-- Letter A -->
+  <g fill="#ffe040">
+    <rect x="198" y="30" width="18" height="6"/>
+    <rect x="192" y="36" width="6" height="30"/>
+    <rect x="216" y="36" width="6" height="30"/>
+    <rect x="198" y="48" width="18" height="6"/>
+  </g>
+  <!-- Letter R -->
+  <g fill="#ffe040">
+    <rect x="228" y="30" width="6" height="36"/>
+    <rect x="234" y="30" width="18" height="6"/>
+    <rect x="252" y="36" width="6" height="12"/>
+    <rect x="234" y="48" width="18" height="6"/>
+    <rect x="252" y="54" width="6" height="12"/>
+  </g>
+  <!-- Letter T -->
+  <g fill="#ffe040">
+    <rect x="264" y="30" width="30" height="6"/>
+    <rect x="276" y="36" width="6" height="30"/>
+  </g>
+  <!-- Letter I -->
+  <g fill="#ffe040">
+    <rect x="300" y="30" width="18" height="6"/>
+    <rect x="306" y="36" width="6" height="24"/>
+    <rect x="300" y="60" width="18" height="6"/>
+  </g>
+  <!-- Letter S -->
+  <g fill="#ffe040">
+    <rect x="324" y="30" width="24" height="6"/>
+    <rect x="324" y="36" width="6" height="12"/>
+    <rect x="324" y="48" width="24" height="6"/>
+    <rect x="342" y="54" width="6" height="6"/>
+    <rect x="324" y="60" width="24" height="6"/>
+  </g>
+  <!-- Letter A -->
+  <g fill="#ffe040">
+    <rect x="360" y="30" width="18" height="6"/>
+    <rect x="354" y="36" width="6" height="30"/>
+    <rect x="378" y="36" width="6" height="30"/>
+    <rect x="360" y="48" width="18" height="6"/>
+  </g>
+  <!-- Letter N -->
+  <g fill="#ffe040">
+    <rect x="390" y="30" width="6" height="36"/>
+    <rect x="396" y="36" width="6" height="6"/>
+    <rect x="402" y="42" width="6" height="6"/>
+    <rect x="408" y="48" width="6" height="6"/>
+    <rect x="414" y="30" width="6" height="36"/>
+  </g>
+
+  <!-- Title shadow/glow -->
+  <rect x="186" y="24" width="240" height="48" fill="#e8b800" opacity="0.06" rx="6"/>
+
+  <!-- Subtitle -->
+  <text x="315" y="86" text-anchor="middle" fill="#e8d08a" font-family="monospace" font-size="11" letter-spacing="4" opacity="0.8">MASTER CRAFTER &amp; BUILDER</text>
+
+  <!-- ==================== ARCHETYPE BADGES ==================== -->
+  <!-- Badge 1: Blacksmith -->
+  <g>
+    <rect x="102" y="432" width="120" height="36" rx="4" fill="#0d0d0d" opacity="0.7"/>
+    <rect x="102" y="432" width="120" height="36" rx="4" fill="none" stroke="#e8b800" stroke-width="2" opacity="0.6"/>
+    <!-- Hammer icon -->
+    <rect x="114" y="442" width="4" height="16" fill="#969696"/>
+    <rect x="108" y="440" width="16" height="6" fill="#6e6e6e"/>
+    <rect x="108" y="440" width="16" height="2" fill="#c8c8c8" opacity="0.5"/>
+    <text x="162" y="455" text-anchor="middle" fill="#ffe040" font-family="monospace" font-size="11" font-weight="bold">BLACKSMITH</text>
+  </g>
+
+  <!-- Badge 2: Alchemist -->
+  <g>
+    <rect x="258" y="432" width="114" height="36" rx="4" fill="#0d0d0d" opacity="0.7"/>
+    <rect x="258" y="432" width="114" height="36" rx="4" fill="none" stroke="#e8b800" stroke-width="2" opacity="0.6"/>
+    <!-- Flask icon -->
+    <rect x="272" y="447" width="10" height="12" fill="#2a7ac0" opacity="0.7"/>
+    <rect x="274" y="441" width="6" height="6" fill="#6e6e6e"/>
+    <rect x="272" y="453" width="10" height="2" fill="#50a8e8" opacity="0.5"/>
+    <text x="315" y="455" text-anchor="middle" fill="#ffe040" font-family="monospace" font-size="11" font-weight="bold">ALCHEMIST</text>
+  </g>
+
+  <!-- Badge 3: Architect -->
+  <g>
+    <rect x="408" y="432" width="120" height="36" rx="4" fill="#0d0d0d" opacity="0.7"/>
+    <rect x="408" y="432" width="120" height="36" rx="4" fill="none" stroke="#e8b800" stroke-width="2" opacity="0.6"/>
+    <!-- Blueprint icon -->
+    <rect x="420" y="441" width="14" height="14" fill="none" stroke="#50a8e8" stroke-width="2" opacity="0.7"/>
+    <rect x="424" y="445" width="6" height="6" fill="#50a8e8" opacity="0.4"/>
+    <text x="468" y="455" text-anchor="middle" fill="#ffe040" font-family="monospace" font-size="11" font-weight="bold">ARCHITECT</text>
+  </g>
+
+  <!-- ==================== ABILITY LABELS (small, near character) ==================== -->
+  <g opacity="0.5" fill="#e8d08a" font-family="monospace" font-size="8">
+    <text x="198" y="378">FORGE</text>
+    <text x="438" y="348">ENCHANT</text>
+    <text x="468" y="258">GATHER</text>
+    <text x="168" y="186">CONSTRUCT</text>
+  </g>
+
+  <!-- ==================== PIXELREALM WATERMARK ==================== -->
+  <text x="588" y="488" text-anchor="end" fill="#c8c8c8" font-family="monospace" font-size="9" opacity="0.3" letter-spacing="1">PIXELREALM</text>
+</svg>

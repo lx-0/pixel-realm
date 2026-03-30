@@ -1,0 +1,414 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated; font-family: monospace;">
+  <defs>
+    <!-- Arcane glow filter -->
+    <filter id="arcaneGlow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="spellGlow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="runeGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- ==================== BACKGROUND ==================== -->
+  <!-- Base dark fill -->
+  <rect width="630" height="500" fill="#0d0d0d"/>
+  <!-- Inner chamber gradient area -->
+  <rect x="60" y="40" width="510" height="420" fill="#1a0a3a"/>
+  <rect x="90" y="60" width="450" height="380" fill="#1a0a3a"/>
+  <!-- Fade edges with dark rects -->
+  <rect x="60" y="40" width="30" height="420" fill="#0d0d0d" opacity="0.6"/>
+  <rect x="510" y="40" width="60" height="420" fill="#0d0d0d" opacity="0.6"/>
+  <rect x="60" y="40" width="510" height="30" fill="#0d0d0d" opacity="0.5"/>
+  <rect x="60" y="420" width="510" height="40" fill="#0d0d0d" opacity="0.7"/>
+  <!-- Floor stone -->
+  <rect x="90" y="390" width="450" height="60" fill="#2b2b2b" opacity="0.5"/>
+  <rect x="120" y="400" width="390" height="6" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="120" y="420" width="390" height="6" fill="#4a4a4a" opacity="0.15"/>
+
+  <!-- ==================== ARCANE CIRCLES (background) ==================== -->
+  <!-- Large outer arcane circle -->
+  <circle cx="315" cy="300" r="150" fill="none" stroke="#5a20a0" stroke-width="2" opacity="0.3" filter="url(#runeGlow)"/>
+  <circle cx="315" cy="300" r="120" fill="none" stroke="#9050e0" stroke-width="1.5" opacity="0.25" filter="url(#runeGlow)"/>
+  <circle cx="315" cy="300" r="90" fill="none" stroke="#5a20a0" stroke-width="1" opacity="0.2"/>
+
+  <!-- Floating runes around the circle - pixel style rects -->
+  <!-- Rune top -->
+  <g opacity="0.4" filter="url(#runeGlow)">
+    <rect x="300" y="150" width="6" height="18" fill="#9050e0"/>
+    <rect x="306" y="156" width="6" height="6" fill="#9050e0"/>
+    <rect x="312" y="150" width="6" height="12" fill="#9050e0"/>
+    <rect x="294" y="156" width="6" height="6" fill="#9050e0"/>
+    <rect x="318" y="156" width="6" height="6" fill="#d090ff"/>
+  </g>
+  <!-- Rune left -->
+  <g opacity="0.35" filter="url(#runeGlow)">
+    <rect x="168" y="280" width="18" height="6" fill="#9050e0"/>
+    <rect x="174" y="274" width="6" height="6" fill="#9050e0"/>
+    <rect x="174" y="286" width="6" height="12" fill="#9050e0"/>
+    <rect x="162" y="286" width="6" height="6" fill="#d090ff"/>
+  </g>
+  <!-- Rune right -->
+  <g opacity="0.35" filter="url(#runeGlow)">
+    <rect x="444" y="270" width="18" height="6" fill="#9050e0"/>
+    <rect x="450" y="264" width="6" height="6" fill="#9050e0"/>
+    <rect x="450" y="276" width="6" height="12" fill="#9050e0"/>
+    <rect x="462" y="264" width="6" height="6" fill="#d090ff"/>
+  </g>
+  <!-- Rune bottom-left -->
+  <g opacity="0.3" filter="url(#runeGlow)">
+    <rect x="210" y="378" width="6" height="12" fill="#9050e0"/>
+    <rect x="216" y="372" width="12" height="6" fill="#9050e0"/>
+    <rect x="216" y="384" width="6" height="6" fill="#d090ff"/>
+  </g>
+  <!-- Rune bottom-right -->
+  <g opacity="0.3" filter="url(#runeGlow)">
+    <rect x="408" y="378" width="6" height="12" fill="#9050e0"/>
+    <rect x="402" y="372" width="12" height="6" fill="#9050e0"/>
+    <rect x="408" y="384" width="6" height="6" fill="#d090ff"/>
+  </g>
+
+  <!-- ==================== MAGE CHARACTER (pixel art, 6px grid) ==================== -->
+  <!-- Character centered at x~285, top of hat ~y170, feet ~y408 => ~238px tall (~40 cells) -->
+  <!-- Mage is in casting pose: staff raised in right hand, left arm extended casting -->
+
+  <g id="mage-character">
+    <!-- === WIZARD HAT === -->
+    <!-- Hat tip -->
+    <rect x="303" y="174" width="6" height="6" fill="#5a20a0"/>
+    <rect x="297" y="180" width="18" height="6" fill="#5a20a0"/>
+    <rect x="291" y="186" width="30" height="6" fill="#5a20a0"/>
+    <rect x="285" y="192" width="42" height="6" fill="#5a20a0"/>
+    <rect x="279" y="198" width="54" height="6" fill="#9050e0"/>
+    <!-- Hat brim -->
+    <rect x="267" y="204" width="78" height="6" fill="#5a20a0"/>
+    <rect x="261" y="210" width="90" height="6" fill="#1a0a3a"/>
+    <!-- Hat band (gold) -->
+    <rect x="279" y="198" width="54" height="6" fill="#a87000" opacity="0.6"/>
+    <rect x="303" y="198" width="6" height="6" fill="#e8b800"/>
+    <!-- Hat highlight -->
+    <rect x="297" y="186" width="6" height="6" fill="#9050e0"/>
+    <rect x="291" y="192" width="6" height="6" fill="#9050e0"/>
+
+    <!-- === FACE === -->
+    <rect x="285" y="216" width="42" height="6" fill="#d4a85a"/>
+    <rect x="285" y="222" width="42" height="6" fill="#d4a85a"/>
+    <rect x="285" y="228" width="42" height="6" fill="#b8843f"/>
+    <!-- Eyes -->
+    <rect x="291" y="216" width="6" height="6" fill="#0d0d0d"/>
+    <rect x="315" y="216" width="6" height="6" fill="#0d0d0d"/>
+    <!-- Eye glow (arcane) -->
+    <rect x="291" y="216" width="6" height="6" fill="#d090ff" opacity="0.5"/>
+    <rect x="315" y="216" width="6" height="6" fill="#d090ff" opacity="0.5"/>
+    <!-- Mouth/beard area -->
+    <rect x="291" y="234" width="30" height="6" fill="#c8c8c8"/>
+    <rect x="285" y="240" width="42" height="6" fill="#c8c8c8"/>
+    <rect x="291" y="246" width="30" height="12" fill="#969696"/>
+    <rect x="297" y="258" width="18" height="6" fill="#969696"/>
+
+    <!-- === SHOULDERS & ROBES === -->
+    <!-- Shoulders -->
+    <rect x="261" y="252" width="90" height="6" fill="#5a20a0"/>
+    <rect x="255" y="258" width="102" height="6" fill="#5a20a0"/>
+    <!-- Shoulder pads -->
+    <rect x="261" y="246" width="18" height="12" fill="#5a20a0"/>
+    <rect x="333" y="246" width="18" height="12" fill="#5a20a0"/>
+    <rect x="267" y="246" width="6" height="6" fill="#9050e0"/>
+    <rect x="339" y="246" width="6" height="6" fill="#9050e0"/>
+
+    <!-- Upper robes / torso -->
+    <rect x="267" y="264" width="78" height="6" fill="#5a20a0"/>
+    <rect x="267" y="270" width="78" height="6" fill="#5a20a0"/>
+    <rect x="273" y="276" width="66" height="6" fill="#5a20a0"/>
+    <rect x="273" y="282" width="66" height="6" fill="#1a0a3a"/>
+    <!-- Robe center seam -->
+    <rect x="303" y="264" width="6" height="24" fill="#9050e0"/>
+    <!-- Belt -->
+    <rect x="273" y="288" width="66" height="6" fill="#a87000"/>
+    <rect x="297" y="288" width="18" height="6" fill="#e8b800"/>
+    <rect x="303" y="288" width="6" height="6" fill="#ffe040"/>
+
+    <!-- Lower robes -->
+    <rect x="267" y="294" width="78" height="6" fill="#5a20a0"/>
+    <rect x="261" y="300" width="90" height="6" fill="#5a20a0"/>
+    <rect x="255" y="306" width="102" height="6" fill="#1a0a3a"/>
+    <rect x="249" y="312" width="114" height="6" fill="#5a20a0"/>
+    <rect x="249" y="318" width="114" height="6" fill="#1a0a3a"/>
+    <rect x="243" y="324" width="126" height="6" fill="#5a20a0"/>
+    <rect x="243" y="330" width="126" height="6" fill="#1a0a3a"/>
+    <rect x="237" y="336" width="138" height="6" fill="#5a20a0"/>
+    <rect x="237" y="342" width="138" height="6" fill="#5a20a0"/>
+    <rect x="237" y="348" width="138" height="6" fill="#1a0a3a"/>
+    <rect x="237" y="354" width="138" height="6" fill="#5a20a0"/>
+    <rect x="237" y="360" width="138" height="6" fill="#1a0a3a"/>
+    <!-- Robe hem -->
+    <rect x="243" y="366" width="126" height="6" fill="#5a20a0"/>
+    <rect x="249" y="372" width="114" height="6" fill="#5a20a0"/>
+    <rect x="255" y="378" width="48" height="6" fill="#5a20a0"/>
+    <rect x="309" y="378" width="48" height="6" fill="#5a20a0"/>
+    <!-- Robe shimmer -->
+    <rect x="261" y="312" width="6" height="48" fill="#9050e0" opacity="0.3"/>
+    <rect x="345" y="312" width="6" height="48" fill="#9050e0" opacity="0.3"/>
+
+    <!-- === FEET / BOOTS === -->
+    <rect x="261" y="384" width="36" height="6" fill="#3b2010"/>
+    <rect x="315" y="384" width="36" height="6" fill="#3b2010"/>
+    <rect x="261" y="390" width="36" height="6" fill="#6b3a1f"/>
+    <rect x="315" y="390" width="36" height="6" fill="#6b3a1f"/>
+
+    <!-- === RIGHT ARM (raised, holding staff) === -->
+    <!-- Upper arm -->
+    <rect x="345" y="252" width="12" height="6" fill="#5a20a0"/>
+    <rect x="351" y="246" width="12" height="6" fill="#5a20a0"/>
+    <rect x="357" y="240" width="12" height="6" fill="#5a20a0"/>
+    <rect x="363" y="234" width="12" height="6" fill="#5a20a0"/>
+    <!-- Hand -->
+    <rect x="369" y="228" width="12" height="6" fill="#d4a85a"/>
+    <rect x="369" y="222" width="12" height="6" fill="#b8843f"/>
+
+    <!-- === STAFF === -->
+    <!-- Staff shaft -->
+    <rect x="372" y="168" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="372" y="174" width="6" height="60" fill="#8b5c2a"/>
+    <rect x="372" y="234" width="6" height="120" fill="#6b3a1f"/>
+    <rect x="372" y="354" width="6" height="42" fill="#3b2010"/>
+    <!-- Staff orb/crystal at top -->
+    <rect x="366" y="150" width="18" height="6" fill="#9050e0"/>
+    <rect x="360" y="156" width="30" height="6" fill="#d090ff"/>
+    <rect x="360" y="162" width="30" height="6" fill="#9050e0"/>
+    <rect x="366" y="168" width="18" height="6" fill="#5a20a0"/>
+    <!-- Staff orb glow -->
+    <rect x="366" y="156" width="12" height="6" fill="#d090ff" opacity="0.8"/>
+    <!-- Staff orb sparkle -->
+    <rect x="372" y="144" width="6" height="6" fill="#d090ff" opacity="0.6" filter="url(#arcaneGlow)"/>
+
+    <!-- === LEFT ARM (extended, casting) === -->
+    <rect x="255" y="258" width="12" height="6" fill="#5a20a0"/>
+    <rect x="243" y="264" width="18" height="6" fill="#5a20a0"/>
+    <rect x="231" y="258" width="18" height="6" fill="#5a20a0"/>
+    <rect x="219" y="252" width="18" height="6" fill="#5a20a0"/>
+    <!-- Casting hand -->
+    <rect x="207" y="246" width="18" height="6" fill="#d4a85a"/>
+    <rect x="207" y="240" width="12" height="6" fill="#b8843f"/>
+    <rect x="201" y="246" width="6" height="6" fill="#d4a85a"/>
+  </g>
+
+  <!-- ==================== SPELL EFFECTS ==================== -->
+
+  <!-- FIREBALL ORB (upper left of mage) -->
+  <g filter="url(#spellGlow)">
+    <rect x="150" y="186" width="6" height="6" fill="#f8a060" opacity="0.4"/>
+    <rect x="156" y="180" width="6" height="6" fill="#f06020" opacity="0.5"/>
+    <rect x="156" y="186" width="18" height="6" fill="#d42020"/>
+    <rect x="156" y="192" width="18" height="6" fill="#d42020"/>
+    <rect x="162" y="180" width="12" height="6" fill="#f06020"/>
+    <rect x="162" y="198" width="6" height="6" fill="#a01010"/>
+    <rect x="168" y="186" width="6" height="6" fill="#f8a060"/>
+    <rect x="174" y="192" width="6" height="6" fill="#f06020" opacity="0.5"/>
+    <!-- Flame wisps -->
+    <rect x="162" y="174" width="6" height="6" fill="#ffe040" opacity="0.6"/>
+    <rect x="156" y="174" width="6" height="6" fill="#f06020" opacity="0.3"/>
+    <rect x="168" y="174" width="6" height="6" fill="#f8a060" opacity="0.3"/>
+  </g>
+
+  <!-- ICE ORB (upper right of mage) -->
+  <g filter="url(#spellGlow)">
+    <rect x="444" y="198" width="6" height="6" fill="#c8f0ff" opacity="0.4"/>
+    <rect x="450" y="192" width="18" height="6" fill="#90d0f8"/>
+    <rect x="450" y="198" width="18" height="6" fill="#50a8e8"/>
+    <rect x="450" y="204" width="18" height="6" fill="#90d0f8"/>
+    <rect x="456" y="186" width="6" height="6" fill="#c8f0ff"/>
+    <rect x="456" y="210" width="6" height="6" fill="#2a7ac0"/>
+    <rect x="468" y="198" width="6" height="6" fill="#c8f0ff" opacity="0.4"/>
+    <!-- Ice crystals -->
+    <rect x="456" y="180" width="6" height="6" fill="#c8f0ff" opacity="0.5"/>
+    <rect x="444" y="192" width="6" height="6" fill="#90d0f8" opacity="0.3"/>
+    <rect x="468" y="204" width="6" height="6" fill="#90d0f8" opacity="0.3"/>
+  </g>
+
+  <!-- LIGHTNING ORB (left of casting hand) -->
+  <g filter="url(#spellGlow)">
+    <rect x="168" y="234" width="6" height="6" fill="#ffe040"/>
+    <rect x="174" y="240" width="6" height="6" fill="#ffe040"/>
+    <rect x="180" y="234" width="6" height="6" fill="#fff8a0"/>
+    <rect x="186" y="240" width="6" height="6" fill="#ffe040"/>
+    <rect x="192" y="234" width="6" height="6" fill="#e8b800"/>
+    <rect x="198" y="240" width="6" height="6" fill="#ffe040"/>
+    <!-- Bolt zap from casting hand -->
+    <rect x="192" y="246" width="6" height="6" fill="#fff8a0" opacity="0.8"/>
+    <rect x="186" y="252" width="6" height="6" fill="#ffe040" opacity="0.6"/>
+    <rect x="180" y="246" width="6" height="6" fill="#ffe040" opacity="0.5"/>
+    <rect x="174" y="252" width="6" height="6" fill="#e8b800" opacity="0.4"/>
+    <!-- Spark particles -->
+    <rect x="162" y="228" width="6" height="6" fill="#fff8a0" opacity="0.4"/>
+    <rect x="198" y="228" width="6" height="6" fill="#fff8a0" opacity="0.4"/>
+    <rect x="180" y="222" width="6" height="6" fill="#ffe040" opacity="0.3"/>
+  </g>
+
+  <!-- Arcane energy from casting hand -->
+  <g filter="url(#arcaneGlow)" opacity="0.7">
+    <rect x="195" y="240" width="6" height="6" fill="#d090ff"/>
+    <rect x="189" y="234" width="6" height="6" fill="#9050e0"/>
+    <rect x="183" y="240" width="6" height="6" fill="#d090ff"/>
+    <rect x="195" y="252" width="6" height="6" fill="#9050e0"/>
+    <rect x="201" y="234" width="6" height="6" fill="#d090ff"/>
+  </g>
+
+  <!-- Staff top energy burst -->
+  <g filter="url(#spellGlow)" opacity="0.6">
+    <rect x="354" y="144" width="6" height="6" fill="#d090ff"/>
+    <rect x="384" y="144" width="6" height="6" fill="#d090ff"/>
+    <rect x="348" y="156" width="6" height="6" fill="#9050e0"/>
+    <rect x="396" y="156" width="6" height="6" fill="#9050e0"/>
+    <rect x="354" y="138" width="6" height="6" fill="#9050e0" opacity="0.5"/>
+    <rect x="384" y="138" width="6" height="6" fill="#9050e0" opacity="0.5"/>
+    <rect x="372" y="132" width="6" height="6" fill="#d090ff" opacity="0.4"/>
+  </g>
+
+  <!-- Floating magic particles around mage -->
+  <g opacity="0.5">
+    <rect x="228" y="210" width="6" height="6" fill="#d090ff" filter="url(#arcaneGlow)"/>
+    <rect x="396" y="276" width="6" height="6" fill="#d090ff" filter="url(#arcaneGlow)"/>
+    <rect x="210" y="330" width="6" height="6" fill="#9050e0" filter="url(#arcaneGlow)"/>
+    <rect x="408" y="330" width="6" height="6" fill="#9050e0" filter="url(#arcaneGlow)"/>
+    <rect x="240" y="174" width="6" height="6" fill="#d090ff" filter="url(#arcaneGlow)"/>
+    <rect x="420" y="228" width="6" height="6" fill="#d090ff" filter="url(#arcaneGlow)"/>
+    <rect x="192" y="300" width="6" height="6" fill="#9050e0" filter="url(#arcaneGlow)"/>
+    <rect x="432" y="306" width="6" height="6" fill="#9050e0" filter="url(#arcaneGlow)"/>
+  </g>
+
+  <!-- ==================== TITLE "MAGE" (pixel font) ==================== -->
+  <g transform="translate(174, 30)">
+    <!-- M -->
+    <rect x="0" y="0" width="6" height="42" fill="#ffe040"/>
+    <rect x="6" y="6" width="6" height="6" fill="#ffe040"/>
+    <rect x="12" y="12" width="6" height="6" fill="#ffe040"/>
+    <rect x="18" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="24" y="12" width="6" height="6" fill="#ffe040"/>
+    <rect x="30" y="6" width="6" height="6" fill="#ffe040"/>
+    <rect x="36" y="0" width="6" height="42" fill="#ffe040"/>
+    <!-- shadow -->
+    <rect x="0" y="36" width="6" height="6" fill="#a87000"/>
+    <rect x="36" y="36" width="6" height="6" fill="#a87000"/>
+
+    <!-- A -->
+    <rect x="60" y="6" width="6" height="36" fill="#ffe040"/>
+    <rect x="66" y="0" width="18" height="6" fill="#ffe040"/>
+    <rect x="84" y="6" width="6" height="36" fill="#ffe040"/>
+    <rect x="66" y="24" width="18" height="6" fill="#ffe040"/>
+    <rect x="60" y="36" width="6" height="6" fill="#a87000"/>
+    <rect x="84" y="36" width="6" height="6" fill="#a87000"/>
+
+    <!-- G -->
+    <rect x="108" y="6" width="6" height="30" fill="#ffe040"/>
+    <rect x="114" y="0" width="24" height="6" fill="#ffe040"/>
+    <rect x="114" y="36" width="24" height="6" fill="#ffe040"/>
+    <rect x="138" y="6" width="6" height="6" fill="#ffe040"/>
+    <rect x="138" y="24" width="6" height="12" fill="#ffe040"/>
+    <rect x="126" y="24" width="12" height="6" fill="#ffe040"/>
+    <rect x="108" y="36" width="6" height="6" fill="#a87000"/>
+    <rect x="138" y="36" width="6" height="6" fill="#a87000"/>
+
+    <!-- E -->
+    <rect x="162" y="0" width="6" height="42" fill="#ffe040"/>
+    <rect x="168" y="0" width="24" height="6" fill="#ffe040"/>
+    <rect x="168" y="18" width="18" height="6" fill="#ffe040"/>
+    <rect x="168" y="36" width="24" height="6" fill="#ffe040"/>
+    <rect x="162" y="36" width="6" height="6" fill="#a87000"/>
+    <rect x="186" y="36" width="6" height="6" fill="#a87000"/>
+
+    <!-- Title underline glow -->
+    <rect x="0" y="48" width="192" height="6" fill="#e8b800" opacity="0.4"/>
+    <!-- Gold sparkle on letters -->
+    <rect x="18" y="0" width="6" height="6" fill="#fff8a0" opacity="0.6"/>
+    <rect x="72" y="0" width="6" height="6" fill="#fff8a0" opacity="0.6"/>
+    <rect x="120" y="0" width="6" height="6" fill="#fff8a0" opacity="0.6"/>
+    <rect x="174" y="0" width="6" height="6" fill="#fff8a0" opacity="0.6"/>
+  </g>
+
+  <!-- Subtitle line -->
+  <text x="315" y="100" text-anchor="middle" fill="#d090ff" font-family="monospace" font-size="11" opacity="0.7">MYSTICAL SPELLCASTER</text>
+
+  <!-- ==================== ARCHETYPE BADGES ==================== -->
+  <!-- Elementalist badge -->
+  <g transform="translate(102, 420)">
+    <rect x="0" y="0" width="120" height="36" fill="#1a0a3a" stroke="#5a20a0" stroke-width="2" rx="0"/>
+    <rect x="0" y="0" width="120" height="6" fill="#5a20a0" opacity="0.4"/>
+    <!-- Fire icon -->
+    <rect x="8" y="12" width="6" height="6" fill="#d42020"/>
+    <rect x="14" y="8" width="6" height="6" fill="#f06020"/>
+    <rect x="8" y="18" width="6" height="6" fill="#f8a060"/>
+    <text x="60" y="24" text-anchor="middle" fill="#f8a060" font-family="monospace" font-size="10" font-weight="bold">Elementalist</text>
+  </g>
+
+  <!-- Arcanist badge -->
+  <g transform="translate(255, 420)">
+    <rect x="0" y="0" width="120" height="36" fill="#1a0a3a" stroke="#9050e0" stroke-width="2" rx="0"/>
+    <rect x="0" y="0" width="120" height="6" fill="#9050e0" opacity="0.4"/>
+    <!-- Arcane icon -->
+    <rect x="8" y="10" width="6" height="6" fill="#d090ff"/>
+    <rect x="14" y="16" width="6" height="6" fill="#9050e0"/>
+    <rect x="8" y="22" width="6" height="6" fill="#d090ff"/>
+    <text x="60" y="24" text-anchor="middle" fill="#d090ff" font-family="monospace" font-size="10" font-weight="bold">Arcanist</text>
+  </g>
+
+  <!-- Enchanter badge -->
+  <g transform="translate(408, 420)">
+    <rect x="0" y="0" width="120" height="36" fill="#1a0a3a" stroke="#5a20a0" stroke-width="2" rx="0"/>
+    <rect x="0" y="0" width="120" height="6" fill="#5a20a0" opacity="0.4"/>
+    <!-- Enchant icon -->
+    <rect x="8" y="10" width="6" height="6" fill="#90d0f8"/>
+    <rect x="14" y="16" width="6" height="6" fill="#50a8e8"/>
+    <rect x="8" y="22" width="6" height="6" fill="#c8f0ff"/>
+    <text x="60" y="24" text-anchor="middle" fill="#90d0f8" font-family="monospace" font-size="10" font-weight="bold">Enchanter</text>
+  </g>
+
+  <!-- ==================== ABILITY LABELS ==================== -->
+  <g opacity="0.5">
+    <!-- Fireball label -->
+    <text x="165" y="216" text-anchor="middle" fill="#f8a060" font-family="monospace" font-size="8">FIREBALL</text>
+    <!-- Frost Nova label -->
+    <text x="462" y="224" text-anchor="middle" fill="#90d0f8" font-family="monospace" font-size="8">FROST NOVA</text>
+    <!-- Lightning label -->
+    <text x="180" y="270" text-anchor="middle" fill="#ffe040" font-family="monospace" font-size="8">LIGHTNING</text>
+  </g>
+
+  <!-- ==================== WATERMARK ==================== -->
+  <text x="595" y="486" text-anchor="end" fill="#c8c8c8" font-family="monospace" font-size="9" opacity="0.3">PIXELREALM</text>
+
+  <!-- ==================== DECORATIVE CORNER ELEMENTS ==================== -->
+  <!-- Top-left corner -->
+  <g opacity="0.25">
+    <rect x="18" y="18" width="18" height="6" fill="#5a20a0"/>
+    <rect x="18" y="18" width="6" height="18" fill="#5a20a0"/>
+  </g>
+  <!-- Top-right corner -->
+  <g opacity="0.25">
+    <rect x="594" y="18" width="18" height="6" fill="#5a20a0"/>
+    <rect x="606" y="18" width="6" height="18" fill="#5a20a0"/>
+  </g>
+  <!-- Bottom-left corner -->
+  <g opacity="0.25">
+    <rect x="18" y="476" width="18" height="6" fill="#5a20a0"/>
+    <rect x="18" y="464" width="6" height="18" fill="#5a20a0"/>
+  </g>
+  <!-- Bottom-right corner -->
+  <g opacity="0.25">
+    <rect x="594" y="476" width="18" height="6" fill="#5a20a0"/>
+    <rect x="606" y="464" width="6" height="18" fill="#5a20a0"/>
+  </g>
+</svg>

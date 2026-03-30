@@ -1,0 +1,706 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated; font-family: monospace;">
+  <defs>
+    <!-- Dappled light ray -->
+    <linearGradient id="lightRay" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a8e4a0" stop-opacity="0.18"/>
+      <stop offset="50%" stop-color="#a8e4a0" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#a8e4a0" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="lightRay2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#78c878" stop-opacity="0.12"/>
+      <stop offset="50%" stop-color="#78c878" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#78c878" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Forest floor gradient -->
+    <linearGradient id="forestFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a3a1a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0d0d0d" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ==================== BACKGROUND ==================== -->
+  <!-- Deep green base -->
+  <rect width="630" height="500" fill="#1a3a1a"/>
+
+  <!-- Sky hint at top -->
+  <rect width="630" height="60" fill="#0a1a3a" opacity="0.4"/>
+
+  <!-- Background tree layer (far) -->
+  <g opacity="0.35">
+    <!-- Tree 1 far -->
+    <rect x="0" y="60" width="12" height="180" fill="#2d6e2d"/>
+    <rect x="-18" y="60" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="-12" y="66" width="36" height="6" fill="#2d6e2d"/>
+    <rect x="-6" y="72" width="24" height="6" fill="#2d6e2d"/>
+    <!-- Tree 2 far -->
+    <rect x="72" y="48" width="12" height="200" fill="#2d6e2d"/>
+    <rect x="54" y="42" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="60" y="48" width="36" height="6" fill="#2d6e2d"/>
+    <rect x="66" y="54" width="24" height="6" fill="#2d6e2d"/>
+    <!-- Tree 3 far -->
+    <rect x="156" y="36" width="12" height="210" fill="#2d6e2d"/>
+    <rect x="138" y="30" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="144" y="36" width="36" height="6" fill="#2d6e2d"/>
+    <rect x="150" y="42" width="24" height="6" fill="#2d6e2d"/>
+    <!-- Tree 4 far -->
+    <rect x="240" y="30" width="12" height="220" fill="#2d6e2d"/>
+    <rect x="222" y="24" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="228" y="30" width="36" height="6" fill="#2d6e2d"/>
+    <rect x="234" y="36" width="24" height="6" fill="#2d6e2d"/>
+    <!-- Tree 5 far -->
+    <rect x="360" y="42" width="12" height="200" fill="#2d6e2d"/>
+    <rect x="342" y="36" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="348" y="42" width="36" height="6" fill="#2d6e2d"/>
+    <rect x="354" y="48" width="24" height="6" fill="#2d6e2d"/>
+    <!-- Tree 6 far -->
+    <rect x="450" y="36" width="12" height="210" fill="#2d6e2d"/>
+    <rect x="432" y="30" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="438" y="36" width="36" height="6" fill="#2d6e2d"/>
+    <rect x="444" y="42" width="24" height="6" fill="#2d6e2d"/>
+    <!-- Tree 7 far -->
+    <rect x="540" y="42" width="12" height="200" fill="#2d6e2d"/>
+    <rect x="522" y="36" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="528" y="42" width="36" height="6" fill="#2d6e2d"/>
+    <rect x="534" y="48" width="24" height="6" fill="#2d6e2d"/>
+    <!-- Tree 8 far -->
+    <rect x="606" y="54" width="12" height="190" fill="#2d6e2d"/>
+    <rect x="588" y="48" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="594" y="54" width="36" height="6" fill="#2d6e2d"/>
+    <rect x="600" y="60" width="24" height="6" fill="#2d6e2d"/>
+  </g>
+
+  <!-- Mid-ground tree silhouettes -->
+  <g opacity="0.55">
+    <!-- Large tree left -->
+    <rect x="30" y="90" width="18" height="300" fill="#1a3a1a"/>
+    <rect x="0" y="72" width="78" height="6" fill="#2d6e2d"/>
+    <rect x="6" y="78" width="66" height="6" fill="#2d6e2d"/>
+    <rect x="12" y="84" width="54" height="6" fill="#2d6e2d"/>
+    <rect x="18" y="90" width="42" height="6" fill="#2d6e2d"/>
+    <rect x="6" y="96" width="66" height="6" fill="#1a3a1a"/>
+    <rect x="12" y="102" width="54" height="6" fill="#1a3a1a"/>
+    <rect x="18" y="108" width="42" height="6" fill="#1a3a1a"/>
+    <rect x="24" y="114" width="30" height="6" fill="#1a3a1a"/>
+    <!-- Large tree right -->
+    <rect x="540" y="84" width="18" height="310" fill="#1a3a1a"/>
+    <rect x="510" y="66" width="78" height="6" fill="#2d6e2d"/>
+    <rect x="516" y="72" width="66" height="6" fill="#2d6e2d"/>
+    <rect x="522" y="78" width="54" height="6" fill="#2d6e2d"/>
+    <rect x="528" y="84" width="42" height="6" fill="#2d6e2d"/>
+    <rect x="516" y="90" width="66" height="6" fill="#1a3a1a"/>
+    <rect x="522" y="96" width="54" height="6" fill="#1a3a1a"/>
+    <rect x="528" y="102" width="42" height="6" fill="#1a3a1a"/>
+    <rect x="534" y="108" width="30" height="6" fill="#1a3a1a"/>
+    <!-- Medium tree center-left -->
+    <rect x="150" y="120" width="12" height="270" fill="#1a3a1a"/>
+    <rect x="126" y="108" width="60" height="6" fill="#2d6e2d"/>
+    <rect x="132" y="114" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="138" y="120" width="36" height="6" fill="#1a3a1a"/>
+    <rect x="144" y="126" width="24" height="6" fill="#1a3a1a"/>
+    <!-- Medium tree center-right -->
+    <rect x="456" y="114" width="12" height="280" fill="#1a3a1a"/>
+    <rect x="432" y="102" width="60" height="6" fill="#2d6e2d"/>
+    <rect x="438" y="108" width="48" height="6" fill="#2d6e2d"/>
+    <rect x="444" y="114" width="36" height="6" fill="#1a3a1a"/>
+    <rect x="450" y="120" width="24" height="6" fill="#1a3a1a"/>
+  </g>
+
+  <!-- Foreground large tree trunks (framing) -->
+  <g opacity="0.75">
+    <!-- Left trunk -->
+    <rect x="0" y="60" width="30" height="440" fill="#3b2010"/>
+    <rect x="30" y="120" width="6" height="380" fill="#3b2010"/>
+    <rect x="24" y="60" width="12" height="440" fill="#6b3a1f"/>
+    <!-- Right trunk -->
+    <rect x="600" y="72" width="30" height="428" fill="#3b2010"/>
+    <rect x="594" y="132" width="6" height="368" fill="#3b2010"/>
+    <rect x="600" y="72" width="12" height="428" fill="#6b3a1f"/>
+    <!-- Left trunk bark detail -->
+    <rect x="6" y="180" width="6" height="12" fill="#6b3a1f"/>
+    <rect x="12" y="240" width="6" height="18" fill="#6b3a1f"/>
+    <rect x="6" y="330" width="6" height="12" fill="#6b3a1f"/>
+    <!-- Right trunk bark detail -->
+    <rect x="612" y="200" width="6" height="12" fill="#8b5c2a"/>
+    <rect x="618" y="280" width="6" height="18" fill="#8b5c2a"/>
+    <rect x="612" y="360" width="6" height="12" fill="#8b5c2a"/>
+  </g>
+
+  <!-- Forest floor -->
+  <rect x="0" y="390" width="630" height="110" fill="#1a3a1a"/>
+  <rect x="0" y="390" width="630" height="110" fill="url(#forestFloor)"/>
+  <!-- Ground details -->
+  <rect x="60" y="396" width="18" height="6" fill="#2d6e2d" opacity="0.5"/>
+  <rect x="180" y="402" width="12" height="6" fill="#2d6e2d" opacity="0.4"/>
+  <rect x="300" y="396" width="24" height="6" fill="#2d6e2d" opacity="0.5"/>
+  <rect x="420" y="400" width="18" height="6" fill="#2d6e2d" opacity="0.4"/>
+  <rect x="510" y="396" width="12" height="6" fill="#2d6e2d" opacity="0.5"/>
+  <!-- Grass tufts -->
+  <rect x="90" y="390" width="6" height="6" fill="#4c9b4c" opacity="0.6"/>
+  <rect x="96" y="384" width="6" height="6" fill="#4c9b4c" opacity="0.5"/>
+  <rect x="210" y="390" width="6" height="6" fill="#4c9b4c" opacity="0.5"/>
+  <rect x="216" y="384" width="6" height="6" fill="#78c878" opacity="0.4"/>
+  <rect x="390" y="390" width="6" height="6" fill="#4c9b4c" opacity="0.6"/>
+  <rect x="396" y="384" width="6" height="6" fill="#78c878" opacity="0.4"/>
+  <rect x="480" y="390" width="6" height="6" fill="#4c9b4c" opacity="0.5"/>
+  <rect x="486" y="384" width="6" height="6" fill="#4c9b4c" opacity="0.4"/>
+
+  <!-- ==================== LIGHT RAYS ==================== -->
+  <g>
+    <rect x="120" y="0" width="42" height="350" fill="url(#lightRay)" transform="rotate(5 141 0)"/>
+    <rect x="270" y="0" width="54" height="400" fill="url(#lightRay)" transform="rotate(-3 297 0)"/>
+    <rect x="390" y="0" width="36" height="320" fill="url(#lightRay2)" transform="rotate(8 408 0)"/>
+    <rect x="480" y="0" width="48" height="360" fill="url(#lightRay2)" transform="rotate(-5 504 0)"/>
+    <rect x="200" y="0" width="30" height="280" fill="url(#lightRay2)" transform="rotate(3 215 0)"/>
+  </g>
+
+  <!-- ==================== RANGER CHARACTER (center, ~150px tall) ==================== -->
+  <!-- Character positioned at roughly x=255 to x=375, y=210 to y=390 -->
+  <!-- 6px grid pixel art -->
+  <g id="ranger-character">
+    <!-- Hood / Head -->
+    <!-- Hood top -->
+    <rect x="297" y="210" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="303" y="210" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="309" y="210" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="315" y="210" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="321" y="210" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Hood row 2 -->
+    <rect x="291" y="216" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="297" y="216" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="303" y="216" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="309" y="216" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="216" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="216" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="327" y="216" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Hood row 3 (face visible) -->
+    <rect x="285" y="222" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="291" y="222" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="297" y="222" width="6" height="6" fill="#d4a85a"/>
+    <rect x="303" y="222" width="6" height="6" fill="#d4a85a"/>
+    <rect x="309" y="222" width="6" height="6" fill="#d4a85a"/>
+    <rect x="315" y="222" width="6" height="6" fill="#d4a85a"/>
+    <rect x="321" y="222" width="6" height="6" fill="#d4a85a"/>
+    <rect x="327" y="222" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="333" y="222" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Face row (eyes) -->
+    <rect x="285" y="228" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="291" y="228" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="297" y="228" width="6" height="6" fill="#d4a85a"/>
+    <rect x="303" y="228" width="6" height="6" fill="#0d0d0d"/>
+    <rect x="309" y="228" width="6" height="6" fill="#d4a85a"/>
+    <rect x="315" y="228" width="6" height="6" fill="#d4a85a"/>
+    <rect x="321" y="228" width="6" height="6" fill="#0d0d0d"/>
+    <rect x="327" y="228" width="6" height="6" fill="#d4a85a"/>
+    <rect x="333" y="228" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Face row (mouth area) -->
+    <rect x="291" y="234" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="297" y="234" width="6" height="6" fill="#d4a85a"/>
+    <rect x="303" y="234" width="6" height="6" fill="#d4a85a"/>
+    <rect x="309" y="234" width="6" height="6" fill="#b8843f"/>
+    <rect x="315" y="234" width="6" height="6" fill="#d4a85a"/>
+    <rect x="321" y="234" width="6" height="6" fill="#d4a85a"/>
+    <rect x="327" y="234" width="6" height="6" fill="#d4a85a"/>
+    <rect x="333" y="234" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Chin -->
+    <rect x="297" y="240" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="303" y="240" width="6" height="6" fill="#d4a85a"/>
+    <rect x="309" y="240" width="6" height="6" fill="#d4a85a"/>
+    <rect x="315" y="240" width="6" height="6" fill="#d4a85a"/>
+    <rect x="321" y="240" width="6" height="6" fill="#d4a85a"/>
+    <rect x="327" y="240" width="6" height="6" fill="#2d6e2d"/>
+
+    <!-- Cloak / Shoulders -->
+    <!-- Shoulder row 1 -->
+    <rect x="267" y="246" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="273" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="279" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="285" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="297" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="303" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="309" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="327" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="333" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="339" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="345" y="246" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Shoulder row 2 -->
+    <rect x="261" y="252" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="267" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="273" y="252" width="6" height="6" fill="#78c878"/>
+    <rect x="279" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="285" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="252" width="6" height="6" fill="#78c878"/>
+    <rect x="297" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="303" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="309" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="252" width="6" height="6" fill="#78c878"/>
+    <rect x="327" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="333" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="339" y="252" width="6" height="6" fill="#78c878"/>
+    <rect x="345" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="351" y="252" width="6" height="6" fill="#2d6e2d"/>
+
+    <!-- Torso with belt -->
+    <!-- Torso row 1 -->
+    <rect x="267" y="258" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="273" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="279" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="285" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="297" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="303" y="258" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="309" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="327" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="333" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="339" y="258" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Torso row 2 -->
+    <rect x="273" y="264" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="279" y="264" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="285" y="264" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="264" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="297" y="264" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="303" y="264" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="309" y="264" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="315" y="264" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="264" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="327" y="264" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="333" y="264" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Torso row 3 -->
+    <rect x="273" y="270" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="279" y="270" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="285" y="270" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="270" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="297" y="270" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="303" y="270" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="309" y="270" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="270" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="270" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="327" y="270" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="333" y="270" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Belt row -->
+    <rect x="273" y="276" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="279" y="276" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="285" y="276" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="291" y="276" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="297" y="276" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="303" y="276" width="6" height="6" fill="#e8b800"/>
+    <rect x="309" y="276" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="315" y="276" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="321" y="276" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="327" y="276" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="333" y="276" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Torso below belt -->
+    <rect x="279" y="282" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="285" y="282" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="282" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="297" y="282" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="303" y="282" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="309" y="282" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="282" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="282" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="327" y="282" width="6" height="6" fill="#2d6e2d"/>
+
+    <!-- Left arm (holding bow, extended left) -->
+    <!-- Upper arm -->
+    <rect x="255" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="249" y="258" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="243" y="264" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="237" y="270" width="6" height="6" fill="#d4a85a"/>
+    <rect x="231" y="264" width="6" height="6" fill="#d4a85a"/>
+    <rect x="225" y="258" width="6" height="6" fill="#d4a85a"/>
+
+    <!-- Right arm (drawing bowstring, pulled back right) -->
+    <rect x="351" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="357" y="252" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="363" y="246" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="369" y="240" width="6" height="6" fill="#d4a85a"/>
+    <rect x="375" y="234" width="6" height="6" fill="#d4a85a"/>
+    <rect x="375" y="240" width="6" height="6" fill="#d4a85a"/>
+
+    <!-- BOW (held in left hand, vertical) -->
+    <!-- Bow limb top -->
+    <rect x="219" y="228" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="213" y="234" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="213" y="240" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="219" y="246" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="219" y="252" width="6" height="6" fill="#6b3a1f"/>
+    <!-- Bow grip -->
+    <rect x="225" y="258" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="225" y="264" width="6" height="6" fill="#8b5c2a"/>
+    <!-- Bow limb bottom -->
+    <rect x="219" y="270" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="219" y="276" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="213" y="282" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="213" y="288" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="219" y="294" width="6" height="6" fill="#6b3a1f"/>
+    <!-- Bowstring -->
+    <rect x="225" y="228" width="6" height="6" fill="#c8c8c8" opacity="0.7"/>
+    <rect x="231" y="234" width="6" height="6" fill="#c8c8c8" opacity="0.7"/>
+    <rect x="237" y="240" width="6" height="6" fill="#c8c8c8" opacity="0.7"/>
+    <rect x="243" y="246" width="6" height="6" fill="#c8c8c8" opacity="0.7"/>
+    <!-- String goes to drawn hand -->
+    <rect x="351" y="246" width="6" height="6" fill="#c8c8c8" opacity="0.5"/>
+    <rect x="345" y="246" width="6" height="6" fill="#c8c8c8" opacity="0.5"/>
+    <rect x="339" y="246" width="6" height="6" fill="#c8c8c8" opacity="0.4"/>
+    <!-- String lower half -->
+    <rect x="243" y="276" width="6" height="6" fill="#c8c8c8" opacity="0.7"/>
+    <rect x="237" y="282" width="6" height="6" fill="#c8c8c8" opacity="0.7"/>
+    <rect x="231" y="288" width="6" height="6" fill="#c8c8c8" opacity="0.7"/>
+    <rect x="225" y="294" width="6" height="6" fill="#c8c8c8" opacity="0.7"/>
+
+    <!-- ARROW (nocked, pointing left from drawn string) -->
+    <rect x="369" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="363" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="357" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="345" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="339" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="333" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="327" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="321" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="315" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="309" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="303" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="297" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="291" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="285" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="279" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="273" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="267" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="261" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="255" y="246" width="6" height="6" fill="#b8843f"/>
+    <rect x="249" y="246" width="6" height="6" fill="#b8843f"/>
+    <!-- Arrow head -->
+    <rect x="243" y="246" width="6" height="6" fill="#969696"/>
+    <rect x="237" y="246" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="231" y="246" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="237" y="240" width="6" height="6" fill="#969696"/>
+    <rect x="237" y="252" width="6" height="6" fill="#969696"/>
+    <!-- Arrow fletching -->
+    <rect x="369" y="240" width="6" height="6" fill="#d42020"/>
+    <rect x="375" y="246" width="6" height="6" fill="#d42020"/>
+    <rect x="369" y="252" width="6" height="6" fill="#d42020"/>
+
+    <!-- Quiver on back (visible over right shoulder) -->
+    <rect x="339" y="222" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="345" y="222" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="339" y="228" width="6" height="6" fill="#8b5c2a"/>
+    <rect x="345" y="228" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="339" y="234" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="345" y="234" width="6" height="6" fill="#8b5c2a"/>
+    <!-- Quiver arrows sticking out -->
+    <rect x="339" y="216" width="6" height="6" fill="#b8843f"/>
+    <rect x="345" y="210" width="6" height="6" fill="#b8843f"/>
+    <rect x="351" y="216" width="6" height="6" fill="#b8843f"/>
+    <rect x="339" y="210" width="6" height="6" fill="#d42020" opacity="0.7"/>
+    <rect x="351" y="210" width="6" height="6" fill="#d42020" opacity="0.7"/>
+
+    <!-- Legs -->
+    <!-- Left leg -->
+    <rect x="285" y="288" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="285" y="294" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="294" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="285" y="300" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="300" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="285" y="306" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="306" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="285" y="312" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="312" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="279" y="318" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="285" y="318" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="291" y="318" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Left boot -->
+    <rect x="279" y="324" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="285" y="324" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="291" y="324" width="6" height="6" fill="#3b2010"/>
+    <rect x="279" y="330" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="285" y="330" width="6" height="6" fill="#3b2010"/>
+    <rect x="291" y="330" width="6" height="6" fill="#3b2010"/>
+    <rect x="273" y="336" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="279" y="336" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="285" y="336" width="6" height="6" fill="#3b2010"/>
+    <rect x="291" y="336" width="6" height="6" fill="#3b2010"/>
+
+    <!-- Right leg -->
+    <rect x="315" y="288" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="315" y="294" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="294" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="300" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="321" y="300" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="306" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="321" y="306" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="315" y="312" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="321" y="312" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="321" y="318" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="327" y="318" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="333" y="318" width="6" height="6" fill="#2d6e2d"/>
+    <!-- Right boot -->
+    <rect x="321" y="324" width="6" height="6" fill="#3b2010"/>
+    <rect x="327" y="324" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="333" y="324" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="321" y="330" width="6" height="6" fill="#3b2010"/>
+    <rect x="327" y="330" width="6" height="6" fill="#3b2010"/>
+    <rect x="333" y="330" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="321" y="336" width="6" height="6" fill="#3b2010"/>
+    <rect x="327" y="336" width="6" height="6" fill="#3b2010"/>
+    <rect x="333" y="336" width="6" height="6" fill="#6b3a1f"/>
+    <rect x="339" y="336" width="6" height="6" fill="#6b3a1f"/>
+
+    <!-- Cloak tail (flowing behind) -->
+    <rect x="339" y="270" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="345" y="276" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="345" y="282" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="351" y="288" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="351" y="294" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="357" y="300" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="351" y="306" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="345" y="312" width="6" height="6" fill="#2d6e2d"/>
+    <rect x="339" y="318" width="6" height="6" fill="#4c9b4c"/>
+    <rect x="345" y="318" width="6" height="6" fill="#2d6e2d"/>
+  </g>
+
+  <!-- ==================== ANIMAL COMPANION (small fox/wolf, bottom-left of ranger) ==================== -->
+  <g id="fox-companion">
+    <!-- Body -->
+    <rect x="168" y="360" width="6" height="6" fill="#f06020"/>
+    <rect x="174" y="360" width="6" height="6" fill="#f06020"/>
+    <rect x="180" y="360" width="6" height="6" fill="#f8a060"/>
+    <rect x="186" y="360" width="6" height="6" fill="#f06020"/>
+    <rect x="192" y="360" width="6" height="6" fill="#f06020"/>
+    <rect x="168" y="366" width="6" height="6" fill="#f06020"/>
+    <rect x="174" y="366" width="6" height="6" fill="#f8a060"/>
+    <rect x="180" y="366" width="6" height="6" fill="#f06020"/>
+    <rect x="186" y="366" width="6" height="6" fill="#f8a060"/>
+    <rect x="192" y="366" width="6" height="6" fill="#f06020"/>
+    <!-- Head -->
+    <rect x="156" y="354" width="6" height="6" fill="#f06020"/>
+    <rect x="162" y="354" width="6" height="6" fill="#f8a060"/>
+    <rect x="168" y="354" width="6" height="6" fill="#f06020"/>
+    <rect x="156" y="360" width="6" height="6" fill="#f8a060"/>
+    <rect x="162" y="360" width="6" height="6" fill="#f06020"/>
+    <!-- Ears -->
+    <rect x="156" y="348" width="6" height="6" fill="#f06020"/>
+    <rect x="168" y="348" width="6" height="6" fill="#f06020"/>
+    <!-- Eyes -->
+    <rect x="156" y="357" width="3" height="3" fill="#0d0d0d"/>
+    <!-- Nose -->
+    <rect x="150" y="360" width="6" height="6" fill="#0d0d0d"/>
+    <!-- Legs -->
+    <rect x="168" y="372" width="6" height="6" fill="#f06020"/>
+    <rect x="174" y="372" width="6" height="6" fill="#f06020"/>
+    <rect x="186" y="372" width="6" height="6" fill="#f06020"/>
+    <rect x="192" y="372" width="6" height="6" fill="#f06020"/>
+    <!-- Feet -->
+    <rect x="168" y="378" width="6" height="6" fill="#3b2010"/>
+    <rect x="174" y="378" width="6" height="6" fill="#3b2010"/>
+    <rect x="186" y="378" width="6" height="6" fill="#3b2010"/>
+    <rect x="192" y="378" width="6" height="6" fill="#3b2010"/>
+    <!-- Tail -->
+    <rect x="198" y="354" width="6" height="6" fill="#f06020"/>
+    <rect x="204" y="348" width="6" height="6" fill="#f8a060"/>
+    <rect x="210" y="348" width="6" height="6" fill="#f0f0f0"/>
+  </g>
+
+  <!-- ==================== FALLING LEAVES ==================== -->
+  <g id="leaves">
+    <rect x="102" y="120" width="6" height="6" fill="#78c878" opacity="0.7"/>
+    <rect x="108" y="126" width="6" height="6" fill="#4c9b4c" opacity="0.6"/>
+    <rect x="480" y="90" width="6" height="6" fill="#78c878" opacity="0.6"/>
+    <rect x="474" y="96" width="6" height="6" fill="#a8e4a0" opacity="0.5"/>
+    <rect x="180" y="180" width="6" height="6" fill="#4c9b4c" opacity="0.7"/>
+    <rect x="186" y="186" width="6" height="6" fill="#78c878" opacity="0.5"/>
+    <rect x="420" y="150" width="6" height="6" fill="#a8e4a0" opacity="0.6"/>
+    <rect x="414" y="156" width="6" height="6" fill="#78c878" opacity="0.5"/>
+    <rect x="540" y="200" width="6" height="6" fill="#4c9b4c" opacity="0.6"/>
+    <rect x="66" y="270" width="6" height="6" fill="#78c878" opacity="0.5"/>
+    <rect x="72" y="276" width="6" height="6" fill="#4c9b4c" opacity="0.4"/>
+    <rect x="510" y="300" width="6" height="6" fill="#a8e4a0" opacity="0.5"/>
+    <rect x="504" y="306" width="6" height="6" fill="#78c878" opacity="0.4"/>
+    <rect x="348" y="168" width="6" height="6" fill="#78c878" opacity="0.6"/>
+    <rect x="252" y="144" width="6" height="6" fill="#a8e4a0" opacity="0.5"/>
+    <rect x="258" y="150" width="6" height="6" fill="#78c878" opacity="0.4"/>
+    <rect x="456" y="270" width="6" height="6" fill="#4c9b4c" opacity="0.5"/>
+    <rect x="138" y="330" width="6" height="6" fill="#78c878" opacity="0.4"/>
+    <rect x="132" y="336" width="6" height="6" fill="#a8e4a0" opacity="0.3"/>
+  </g>
+
+  <!-- ==================== ARROW TRAILS (showing previous shots) ==================== -->
+  <g id="arrow-trails" opacity="0.3">
+    <!-- Trail 1 - upper left -->
+    <rect x="108" y="192" width="6" height="6" fill="#f8a060"/>
+    <rect x="114" y="192" width="6" height="6" fill="#f8a060"/>
+    <rect x="120" y="192" width="6" height="6" fill="#f8a060"/>
+    <rect x="126" y="192" width="6" height="6" fill="#e8b800" opacity="0.5"/>
+    <rect x="132" y="192" width="6" height="6" fill="#e8b800" opacity="0.3"/>
+    <!-- Trail 2 - lower right -->
+    <rect x="450" y="318" width="6" height="6" fill="#f8a060"/>
+    <rect x="456" y="318" width="6" height="6" fill="#f8a060"/>
+    <rect x="462" y="318" width="6" height="6" fill="#f8a060"/>
+    <rect x="468" y="318" width="6" height="6" fill="#e8b800" opacity="0.5"/>
+    <rect x="474" y="318" width="6" height="6" fill="#e8b800" opacity="0.3"/>
+    <!-- Arrow stuck in tree (left) -->
+    <rect x="36" y="240" width="6" height="6" fill="#969696"/>
+    <rect x="42" y="240" width="6" height="6" fill="#b8843f"/>
+    <rect x="48" y="240" width="6" height="6" fill="#b8843f"/>
+    <rect x="54" y="240" width="6" height="6" fill="#b8843f"/>
+    <rect x="54" y="234" width="6" height="6" fill="#d42020" opacity="0.5"/>
+    <rect x="54" y="246" width="6" height="6" fill="#d42020" opacity="0.5"/>
+  </g>
+
+  <!-- ==================== TITLE: "RANGER" ==================== -->
+  <!-- Pixel font text at top, gold color -->
+  <g id="title" transform="translate(183, 24)">
+    <!-- R -->
+    <rect x="0" y="0" width="6" height="36" fill="#ffe040"/>
+    <rect x="6" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="12" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="18" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="24" y="6" width="6" height="6" fill="#ffe040"/>
+    <rect x="24" y="12" width="6" height="6" fill="#ffe040"/>
+    <rect x="18" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="12" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="6" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="18" y="24" width="6" height="6" fill="#ffe040"/>
+    <rect x="24" y="30" width="6" height="6" fill="#ffe040"/>
+    <!-- Shadow -->
+    <rect x="0" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+    <rect x="24" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+
+    <!-- A -->
+    <rect x="42" y="6" width="6" height="30" fill="#ffe040"/>
+    <rect x="48" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="54" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="60" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="66" y="6" width="6" height="30" fill="#ffe040"/>
+    <rect x="48" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="54" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="60" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="42" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+    <rect x="66" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+
+    <!-- N -->
+    <rect x="84" y="0" width="6" height="36" fill="#ffe040"/>
+    <rect x="90" y="6" width="6" height="6" fill="#ffe040"/>
+    <rect x="96" y="12" width="6" height="6" fill="#ffe040"/>
+    <rect x="102" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="108" y="24" width="6" height="6" fill="#ffe040"/>
+    <rect x="114" y="0" width="6" height="36" fill="#ffe040"/>
+    <rect x="84" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+    <rect x="114" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+
+    <!-- G -->
+    <rect x="132" y="6" width="6" height="24" fill="#ffe040"/>
+    <rect x="138" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="144" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="150" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="156" y="6" width="6" height="6" fill="#ffe040"/>
+    <rect x="138" y="30" width="6" height="6" fill="#ffe040"/>
+    <rect x="144" y="30" width="6" height="6" fill="#ffe040"/>
+    <rect x="150" y="30" width="6" height="6" fill="#ffe040"/>
+    <rect x="156" y="24" width="6" height="6" fill="#ffe040"/>
+    <rect x="156" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="150" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="132" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+    <rect x="156" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+
+    <!-- E -->
+    <rect x="174" y="0" width="6" height="36" fill="#ffe040"/>
+    <rect x="180" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="186" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="192" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="198" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="180" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="186" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="192" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="180" y="30" width="6" height="6" fill="#ffe040"/>
+    <rect x="186" y="30" width="6" height="6" fill="#ffe040"/>
+    <rect x="192" y="30" width="6" height="6" fill="#ffe040"/>
+    <rect x="198" y="30" width="6" height="6" fill="#ffe040"/>
+    <rect x="174" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+    <rect x="198" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+
+    <!-- R (second) -->
+    <rect x="216" y="0" width="6" height="36" fill="#ffe040"/>
+    <rect x="222" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="228" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="234" y="0" width="6" height="6" fill="#ffe040"/>
+    <rect x="240" y="6" width="6" height="6" fill="#ffe040"/>
+    <rect x="240" y="12" width="6" height="6" fill="#ffe040"/>
+    <rect x="234" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="228" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="222" y="18" width="6" height="6" fill="#ffe040"/>
+    <rect x="234" y="24" width="6" height="6" fill="#ffe040"/>
+    <rect x="240" y="30" width="6" height="6" fill="#ffe040"/>
+    <rect x="216" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+    <rect x="240" y="36" width="6" height="3" fill="#a87000" opacity="0.5"/>
+  </g>
+
+  <!-- Title glow effect -->
+  <rect x="183" y="20" width="264" height="44" fill="#ffe040" opacity="0.06" rx="4"/>
+
+  <!-- ==================== ARCHETYPE BADGES ==================== -->
+  <!-- Badge backgrounds -->
+  <g id="badges">
+    <!-- Sharpshooter badge -->
+    <rect x="90" y="420" width="132" height="30" fill="#0a1a3a" opacity="0.8" rx="3"/>
+    <rect x="90" y="420" width="132" height="30" fill="none" stroke="#e8b800" stroke-width="2" rx="3" opacity="0.7"/>
+    <text x="156" y="440" fill="#ffe040" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">SHARPSHOOTER</text>
+    <!-- Crosshair icon -->
+    <rect x="99" y="432" width="6" height="6" fill="#d42020" opacity="0.8"/>
+    <rect x="96" y="435" width="12" height="1" fill="#f0f0f0" opacity="0.6"/>
+    <rect x="101" y="430" width="1" height="12" fill="#f0f0f0" opacity="0.6"/>
+
+    <!-- Beastmaster badge -->
+    <rect x="249" y="420" width="132" height="30" fill="#0a1a3a" opacity="0.8" rx="3"/>
+    <rect x="249" y="420" width="132" height="30" fill="none" stroke="#e8b800" stroke-width="2" rx="3" opacity="0.7"/>
+    <text x="315" y="440" fill="#ffe040" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">BEASTMASTER</text>
+    <!-- Paw icon -->
+    <rect x="258" y="432" width="4" height="4" fill="#f06020" opacity="0.8"/>
+    <rect x="264" y="430" width="4" height="4" fill="#f06020" opacity="0.8"/>
+    <rect x="258" y="438" width="4" height="4" fill="#f06020" opacity="0.8"/>
+    <rect x="264" y="436" width="4" height="4" fill="#f06020" opacity="0.8"/>
+
+    <!-- Shadow Scout badge -->
+    <rect x="408" y="420" width="132" height="30" fill="#0a1a3a" opacity="0.8" rx="3"/>
+    <rect x="408" y="420" width="132" height="30" fill="none" stroke="#e8b800" stroke-width="2" rx="3" opacity="0.7"/>
+    <text x="474" y="440" fill="#ffe040" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">SHADOW SCOUT</text>
+    <!-- Eye icon -->
+    <rect x="417" y="433" width="8" height="4" fill="#9050e0" opacity="0.8" rx="2"/>
+    <rect x="419" y="433" width="4" height="4" fill="#d090ff" opacity="0.9" rx="2"/>
+  </g>
+
+  <!-- ==================== ABILITY ICONS (small, flanking character) ==================== -->
+  <!-- Arrow Rain icon (left) -->
+  <g opacity="0.5">
+    <rect x="120" y="240" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="114" y="246" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="126" y="234" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="132" y="246" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="138" y="240" width="6" height="6" fill="#c8c8c8"/>
+  </g>
+  <!-- Smoke Bomb icon (right) -->
+  <g opacity="0.4">
+    <rect x="480" y="282" width="6" height="6" fill="#969696"/>
+    <rect x="486" y="276" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="492" y="282" width="6" height="6" fill="#969696"/>
+    <rect x="486" y="288" width="6" height="6" fill="#6e6e6e"/>
+    <rect x="480" y="276" width="6" height="6" fill="#6e6e6e"/>
+    <rect x="492" y="276" width="6" height="6" fill="#6e6e6e"/>
+  </g>
+
+  <!-- ==================== PIXELREALM WATERMARK ==================== -->
+  <text x="600" y="486" fill="#c8c8c8" font-family="monospace" font-size="9" text-anchor="end" opacity="0.3">PIXELREALM</text>
+
+  <!-- ==================== FOREGROUND LEAF OVERLAY ==================== -->
+  <!-- A few large foreground leaves for depth -->
+  <g opacity="0.25">
+    <rect x="0" y="0" width="30" height="18" fill="#2d6e2d"/>
+    <rect x="30" y="0" width="18" height="12" fill="#4c9b4c"/>
+    <rect x="600" y="0" width="30" height="24" fill="#2d6e2d"/>
+    <rect x="582" y="0" width="18" height="12" fill="#4c9b4c"/>
+  </g>
+</svg>

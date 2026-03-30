@@ -1,0 +1,365 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated; font-family: monospace;">
+  <defs>
+    <!-- Stone background gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d0d"/>
+      <stop offset="40%" stop-color="#2b2b2b"/>
+      <stop offset="100%" stop-color="#4a4a4a"/>
+    </linearGradient>
+    <!-- Shield glow filter -->
+    <filter id="glowCyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowGold" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background fill -->
+  <rect width="630" height="500" fill="url(#bgGrad)"/>
+
+  <!-- Stone arena floor and texture -->
+  <!-- Floor base -->
+  <rect x="0" y="340" width="630" height="160" fill="#3b2010"/>
+  <rect x="0" y="340" width="630" height="6" fill="#6b3a1f"/>
+  <rect x="0" y="346" width="630" height="6" fill="#8b5c2a"/>
+  <!-- Stone blocks on floor -->
+  <rect x="0" y="358" width="78" height="24" fill="#4a4a4a" opacity="0.6"/>
+  <rect x="84" y="358" width="90" height="24" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="180" y="358" width="66" height="24" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="252" y="358" width="96" height="24" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="354" y="358" width="72" height="24" fill="#4a4a4a" opacity="0.6"/>
+  <rect x="432" y="358" width="84" height="24" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="522" y="358" width="108" height="24" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="30" y="382" width="84" height="24" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="120" y="382" width="72" height="24" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="198" y="382" width="90" height="24" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="294" y="382" width="78" height="24" fill="#4a4a4a" opacity="0.6"/>
+  <rect x="378" y="382" width="96" height="24" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="480" y="382" width="72" height="24" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="558" y="382" width="72" height="24" fill="#6e6e6e" opacity="0.4"/>
+  <!-- More floor rows -->
+  <rect x="0" y="406" width="96" height="24" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="102" y="406" width="66" height="24" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="174" y="406" width="84" height="24" fill="#4a4a4a" opacity="0.4"/>
+  <rect x="264" y="406" width="90" height="24" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="360" y="406" width="78" height="24" fill="#4a4a4a" opacity="0.4"/>
+  <rect x="444" y="406" width="96" height="24" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="546" y="406" width="84" height="24" fill="#4a4a4a" opacity="0.3"/>
+
+  <!-- Atmospheric dust particles -->
+  <rect x="60" y="80" width="6" height="6" fill="#d4a85a" opacity="0.15"/>
+  <rect x="180" y="120" width="6" height="6" fill="#e8d08a" opacity="0.12"/>
+  <rect x="480" y="90" width="6" height="6" fill="#d4a85a" opacity="0.1"/>
+  <rect x="540" y="180" width="6" height="6" fill="#b8843f" opacity="0.15"/>
+  <rect x="90" y="240" width="6" height="6" fill="#e8d08a" opacity="0.1"/>
+  <rect x="510" y="260" width="6" height="6" fill="#d4a85a" opacity="0.12"/>
+  <rect x="150" y="300" width="6" height="6" fill="#e8d08a" opacity="0.08"/>
+  <rect x="420" y="140" width="6" height="6" fill="#b8843f" opacity="0.1"/>
+
+  <!-- Stone pillars left -->
+  <rect x="30" y="100" width="36" height="240" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="36" y="100" width="24" height="240" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="30" y="100" width="36" height="12" fill="#6e6e6e" opacity="0.6"/>
+  <rect x="24" y="88" width="48" height="12" fill="#969696" opacity="0.4"/>
+  <!-- Stone pillars right -->
+  <rect x="564" y="100" width="36" height="240" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="570" y="100" width="24" height="240" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="564" y="100" width="36" height="12" fill="#6e6e6e" opacity="0.6"/>
+  <rect x="558" y="88" width="48" height="12" fill="#969696" opacity="0.4"/>
+
+  <!-- ==================== -->
+  <!-- WARRIOR CHARACTER     -->
+  <!-- 6px grid, centered    -->
+  <!-- Character ~24 cols x 26 rows = 144x156px -->
+  <!-- Positioned at x=243, y=170 (center of 630) -->
+  <!-- ==================== -->
+  <g id="warrior">
+    <!-- Shadow under character -->
+    <rect x="231" y="332" width="168" height="12" fill="#0d0d0d" opacity="0.5" rx="3"/>
+
+    <!-- === LEGS (bottom) === -->
+    <!-- Left boot -->
+    <rect x="267" y="314" width="12" height="12" fill="#3b2010"/>
+    <rect x="261" y="314" width="6" height="12" fill="#6b3a1f"/>
+    <rect x="267" y="302" width="12" height="12" fill="#6b3a1f"/>
+    <rect x="267" y="290" width="12" height="12" fill="#8b5c2a"/>
+    <!-- Right boot -->
+    <rect x="345" y="314" width="12" height="12" fill="#3b2010"/>
+    <rect x="357" y="314" width="6" height="12" fill="#6b3a1f"/>
+    <rect x="345" y="302" width="12" height="12" fill="#6b3a1f"/>
+    <rect x="345" y="290" width="12" height="12" fill="#8b5c2a"/>
+
+    <!-- === LEGS upper (armor) === -->
+    <rect x="267" y="278" width="12" height="12" fill="#50a8e8"/>
+    <rect x="279" y="278" width="6" height="12" fill="#2a7ac0"/>
+    <rect x="345" y="278" width="12" height="12" fill="#50a8e8"/>
+    <rect x="339" y="278" width="6" height="12" fill="#2a7ac0"/>
+
+    <!-- === TORSO / BODY ARMOR === -->
+    <!-- Main torso block -->
+    <rect x="279" y="266" width="66" height="36" fill="#50a8e8"/>
+    <!-- Armor shading -->
+    <rect x="279" y="266" width="6" height="36" fill="#2a7ac0"/>
+    <rect x="339" y="266" width="6" height="36" fill="#2a7ac0"/>
+    <!-- Belt -->
+    <rect x="273" y="266" width="78" height="6" fill="#b8843f"/>
+    <rect x="303" y="266" width="18" height="6" fill="#e8b800"/>
+    <!-- Chest plate highlight -->
+    <rect x="297" y="230" width="30" height="36" fill="#90d0f8"/>
+    <rect x="291" y="230" width="6" height="36" fill="#50a8e8"/>
+    <rect x="327" y="230" width="6" height="36" fill="#50a8e8"/>
+    <!-- Upper chest -->
+    <rect x="279" y="224" width="66" height="6" fill="#2a7ac0"/>
+    <rect x="285" y="218" width="54" height="6" fill="#50a8e8"/>
+
+    <!-- === SHOULDER PAULDRONS === -->
+    <!-- Left shoulder -->
+    <rect x="255" y="218" width="24" height="18" fill="#50a8e8"/>
+    <rect x="255" y="218" width="24" height="6" fill="#90d0f8"/>
+    <rect x="249" y="224" width="6" height="12" fill="#2a7ac0"/>
+    <!-- Right shoulder -->
+    <rect x="345" y="218" width="24" height="18" fill="#50a8e8"/>
+    <rect x="345" y="218" width="24" height="6" fill="#90d0f8"/>
+    <rect x="369" y="224" width="6" height="12" fill="#2a7ac0"/>
+
+    <!-- === LEFT ARM (shield arm, forward) === -->
+    <rect x="243" y="236" width="12" height="12" fill="#50a8e8"/>
+    <rect x="237" y="248" width="12" height="12" fill="#50a8e8"/>
+    <rect x="231" y="260" width="12" height="6" fill="#d4a85a"/>
+
+    <!-- === SHIELD (left side, forward) === -->
+    <rect x="213" y="242" width="30" height="48" fill="#2a7ac0"/>
+    <rect x="219" y="248" width="18" height="36" fill="#50a8e8"/>
+    <rect x="225" y="254" width="6" height="24" fill="#90d0f8"/>
+    <!-- Shield border -->
+    <rect x="213" y="242" width="30" height="6" fill="#1a4a8a"/>
+    <rect x="213" y="284" width="30" height="6" fill="#1a4a8a"/>
+    <rect x="213" y="248" width="6" height="36" fill="#1a4a8a"/>
+    <rect x="237" y="248" width="6" height="36" fill="#1a4a8a"/>
+    <!-- Shield emblem (cross) -->
+    <rect x="225" y="260" width="6" height="12" fill="#ffe040"/>
+    <rect x="219" y="264" width="18" height="6" fill="#ffe040"/>
+    <!-- Shield glow -->
+    <rect x="207" y="236" width="6" height="60" fill="#90d0f8" opacity="0.3"/>
+    <rect x="243" y="236" width="6" height="60" fill="#90d0f8" opacity="0.2"/>
+
+    <!-- === RIGHT ARM (sword arm, raised) === -->
+    <rect x="369" y="218" width="12" height="12" fill="#50a8e8"/>
+    <rect x="375" y="206" width="12" height="12" fill="#50a8e8"/>
+    <rect x="381" y="194" width="12" height="12" fill="#d4a85a"/>
+
+    <!-- === SWORD (raised right, heroic pose) === -->
+    <!-- Sword handle -->
+    <rect x="387" y="188" width="6" height="12" fill="#6b3a1f"/>
+    <!-- Sword guard/crossguard -->
+    <rect x="375" y="182" width="24" height="6" fill="#e8b800"/>
+    <!-- Sword blade -->
+    <rect x="387" y="176" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="387" y="170" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="387" y="164" width="6" height="6" fill="#f0f0f0"/>
+    <rect x="387" y="158" width="6" height="6" fill="#f0f0f0"/>
+    <rect x="387" y="152" width="6" height="6" fill="#f0f0f0"/>
+    <rect x="387" y="146" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="387" y="140" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="387" y="134" width="6" height="6" fill="#f0f0f0"/>
+    <rect x="387" y="128" width="6" height="6" fill="#f0f0f0"/>
+    <!-- Sword tip -->
+    <rect x="387" y="122" width="6" height="6" fill="#c8c8c8"/>
+    <rect x="390" y="116" width="3" height="6" fill="#f0f0f0"/>
+    <!-- Blade edge highlight -->
+    <rect x="393" y="134" width="3" height="48" fill="#f0f0f0" opacity="0.5"/>
+
+    <!-- === HEAD === -->
+    <!-- Helmet base -->
+    <rect x="291" y="194" width="42" height="24" fill="#4a4a4a"/>
+    <rect x="297" y="200" width="30" height="18" fill="#6e6e6e"/>
+    <!-- Helmet visor slit -->
+    <rect x="303" y="206" width="18" height="6" fill="#0d0d0d"/>
+    <!-- Helmet crest -->
+    <rect x="309" y="182" width="6" height="12" fill="#d42020"/>
+    <rect x="309" y="176" width="6" height="6" fill="#a01010"/>
+    <rect x="315" y="188" width="6" height="6" fill="#f06020"/>
+    <rect x="303" y="188" width="6" height="6" fill="#a01010"/>
+    <!-- Helmet top -->
+    <rect x="297" y="194" width="30" height="6" fill="#969696"/>
+    <!-- Helmet cheek guards -->
+    <rect x="291" y="206" width="6" height="12" fill="#4a4a4a"/>
+    <rect x="327" y="206" width="6" height="12" fill="#4a4a4a"/>
+
+    <!-- === SWORD SPARKS (ability effects) === -->
+    <rect x="381" y="116" width="6" height="6" fill="#ffe040" opacity="0.9"/>
+    <rect x="396" y="122" width="6" height="6" fill="#f8a060" opacity="0.7"/>
+    <rect x="375" y="110" width="6" height="6" fill="#e8b800" opacity="0.6"/>
+    <rect x="399" y="110" width="6" height="6" fill="#ffe040" opacity="0.5"/>
+    <rect x="372" y="122" width="6" height="6" fill="#f8a060" opacity="0.4"/>
+    <rect x="405" y="128" width="6" height="6" fill="#ffe040" opacity="0.3"/>
+    <rect x="369" y="134" width="6" height="6" fill="#e8b800" opacity="0.3"/>
+
+    <!-- === SHIELD GLOW effect === -->
+    <rect x="201" y="248" width="6" height="6" fill="#90d0f8" opacity="0.4" filter="url(#glowCyan)"/>
+    <rect x="201" y="260" width="6" height="6" fill="#c8f0ff" opacity="0.3"/>
+    <rect x="201" y="272" width="6" height="6" fill="#90d0f8" opacity="0.4"/>
+    <rect x="207" y="296" width="6" height="6" fill="#50a8e8" opacity="0.2"/>
+    <rect x="249" y="242" width="6" height="6" fill="#90d0f8" opacity="0.2"/>
+    <rect x="249" y="290" width="6" height="6" fill="#50a8e8" opacity="0.2"/>
+  </g>
+
+  <!-- ==================== -->
+  <!-- ABILITY EFFECT AURA  -->
+  <!-- ==================== -->
+  <!-- Whirlwind swirl particles around character -->
+  <rect x="195" y="300" width="6" height="6" fill="#90d0f8" opacity="0.2"/>
+  <rect x="186" y="280" width="6" height="6" fill="#c8f0ff" opacity="0.15"/>
+  <rect x="192" y="320" width="6" height="6" fill="#50a8e8" opacity="0.15"/>
+  <rect x="408" y="290" width="6" height="6" fill="#90d0f8" opacity="0.2"/>
+  <rect x="420" y="270" width="6" height="6" fill="#c8f0ff" opacity="0.15"/>
+  <rect x="414" y="310" width="6" height="6" fill="#50a8e8" opacity="0.15"/>
+
+  <!-- Battle Cry waves (emanating from character) -->
+  <rect x="174" y="240" width="6" height="6" fill="#ffe040" opacity="0.12"/>
+  <rect x="162" y="252" width="6" height="6" fill="#e8b800" opacity="0.08"/>
+  <rect x="444" y="240" width="6" height="6" fill="#ffe040" opacity="0.12"/>
+  <rect x="456" y="252" width="6" height="6" fill="#e8b800" opacity="0.08"/>
+
+  <!-- Iron Skin shimmer on body -->
+  <rect x="285" y="236" width="6" height="6" fill="#c8f0ff" opacity="0.25"/>
+  <rect x="333" y="248" width="6" height="6" fill="#c8f0ff" opacity="0.2"/>
+  <rect x="303" y="278" width="6" height="6" fill="#c8f0ff" opacity="0.15"/>
+
+  <!-- ==================== -->
+  <!-- TITLE: WARRIOR       -->
+  <!-- ==================== -->
+  <g filter="url(#glowGold)">
+    <!-- W -->
+    <rect x="168" y="30" width="6" height="30" fill="#ffe040"/>
+    <rect x="174" y="54" width="6" height="6" fill="#ffe040"/>
+    <rect x="180" y="48" width="6" height="6" fill="#ffe040"/>
+    <rect x="186" y="54" width="6" height="6" fill="#ffe040"/>
+    <rect x="192" y="30" width="6" height="30" fill="#ffe040"/>
+    <!-- A -->
+    <rect x="204" y="36" width="6" height="24" fill="#ffe040"/>
+    <rect x="210" y="30" width="12" height="6" fill="#ffe040"/>
+    <rect x="222" y="36" width="6" height="24" fill="#ffe040"/>
+    <rect x="210" y="48" width="12" height="6" fill="#ffe040"/>
+    <!-- R -->
+    <rect x="234" y="30" width="6" height="30" fill="#ffe040"/>
+    <rect x="240" y="30" width="12" height="6" fill="#ffe040"/>
+    <rect x="252" y="36" width="6" height="12" fill="#ffe040"/>
+    <rect x="240" y="48" width="12" height="6" fill="#ffe040"/>
+    <rect x="252" y="54" width="6" height="6" fill="#ffe040"/>
+    <!-- R -->
+    <rect x="264" y="30" width="6" height="30" fill="#ffe040"/>
+    <rect x="270" y="30" width="12" height="6" fill="#ffe040"/>
+    <rect x="282" y="36" width="6" height="12" fill="#ffe040"/>
+    <rect x="270" y="48" width="12" height="6" fill="#ffe040"/>
+    <rect x="282" y="54" width="6" height="6" fill="#ffe040"/>
+    <!-- I -->
+    <rect x="294" y="30" width="18" height="6" fill="#ffe040"/>
+    <rect x="300" y="36" width="6" height="18" fill="#ffe040"/>
+    <rect x="294" y="54" width="18" height="6" fill="#ffe040"/>
+    <!-- O -->
+    <rect x="318" y="30" width="18" height="6" fill="#ffe040"/>
+    <rect x="318" y="54" width="18" height="6" fill="#ffe040"/>
+    <rect x="312" y="36" width="6" height="18" fill="#ffe040"/>
+    <rect x="336" y="36" width="6" height="18" fill="#ffe040"/>
+    <!-- R -->
+    <rect x="348" y="30" width="6" height="30" fill="#ffe040"/>
+    <rect x="354" y="30" width="12" height="6" fill="#ffe040"/>
+    <rect x="366" y="36" width="6" height="12" fill="#ffe040"/>
+    <rect x="354" y="48" width="12" height="6" fill="#ffe040"/>
+    <rect x="366" y="54" width="6" height="6" fill="#ffe040"/>
+  </g>
+  <!-- Title shadow -->
+  <rect x="168" y="66" width="204" height="3" fill="#a87000" opacity="0.4"/>
+
+  <!-- Subtitle line -->
+  <text x="315" y="86" text-anchor="middle" fill="#d4a85a" font-family="monospace" font-size="10" opacity="0.7">MELEE FIGHTER CLASS</text>
+
+  <!-- ==================== -->
+  <!-- ARCHETYPE BADGES      -->
+  <!-- ==================== -->
+  <!-- Guardian badge -->
+  <rect x="120" y="420" width="108" height="30" fill="#1a4a8a" rx="2"/>
+  <rect x="122" y="422" width="104" height="26" fill="#0a1a3a" rx="1"/>
+  <rect x="122" y="422" width="104" height="2" fill="#2a7ac0" opacity="0.6"/>
+  <text x="174" y="440" text-anchor="middle" fill="#90d0f8" font-family="monospace" font-size="11" font-weight="bold">GUARDIAN</text>
+  <!-- Shield icon in badge -->
+  <rect x="132" y="429" width="6" height="9" fill="#50a8e8"/>
+  <rect x="138" y="429" width="3" height="9" fill="#2a7ac0"/>
+
+  <!-- Berserker badge -->
+  <rect x="261" y="420" width="108" height="30" fill="#5a0a0a" rx="2"/>
+  <rect x="263" y="422" width="104" height="26" fill="#0d0d0d" rx="1"/>
+  <rect x="263" y="422" width="104" height="2" fill="#d42020" opacity="0.6"/>
+  <text x="315" y="440" text-anchor="middle" fill="#f06020" font-family="monospace" font-size="11" font-weight="bold">BERSERKER</text>
+  <!-- Sword icon in badge -->
+  <rect x="273" y="428" width="3" height="12" fill="#f8a060"/>
+  <rect x="270" y="432" width="9" height="3" fill="#e8b800"/>
+
+  <!-- Vanguard badge -->
+  <rect x="402" y="420" width="108" height="30" fill="#1a4a8a" rx="2"/>
+  <rect x="404" y="422" width="104" height="26" fill="#0a1a3a" rx="1"/>
+  <rect x="404" y="422" width="104" height="2" fill="#2a7ac0" opacity="0.6"/>
+  <text x="456" y="440" text-anchor="middle" fill="#90d0f8" font-family="monospace" font-size="11" font-weight="bold">VANGUARD</text>
+  <!-- Arrow icon in badge -->
+  <rect x="414" y="433" width="9" height="3" fill="#50a8e8"/>
+  <rect x="420" y="430" width="3" height="9" fill="#50a8e8"/>
+
+  <!-- ==================== -->
+  <!-- ABILITY ICONS (sides) -->
+  <!-- ==================== -->
+  <!-- Left side ability icons -->
+  <!-- Shield Bash icon -->
+  <rect x="96" y="170" width="36" height="36" fill="#0a1a3a" opacity="0.8"/>
+  <rect x="98" y="172" width="32" height="32" fill="#0d0d0d" opacity="0.6"/>
+  <rect x="108" y="178" width="12" height="18" fill="#2a7ac0"/>
+  <rect x="108" y="178" width="12" height="6" fill="#50a8e8"/>
+  <rect x="120" y="184" width="6" height="6" fill="#ffe040"/>
+  <rect x="126" y="182" width="3" height="3" fill="#ffe040" opacity="0.6"/>
+  <text x="114" y="216" text-anchor="middle" fill="#969696" font-family="monospace" font-size="7">SHIELD</text>
+  <text x="114" y="224" text-anchor="middle" fill="#969696" font-family="monospace" font-size="7">BASH</text>
+
+  <!-- Battle Cry icon -->
+  <rect x="96" y="240" width="36" height="36" fill="#0a1a3a" opacity="0.8"/>
+  <rect x="98" y="242" width="32" height="32" fill="#0d0d0d" opacity="0.6"/>
+  <rect x="108" y="252" width="12" height="12" fill="#e8b800"/>
+  <rect x="102" y="256" width="6" height="6" fill="#ffe040" opacity="0.5"/>
+  <rect x="122" y="250" width="6" height="6" fill="#ffe040" opacity="0.5"/>
+  <rect x="104" y="248" width="6" height="6" fill="#f8a060" opacity="0.4"/>
+  <rect x="120" y="258" width="6" height="6" fill="#f8a060" opacity="0.4"/>
+  <text x="114" y="286" text-anchor="middle" fill="#969696" font-family="monospace" font-size="7">BATTLE</text>
+  <text x="114" y="294" text-anchor="middle" fill="#969696" font-family="monospace" font-size="7">CRY</text>
+
+  <!-- Right side ability icons -->
+  <!-- Whirlwind icon -->
+  <rect x="498" y="170" width="36" height="36" fill="#0a1a3a" opacity="0.8"/>
+  <rect x="500" y="172" width="32" height="32" fill="#0d0d0d" opacity="0.6"/>
+  <rect x="510" y="180" width="6" height="6" fill="#90d0f8"/>
+  <rect x="516" y="186" width="6" height="6" fill="#50a8e8"/>
+  <rect x="510" y="192" width="6" height="6" fill="#2a7ac0"/>
+  <rect x="518" y="178" width="6" height="6" fill="#c8f0ff" opacity="0.5"/>
+  <rect x="506" y="188" width="6" height="6" fill="#c8f0ff" opacity="0.4"/>
+  <text x="516" y="216" text-anchor="middle" fill="#969696" font-family="monospace" font-size="7">WHIRL</text>
+  <text x="516" y="224" text-anchor="middle" fill="#969696" font-family="monospace" font-size="7">WIND</text>
+
+  <!-- Iron Skin icon -->
+  <rect x="498" y="240" width="36" height="36" fill="#0a1a3a" opacity="0.8"/>
+  <rect x="500" y="242" width="32" height="32" fill="#0d0d0d" opacity="0.6"/>
+  <rect x="510" y="248" width="12" height="18" fill="#4a4a4a"/>
+  <rect x="512" y="250" width="8" height="14" fill="#969696"/>
+  <rect x="514" y="252" width="4" height="10" fill="#c8c8c8" opacity="0.6"/>
+  <text x="516" y="286" text-anchor="middle" fill="#969696" font-family="monospace" font-size="7">IRON</text>
+  <text x="516" y="294" text-anchor="middle" fill="#969696" font-family="monospace" font-size="7">SKIN</text>
+
+  <!-- ==================== -->
+  <!-- PIXELREALM WATERMARK  -->
+  <!-- ==================== -->
+  <text x="576" y="486" text-anchor="middle" fill="#c8c8c8" font-family="monospace" font-size="8" opacity="0.3">PIXELREALM</text>
+
+  <!-- Decorative bottom border line -->
+  <rect x="120" y="460" width="390" height="2" fill="#b8843f" opacity="0.3"/>
+  <rect x="180" y="464" width="270" height="1" fill="#d4a85a" opacity="0.2"/>
+</svg>

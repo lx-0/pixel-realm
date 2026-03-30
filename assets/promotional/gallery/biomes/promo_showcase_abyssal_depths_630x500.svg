@@ -1,0 +1,366 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated;">
+  <defs>
+    <!-- Light shaft gradient from above -->
+    <linearGradient id="lightShaft" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#90d0f8" stop-opacity="0.18"/>
+      <stop offset="40%" stop-color="#50a8e8" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0a1a3a" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Vignette for deep ocean darkness at edges -->
+    <radialGradient id="vignette" cx="0.5" cy="0.4" r="0.65">
+      <stop offset="0%" stop-color="#0a1a3a" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#0a1a3a" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0d0d0d" stop-opacity="0.85"/>
+    </radialGradient>
+    <!-- Bio-glow radial for jellyfish -->
+    <radialGradient id="bioGlow1" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#d090ff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#d090ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bioGlow2" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#c8f0ff" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#c8f0ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bioGlowGreen" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#a8e4a0" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#a8e4a0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ===== BACKGROUND: Deep ocean ===== -->
+  <rect width="630" height="500" fill="#0a1a3a"/>
+  <!-- Darker bottom -->
+  <rect y="350" width="630" height="150" fill="#0d0d0d" opacity="0.4"/>
+  <!-- Slight mid-tone layer -->
+  <rect y="0" width="630" height="60" fill="#1a4a8a" opacity="0.15"/>
+
+  <!-- ===== LIGHT SHAFT from above center ===== -->
+  <polygon points="270,0 360,0 420,500 210,500" fill="url(#lightShaft)"/>
+  <!-- Secondary narrower shaft -->
+  <polygon points="300,0 330,0 370,500 260,500" fill="#90d0f8" opacity="0.04"/>
+
+  <!-- ===== DISTANT BACKGROUND ELEMENTS ===== -->
+  <!-- Distant sunken ruins silhouettes (mid-ground) -->
+  <!-- Column 1 -->
+  <rect x="180" y="180" width="12" height="90" fill="#1a4a8a" opacity="0.4"/>
+  <rect x="174" y="174" width="24" height="12" fill="#1a4a8a" opacity="0.4"/>
+  <rect x="174" y="264" width="24" height="12" fill="#1a4a8a" opacity="0.35"/>
+  <!-- Column 2 -->
+  <rect x="228" y="198" width="12" height="78" fill="#1a4a8a" opacity="0.35"/>
+  <rect x="222" y="192" width="24" height="12" fill="#1a4a8a" opacity="0.35"/>
+  <rect x="222" y="270" width="24" height="12" fill="#1a4a8a" opacity="0.3"/>
+  <!-- Broken column 3 -->
+  <rect x="390" y="210" width="12" height="60" fill="#1a4a8a" opacity="0.35"/>
+  <rect x="384" y="204" width="24" height="12" fill="#1a4a8a" opacity="0.35"/>
+  <!-- Column 4 -->
+  <rect x="438" y="192" width="12" height="84" fill="#1a4a8a" opacity="0.38"/>
+  <rect x="432" y="186" width="24" height="12" fill="#1a4a8a" opacity="0.38"/>
+  <rect x="432" y="270" width="24" height="12" fill="#1a4a8a" opacity="0.33"/>
+  <!-- Archway connecting columns -->
+  <rect x="192" y="174" width="42" height="6" fill="#1a4a8a" opacity="0.3"/>
+  <rect x="198" y="168" width="30" height="6" fill="#1a4a8a" opacity="0.25"/>
+
+  <!-- Moss on ruins -->
+  <rect x="174" y="198" width="6" height="12" fill="#2d6e2d" opacity="0.35"/>
+  <rect x="186" y="210" width="6" height="6" fill="#1a3a1a" opacity="0.3"/>
+  <rect x="234" y="216" width="6" height="12" fill="#2d6e2d" opacity="0.3"/>
+  <rect x="432" y="210" width="6" height="6" fill="#2d6e2d" opacity="0.3"/>
+  <rect x="444" y="222" width="6" height="12" fill="#1a3a1a" opacity="0.3"/>
+
+  <!-- Sunken ruins stone blocks scattered on floor -->
+  <rect x="204" y="276" width="18" height="12" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="408" y="270" width="12" height="6" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="366" y="276" width="18" height="6" fill="#4a4a4a" opacity="0.2"/>
+
+  <!-- ===== MID-GROUND: Larger ruins with detail ===== -->
+  <!-- Central broken temple structure -->
+  <rect x="264" y="270" width="18" height="96" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="258" y="264" width="30" height="12" fill="#6e6e6e" opacity="0.45"/>
+  <rect x="258" y="258" width="30" height="6" fill="#4a4a4a" opacity="0.4"/>
+  <!-- Right pillar of temple -->
+  <rect x="348" y="282" width="18" height="84" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="342" y="276" width="30" height="12" fill="#6e6e6e" opacity="0.45"/>
+  <!-- Fallen lintel -->
+  <rect x="276" y="300" width="72" height="6" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="282" y="294" width="60" height="6" fill="#4a4a4a" opacity="0.25"/>
+  <!-- Moss on temple -->
+  <rect x="258" y="282" width="6" height="18" fill="#2d6e2d" opacity="0.5"/>
+  <rect x="264" y="294" width="6" height="6" fill="#4c9b4c" opacity="0.4"/>
+  <rect x="282" y="276" width="6" height="6" fill="#2d6e2d" opacity="0.4"/>
+  <rect x="360" y="294" width="6" height="12" fill="#2d6e2d" opacity="0.45"/>
+  <rect x="348" y="306" width="6" height="6" fill="#4c9b4c" opacity="0.35"/>
+
+  <!-- ===== OCEAN FLOOR ===== -->
+  <!-- Sandy bottom base -->
+  <rect y="378" width="630" height="122" fill="#3b2010" opacity="0.6"/>
+  <!-- Sand surface -->
+  <rect y="372" width="630" height="12" fill="#6b3a1f" opacity="0.5"/>
+  <!-- Sand highlights -->
+  <rect x="60" y="378" width="36" height="6" fill="#8b5c2a" opacity="0.45"/>
+  <rect x="150" y="384" width="48" height="6" fill="#b8843f" opacity="0.35"/>
+  <rect x="270" y="378" width="42" height="6" fill="#d4a85a" opacity="0.3"/>
+  <rect x="360" y="384" width="30" height="6" fill="#b8843f" opacity="0.35"/>
+  <rect x="450" y="378" width="54" height="6" fill="#8b5c2a" opacity="0.4"/>
+  <rect x="540" y="384" width="36" height="6" fill="#b8843f" opacity="0.3"/>
+  <!-- Sand dune contours -->
+  <rect x="0" y="372" width="120" height="6" fill="#6b3a1f" opacity="0.55"/>
+  <rect x="120" y="378" width="60" height="6" fill="#6b3a1f" opacity="0.5"/>
+  <rect x="180" y="372" width="180" height="6" fill="#6b3a1f" opacity="0.45"/>
+  <rect x="360" y="378" width="90" height="6" fill="#6b3a1f" opacity="0.5"/>
+  <rect x="450" y="372" width="180" height="6" fill="#6b3a1f" opacity="0.48"/>
+
+  <!-- Shells on floor -->
+  <rect x="108" y="384" width="6" height="6" fill="#d4a85a" opacity="0.5"/>
+  <rect x="114" y="390" width="6" height="6" fill="#e8d08a" opacity="0.4"/>
+  <rect x="324" y="390" width="6" height="6" fill="#d4a85a" opacity="0.45"/>
+  <rect x="492" y="384" width="6" height="6" fill="#e8d08a" opacity="0.5"/>
+  <rect x="498" y="390" width="6" height="6" fill="#d4a85a" opacity="0.4"/>
+
+  <!-- Starfish -->
+  <rect x="204" y="384" width="6" height="18" fill="#f06020" opacity="0.45"/>
+  <rect x="198" y="390" width="18" height="6" fill="#f06020" opacity="0.45"/>
+  <rect x="198" y="384" width="6" height="6" fill="#d42020" opacity="0.35"/>
+  <rect x="210" y="384" width="6" height="6" fill="#d42020" opacity="0.35"/>
+  <rect x="198" y="396" width="6" height="6" fill="#d42020" opacity="0.35"/>
+  <rect x="210" y="396" width="6" height="6" fill="#d42020" opacity="0.35"/>
+
+  <!-- Starfish 2 -->
+  <rect x="468" y="378" width="6" height="18" fill="#f06020" opacity="0.4"/>
+  <rect x="462" y="384" width="18" height="6" fill="#f06020" opacity="0.4"/>
+
+  <!-- ===== SEAWEED from ocean floor ===== -->
+  <!-- Seaweed cluster left -->
+  <rect x="24" y="318" width="6" height="60" fill="#1a3a1a" opacity="0.7"/>
+  <rect x="30" y="330" width="6" height="48" fill="#2d6e2d" opacity="0.65"/>
+  <rect x="36" y="342" width="6" height="36" fill="#1a3a1a" opacity="0.6"/>
+  <rect x="18" y="312" width="6" height="6" fill="#2d6e2d" opacity="0.5"/>
+  <rect x="24" y="306" width="6" height="12" fill="#4c9b4c" opacity="0.45"/>
+  <rect x="30" y="318" width="6" height="12" fill="#4c9b4c" opacity="0.4"/>
+  <rect x="42" y="336" width="6" height="6" fill="#2d6e2d" opacity="0.4"/>
+
+  <!-- Seaweed cluster center-left -->
+  <rect x="138" y="336" width="6" height="42" fill="#2d6e2d" opacity="0.65"/>
+  <rect x="144" y="348" width="6" height="30" fill="#1a3a1a" opacity="0.6"/>
+  <rect x="132" y="330" width="6" height="6" fill="#4c9b4c" opacity="0.45"/>
+  <rect x="138" y="324" width="6" height="12" fill="#4c9b4c" opacity="0.5"/>
+
+  <!-- Seaweed cluster center -->
+  <rect x="300" y="330" width="6" height="48" fill="#2d6e2d" opacity="0.6"/>
+  <rect x="306" y="336" width="6" height="42" fill="#1a3a1a" opacity="0.55"/>
+  <rect x="294" y="324" width="6" height="12" fill="#4c9b4c" opacity="0.5"/>
+  <rect x="312" y="342" width="6" height="30" fill="#2d6e2d" opacity="0.5"/>
+
+  <!-- Seaweed cluster right -->
+  <rect x="516" y="324" width="6" height="54" fill="#1a3a1a" opacity="0.7"/>
+  <rect x="522" y="336" width="6" height="42" fill="#2d6e2d" opacity="0.65"/>
+  <rect x="510" y="318" width="6" height="12" fill="#4c9b4c" opacity="0.5"/>
+  <rect x="528" y="348" width="6" height="24" fill="#1a3a1a" opacity="0.55"/>
+  <rect x="522" y="324" width="6" height="12" fill="#4c9b4c" opacity="0.45"/>
+
+  <!-- Tall seaweed far right -->
+  <rect x="582" y="300" width="6" height="78" fill="#1a3a1a" opacity="0.65"/>
+  <rect x="588" y="318" width="6" height="60" fill="#2d6e2d" opacity="0.6"/>
+  <rect x="576" y="294" width="6" height="12" fill="#2d6e2d" opacity="0.5"/>
+  <rect x="582" y="288" width="6" height="12" fill="#4c9b4c" opacity="0.4"/>
+
+  <!-- ===== CORAL FORMATIONS (foreground) ===== -->
+  <!-- Large coral formation left -->
+  <rect x="48" y="330" width="18" height="48" fill="#9050e0" opacity="0.7"/>
+  <rect x="42" y="336" width="6" height="42" fill="#5a20a0" opacity="0.6"/>
+  <rect x="66" y="336" width="6" height="36" fill="#5a20a0" opacity="0.6"/>
+  <rect x="48" y="324" width="12" height="6" fill="#d090ff" opacity="0.5"/>
+  <rect x="54" y="318" width="6" height="6" fill="#d090ff" opacity="0.45"/>
+  <rect x="42" y="342" width="6" height="6" fill="#d090ff" opacity="0.4"/>
+  <!-- Coral branches -->
+  <rect x="36" y="324" width="6" height="18" fill="#9050e0" opacity="0.55"/>
+  <rect x="72" y="330" width="6" height="18" fill="#9050e0" opacity="0.55"/>
+  <rect x="30" y="318" width="6" height="6" fill="#d090ff" opacity="0.4"/>
+  <rect x="78" y="324" width="6" height="6" fill="#d090ff" opacity="0.4"/>
+
+  <!-- Coral formation center-right (blue/cyan) -->
+  <rect x="408" y="336" width="24" height="42" fill="#50a8e8" opacity="0.65"/>
+  <rect x="402" y="342" width="6" height="30" fill="#2a7ac0" opacity="0.6"/>
+  <rect x="432" y="342" width="6" height="30" fill="#2a7ac0" opacity="0.6"/>
+  <rect x="414" y="330" width="12" height="6" fill="#90d0f8" opacity="0.55"/>
+  <rect x="420" y="324" width="6" height="6" fill="#c8f0ff" opacity="0.5"/>
+  <!-- Coral branches -->
+  <rect x="396" y="330" width="6" height="18" fill="#50a8e8" opacity="0.5"/>
+  <rect x="438" y="336" width="6" height="18" fill="#50a8e8" opacity="0.5"/>
+  <rect x="390" y="324" width="6" height="6" fill="#90d0f8" opacity="0.4"/>
+  <rect x="444" y="330" width="6" height="6" fill="#90d0f8" opacity="0.4"/>
+
+  <!-- Small coral cluster foreground center -->
+  <rect x="240" y="354" width="12" height="24" fill="#78c878" opacity="0.6"/>
+  <rect x="234" y="360" width="6" height="12" fill="#4c9b4c" opacity="0.55"/>
+  <rect x="252" y="360" width="6" height="12" fill="#4c9b4c" opacity="0.55"/>
+  <rect x="240" y="348" width="6" height="6" fill="#a8e4a0" opacity="0.5"/>
+  <rect x="246" y="348" width="6" height="6" fill="#a8e4a0" opacity="0.45"/>
+
+  <!-- Coral right edge -->
+  <rect x="558" y="342" width="18" height="36" fill="#9050e0" opacity="0.6"/>
+  <rect x="552" y="348" width="6" height="24" fill="#5a20a0" opacity="0.55"/>
+  <rect x="576" y="348" width="6" height="24" fill="#5a20a0" opacity="0.55"/>
+  <rect x="564" y="336" width="6" height="6" fill="#d090ff" opacity="0.5"/>
+
+  <!-- ===== BIOLUMINESCENT JELLYFISH ===== -->
+  <!-- Jellyfish 1 (large, purple) -->
+  <rect x="108" y="120" width="36" height="18" rx="6" fill="#d090ff" opacity="0.6"/>
+  <rect x="114" y="114" width="24" height="6" fill="#d090ff" opacity="0.5"/>
+  <rect x="120" y="108" width="12" height="6" fill="#c8f0ff" opacity="0.45"/>
+  <rect x="108" y="138" width="6" height="24" fill="#d090ff" opacity="0.4"/>
+  <rect x="120" y="138" width="6" height="30" fill="#d090ff" opacity="0.35"/>
+  <rect x="132" y="138" width="6" height="24" fill="#d090ff" opacity="0.4"/>
+  <rect x="114" y="138" width="6" height="18" fill="#9050e0" opacity="0.3"/>
+  <rect x="126" y="138" width="6" height="18" fill="#9050e0" opacity="0.3"/>
+  <rect x="138" y="138" width="6" height="12" fill="#9050e0" opacity="0.25"/>
+  <!-- Glow aura -->
+  <circle cx="126" cy="132" r="36" fill="url(#bioGlow1)"/>
+
+  <!-- Jellyfish 2 (medium, cyan) -->
+  <rect x="468" y="150" width="24" height="12" rx="4" fill="#c8f0ff" opacity="0.55"/>
+  <rect x="474" y="144" width="12" height="6" fill="#c8f0ff" opacity="0.45"/>
+  <rect x="468" y="162" width="6" height="18" fill="#c8f0ff" opacity="0.35"/>
+  <rect x="480" y="162" width="6" height="24" fill="#c8f0ff" opacity="0.3"/>
+  <rect x="486" y="162" width="6" height="18" fill="#90d0f8" opacity="0.3"/>
+  <rect x="474" y="162" width="6" height="12" fill="#90d0f8" opacity="0.25"/>
+  <!-- Glow aura -->
+  <circle cx="480" cy="156" r="30" fill="url(#bioGlow2)"/>
+
+  <!-- Jellyfish 3 (small, distant) -->
+  <rect x="342" y="84" width="18" height="12" rx="3" fill="#d090ff" opacity="0.35"/>
+  <rect x="342" y="96" width="6" height="12" fill="#d090ff" opacity="0.25"/>
+  <rect x="348" y="96" width="6" height="18" fill="#d090ff" opacity="0.2"/>
+  <rect x="354" y="96" width="6" height="12" fill="#9050e0" opacity="0.2"/>
+  <circle cx="351" cy="90" r="18" fill="url(#bioGlow1)" opacity="0.5"/>
+
+  <!-- Jellyfish 4 (tiny, very distant) -->
+  <rect x="540" y="72" width="12" height="6" fill="#d090ff" opacity="0.25"/>
+  <rect x="540" y="78" width="6" height="12" fill="#d090ff" opacity="0.18"/>
+  <rect x="546" y="78" width="6" height="6" fill="#9050e0" opacity="0.15"/>
+
+  <!-- ===== SCHOOLS OF FISH ===== -->
+  <!-- School 1 (upper left, moving right) -->
+  <rect x="72" y="174" width="6" height="3" fill="#50a8e8" opacity="0.55"/>
+  <rect x="84" y="168" width="6" height="3" fill="#50a8e8" opacity="0.5"/>
+  <rect x="96" y="174" width="6" height="3" fill="#90d0f8" opacity="0.5"/>
+  <rect x="78" y="180" width="6" height="3" fill="#50a8e8" opacity="0.45"/>
+  <rect x="90" y="186" width="6" height="3" fill="#90d0f8" opacity="0.5"/>
+  <rect x="102" y="180" width="6" height="3" fill="#50a8e8" opacity="0.45"/>
+  <rect x="66" y="186" width="6" height="3" fill="#90d0f8" opacity="0.4"/>
+  <rect x="108" y="168" width="6" height="3" fill="#50a8e8" opacity="0.4"/>
+
+  <!-- School 2 (mid-right, orange/warm fish) -->
+  <rect x="456" y="240" width="6" height="3" fill="#f8a060" opacity="0.5"/>
+  <rect x="468" y="234" width="6" height="3" fill="#f06020" opacity="0.5"/>
+  <rect x="480" y="240" width="6" height="3" fill="#f8a060" opacity="0.45"/>
+  <rect x="462" y="246" width="6" height="3" fill="#f06020" opacity="0.45"/>
+  <rect x="474" y="252" width="6" height="3" fill="#f8a060" opacity="0.5"/>
+  <rect x="486" y="246" width="6" height="3" fill="#f06020" opacity="0.4"/>
+  <rect x="492" y="234" width="6" height="3" fill="#f8a060" opacity="0.4"/>
+  <rect x="450" y="252" width="6" height="3" fill="#f06020" opacity="0.4"/>
+
+  <!-- School 3 (center, green fish near light shaft) -->
+  <rect x="288" y="156" width="6" height="3" fill="#a8e4a0" opacity="0.45"/>
+  <rect x="300" y="150" width="6" height="3" fill="#78c878" opacity="0.45"/>
+  <rect x="312" y="156" width="6" height="3" fill="#a8e4a0" opacity="0.4"/>
+  <rect x="294" y="162" width="6" height="3" fill="#78c878" opacity="0.4"/>
+  <rect x="306" y="162" width="6" height="3" fill="#a8e4a0" opacity="0.45"/>
+  <rect x="318" y="150" width="6" height="3" fill="#78c878" opacity="0.35"/>
+
+  <!-- School 4 (lower center, tiny blue fish) -->
+  <rect x="222" y="300" width="6" height="3" fill="#90d0f8" opacity="0.4"/>
+  <rect x="234" y="294" width="6" height="3" fill="#50a8e8" opacity="0.4"/>
+  <rect x="246" y="300" width="6" height="3" fill="#90d0f8" opacity="0.35"/>
+  <rect x="228" y="306" width="6" height="3" fill="#50a8e8" opacity="0.35"/>
+  <rect x="240" y="306" width="6" height="3" fill="#90d0f8" opacity="0.4"/>
+
+  <!-- ===== DEEP SEA CREATURE (large eel/serpent silhouette in distance) ===== -->
+  <rect x="480" y="300" width="30" height="6" fill="#1a4a8a" opacity="0.3"/>
+  <rect x="504" y="294" width="24" height="6" fill="#1a4a8a" opacity="0.25"/>
+  <rect x="522" y="288" width="18" height="6" fill="#1a4a8a" opacity="0.2"/>
+  <rect x="534" y="294" width="12" height="6" fill="#1a4a8a" opacity="0.2"/>
+  <!-- Eye glow -->
+  <rect x="480" y="300" width="6" height="6" fill="#a8e4a0" opacity="0.5"/>
+
+  <!-- ===== AIR BUBBLES rising ===== -->
+  <!-- Bubble stream 1 (from coral) -->
+  <rect x="60" y="300" width="6" height="6" fill="#c8f0ff" opacity="0.25"/>
+  <rect x="54" y="276" width="6" height="6" fill="#c8f0ff" opacity="0.2"/>
+  <rect x="66" y="252" width="6" height="6" fill="#c8f0ff" opacity="0.18"/>
+  <rect x="54" y="228" width="6" height="6" fill="#c8f0ff" opacity="0.15"/>
+  <rect x="60" y="198" width="6" height="6" fill="#c8f0ff" opacity="0.12"/>
+
+  <!-- Bubble stream 2 (center) -->
+  <rect x="312" y="312" width="6" height="6" fill="#c8f0ff" opacity="0.22"/>
+  <rect x="318" y="282" width="6" height="6" fill="#c8f0ff" opacity="0.2"/>
+  <rect x="306" y="252" width="6" height="6" fill="#c8f0ff" opacity="0.18"/>
+  <rect x="318" y="216" width="6" height="6" fill="#c8f0ff" opacity="0.14"/>
+
+  <!-- Bubble stream 3 (right) -->
+  <rect x="420" y="306" width="6" height="6" fill="#c8f0ff" opacity="0.22"/>
+  <rect x="426" y="276" width="6" height="6" fill="#c8f0ff" opacity="0.18"/>
+  <rect x="414" y="246" width="6" height="6" fill="#c8f0ff" opacity="0.15"/>
+  <rect x="420" y="210" width="6" height="6" fill="#c8f0ff" opacity="0.12"/>
+
+  <!-- Larger single bubbles -->
+  <rect x="168" y="240" width="12" height="12" rx="3" fill="#c8f0ff" opacity="0.12"/>
+  <rect x="384" y="180" width="12" height="12" rx="3" fill="#c8f0ff" opacity="0.1"/>
+
+  <!-- ===== BIOLUMINESCENT PARTICLES (ambient glow specks) ===== -->
+  <rect x="96" y="258" width="3" height="3" fill="#a8e4a0" opacity="0.5"/>
+  <rect x="174" y="144" width="3" height="3" fill="#a8e4a0" opacity="0.4"/>
+  <rect x="264" y="210" width="3" height="3" fill="#c8f0ff" opacity="0.45"/>
+  <rect x="336" y="132" width="3" height="3" fill="#d090ff" opacity="0.4"/>
+  <rect x="402" y="192" width="3" height="3" fill="#a8e4a0" opacity="0.45"/>
+  <rect x="498" y="270" width="3" height="3" fill="#c8f0ff" opacity="0.4"/>
+  <rect x="150" y="300" width="3" height="3" fill="#d090ff" opacity="0.35"/>
+  <rect x="366" y="258" width="3" height="3" fill="#a8e4a0" opacity="0.4"/>
+  <rect x="540" y="198" width="3" height="3" fill="#c8f0ff" opacity="0.35"/>
+  <rect x="216" y="126" width="3" height="3" fill="#d090ff" opacity="0.3"/>
+  <rect x="444" y="108" width="3" height="3" fill="#a8e4a0" opacity="0.3"/>
+  <rect x="78" y="96" width="3" height="3" fill="#c8f0ff" opacity="0.25"/>
+  <rect x="558" y="144" width="3" height="3" fill="#d090ff" opacity="0.3"/>
+  <rect x="192" y="336" width="3" height="3" fill="#a8e4a0" opacity="0.4"/>
+  <rect x="480" y="330" width="3" height="3" fill="#c8f0ff" opacity="0.35"/>
+
+  <!-- Bio-glow halos on coral tips -->
+  <circle cx="57" cy="321" r="12" fill="url(#bioGlowGreen)" opacity="0.6"/>
+  <circle cx="246" cy="351" r="10" fill="url(#bioGlowGreen)" opacity="0.5"/>
+  <circle cx="420" cy="327" r="14" fill="url(#bioGlow2)" opacity="0.5"/>
+  <circle cx="564" cy="339" r="10" fill="url(#bioGlow1)" opacity="0.5"/>
+
+  <!-- ===== FOREGROUND CORAL/SEAWEED (bottom edge framing) ===== -->
+  <!-- Left foreground seaweed -->
+  <rect x="0" y="390" width="12" height="110" fill="#1a3a1a" opacity="0.8"/>
+  <rect x="12" y="402" width="6" height="98" fill="#2d6e2d" opacity="0.75"/>
+  <rect x="0" y="384" width="6" height="6" fill="#2d6e2d" opacity="0.65"/>
+
+  <!-- Right foreground coral -->
+  <rect x="594" y="378" width="36" height="122" fill="#1a0a3a" opacity="0.6"/>
+  <rect x="600" y="366" width="24" height="12" fill="#5a20a0" opacity="0.55"/>
+  <rect x="606" y="354" width="18" height="12" fill="#9050e0" opacity="0.5"/>
+  <rect x="612" y="348" width="6" height="6" fill="#d090ff" opacity="0.45"/>
+  <rect x="588" y="390" width="6" height="110" fill="#5a20a0" opacity="0.5"/>
+
+  <!-- ===== VIGNETTE OVERLAY ===== -->
+  <rect width="630" height="500" fill="url(#vignette)"/>
+
+  <!-- ===== EDGE DARKNESS ===== -->
+  <rect x="0" y="0" width="30" height="500" fill="#0d0d0d" opacity="0.5"/>
+  <rect x="600" y="0" width="30" height="500" fill="#0d0d0d" opacity="0.5"/>
+  <rect x="0" y="0" width="630" height="18" fill="#0d0d0d" opacity="0.4"/>
+  <rect x="0" y="462" width="630" height="38" fill="#0d0d0d" opacity="0.45"/>
+
+  <!-- ===== TEXT: Title ===== -->
+  <!-- Dark backing for title -->
+  <rect x="24" y="420" width="330" height="42" fill="#0d0d0d" opacity="0.7" rx="2"/>
+  <rect x="24" y="420" width="330" height="42" fill="#0a1a3a" opacity="0.3" rx="2"/>
+
+  <!-- Title: ABYSSAL DEPTHS -->
+  <text x="36" y="443" font-family="monospace" font-size="22" font-weight="bold" fill="#ffe040" letter-spacing="3">ABYSSAL DEPTHS</text>
+  <!-- Subtitle -->
+  <text x="36" y="457" font-family="monospace" font-size="8" fill="#90d0f8" opacity="0.8" letter-spacing="0.5">Sunken kingdoms and glowing creatures in the endless deep</text>
+
+  <!-- ===== WATERMARK ===== -->
+  <text x="594" y="488" font-family="monospace" font-size="9" fill="#c8c8c8" opacity="0.3" text-anchor="end" letter-spacing="1">PixelRealm</text>
+</svg>

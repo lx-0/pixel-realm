@@ -1,0 +1,360 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" style="image-rendering: pixelated;">
+  <defs>
+    <style>
+      text { font-family: monospace; image-rendering: pixelated; }
+    </style>
+  </defs>
+
+  <!-- SKY - gradient through canopy gaps -->
+  <rect width="630" height="500" fill="#0a1a3a"/>
+  <!-- Sky visible area -->
+  <rect x="0" y="0" width="630" height="240" fill="#1a4a8a"/>
+  <rect x="0" y="0" width="630" height="180" fill="#2a7ac0"/>
+  <rect x="0" y="0" width="630" height="120" fill="#50a8e8"/>
+
+  <!-- Light rays from canopy gaps -->
+  <g opacity="0.15">
+    <polygon points="180,0 210,300 150,300" fill="#c8f0ff"/>
+    <polygon points="330,0 360,320 300,320" fill="#c8f0ff"/>
+    <polygon points="480,0 510,280 450,280" fill="#c8f0ff"/>
+    <polygon points="90,0 114,260 66,260" fill="#90d0f8"/>
+    <polygon points="540,0 564,290 516,290" fill="#90d0f8"/>
+  </g>
+
+  <!-- === DISTANT MISTY TREES (back layer) === -->
+  <g opacity="0.4">
+    <!-- Distant tree 1 -->
+    <rect x="30" y="120" width="6" height="120" fill="#1a3a1a"/>
+    <rect x="12" y="96" width="42" height="30" fill="#1a3a1a"/>
+    <rect x="18" y="78" width="30" height="24" fill="#1a3a1a"/>
+    <rect x="24" y="66" width="18" height="18" fill="#1a3a1a"/>
+    <!-- Distant tree 2 -->
+    <rect x="120" y="108" width="6" height="132" fill="#1a3a1a"/>
+    <rect x="102" y="84" width="42" height="30" fill="#1a3a1a"/>
+    <rect x="108" y="66" width="30" height="24" fill="#1a3a1a"/>
+    <rect x="114" y="54" width="18" height="18" fill="#1a3a1a"/>
+    <!-- Distant tree 3 -->
+    <rect x="210" y="114" width="6" height="126" fill="#1a3a1a"/>
+    <rect x="192" y="90" width="42" height="30" fill="#1a3a1a"/>
+    <rect x="198" y="72" width="30" height="24" fill="#1a3a1a"/>
+    <rect x="204" y="60" width="18" height="18" fill="#1a3a1a"/>
+    <!-- Distant tree 4 -->
+    <rect x="318" y="102" width="6" height="138" fill="#1a3a1a"/>
+    <rect x="300" y="78" width="42" height="30" fill="#1a3a1a"/>
+    <rect x="306" y="60" width="30" height="24" fill="#1a3a1a"/>
+    <rect x="312" y="48" width="18" height="18" fill="#1a3a1a"/>
+    <!-- Distant tree 5 -->
+    <rect x="420" y="108" width="6" height="132" fill="#1a3a1a"/>
+    <rect x="402" y="84" width="42" height="30" fill="#1a3a1a"/>
+    <rect x="408" y="66" width="30" height="24" fill="#1a3a1a"/>
+    <rect x="414" y="54" width="18" height="18" fill="#1a3a1a"/>
+    <!-- Distant tree 6 -->
+    <rect x="528" y="114" width="6" height="126" fill="#1a3a1a"/>
+    <rect x="510" y="90" width="42" height="30" fill="#1a3a1a"/>
+    <rect x="516" y="72" width="30" height="24" fill="#1a3a1a"/>
+    <rect x="522" y="60" width="18" height="18" fill="#1a3a1a"/>
+    <!-- Distant mist strip -->
+    <rect x="0" y="210" width="630" height="30" fill="#2d6e2d" opacity="0.3"/>
+  </g>
+
+  <!-- === MID-GROUND LARGE TREES === -->
+  <!-- Mid tree 1 (left) - massive trunk -->
+  <rect x="60" y="150" width="18" height="210" fill="#3b2010"/>
+  <rect x="54" y="300" width="30" height="60" fill="#3b2010"/>
+  <!-- Roots -->
+  <rect x="42" y="348" width="12" height="18" fill="#3b2010"/>
+  <rect x="84" y="348" width="12" height="18" fill="#3b2010"/>
+  <!-- Canopy -->
+  <rect x="6" y="108" width="108" height="48" fill="#2d6e2d"/>
+  <rect x="18" y="84" width="84" height="30" fill="#2d6e2d"/>
+  <rect x="30" y="66" width="60" height="24" fill="#4c9b4c"/>
+  <rect x="42" y="54" width="36" height="18" fill="#4c9b4c"/>
+  <!-- Canopy highlights -->
+  <rect x="36" y="90" width="12" height="6" fill="#78c878"/>
+  <rect x="60" y="72" width="18" height="6" fill="#78c878"/>
+  <rect x="78" y="96" width="12" height="6" fill="#a8e4a0"/>
+  <!-- Moss on trunk -->
+  <rect x="54" y="180" width="6" height="18" fill="#2d6e2d"/>
+  <rect x="54" y="240" width="6" height="12" fill="#4c9b4c"/>
+
+  <!-- Mid tree 2 (center-left) -->
+  <rect x="210" y="168" width="18" height="192" fill="#3b2010"/>
+  <rect x="204" y="300" width="30" height="60" fill="#3b2010"/>
+  <rect x="198" y="342" width="12" height="24" fill="#3b2010"/>
+  <rect x="234" y="348" width="12" height="18" fill="#3b2010"/>
+  <!-- Canopy -->
+  <rect x="156" y="120" width="126" height="54" fill="#2d6e2d"/>
+  <rect x="168" y="96" width="102" height="30" fill="#2d6e2d"/>
+  <rect x="186" y="78" width="66" height="24" fill="#4c9b4c"/>
+  <rect x="198" y="66" width="42" height="18" fill="#4c9b4c"/>
+  <!-- Highlights -->
+  <rect x="192" y="102" width="18" height="6" fill="#78c878"/>
+  <rect x="228" y="84" width="12" height="6" fill="#a8e4a0"/>
+  <rect x="174" y="126" width="12" height="6" fill="#78c878"/>
+  <!-- Moss -->
+  <rect x="204" y="210" width="6" height="12" fill="#2d6e2d"/>
+  <rect x="228" y="240" width="6" height="12" fill="#4c9b4c"/>
+
+  <!-- Mid tree 3 (center-right) -->
+  <rect x="390" y="156" width="18" height="204" fill="#3b2010"/>
+  <rect x="384" y="306" width="30" height="54" fill="#3b2010"/>
+  <rect x="378" y="348" width="12" height="18" fill="#3b2010"/>
+  <rect x="414" y="342" width="12" height="24" fill="#3b2010"/>
+  <!-- Canopy -->
+  <rect x="336" y="114" width="126" height="48" fill="#2d6e2d"/>
+  <rect x="348" y="90" width="102" height="30" fill="#4c9b4c"/>
+  <rect x="366" y="72" width="66" height="24" fill="#4c9b4c"/>
+  <rect x="378" y="60" width="42" height="18" fill="#78c878"/>
+  <!-- Highlights -->
+  <rect x="372" y="96" width="12" height="6" fill="#78c878"/>
+  <rect x="408" y="78" width="18" height="6" fill="#a8e4a0"/>
+  <rect x="348" y="120" width="12" height="6" fill="#78c878"/>
+
+  <!-- Mid tree 4 (right edge) -->
+  <rect x="546" y="144" width="18" height="216" fill="#3b2010"/>
+  <rect x="540" y="300" width="30" height="60" fill="#3b2010"/>
+  <rect x="534" y="348" width="12" height="18" fill="#3b2010"/>
+  <rect x="570" y="348" width="12" height="18" fill="#3b2010"/>
+  <!-- Canopy -->
+  <rect x="492" y="102" width="126" height="48" fill="#2d6e2d"/>
+  <rect x="504" y="78" width="102" height="30" fill="#2d6e2d"/>
+  <rect x="516" y="60" width="78" height="24" fill="#4c9b4c"/>
+  <rect x="534" y="48" width="42" height="18" fill="#4c9b4c"/>
+  <!-- Highlights -->
+  <rect x="528" y="84" width="12" height="6" fill="#78c878"/>
+  <rect x="558" y="66" width="18" height="6" fill="#a8e4a0"/>
+  <rect x="510" y="108" width="12" height="6" fill="#78c878"/>
+
+  <!-- === FOREST FLOOR === -->
+  <!-- Ground base -->
+  <rect x="0" y="360" width="630" height="140" fill="#1a3a1a"/>
+  <rect x="0" y="366" width="630" height="134" fill="#2d6e2d" opacity="0.4"/>
+
+  <!-- Dirt/soil patches -->
+  <rect x="120" y="372" width="60" height="6" fill="#3b2010"/>
+  <rect x="300" y="378" width="48" height="6" fill="#3b2010"/>
+  <rect x="450" y="384" width="42" height="6" fill="#6b3a1f"/>
+  <rect x="180" y="390" width="36" height="6" fill="#3b2010"/>
+
+  <!-- Forest path (winding) -->
+  <rect x="240" y="366" width="48" height="6" fill="#6b3a1f"/>
+  <rect x="234" y="372" width="54" height="6" fill="#6b3a1f"/>
+  <rect x="228" y="378" width="60" height="6" fill="#8b5c2a"/>
+  <rect x="222" y="384" width="66" height="6" fill="#8b5c2a"/>
+  <rect x="228" y="390" width="72" height="6" fill="#6b3a1f"/>
+  <rect x="240" y="396" width="78" height="6" fill="#6b3a1f"/>
+  <rect x="252" y="402" width="84" height="6" fill="#8b5c2a"/>
+  <rect x="264" y="408" width="90" height="6" fill="#8b5c2a"/>
+  <rect x="276" y="414" width="96" height="6" fill="#6b3a1f"/>
+  <rect x="288" y="420" width="102" height="6" fill="#6b3a1f"/>
+  <rect x="294" y="426" width="108" height="6" fill="#8b5c2a"/>
+  <rect x="300" y="432" width="114" height="6" fill="#8b5c2a"/>
+  <rect x="300" y="438" width="120" height="62" fill="#6b3a1f"/>
+  <!-- Path highlight -->
+  <rect x="252" y="384" width="12" height="6" fill="#b8843f"/>
+  <rect x="288" y="408" width="12" height="6" fill="#b8843f"/>
+  <rect x="330" y="432" width="18" height="6" fill="#b8843f"/>
+
+  <!-- === STONE WAYPOINT/ALTAR (mid-ground) === -->
+  <rect x="282" y="330" width="60" height="6" fill="#4a4a4a"/>
+  <rect x="288" y="324" width="48" height="6" fill="#6e6e6e"/>
+  <rect x="294" y="318" width="36" height="6" fill="#4a4a4a"/>
+  <rect x="288" y="336" width="48" height="24" fill="#4a4a4a"/>
+  <rect x="294" y="336" width="36" height="24" fill="#6e6e6e"/>
+  <!-- Altar top glow -->
+  <rect x="300" y="312" width="24" height="6" fill="#969696"/>
+  <rect x="306" y="306" width="12" height="6" fill="#ffe040"/>
+  <rect x="306" y="300" width="12" height="6" fill="#ffe040" opacity="0.6"/>
+  <!-- Altar rune marks -->
+  <rect x="294" y="342" width="6" height="6" fill="#9050e0"/>
+  <rect x="318" y="342" width="6" height="6" fill="#9050e0"/>
+  <rect x="306" y="348" width="6" height="6" fill="#d090ff"/>
+  <!-- Moss on altar stones -->
+  <rect x="282" y="330" width="6" height="6" fill="#2d6e2d"/>
+  <rect x="336" y="330" width="6" height="6" fill="#4c9b4c"/>
+
+  <!-- === FALLEN LOG === -->
+  <rect x="444" y="372" width="72" height="12" fill="#3b2010"/>
+  <rect x="444" y="372" width="72" height="6" fill="#6b3a1f"/>
+  <rect x="438" y="372" width="6" height="12" fill="#3b2010"/>
+  <rect x="516" y="372" width="6" height="12" fill="#3b2010"/>
+  <!-- Moss on log -->
+  <rect x="456" y="372" width="12" height="6" fill="#2d6e2d"/>
+  <rect x="480" y="372" width="18" height="6" fill="#4c9b4c"/>
+  <rect x="504" y="372" width="6" height="6" fill="#2d6e2d"/>
+
+  <!-- === GLOWING MUSHROOMS === -->
+  <!-- Mushroom cluster 1 (left of path) -->
+  <rect x="150" y="384" width="6" height="12" fill="#5a20a0"/>
+  <rect x="144" y="378" width="18" height="6" fill="#9050e0"/>
+  <rect x="144" y="372" width="18" height="6" fill="#d090ff"/>
+  <!-- Glow -->
+  <rect x="138" y="366" width="30" height="6" fill="#d090ff" opacity="0.3"/>
+  <rect x="138" y="396" width="30" height="6" fill="#d090ff" opacity="0.2"/>
+
+  <!-- Mushroom cluster 2 (right side) -->
+  <rect x="480" y="390" width="6" height="12" fill="#5a20a0"/>
+  <rect x="474" y="384" width="18" height="6" fill="#9050e0"/>
+  <rect x="474" y="378" width="18" height="6" fill="#d090ff"/>
+  <rect x="492" y="396" width="6" height="12" fill="#5a20a0"/>
+  <rect x="486" y="390" width="18" height="6" fill="#9050e0"/>
+  <rect x="486" y="384" width="18" height="6" fill="#d090ff"/>
+  <!-- Glow -->
+  <rect x="468" y="372" width="42" height="6" fill="#d090ff" opacity="0.25"/>
+
+  <!-- Mushroom cluster 3 (near altar) -->
+  <rect x="348" y="360" width="6" height="6" fill="#5a20a0"/>
+  <rect x="342" y="354" width="18" height="6" fill="#9050e0"/>
+  <rect x="342" y="348" width="18" height="6" fill="#d090ff"/>
+  <rect x="336" y="342" width="24" height="6" fill="#d090ff" opacity="0.3"/>
+
+  <!-- Small mushrooms on forest floor -->
+  <rect x="90" y="402" width="6" height="6" fill="#5a20a0"/>
+  <rect x="84" y="396" width="18" height="6" fill="#d090ff"/>
+
+  <rect x="570" y="408" width="6" height="6" fill="#5a20a0"/>
+  <rect x="564" y="402" width="18" height="6" fill="#9050e0"/>
+
+  <!-- === FLOWERS on forest floor === -->
+  <rect x="126" y="396" width="6" height="6" fill="#f8a060"/>
+  <rect x="168" y="414" width="6" height="6" fill="#ffe040"/>
+  <rect x="420" y="390" width="6" height="6" fill="#f8a060"/>
+  <rect x="540" y="396" width="6" height="6" fill="#ffe040"/>
+  <rect x="60" y="408" width="6" height="6" fill="#d090ff"/>
+  <rect x="198" y="420" width="6" height="6" fill="#a8e4a0"/>
+
+  <!-- === MOSS-COVERED STONES === -->
+  <!-- Stone 1 -->
+  <rect x="108" y="366" width="24" height="12" fill="#4a4a4a"/>
+  <rect x="114" y="360" width="12" height="6" fill="#6e6e6e"/>
+  <rect x="108" y="366" width="12" height="6" fill="#2d6e2d"/>
+  <!-- Stone 2 -->
+  <rect x="396" y="366" width="18" height="12" fill="#4a4a4a"/>
+  <rect x="396" y="366" width="12" height="6" fill="#4c9b4c"/>
+  <!-- Stone 3 -->
+  <rect x="558" y="378" width="18" height="12" fill="#6e6e6e"/>
+  <rect x="558" y="378" width="6" height="6" fill="#2d6e2d"/>
+
+  <!-- === FOREGROUND TRUNKS (partial, at edges) === -->
+  <!-- Left foreground trunk -->
+  <rect x="0" y="180" width="30" height="320" fill="#3b2010"/>
+  <rect x="30" y="240" width="6" height="18" fill="#3b2010"/>
+  <rect x="0" y="180" width="6" height="320" fill="#6b3a1f"/>
+  <!-- Moss -->
+  <rect x="24" y="300" width="6" height="24" fill="#2d6e2d"/>
+  <rect x="24" y="360" width="6" height="18" fill="#4c9b4c"/>
+  <!-- Left foreground canopy (overhanging from top) -->
+  <rect x="0" y="0" width="90" height="60" fill="#1a3a1a"/>
+  <rect x="0" y="0" width="60" height="84" fill="#1a3a1a"/>
+  <rect x="0" y="60" width="42" height="30" fill="#2d6e2d"/>
+  <rect x="0" y="0" width="42" height="48" fill="#2d6e2d"/>
+  <rect x="42" y="0" width="30" height="36" fill="#4c9b4c"/>
+
+  <!-- Right foreground trunk -->
+  <rect x="600" y="150" width="30" height="350" fill="#3b2010"/>
+  <rect x="594" y="210" width="6" height="18" fill="#3b2010"/>
+  <rect x="600" y="150" width="6" height="350" fill="#6b3a1f"/>
+  <!-- Moss -->
+  <rect x="600" y="270" width="6" height="18" fill="#2d6e2d"/>
+  <rect x="600" y="330" width="6" height="24" fill="#4c9b4c"/>
+  <!-- Right foreground canopy -->
+  <rect x="570" y="0" width="60" height="66" fill="#1a3a1a"/>
+  <rect x="582" y="0" width="48" height="90" fill="#1a3a1a"/>
+  <rect x="594" y="66" width="36" height="30" fill="#2d6e2d"/>
+  <rect x="600" y="0" width="30" height="54" fill="#2d6e2d"/>
+
+  <!-- === FOLIAGE DETAILS (hanging vines, leaves) === -->
+  <!-- Hanging vine left -->
+  <rect x="36" y="90" width="6" height="30" fill="#2d6e2d"/>
+  <rect x="36" y="120" width="6" height="6" fill="#4c9b4c"/>
+  <!-- Hanging vine center -->
+  <rect x="270" y="132" width="6" height="24" fill="#2d6e2d"/>
+  <rect x="270" y="156" width="6" height="6" fill="#4c9b4c"/>
+  <!-- Hanging vine right -->
+  <rect x="462" y="114" width="6" height="30" fill="#2d6e2d"/>
+  <rect x="462" y="144" width="6" height="6" fill="#78c878"/>
+  <!-- Small leaf clusters -->
+  <rect x="150" y="150" width="12" height="6" fill="#4c9b4c"/>
+  <rect x="420" y="162" width="12" height="6" fill="#78c878"/>
+  <rect x="330" y="138" width="6" height="6" fill="#a8e4a0"/>
+
+  <!-- === MAGICAL FLOATING PARTICLES === -->
+  <!-- Green particles -->
+  <rect x="96" y="192" width="6" height="6" fill="#a8e4a0" opacity="0.9"/>
+  <rect x="180" y="252" width="6" height="6" fill="#a8e4a0" opacity="0.7"/>
+  <rect x="324" y="204" width="6" height="6" fill="#a8e4a0" opacity="0.8"/>
+  <rect x="474" y="228" width="6" height="6" fill="#a8e4a0" opacity="0.9"/>
+  <rect x="558" y="264" width="6" height="6" fill="#a8e4a0" opacity="0.6"/>
+  <rect x="252" y="168" width="6" height="6" fill="#a8e4a0" opacity="0.7"/>
+  <rect x="138" y="312" width="6" height="6" fill="#a8e4a0" opacity="0.8"/>
+  <rect x="420" y="300" width="6" height="6" fill="#a8e4a0" opacity="0.7"/>
+  <rect x="54" y="270" width="6" height="6" fill="#a8e4a0" opacity="0.5"/>
+  <rect x="510" y="180" width="6" height="6" fill="#a8e4a0" opacity="0.8"/>
+
+  <!-- Purple particles -->
+  <rect x="162" y="180" width="6" height="6" fill="#d090ff" opacity="0.8"/>
+  <rect x="372" y="240" width="6" height="6" fill="#d090ff" opacity="0.7"/>
+  <rect x="522" y="198" width="6" height="6" fill="#d090ff" opacity="0.9"/>
+  <rect x="78" y="234" width="6" height="6" fill="#d090ff" opacity="0.6"/>
+  <rect x="294" y="276" width="6" height="6" fill="#d090ff" opacity="0.8"/>
+  <rect x="450" y="168" width="6" height="6" fill="#d090ff" opacity="0.7"/>
+  <rect x="204" y="306" width="6" height="6" fill="#d090ff" opacity="0.6"/>
+  <rect x="582" y="288" width="6" height="6" fill="#d090ff" opacity="0.7"/>
+
+  <!-- Yellow/gold particles (fairy lights) -->
+  <rect x="126" y="210" width="6" height="6" fill="#ffe040" opacity="0.9"/>
+  <rect x="276" y="186" width="6" height="6" fill="#ffe040" opacity="0.8"/>
+  <rect x="432" y="216" width="6" height="6" fill="#ffe040" opacity="0.7"/>
+  <rect x="192" y="264" width="6" height="6" fill="#ffe040" opacity="0.9"/>
+  <rect x="354" y="282" width="6" height="6" fill="#ffe040" opacity="0.8"/>
+  <rect x="504" y="252" width="6" height="6" fill="#ffe040" opacity="0.6"/>
+  <rect x="66" y="306" width="6" height="6" fill="#ffe040" opacity="0.7"/>
+  <rect x="468" y="312" width="6" height="6" fill="#ffe040" opacity="0.8"/>
+  <rect x="336" y="192" width="6" height="6" fill="#ffe040" opacity="0.9"/>
+
+  <!-- Extra sparkle particles (smaller, more scattered) -->
+  <rect x="114" y="168" width="6" height="6" fill="#ffe040" opacity="0.4"/>
+  <rect x="396" y="174" width="6" height="6" fill="#a8e4a0" opacity="0.4"/>
+  <rect x="234" y="294" width="6" height="6" fill="#d090ff" opacity="0.4"/>
+  <rect x="546" y="234" width="6" height="6" fill="#ffe040" opacity="0.4"/>
+  <rect x="306" y="252" width="6" height="6" fill="#a8e4a0" opacity="0.5"/>
+
+  <!-- === CANOPY TOP LAYER (overlapping sky at top) === -->
+  <rect x="60" y="0" width="78" height="24" fill="#1a3a1a"/>
+  <rect x="162" y="0" width="96" height="18" fill="#1a3a1a"/>
+  <rect x="294" y="0" width="84" height="24" fill="#1a3a1a"/>
+  <rect x="408" y="0" width="72" height="18" fill="#1a3a1a"/>
+  <rect x="498" y="0" width="72" height="30" fill="#1a3a1a"/>
+  <!-- Canopy edge leaves -->
+  <rect x="78" y="24" width="30" height="12" fill="#2d6e2d"/>
+  <rect x="180" y="18" width="48" height="12" fill="#2d6e2d"/>
+  <rect x="312" y="24" width="42" height="12" fill="#2d6e2d"/>
+  <rect x="426" y="18" width="36" height="12" fill="#2d6e2d"/>
+  <rect x="510" y="30" width="42" height="12" fill="#2d6e2d"/>
+
+  <!-- === DARK VIGNETTE AT BOTTOM === -->
+  <rect x="0" y="438" width="630" height="62" fill="#0d0d0d" opacity="0.5"/>
+  <rect x="0" y="468" width="630" height="32" fill="#0d0d0d" opacity="0.3"/>
+
+  <!-- === FOREGROUND GRASS TUFTS === -->
+  <rect x="0" y="360" width="6" height="6" fill="#4c9b4c"/>
+  <rect x="36" y="366" width="6" height="6" fill="#2d6e2d"/>
+  <rect x="96" y="360" width="6" height="6" fill="#4c9b4c"/>
+  <rect x="174" y="366" width="6" height="6" fill="#78c878"/>
+  <rect x="360" y="360" width="6" height="6" fill="#4c9b4c"/>
+  <rect x="432" y="366" width="6" height="6" fill="#2d6e2d"/>
+  <rect x="522" y="360" width="6" height="6" fill="#78c878"/>
+  <rect x="594" y="366" width="6" height="6" fill="#4c9b4c"/>
+
+  <!-- === TITLE TEXT === -->
+  <!-- Dark backing for title -->
+  <rect x="12" y="438" width="318" height="54" fill="#0d0d0d" opacity="0.75" rx="2"/>
+  <!-- Title -->
+  <text x="24" y="462" fill="#ffe040" font-size="22" font-weight="bold" font-family="monospace" letter-spacing="3">ENCHANTED FOREST</text>
+  <!-- Descriptor -->
+  <text x="24" y="482" fill="#a8e4a0" font-size="9" font-family="monospace">Ancient woods where magic flows</text>
+  <text x="24" y="492" fill="#a8e4a0" font-size="9" font-family="monospace">through every root and branch</text>
+
+  <!-- === PIXELREALM WATERMARK === -->
+  <text x="618" y="492" fill="#c8c8c8" font-size="10" font-family="monospace" text-anchor="end" opacity="0.3">PixelRealm</text>
+</svg>

@@ -1,0 +1,436 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" style="image-rendering: pixelated;">
+  <defs>
+    <style>
+      text { font-family: monospace; image-rendering: pixelated; }
+    </style>
+    <!-- Lava glow filter -->
+    <filter id="lavaGlow8">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Smoke blur -->
+    <filter id="smoke8">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <!-- Intense glow for lava pools -->
+    <filter id="intenseGlow8">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ===== ASH SKY BACKGROUND ===== -->
+  <!-- Layered volcanic sky - dark to angry red -->
+  <rect x="0" y="0" width="1200" height="40" fill="#0d0d0d"/>
+  <rect x="0" y="40" width="1200" height="32" fill="#1a0a3a"/>
+  <rect x="0" y="72" width="1200" height="32" fill="#0d0d0d"/>
+  <rect x="0" y="104" width="1200" height="32" fill="#5a0a0a"/>
+  <rect x="0" y="136" width="1200" height="32" fill="#5a0a0a"/>
+  <rect x="0" y="168" width="1200" height="40" fill="#a01010"/>
+  <rect x="0" y="208" width="1200" height="32" fill="#5a0a0a"/>
+  <rect x="0" y="240" width="1200" height="32" fill="#5a0a0a"/>
+  <rect x="0" y="272" width="1200" height="24" fill="#2b2b2b"/>
+
+  <!-- ===== DISTANT VOLCANIC PEAK (main erupting volcano, center) ===== -->
+  <!-- Left slope rising -->
+  <rect x="400" y="176" width="8" height="8" fill="#2b2b2b"/>
+  <rect x="408" y="168" width="8" height="16" fill="#2b2b2b"/>
+  <rect x="416" y="160" width="8" height="24" fill="#0d0d0d"/>
+  <rect x="424" y="152" width="8" height="32" fill="#0d0d0d"/>
+  <rect x="432" y="144" width="8" height="40" fill="#0d0d0d"/>
+  <rect x="440" y="136" width="8" height="48" fill="#0d0d0d"/>
+  <rect x="448" y="128" width="8" height="56" fill="#0d0d0d"/>
+  <rect x="456" y="120" width="8" height="64" fill="#0d0d0d"/>
+  <rect x="464" y="112" width="8" height="72" fill="#0d0d0d"/>
+  <rect x="472" y="104" width="8" height="80" fill="#0d0d0d"/>
+  <rect x="480" y="96" width="8" height="88" fill="#0d0d0d"/>
+  <rect x="488" y="88" width="8" height="96" fill="#0d0d0d"/>
+  <rect x="496" y="80" width="8" height="104" fill="#0d0d0d"/>
+  <rect x="504" y="72" width="8" height="112" fill="#0d0d0d"/>
+  <rect x="512" y="64" width="8" height="120" fill="#0d0d0d"/>
+  <rect x="520" y="64" width="8" height="120" fill="#0d0d0d"/>
+  <rect x="528" y="64" width="8" height="120" fill="#0d0d0d"/>
+
+  <!-- Crater opening (glowing lava visible) -->
+  <rect x="536" y="72" width="8" height="8" fill="#d42020"/>
+  <rect x="544" y="64" width="8" height="16" fill="#f06020"/>
+  <rect x="552" y="56" width="8" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="560" y="48" width="8" height="24" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="568" y="48" width="8" height="24" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="576" y="48" width="8" height="24" fill="#fff8a0" filter="url(#lavaGlow8)"/>
+  <rect x="584" y="48" width="8" height="24" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="592" y="56" width="8" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="600" y="64" width="8" height="16" fill="#f06020"/>
+  <rect x="608" y="72" width="8" height="8" fill="#d42020"/>
+
+  <!-- Right slope descending -->
+  <rect x="616" y="64" width="8" height="120" fill="#0d0d0d"/>
+  <rect x="624" y="64" width="8" height="120" fill="#0d0d0d"/>
+  <rect x="632" y="64" width="8" height="120" fill="#0d0d0d"/>
+  <rect x="640" y="72" width="8" height="112" fill="#0d0d0d"/>
+  <rect x="648" y="80" width="8" height="104" fill="#0d0d0d"/>
+  <rect x="656" y="88" width="8" height="96" fill="#0d0d0d"/>
+  <rect x="664" y="96" width="8" height="88" fill="#0d0d0d"/>
+  <rect x="672" y="104" width="8" height="80" fill="#0d0d0d"/>
+  <rect x="680" y="112" width="8" height="72" fill="#0d0d0d"/>
+  <rect x="688" y="120" width="8" height="64" fill="#0d0d0d"/>
+  <rect x="696" y="128" width="8" height="56" fill="#0d0d0d"/>
+  <rect x="704" y="136" width="8" height="48" fill="#0d0d0d"/>
+  <rect x="712" y="144" width="8" height="40" fill="#0d0d0d"/>
+  <rect x="720" y="152" width="8" height="32" fill="#0d0d0d"/>
+  <rect x="728" y="160" width="8" height="24" fill="#0d0d0d"/>
+  <rect x="736" y="168" width="8" height="16" fill="#2b2b2b"/>
+  <rect x="744" y="176" width="8" height="8" fill="#2b2b2b"/>
+
+  <!-- Volcano body fill -->
+  <rect x="392" y="184" width="368" height="112" fill="#0d0d0d"/>
+  <!-- Extended base slopes -->
+  <rect x="344" y="200" width="48" height="96" fill="#0d0d0d"/>
+  <rect x="752" y="200" width="48" height="96" fill="#0d0d0d"/>
+  <rect x="304" y="224" width="40" height="72" fill="#0d0d0d"/>
+  <rect x="800" y="224" width="40" height="72" fill="#0d0d0d"/>
+  <rect x="272" y="248" width="32" height="48" fill="#0d0d0d"/>
+  <rect x="840" y="248" width="32" height="48" fill="#0d0d0d"/>
+
+  <!-- ===== ERUPTION: Massive lava fountain ===== -->
+  <rect x="544" y="16" width="8" height="48" fill="#f06020" filter="url(#lavaGlow8)"/>
+  <rect x="552" y="8" width="8" height="48" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="560" y="0" width="8" height="48" fill="#ffe040" filter="url(#intenseGlow8)"/>
+  <rect x="568" y="0" width="8" height="48" fill="#fff8a0" filter="url(#intenseGlow8)"/>
+  <rect x="576" y="0" width="8" height="48" fill="#fff8a0" filter="url(#intenseGlow8)"/>
+  <rect x="584" y="0" width="8" height="48" fill="#ffe040" filter="url(#intenseGlow8)"/>
+  <rect x="592" y="8" width="8" height="48" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="600" y="16" width="8" height="48" fill="#f06020" filter="url(#lavaGlow8)"/>
+  <!-- Outer eruption columns -->
+  <rect x="536" y="32" width="8" height="40" fill="#d42020" filter="url(#lavaGlow8)"/>
+  <rect x="608" y="24" width="8" height="48" fill="#d42020" filter="url(#lavaGlow8)"/>
+
+  <!-- Lava splatter / projectiles -->
+  <rect x="520" y="16" width="8" height="8" fill="#f8a060"/>
+  <rect x="624" y="8" width="8" height="8" fill="#f8a060"/>
+  <rect x="504" y="0" width="8" height="8" fill="#f06020"/>
+  <rect x="640" y="0" width="8" height="8" fill="#f06020"/>
+  <rect x="528" y="40" width="8" height="8" fill="#d42020"/>
+  <rect x="616" y="40" width="8" height="8" fill="#d42020"/>
+  <rect x="560" y="-8" width="8" height="8" fill="#fff8a0"/>
+  <rect x="488" y="24" width="8" height="8" fill="#f8a060"/>
+  <rect x="656" y="16" width="8" height="8" fill="#f8a060"/>
+
+  <!-- ===== SMOKE/ASH CLOUDS at volcano peak ===== -->
+  <rect x="464" y="32" width="32" height="24" fill="#4a4a4a" opacity="0.5" filter="url(#smoke8)"/>
+  <rect x="488" y="16" width="40" height="24" fill="#6e6e6e" opacity="0.4" filter="url(#smoke8)"/>
+  <rect x="440" y="48" width="32" height="16" fill="#4a4a4a" opacity="0.35" filter="url(#smoke8)"/>
+  <rect x="648" y="24" width="40" height="24" fill="#4a4a4a" opacity="0.5" filter="url(#smoke8)"/>
+  <rect x="680" y="8" width="32" height="24" fill="#6e6e6e" opacity="0.35" filter="url(#smoke8)"/>
+  <rect x="712" y="40" width="32" height="16" fill="#4a4a4a" opacity="0.3" filter="url(#smoke8)"/>
+  <!-- Upper drifting smoke -->
+  <rect x="416" y="16" width="24" height="16" fill="#4a4a4a" opacity="0.25" filter="url(#smoke8)"/>
+  <rect x="736" y="24" width="24" height="16" fill="#4a4a4a" opacity="0.25" filter="url(#smoke8)"/>
+
+  <!-- ===== LAVA STREAKS down volcano slopes ===== -->
+  <rect x="520" y="96" width="8" height="40" fill="#d42020" opacity="0.5"/>
+  <rect x="528" y="80" width="8" height="48" fill="#f06020" opacity="0.4"/>
+  <rect x="552" y="72" width="8" height="40" fill="#f06020" opacity="0.3"/>
+  <rect x="592" y="72" width="8" height="40" fill="#f06020" opacity="0.3"/>
+  <rect x="616" y="80" width="8" height="48" fill="#f06020" opacity="0.4"/>
+  <rect x="624" y="96" width="8" height="40" fill="#d42020" opacity="0.5"/>
+  <!-- Lava flow down right -->
+  <rect x="680" y="120" width="8" height="32" fill="#d42020" opacity="0.4"/>
+  <rect x="688" y="136" width="8" height="24" fill="#f06020" opacity="0.3"/>
+  <!-- Lava flow down left -->
+  <rect x="464" y="120" width="8" height="32" fill="#d42020" opacity="0.4"/>
+  <rect x="456" y="136" width="8" height="24" fill="#f06020" opacity="0.3"/>
+
+  <!-- ===== SECONDARY VOLCANO (background left) ===== -->
+  <rect x="96" y="224" width="8" height="8" fill="#2b2b2b"/>
+  <rect x="104" y="216" width="8" height="16" fill="#0d0d0d"/>
+  <rect x="112" y="208" width="8" height="24" fill="#0d0d0d"/>
+  <rect x="120" y="200" width="8" height="32" fill="#0d0d0d"/>
+  <rect x="128" y="192" width="8" height="40" fill="#0d0d0d"/>
+  <rect x="136" y="184" width="8" height="48" fill="#0d0d0d"/>
+  <rect x="144" y="176" width="8" height="56" fill="#0d0d0d"/>
+  <rect x="152" y="176" width="8" height="56" fill="#0d0d0d"/>
+  <!-- Small eruption glow -->
+  <rect x="152" y="168" width="8" height="8" fill="#d42020" opacity="0.7"/>
+  <rect x="160" y="164" width="8" height="12" fill="#f06020" opacity="0.6"/>
+  <rect x="168" y="176" width="8" height="56" fill="#0d0d0d"/>
+  <rect x="176" y="184" width="8" height="48" fill="#0d0d0d"/>
+  <rect x="184" y="192" width="8" height="40" fill="#0d0d0d"/>
+  <rect x="192" y="200" width="8" height="32" fill="#0d0d0d"/>
+  <rect x="200" y="208" width="8" height="24" fill="#0d0d0d"/>
+  <rect x="208" y="216" width="8" height="16" fill="#2b2b2b"/>
+  <rect x="216" y="224" width="8" height="8" fill="#2b2b2b"/>
+  <rect x="88" y="232" width="144" height="64" fill="#0d0d0d"/>
+
+  <!-- ===== TERTIARY VOLCANO (background far right) ===== -->
+  <rect x="968" y="216" width="8" height="8" fill="#2b2b2b"/>
+  <rect x="976" y="208" width="8" height="16" fill="#0d0d0d"/>
+  <rect x="984" y="200" width="8" height="24" fill="#0d0d0d"/>
+  <rect x="992" y="192" width="8" height="32" fill="#0d0d0d"/>
+  <rect x="1000" y="184" width="8" height="40" fill="#0d0d0d"/>
+  <rect x="1008" y="184" width="8" height="40" fill="#0d0d0d"/>
+  <!-- Glow at peak -->
+  <rect x="1004" y="176" width="8" height="8" fill="#d42020" opacity="0.5"/>
+  <rect x="1016" y="192" width="8" height="32" fill="#0d0d0d"/>
+  <rect x="1024" y="200" width="8" height="24" fill="#0d0d0d"/>
+  <rect x="1032" y="208" width="8" height="16" fill="#0d0d0d"/>
+  <rect x="1040" y="216" width="8" height="8" fill="#2b2b2b"/>
+  <rect x="960" y="224" width="96" height="72" fill="#0d0d0d"/>
+
+  <!-- ===== HORIZON GLOW ===== -->
+  <rect x="0" y="280" width="272" height="16" fill="#5a0a0a" opacity="0.5"/>
+  <rect x="272" y="280" width="600" height="16" fill="#a01010" opacity="0.4"/>
+  <rect x="872" y="280" width="328" height="16" fill="#5a0a0a" opacity="0.5"/>
+
+  <!-- ===== MIDGROUND: Obsidian terrain ===== -->
+  <rect x="0" y="296" width="1200" height="379" fill="#0d0d0d"/>
+  <!-- Terrain height variation -->
+  <rect x="0" y="280" width="200" height="16" fill="#0d0d0d"/>
+  <rect x="200" y="288" width="72" height="8" fill="#0d0d0d"/>
+  <rect x="872" y="280" width="160" height="16" fill="#0d0d0d"/>
+  <rect x="1032" y="288" width="168" height="8" fill="#0d0d0d"/>
+
+  <!-- ===== JAGGED ROCK PILLARS (foreground) ===== -->
+  <!-- Pillar 1 (far left, tall) -->
+  <rect x="56" y="200" width="16" height="96" fill="#0d0d0d"/>
+  <rect x="48" y="216" width="8" height="80" fill="#2b2b2b"/>
+  <rect x="72" y="208" width="8" height="88" fill="#0d0d0d"/>
+  <rect x="64" y="192" width="8" height="8" fill="#2b2b2b"/>
+
+  <!-- Pillar 2 -->
+  <rect x="168" y="232" width="16" height="64" fill="#0d0d0d"/>
+  <rect x="160" y="248" width="8" height="48" fill="#2b2b2b"/>
+  <rect x="184" y="240" width="8" height="56" fill="#0d0d0d"/>
+
+  <!-- Pillar 3 (left-center) -->
+  <rect x="248" y="216" width="16" height="80" fill="#0d0d0d"/>
+  <rect x="240" y="232" width="8" height="64" fill="#2b2b2b"/>
+  <rect x="264" y="224" width="8" height="72" fill="#0d0d0d"/>
+
+  <!-- Pillar 4 (right of center) -->
+  <rect x="872" y="224" width="16" height="72" fill="#0d0d0d"/>
+  <rect x="864" y="240" width="8" height="56" fill="#2b2b2b"/>
+  <rect x="888" y="232" width="8" height="64" fill="#0d0d0d"/>
+
+  <!-- Pillar 5 (right) -->
+  <rect x="960" y="208" width="16" height="88" fill="#0d0d0d"/>
+  <rect x="952" y="224" width="8" height="72" fill="#2b2b2b"/>
+  <rect x="976" y="216" width="8" height="80" fill="#0d0d0d"/>
+
+  <!-- Pillar 6 (far right, tall) -->
+  <rect x="1080" y="216" width="16" height="80" fill="#0d0d0d"/>
+  <rect x="1072" y="232" width="8" height="64" fill="#2b2b2b"/>
+  <rect x="1096" y="224" width="8" height="72" fill="#0d0d0d"/>
+
+  <!-- Pillar 7 (far right edge) -->
+  <rect x="1152" y="240" width="16" height="56" fill="#0d0d0d"/>
+  <rect x="1144" y="256" width="8" height="40" fill="#2b2b2b"/>
+  <rect x="1168" y="248" width="8" height="48" fill="#0d0d0d"/>
+
+  <!-- ===== MAIN LAVA RIVER (flowing across mid-ground) ===== -->
+  <rect x="0" y="320" width="64" height="16" fill="#d42020"/>
+  <rect x="64" y="320" width="48" height="16" fill="#f06020"/>
+  <rect x="112" y="328" width="56" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="168" y="320" width="64" height="16" fill="#f06020"/>
+  <rect x="232" y="312" width="56" height="16" fill="#d42020"/>
+  <rect x="288" y="312" width="48" height="24" fill="#f06020"/>
+  <rect x="336" y="320" width="72" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="408" y="328" width="56" height="16" fill="#f06020"/>
+  <rect x="464" y="320" width="80" height="16" fill="#d42020"/>
+  <rect x="544" y="312" width="64" height="16" fill="#f06020"/>
+  <rect x="608" y="320" width="56" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="664" y="328" width="64" height="16" fill="#f06020"/>
+  <rect x="728" y="320" width="72" height="16" fill="#d42020"/>
+  <rect x="800" y="312" width="56" height="16" fill="#f06020"/>
+  <rect x="856" y="320" width="80" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="936" y="328" width="64" height="16" fill="#f06020"/>
+  <rect x="1000" y="320" width="72" height="16" fill="#d42020"/>
+  <rect x="1072" y="312" width="56" height="16" fill="#f06020"/>
+  <rect x="1128" y="320" width="72" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+
+  <!-- Heat distortion rows near main lava river -->
+  <rect x="0" y="304" width="1200" height="8" fill="#5a0a0a" opacity="0.4"/>
+  <rect x="0" y="344" width="1200" height="8" fill="#5a0a0a" opacity="0.5"/>
+  <rect x="0" y="352" width="1200" height="8" fill="#a01010" opacity="0.2"/>
+
+  <!-- ===== SECONDARY LAVA RIVER (lower, branching) ===== -->
+  <rect x="80" y="408" width="56" height="16" fill="#d42020"/>
+  <rect x="136" y="416" width="72" height="16" fill="#f06020"/>
+  <rect x="208" y="408" width="56" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="264" y="416" width="64" height="16" fill="#f06020"/>
+  <rect x="328" y="408" width="48" height="16" fill="#d42020"/>
+
+  <rect x="600" y="416" width="64" height="16" fill="#d42020"/>
+  <rect x="664" y="408" width="56" height="16" fill="#f06020"/>
+  <rect x="720" y="416" width="80" height="16" fill="#ffe040" filter="url(#lavaGlow8)"/>
+  <rect x="800" y="408" width="56" height="16" fill="#f06020"/>
+  <rect x="856" y="416" width="64" height="16" fill="#d42020"/>
+
+  <!-- Heat distortion for secondary river -->
+  <rect x="80" y="400" width="296" height="8" fill="#5a0a0a" opacity="0.3"/>
+  <rect x="600" y="400" width="320" height="8" fill="#5a0a0a" opacity="0.3"/>
+  <rect x="80" y="432" width="296" height="8" fill="#a01010" opacity="0.2"/>
+  <rect x="600" y="432" width="320" height="8" fill="#a01010" opacity="0.2"/>
+
+  <!-- ===== LAVA POOL (center foreground) ===== -->
+  <rect x="432" y="440" width="120" height="32" fill="#d42020" filter="url(#intenseGlow8)"/>
+  <rect x="448" y="448" width="88" height="16" fill="#f06020"/>
+  <rect x="464" y="452" width="56" height="8" fill="#ffe040"/>
+  <rect x="472" y="456" width="40" height="4" fill="#fff8a0"/>
+
+  <!-- ===== GLOWING CRACKS in obsidian ground ===== -->
+  <!-- Crack cluster 1 -->
+  <rect x="40" y="360" width="32" height="8" fill="#d42020" opacity="0.7"/>
+  <rect x="72" y="368" width="16" height="8" fill="#f06020" opacity="0.6"/>
+  <rect x="88" y="376" width="8" height="8" fill="#ffe040" opacity="0.5"/>
+  <rect x="96" y="368" width="24" height="8" fill="#d42020" opacity="0.5"/>
+
+  <!-- Crack cluster 2 -->
+  <rect x="400" y="368" width="40" height="8" fill="#f06020" opacity="0.6"/>
+  <rect x="440" y="360" width="8" height="8" fill="#ffe040" opacity="0.5"/>
+  <rect x="448" y="368" width="32" height="8" fill="#d42020" opacity="0.7"/>
+  <rect x="480" y="376" width="24" height="8" fill="#f06020" opacity="0.5"/>
+
+  <!-- Crack cluster 3 -->
+  <rect x="760" y="360" width="32" height="8" fill="#d42020" opacity="0.6"/>
+  <rect x="792" y="368" width="8" height="8" fill="#ffe040" opacity="0.5"/>
+  <rect x="800" y="376" width="40" height="8" fill="#f06020" opacity="0.6"/>
+
+  <!-- Crack cluster 4 -->
+  <rect x="1040" y="368" width="32" height="8" fill="#d42020" opacity="0.6"/>
+  <rect x="1072" y="360" width="16" height="8" fill="#f06020" opacity="0.5"/>
+  <rect x="1088" y="368" width="24" height="8" fill="#d42020" opacity="0.7"/>
+
+  <!-- Large ground cracks (lower) -->
+  <rect x="160" y="464" width="48" height="8" fill="#d42020" opacity="0.5"/>
+  <rect x="208" y="472" width="8" height="8" fill="#f06020" opacity="0.6"/>
+  <rect x="216" y="480" width="40" height="8" fill="#d42020" opacity="0.4"/>
+
+  <rect x="560" y="472" width="40" height="8" fill="#f06020" opacity="0.5"/>
+  <rect x="600" y="480" width="8" height="8" fill="#ffe040" opacity="0.6"/>
+  <rect x="608" y="488" width="32" height="8" fill="#d42020" opacity="0.5"/>
+
+  <rect x="920" y="464" width="40" height="8" fill="#d42020" opacity="0.5"/>
+  <rect x="960" y="472" width="24" height="8" fill="#f06020" opacity="0.4"/>
+
+  <!-- Foreground cracks -->
+  <rect x="56" y="520" width="56" height="8" fill="#d42020" opacity="0.4"/>
+  <rect x="112" y="528" width="32" height="8" fill="#f06020" opacity="0.5"/>
+  <rect x="344" y="512" width="48" height="8" fill="#d42020" opacity="0.5"/>
+  <rect x="392" y="520" width="16" height="8" fill="#ffe040" opacity="0.4"/>
+  <rect x="720" y="528" width="40" height="8" fill="#d42020" opacity="0.4"/>
+  <rect x="760" y="520" width="32" height="8" fill="#f06020" opacity="0.5"/>
+  <rect x="1048" y="520" width="40" height="8" fill="#d42020" opacity="0.4"/>
+  <rect x="1088" y="512" width="24" height="8" fill="#f06020" opacity="0.5"/>
+
+  <!-- ===== OBSIDIAN TEXTURE (subtle highlights on ground) ===== -->
+  <rect x="16" y="352" width="8" height="8" fill="#2b2b2b" opacity="0.5"/>
+  <rect x="120" y="360" width="8" height="8" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="280" y="344" width="8" height="8" fill="#2b2b2b" opacity="0.4"/>
+  <rect x="384" y="352" width="8" height="8" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="560" y="360" width="8" height="8" fill="#2b2b2b" opacity="0.5"/>
+  <rect x="680" y="344" width="8" height="8" fill="#2b2b2b" opacity="0.4"/>
+  <rect x="832" y="352" width="8" height="8" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1000" y="360" width="8" height="8" fill="#2b2b2b" opacity="0.5"/>
+  <rect x="1120" y="352" width="8" height="8" fill="#4a4a4a" opacity="0.3"/>
+
+  <rect x="32" y="448" width="8" height="8" fill="#2b2b2b" opacity="0.3"/>
+  <rect x="200" y="456" width="8" height="8" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="376" y="440" width="8" height="8" fill="#2b2b2b" opacity="0.4"/>
+  <rect x="504" y="456" width="8" height="8" fill="#2b2b2b" opacity="0.3"/>
+  <rect x="648" y="448" width="8" height="8" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="832" y="440" width="8" height="8" fill="#2b2b2b" opacity="0.4"/>
+  <rect x="992" y="456" width="8" height="8" fill="#2b2b2b" opacity="0.3"/>
+  <rect x="1136" y="448" width="8" height="8" fill="#4a4a4a" opacity="0.2"/>
+
+  <!-- ===== FOREGROUND BROKEN TERRAIN BLOCKS ===== -->
+  <rect x="0" y="544" width="72" height="40" fill="#2b2b2b"/>
+  <rect x="8" y="536" width="56" height="8" fill="#0d0d0d"/>
+  <rect x="16" y="528" width="40" height="8" fill="#0d0d0d"/>
+
+  <rect x="200" y="552" width="64" height="32" fill="#2b2b2b"/>
+  <rect x="208" y="544" width="48" height="8" fill="#0d0d0d"/>
+
+  <rect x="880" y="544" width="80" height="40" fill="#2b2b2b"/>
+  <rect x="888" y="536" width="64" height="8" fill="#0d0d0d"/>
+  <rect x="896" y="528" width="48" height="8" fill="#0d0d0d"/>
+
+  <rect x="1104" y="544" width="72" height="40" fill="#2b2b2b"/>
+  <rect x="1112" y="536" width="56" height="8" fill="#0d0d0d"/>
+  <rect x="1120" y="528" width="40" height="8" fill="#0d0d0d"/>
+
+  <rect x="672" y="560" width="56" height="24" fill="#2b2b2b"/>
+  <rect x="680" y="552" width="40" height="8" fill="#0d0d0d"/>
+
+  <rect x="440" y="552" width="48" height="32" fill="#2b2b2b"/>
+  <rect x="448" y="544" width="32" height="8" fill="#0d0d0d"/>
+
+  <!-- ===== EMBER AND ASH PARTICLES floating upward ===== -->
+  <!-- Bright embers (yellow/orange) - sky level -->
+  <rect x="72" y="64" width="8" height="8" fill="#ffe040" opacity="0.9"/>
+  <rect x="200" y="104" width="8" height="8" fill="#f8a060" opacity="0.8"/>
+  <rect x="328" y="48" width="8" height="8" fill="#f06020" opacity="0.7"/>
+  <rect x="424" y="32" width="8" height="8" fill="#ffe040" opacity="0.6"/>
+  <rect x="752" y="56" width="8" height="8" fill="#f8a060" opacity="0.8"/>
+  <rect x="880" y="88" width="8" height="8" fill="#ffe040" opacity="0.7"/>
+  <rect x="1048" y="64" width="8" height="8" fill="#f06020" opacity="0.6"/>
+  <rect x="1160" y="48" width="8" height="8" fill="#f8a060" opacity="0.7"/>
+  <rect x="136" y="168" width="8" height="8" fill="#f8a060" opacity="0.7"/>
+  <rect x="776" y="144" width="8" height="8" fill="#ffe040" opacity="0.8"/>
+  <rect x="1000" y="160" width="8" height="8" fill="#f06020" opacity="0.6"/>
+  <rect x="24" y="120" width="8" height="8" fill="#ffe040" opacity="0.5"/>
+  <rect x="960" y="80" width="8" height="8" fill="#f8a060" opacity="0.7"/>
+  <rect x="1120" y="120" width="8" height="8" fill="#ffe040" opacity="0.6"/>
+
+  <!-- Mid-level embers -->
+  <rect x="48" y="224" width="8" height="8" fill="#f8a060" opacity="0.5"/>
+  <rect x="160" y="264" width="8" height="8" fill="#ffe040" opacity="0.6"/>
+  <rect x="360" y="240" width="8" height="8" fill="#f06020" opacity="0.5"/>
+  <rect x="640" y="248" width="8" height="8" fill="#f8a060" opacity="0.6"/>
+  <rect x="824" y="232" width="8" height="8" fill="#ffe040" opacity="0.5"/>
+  <rect x="1064" y="256" width="8" height="8" fill="#f06020" opacity="0.4"/>
+  <rect x="296" y="200" width="8" height="8" fill="#f8a060" opacity="0.5"/>
+  <rect x="912" y="200" width="8" height="8" fill="#ffe040" opacity="0.5"/>
+
+  <!-- Ash particles (gray, subtle) -->
+  <rect x="88" y="80" width="8" height="8" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="248" y="56" width="8" height="8" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="800" y="72" width="8" height="8" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="936" y="48" width="8" height="8" fill="#4a4a4a" opacity="0.4"/>
+  <rect x="608" y="88" width="8" height="8" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="720" y="40" width="8" height="8" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="32" y="144" width="8" height="8" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="312" y="128" width="8" height="8" fill="#4a4a4a" opacity="0.4"/>
+  <rect x="1016" y="120" width="8" height="8" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="456" y="104" width="8" height="8" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1144" y="96" width="8" height="8" fill="#6e6e6e" opacity="0.3"/>
+  <rect x="184" y="40" width="8" height="8" fill="#4a4a4a" opacity="0.3"/>
+
+  <!-- Lower floating embers -->
+  <rect x="104" y="384" width="8" height="8" fill="#f8a060" opacity="0.4"/>
+  <rect x="288" y="360" width="8" height="8" fill="#ffe040" opacity="0.5"/>
+  <rect x="504" y="392" width="8" height="8" fill="#f06020" opacity="0.4"/>
+  <rect x="696" y="368" width="8" height="8" fill="#f8a060" opacity="0.5"/>
+  <rect x="936" y="384" width="8" height="8" fill="#ffe040" opacity="0.4"/>
+  <rect x="1128" y="376" width="8" height="8" fill="#f06020" opacity="0.3"/>
+  <rect x="392" y="440" width="8" height="8" fill="#f8a060" opacity="0.3"/>
+  <rect x="648" y="456" width="8" height="8" fill="#f06020" opacity="0.3"/>
+  <rect x="840" y="448" width="8" height="8" fill="#f8a060" opacity="0.3"/>
+  <rect x="176" y="488" width="8" height="8" fill="#ffe040" opacity="0.3"/>
+  <rect x="1000" y="480" width="8" height="8" fill="#f8a060" opacity="0.25"/>
+
+  <!-- ===== TITLE TEXT ===== -->
+  <!-- Dark backing for title -->
+  <rect x="24" y="576" width="520" height="80" fill="#0d0d0d" opacity="0.85"/>
+  <rect x="32" y="584" width="504" height="64" fill="#2b2b2b" opacity="0.5"/>
+
+  <!-- Title: VOLCANIC HIGHLANDS -->
+  <text x="40" y="616" fill="#ffe040" font-size="32" font-family="monospace" font-weight="bold" letter-spacing="3">VOLCANIC HIGHLANDS</text>
+
+  <!-- Descriptor -->
+  <text x="40" y="640" fill="#f8a060" font-size="13" font-family="monospace" opacity="0.9">Where the earth bleeds fire and only the bold dare tread</text>
+
+  <!-- ===== PIXELREALM WATERMARK (bottom-right, 30% opacity) ===== -->
+  <text x="1060" y="660" fill="#c8c8c8" font-size="14" font-family="monospace" opacity="0.3">PixelRealm</text>
+
+</svg>

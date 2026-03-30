@@ -1,0 +1,543 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" style="image-rendering: pixelated;">
+  <defs>
+    <style>
+      text { font-family: monospace; image-rendering: pixelated; }
+    </style>
+    <!-- Purple torch glow filter -->
+    <filter id="torchGlow8">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Gold treasure glow -->
+    <filter id="goldGlow8">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Intense portal glow -->
+    <filter id="portalGlow8">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Soft ambient -->
+    <filter id="ambient8">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <!-- ===== TOTAL DARKNESS BACKGROUND ===== -->
+  <rect x="0" y="0" width="1200" height="675" fill="#0d0d0d"/>
+
+  <!-- ===== CEILING ===== -->
+  <!-- Top stone ceiling slab -->
+  <rect x="0" y="0" width="1200" height="64" fill="#2b2b2b"/>
+  <rect x="0" y="64" width="1200" height="8" fill="#4a4a4a"/>
+  <!-- Ceiling mortar lines horizontal -->
+  <rect x="0" y="32" width="1200" height="1" fill="#4a4a4a" opacity="0.4"/>
+  <!-- Ceiling mortar lines vertical -->
+  <rect x="80" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="168" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="264" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="360" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="456" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="544" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="640" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="736" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="832" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="928" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1024" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1120" y="0" width="1" height="64" fill="#4a4a4a" opacity="0.3"/>
+
+  <!-- ===== STALACTITES hanging from ceiling ===== -->
+  <!-- Stalactite cluster 1 (far left) -->
+  <rect x="96" y="64" width="8" height="24" fill="#4a4a4a"/>
+  <rect x="104" y="64" width="8" height="40" fill="#2b2b2b"/>
+  <rect x="112" y="64" width="8" height="56" fill="#4a4a4a"/>
+  <rect x="120" y="64" width="8" height="32" fill="#2b2b2b"/>
+  <!-- Water drip -->
+  <rect x="112" y="128" width="4" height="8" fill="#50a8e8" opacity="0.7"/>
+  <rect x="113" y="144" width="3" height="6" fill="#50a8e8" opacity="0.4"/>
+
+  <!-- Stalactite cluster 2 (left-center) -->
+  <rect x="320" y="64" width="8" height="32" fill="#2b2b2b"/>
+  <rect x="328" y="64" width="8" height="48" fill="#4a4a4a"/>
+  <rect x="336" y="64" width="8" height="24" fill="#2b2b2b"/>
+
+  <!-- Stalactite cluster 3 (center, large) -->
+  <rect x="544" y="64" width="8" height="16" fill="#4a4a4a"/>
+  <rect x="552" y="64" width="8" height="40" fill="#2b2b2b"/>
+  <rect x="560" y="64" width="8" height="64" fill="#4a4a4a"/>
+  <rect x="568" y="64" width="8" height="48" fill="#2b2b2b"/>
+  <rect x="576" y="64" width="8" height="24" fill="#4a4a4a"/>
+  <!-- Water drip -->
+  <rect x="561" y="136" width="4" height="8" fill="#50a8e8" opacity="0.6"/>
+  <rect x="562" y="152" width="3" height="5" fill="#50a8e8" opacity="0.3"/>
+
+  <!-- Stalactite cluster 4 (right-center) -->
+  <rect x="768" y="64" width="8" height="32" fill="#2b2b2b"/>
+  <rect x="776" y="64" width="8" height="56" fill="#4a4a4a"/>
+  <rect x="784" y="64" width="8" height="40" fill="#2b2b2b"/>
+  <rect x="792" y="64" width="8" height="16" fill="#4a4a4a"/>
+
+  <!-- Stalactite cluster 5 (far right) -->
+  <rect x="1016" y="64" width="8" height="24" fill="#4a4a4a"/>
+  <rect x="1024" y="64" width="8" height="48" fill="#2b2b2b"/>
+  <rect x="1032" y="64" width="8" height="64" fill="#4a4a4a"/>
+  <rect x="1040" y="64" width="8" height="32" fill="#2b2b2b"/>
+  <!-- Water drip -->
+  <rect x="1032" y="136" width="4" height="8" fill="#50a8e8" opacity="0.5"/>
+
+  <!-- Stalactite 6 (extra right) -->
+  <rect x="1104" y="64" width="8" height="24" fill="#4a4a4a"/>
+  <rect x="1112" y="64" width="8" height="40" fill="#2b2b2b"/>
+
+  <!-- ===== SPIDER WEBS in upper corners ===== -->
+  <!-- Web top-left corner -->
+  <rect x="0" y="64" width="56" height="1" fill="#6e6e6e" opacity="0.25"/>
+  <rect x="0" y="72" width="48" height="1" fill="#6e6e6e" opacity="0.2"/>
+  <rect x="0" y="80" width="40" height="1" fill="#6e6e6e" opacity="0.15"/>
+  <rect x="0" y="88" width="32" height="1" fill="#6e6e6e" opacity="0.12"/>
+  <rect x="0" y="96" width="24" height="1" fill="#6e6e6e" opacity="0.08"/>
+  <rect x="8" y="64" width="1" height="40" fill="#6e6e6e" opacity="0.2"/>
+  <rect x="16" y="64" width="1" height="32" fill="#6e6e6e" opacity="0.18"/>
+  <rect x="24" y="64" width="1" height="24" fill="#6e6e6e" opacity="0.15"/>
+  <rect x="32" y="64" width="1" height="16" fill="#6e6e6e" opacity="0.12"/>
+  <!-- Diagonal strands -->
+  <rect x="8" y="72" width="8" height="1" fill="#6e6e6e" opacity="0.15"/>
+  <rect x="16" y="80" width="8" height="1" fill="#6e6e6e" opacity="0.12"/>
+  <rect x="24" y="88" width="8" height="1" fill="#6e6e6e" opacity="0.1"/>
+
+  <!-- Web top-right corner -->
+  <rect x="1144" y="64" width="56" height="1" fill="#6e6e6e" opacity="0.25"/>
+  <rect x="1152" y="72" width="48" height="1" fill="#6e6e6e" opacity="0.2"/>
+  <rect x="1160" y="80" width="40" height="1" fill="#6e6e6e" opacity="0.15"/>
+  <rect x="1168" y="88" width="32" height="1" fill="#6e6e6e" opacity="0.12"/>
+  <rect x="1176" y="96" width="24" height="1" fill="#6e6e6e" opacity="0.08"/>
+  <rect x="1184" y="64" width="1" height="40" fill="#6e6e6e" opacity="0.2"/>
+  <rect x="1176" y="64" width="1" height="32" fill="#6e6e6e" opacity="0.18"/>
+  <rect x="1168" y="64" width="1" height="24" fill="#6e6e6e" opacity="0.15"/>
+  <rect x="1160" y="64" width="1" height="16" fill="#6e6e6e" opacity="0.12"/>
+
+  <!-- ===== LEFT WALL (perspective corridor) ===== -->
+  <!-- Outermost wall face -->
+  <rect x="0" y="64" width="104" height="416" fill="#2b2b2b"/>
+  <!-- Second depth layer -->
+  <rect x="104" y="80" width="72" height="384" fill="#2b2b2b"/>
+  <!-- Third depth layer -->
+  <rect x="176" y="104" width="56" height="352" fill="#2b2b2b"/>
+  <!-- Fourth depth layer -->
+  <rect x="232" y="128" width="40" height="320" fill="#2b2b2b"/>
+  <!-- Deepest visible layer -->
+  <rect x="272" y="152" width="24" height="288" fill="#2b2b2b"/>
+
+  <!-- Wall edge highlights (where depth changes) -->
+  <rect x="104" y="80" width="3" height="384" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="176" y="104" width="3" height="352" fill="#4a4a4a" opacity="0.4"/>
+  <rect x="232" y="128" width="2" height="320" fill="#4a4a4a" opacity="0.35"/>
+  <rect x="272" y="152" width="2" height="288" fill="#4a4a4a" opacity="0.3"/>
+
+  <!-- Left wall mortar lines (outer face) -->
+  <rect x="0" y="96" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="136" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="176" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="216" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="256" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="296" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="336" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="376" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="416" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="456" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <!-- Vertical mortar outer -->
+  <rect x="32" y="64" width="1" height="416" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="56" y="64" width="1" height="416" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="80" y="64" width="1" height="416" fill="#4a4a4a" opacity="0.2"/>
+  <!-- Second layer mortar -->
+  <rect x="104" y="112" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="104" y="152" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="104" y="192" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="104" y="232" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="104" y="272" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="104" y="312" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="104" y="352" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="104" y="392" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="104" y="432" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+
+  <!-- Crumbling bricks left wall -->
+  <rect x="48" y="216" width="16" height="8" fill="#0d0d0d"/>
+  <rect x="56" y="224" width="8" height="8" fill="#0d0d0d"/>
+  <rect x="64" y="336" width="16" height="16" fill="#0d0d0d"/>
+  <rect x="80" y="344" width="8" height="8" fill="#0d0d0d"/>
+  <rect x="0" y="376" width="24" height="8" fill="#0d0d0d"/>
+  <rect x="120" y="272" width="16" height="8" fill="#0d0d0d"/>
+
+  <!-- ===== RIGHT WALL ===== -->
+  <rect x="1096" y="64" width="104" height="416" fill="#2b2b2b"/>
+  <rect x="1024" y="80" width="72" height="384" fill="#2b2b2b"/>
+  <rect x="968" y="104" width="56" height="352" fill="#2b2b2b"/>
+  <rect x="928" y="128" width="40" height="320" fill="#2b2b2b"/>
+  <rect x="904" y="152" width="24" height="288" fill="#2b2b2b"/>
+
+  <!-- Right wall edge highlights -->
+  <rect x="1093" y="80" width="3" height="384" fill="#4a4a4a" opacity="0.5"/>
+  <rect x="1021" y="104" width="3" height="352" fill="#4a4a4a" opacity="0.4"/>
+  <rect x="966" y="128" width="2" height="320" fill="#4a4a4a" opacity="0.35"/>
+  <rect x="926" y="152" width="2" height="288" fill="#4a4a4a" opacity="0.3"/>
+
+  <!-- Right wall mortar lines -->
+  <rect x="1096" y="96" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="136" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="176" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="216" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="256" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="296" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="336" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="376" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="416" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1096" y="456" width="104" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="1120" y="64" width="1" height="416" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="1144" y="64" width="1" height="416" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="1168" y="64" width="1" height="416" fill="#4a4a4a" opacity="0.2"/>
+  <!-- Second right layer mortar -->
+  <rect x="1024" y="112" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="1024" y="152" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="1024" y="192" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="1024" y="232" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="1024" y="272" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="1024" y="312" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="1024" y="352" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="1024" y="392" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="1024" y="432" width="72" height="1" fill="#4a4a4a" opacity="0.25"/>
+
+  <!-- Crumbling bricks right wall -->
+  <rect x="1128" y="256" width="16" height="16" fill="#0d0d0d"/>
+  <rect x="1120" y="264" width="8" height="8" fill="#0d0d0d"/>
+  <rect x="1160" y="176" width="16" height="8" fill="#0d0d0d"/>
+  <rect x="1176" y="368" width="24" height="8" fill="#0d0d0d"/>
+  <rect x="1048" y="312" width="16" height="8" fill="#0d0d0d"/>
+
+  <!-- ===== ANCIENT INSCRIPTIONS / RUNES on walls ===== -->
+  <!-- Left wall outer runes (larger, more visible) -->
+  <rect x="24" y="160" width="8" height="8" fill="#5a20a0" opacity="0.2"/>
+  <rect x="32" y="152" width="8" height="16" fill="#5a20a0" opacity="0.17"/>
+  <rect x="40" y="160" width="8" height="8" fill="#5a20a0" opacity="0.2"/>
+  <rect x="48" y="152" width="8" height="8" fill="#5a20a0" opacity="0.15"/>
+  <rect x="24" y="168" width="32" height="2" fill="#5a20a0" opacity="0.13"/>
+  <rect x="16" y="176" width="8" height="8" fill="#5a20a0" opacity="0.17"/>
+  <rect x="32" y="176" width="8" height="8" fill="#5a20a0" opacity="0.15"/>
+  <rect x="48" y="176" width="8" height="8" fill="#5a20a0" opacity="0.17"/>
+  <rect x="64" y="176" width="8" height="8" fill="#5a20a0" opacity="0.13"/>
+  <!-- Row 2 runes -->
+  <rect x="24" y="192" width="8" height="8" fill="#5a20a0" opacity="0.14"/>
+  <rect x="40" y="192" width="16" height="2" fill="#5a20a0" opacity="0.11"/>
+  <rect x="56" y="192" width="8" height="8" fill="#5a20a0" opacity="0.14"/>
+
+  <!-- Right wall outer runes -->
+  <rect x="1120" y="160" width="8" height="8" fill="#5a20a0" opacity="0.2"/>
+  <rect x="1128" y="152" width="8" height="16" fill="#5a20a0" opacity="0.17"/>
+  <rect x="1136" y="160" width="8" height="8" fill="#5a20a0" opacity="0.2"/>
+  <rect x="1144" y="152" width="8" height="8" fill="#5a20a0" opacity="0.15"/>
+  <rect x="1120" y="168" width="32" height="2" fill="#5a20a0" opacity="0.13"/>
+  <rect x="1112" y="176" width="8" height="8" fill="#5a20a0" opacity="0.17"/>
+  <rect x="1128" y="176" width="8" height="8" fill="#5a20a0" opacity="0.15"/>
+  <rect x="1144" y="176" width="8" height="8" fill="#5a20a0" opacity="0.17"/>
+  <rect x="1160" y="176" width="8" height="8" fill="#5a20a0" opacity="0.13"/>
+
+  <!-- Deeper corridor runes (left inner wall) -->
+  <rect x="120" y="200" width="8" height="8" fill="#5a20a0" opacity="0.13"/>
+  <rect x="128" y="192" width="8" height="16" fill="#5a20a0" opacity="0.11"/>
+  <rect x="136" y="200" width="8" height="8" fill="#5a20a0" opacity="0.13"/>
+  <rect x="120" y="208" width="24" height="2" fill="#5a20a0" opacity="0.1"/>
+  <!-- Deeper corridor runes (right inner wall) -->
+  <rect x="1048" y="200" width="8" height="8" fill="#5a20a0" opacity="0.13"/>
+  <rect x="1056" y="192" width="8" height="16" fill="#5a20a0" opacity="0.11"/>
+  <rect x="1064" y="200" width="8" height="8" fill="#5a20a0" opacity="0.13"/>
+  <rect x="1048" y="208" width="24" height="2" fill="#5a20a0" opacity="0.1"/>
+
+  <!-- Even deeper runes -->
+  <rect x="192" y="240" width="8" height="8" fill="#5a20a0" opacity="0.08"/>
+  <rect x="200" y="232" width="8" height="16" fill="#5a20a0" opacity="0.07"/>
+  <rect x="208" y="240" width="8" height="8" fill="#5a20a0" opacity="0.08"/>
+  <rect x="984" y="240" width="8" height="8" fill="#5a20a0" opacity="0.08"/>
+  <rect x="992" y="232" width="8" height="16" fill="#5a20a0" opacity="0.07"/>
+  <rect x="1000" y="240" width="8" height="8" fill="#5a20a0" opacity="0.08"/>
+
+  <!-- ===== LEFT WALL TORCH 1 (front, outermost) ===== -->
+  <!-- Torch bracket -->
+  <rect x="88" y="224" width="8" height="8" fill="#6b3a1f"/>
+  <rect x="88" y="232" width="8" height="24" fill="#3b2010"/>
+  <rect x="80" y="232" width="8" height="8" fill="#6b3a1f"/>
+  <!-- Purple flame -->
+  <rect x="72" y="200" width="8" height="8" fill="#d090ff" filter="url(#torchGlow8)"/>
+  <rect x="80" y="192" width="8" height="16" fill="#9050e0" filter="url(#torchGlow8)"/>
+  <rect x="88" y="200" width="8" height="8" fill="#d090ff" filter="url(#torchGlow8)"/>
+  <rect x="80" y="184" width="8" height="8" fill="#d090ff" opacity="0.7" filter="url(#torchGlow8)"/>
+  <rect x="72" y="192" width="8" height="8" fill="#9050e0" opacity="0.5" filter="url(#torchGlow8)"/>
+  <!-- Torch glow pool on wall -->
+  <rect x="24" y="176" width="88" height="80" fill="#9050e0" opacity="0.06"/>
+  <rect x="40" y="192" width="56" height="48" fill="#d090ff" opacity="0.05"/>
+
+  <!-- ===== RIGHT WALL TORCH 1 (front, outermost) ===== -->
+  <rect x="1104" y="224" width="8" height="8" fill="#6b3a1f"/>
+  <rect x="1104" y="232" width="8" height="24" fill="#3b2010"/>
+  <rect x="1112" y="232" width="8" height="8" fill="#6b3a1f"/>
+  <!-- Purple flame -->
+  <rect x="1104" y="200" width="8" height="8" fill="#d090ff" filter="url(#torchGlow8)"/>
+  <rect x="1112" y="192" width="8" height="16" fill="#9050e0" filter="url(#torchGlow8)"/>
+  <rect x="1120" y="200" width="8" height="8" fill="#d090ff" filter="url(#torchGlow8)"/>
+  <rect x="1112" y="184" width="8" height="8" fill="#d090ff" opacity="0.7" filter="url(#torchGlow8)"/>
+  <rect x="1120" y="192" width="8" height="8" fill="#9050e0" opacity="0.5" filter="url(#torchGlow8)"/>
+  <!-- Torch glow pool -->
+  <rect x="1088" y="176" width="88" height="80" fill="#9050e0" opacity="0.06"/>
+  <rect x="1096" y="192" width="56" height="48" fill="#d090ff" opacity="0.05"/>
+
+  <!-- ===== LEFT WALL TORCH 2 (deeper in corridor) ===== -->
+  <rect x="192" y="272" width="8" height="8" fill="#6b3a1f"/>
+  <rect x="192" y="280" width="8" height="16" fill="#3b2010"/>
+  <rect x="184" y="280" width="8" height="8" fill="#6b3a1f"/>
+  <!-- Purple flame (smaller, deeper) -->
+  <rect x="176" y="256" width="8" height="8" fill="#d090ff" filter="url(#torchGlow8)"/>
+  <rect x="184" y="248" width="8" height="16" fill="#9050e0" filter="url(#torchGlow8)"/>
+  <rect x="192" y="256" width="8" height="8" fill="#d090ff" filter="url(#torchGlow8)"/>
+  <rect x="184" y="240" width="8" height="8" fill="#d090ff" opacity="0.6" filter="url(#torchGlow8)"/>
+  <!-- Glow pool -->
+  <rect x="160" y="240" width="64" height="64" fill="#9050e0" opacity="0.05"/>
+  <rect x="168" y="248" width="48" height="48" fill="#d090ff" opacity="0.04"/>
+
+  <!-- ===== RIGHT WALL TORCH 2 (deeper) ===== -->
+  <rect x="1000" y="272" width="8" height="8" fill="#6b3a1f"/>
+  <rect x="1000" y="280" width="8" height="16" fill="#3b2010"/>
+  <rect x="1008" y="280" width="8" height="8" fill="#6b3a1f"/>
+  <!-- Purple flame -->
+  <rect x="1000" y="256" width="8" height="8" fill="#d090ff" filter="url(#torchGlow8)"/>
+  <rect x="1008" y="248" width="8" height="16" fill="#9050e0" filter="url(#torchGlow8)"/>
+  <rect x="1016" y="256" width="8" height="8" fill="#d090ff" filter="url(#torchGlow8)"/>
+  <rect x="1008" y="240" width="8" height="8" fill="#d090ff" opacity="0.6" filter="url(#torchGlow8)"/>
+  <!-- Glow pool -->
+  <rect x="976" y="240" width="64" height="64" fill="#9050e0" opacity="0.05"/>
+  <rect x="984" y="248" width="48" height="48" fill="#d090ff" opacity="0.04"/>
+
+  <!-- ===== LEFT WALL TORCH 3 (deepest visible) ===== -->
+  <rect x="256" y="320" width="8" height="8" fill="#6b3a1f"/>
+  <rect x="256" y="328" width="8" height="16" fill="#3b2010"/>
+  <rect x="248" y="328" width="8" height="8" fill="#6b3a1f"/>
+  <!-- Purple flame (smallest) -->
+  <rect x="248" y="304" width="8" height="8" fill="#d090ff" opacity="0.8" filter="url(#torchGlow8)"/>
+  <rect x="256" y="296" width="8" height="16" fill="#9050e0" opacity="0.8" filter="url(#torchGlow8)"/>
+  <rect x="264" y="304" width="8" height="8" fill="#d090ff" opacity="0.7" filter="url(#torchGlow8)"/>
+  <!-- Glow pool -->
+  <rect x="232" y="288" width="56" height="56" fill="#9050e0" opacity="0.04"/>
+
+  <!-- ===== RIGHT WALL TORCH 3 (deepest) ===== -->
+  <rect x="936" y="320" width="8" height="8" fill="#6b3a1f"/>
+  <rect x="936" y="328" width="8" height="16" fill="#3b2010"/>
+  <rect x="944" y="328" width="8" height="8" fill="#6b3a1f"/>
+  <!-- Purple flame -->
+  <rect x="936" y="304" width="8" height="8" fill="#d090ff" opacity="0.8" filter="url(#torchGlow8)"/>
+  <rect x="944" y="296" width="8" height="16" fill="#9050e0" opacity="0.8" filter="url(#torchGlow8)"/>
+  <rect x="952" y="304" width="8" height="8" fill="#d090ff" opacity="0.7" filter="url(#torchGlow8)"/>
+  <!-- Glow pool -->
+  <rect x="912" y="288" width="56" height="56" fill="#9050e0" opacity="0.04"/>
+
+  <!-- ===== CORRIDOR VOID / DEEP CENTER DARKNESS ===== -->
+  <rect x="296" y="152" width="608" height="288" fill="#0d0d0d"/>
+
+  <!-- ===== DISTANT BACK WALL with PORTAL/DOORWAY ===== -->
+  <!-- Faint back wall visible in deep distance -->
+  <rect x="416" y="216" width="368" height="168" fill="#2b2b2b" opacity="0.25"/>
+  <!-- Back wall mortar hints -->
+  <rect x="416" y="256" width="368" height="1" fill="#4a4a4a" opacity="0.1"/>
+  <rect x="416" y="296" width="368" height="1" fill="#4a4a4a" opacity="0.1"/>
+  <rect x="416" y="336" width="368" height="1" fill="#4a4a4a" opacity="0.1"/>
+
+  <!-- Portal archway structure -->
+  <rect x="520" y="232" width="160" height="136" fill="#1a0a3a"/>
+  <!-- Arch top stones -->
+  <rect x="512" y="224" width="176" height="8" fill="#4a4a4a" opacity="0.35"/>
+  <rect x="520" y="216" width="160" height="8" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="536" y="208" width="128" height="8" fill="#4a4a4a" opacity="0.25"/>
+  <!-- Keystone -->
+  <rect x="592" y="200" width="16" height="8" fill="#6e6e6e" opacity="0.3"/>
+  <!-- Arch side pillars -->
+  <rect x="512" y="232" width="8" height="136" fill="#4a4a4a" opacity="0.35"/>
+  <rect x="680" y="232" width="8" height="136" fill="#4a4a4a" opacity="0.35"/>
+
+  <!-- Portal inner glow -->
+  <rect x="528" y="240" width="144" height="120" fill="#1a0a3a"/>
+  <rect x="536" y="248" width="128" height="104" fill="#5a20a0" opacity="0.35" filter="url(#portalGlow8)"/>
+  <rect x="552" y="264" width="96" height="80" fill="#9050e0" opacity="0.2" filter="url(#portalGlow8)"/>
+  <rect x="568" y="280" width="64" height="56" fill="#d090ff" opacity="0.12" filter="url(#portalGlow8)"/>
+  <rect x="584" y="296" width="32" height="32" fill="#d090ff" opacity="0.08" filter="url(#portalGlow8)"/>
+
+  <!-- ===== CORRIDOR FLOOR ===== -->
+  <!-- Floor main area -->
+  <rect x="0" y="480" width="1200" height="195" fill="#2b2b2b"/>
+  <!-- Perspective floor layers approaching vanishing point -->
+  <rect x="104" y="464" width="992" height="16" fill="#2b2b2b"/>
+  <rect x="176" y="448" width="848" height="16" fill="#2b2b2b"/>
+  <rect x="232" y="440" width="736" height="8" fill="#2b2b2b"/>
+  <rect x="272" y="432" width="656" height="8" fill="#2b2b2b"/>
+  <rect x="296" y="424" width="608" height="8" fill="#2b2b2b"/>
+
+  <!-- Floor tile grid lines (horizontal) -->
+  <rect x="0" y="488" width="1200" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="0" y="520" width="1200" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="552" width="1200" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="584" width="1200" height="1" fill="#4a4a4a" opacity="0.3"/>
+  <rect x="0" y="616" width="1200" height="1" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="0" y="648" width="1200" height="1" fill="#4a4a4a" opacity="0.2"/>
+
+  <!-- Floor tile grid lines (vertical, perspective converging) -->
+  <rect x="136" y="480" width="1" height="195" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="256" y="464" width="1" height="211" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="376" y="448" width="1" height="227" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="480" y="440" width="1" height="235" fill="#4a4a4a" opacity="0.22"/>
+  <rect x="600" y="432" width="1" height="243" fill="#4a4a4a" opacity="0.25"/>
+  <rect x="720" y="440" width="1" height="235" fill="#4a4a4a" opacity="0.22"/>
+  <rect x="824" y="448" width="1" height="227" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="944" y="464" width="1" height="211" fill="#4a4a4a" opacity="0.2"/>
+  <rect x="1064" y="480" width="1" height="195" fill="#4a4a4a" opacity="0.2"/>
+
+  <!-- Cracked/missing floor tiles revealing void -->
+  <rect x="312" y="520" width="32" height="32" fill="#0d0d0d"/>
+  <rect x="336" y="552" width="16" height="8" fill="#0d0d0d"/>
+  <rect x="304" y="544" width="8" height="8" fill="#0d0d0d"/>
+  <!-- Another void area -->
+  <rect x="848" y="584" width="32" height="32" fill="#0d0d0d"/>
+  <rect x="872" y="616" width="16" height="16" fill="#0d0d0d"/>
+  <rect x="840" y="608" width="8" height="8" fill="#0d0d0d"/>
+  <!-- Small crack cluster -->
+  <rect x="568" y="552" width="24" height="1" fill="#0d0d0d" opacity="0.6"/>
+  <rect x="584" y="552" width="1" height="16" fill="#0d0d0d" opacity="0.5"/>
+  <rect x="680" y="592" width="16" height="1" fill="#0d0d0d" opacity="0.5"/>
+  <!-- Another small missing tile -->
+  <rect x="160" y="600" width="16" height="16" fill="#0d0d0d"/>
+
+  <!-- ===== TREASURE CHEST (center-right of floor) ===== -->
+  <!-- Chest body -->
+  <rect x="688" y="480" width="56" height="32" fill="#6b3a1f"/>
+  <rect x="696" y="472" width="40" height="8" fill="#8b5c2a"/>
+  <!-- Chest lid (partially open) -->
+  <rect x="688" y="456" width="56" height="16" fill="#8b5c2a"/>
+  <rect x="696" y="448" width="40" height="8" fill="#b8843f"/>
+  <!-- Chest metal bands -->
+  <rect x="688" y="488" width="56" height="3" fill="#a87000"/>
+  <rect x="688" y="504" width="56" height="3" fill="#a87000"/>
+  <!-- Chest lock/clasp -->
+  <rect x="712" y="496" width="8" height="8" fill="#e8b800"/>
+  <!-- Side detail -->
+  <rect x="688" y="456" width="3" height="56" fill="#3b2010"/>
+  <rect x="741" y="456" width="3" height="56" fill="#3b2010"/>
+
+  <!-- Gold glow emanating from open chest -->
+  <rect x="696" y="432" width="40" height="16" fill="#ffe040" opacity="0.5" filter="url(#goldGlow8)"/>
+  <rect x="688" y="416" width="56" height="24" fill="#ffe040" opacity="0.2" filter="url(#goldGlow8)"/>
+  <rect x="672" y="400" width="88" height="40" fill="#e8b800" opacity="0.08" filter="url(#goldGlow8)"/>
+  <!-- Visible gold coins inside -->
+  <rect x="704" y="464" width="8" height="8" fill="#ffe040"/>
+  <rect x="712" y="464" width="8" height="8" fill="#e8b800"/>
+  <rect x="720" y="464" width="8" height="8" fill="#ffe040"/>
+  <rect x="696" y="464" width="8" height="8" fill="#e8b800"/>
+  <rect x="728" y="464" width="8" height="8" fill="#fff8a0"/>
+  <!-- Scattered gold coins on floor -->
+  <rect x="752" y="504" width="8" height="8" fill="#e8b800" opacity="0.6"/>
+  <rect x="760" y="512" width="8" height="8" fill="#ffe040" opacity="0.5"/>
+  <rect x="672" y="512" width="8" height="8" fill="#e8b800" opacity="0.5"/>
+  <rect x="768" y="520" width="8" height="8" fill="#a87000" opacity="0.4"/>
+  <rect x="664" y="520" width="8" height="8" fill="#ffe040" opacity="0.35"/>
+
+  <!-- ===== SECOND SMALLER TREASURE CHEST (deeper, closed) ===== -->
+  <rect x="416" y="408" width="32" height="16" fill="#6b3a1f"/>
+  <rect x="416" y="400" width="32" height="8" fill="#8b5c2a"/>
+  <rect x="416" y="408" width="32" height="2" fill="#a87000"/>
+  <rect x="416" y="420" width="32" height="2" fill="#a87000"/>
+  <rect x="428" y="412" width="8" height="8" fill="#e8b800"/>
+
+  <!-- ===== SCATTERED BONES on floor ===== -->
+  <!-- Bone cluster 1 (left side) -->
+  <rect x="168" y="512" width="24" height="4" fill="#c8c8c8" opacity="0.5"/>
+  <rect x="176" y="504" width="4" height="16" fill="#c8c8c8" opacity="0.4"/>
+  <rect x="160" y="520" width="32" height="3" fill="#c8c8c8" opacity="0.35"/>
+  <!-- Skull -->
+  <rect x="200" y="504" width="16" height="16" fill="#c8c8c8" opacity="0.45"/>
+  <rect x="204" y="508" width="4" height="4" fill="#0d0d0d" opacity="0.5"/>
+  <rect x="212" y="508" width="4" height="4" fill="#0d0d0d" opacity="0.5"/>
+  <rect x="206" y="516" width="8" height="2" fill="#0d0d0d" opacity="0.3"/>
+  <!-- Rib bones -->
+  <rect x="216" y="520" width="16" height="2" fill="#969696" opacity="0.35"/>
+  <rect x="216" y="524" width="16" height="2" fill="#969696" opacity="0.3"/>
+  <rect x="216" y="528" width="16" height="2" fill="#969696" opacity="0.25"/>
+
+  <!-- Bone cluster 2 (right side) -->
+  <rect x="976" y="536" width="24" height="3" fill="#c8c8c8" opacity="0.4"/>
+  <rect x="984" y="528" width="3" height="16" fill="#c8c8c8" opacity="0.35"/>
+  <rect x="1000" y="528" width="8" height="8" fill="#969696" opacity="0.3"/>
+
+  <!-- Bone cluster 3 (center floor) -->
+  <rect x="536" y="560" width="16" height="3" fill="#c8c8c8" opacity="0.35"/>
+  <rect x="544" y="556" width="3" height="12" fill="#c8c8c8" opacity="0.3"/>
+
+  <!-- ===== OLD WEAPONS on floor ===== -->
+  <!-- Broken sword (left-center) -->
+  <rect x="384" y="504" width="40" height="4" fill="#6e6e6e" opacity="0.5"/>
+  <rect x="376" y="504" width="8" height="8" fill="#6b3a1f" opacity="0.5"/>
+  <rect x="424" y="500" width="8" height="4" fill="#6e6e6e" opacity="0.4"/>
+  <!-- Broken blade tip -->
+  <rect x="448" y="512" width="16" height="4" fill="#6e6e6e" opacity="0.35"/>
+
+  <!-- Old shield (right side, leaning) -->
+  <rect x="1024" y="488" width="24" height="32" fill="#6b3a1f" opacity="0.4"/>
+  <rect x="1032" y="496" width="8" height="16" fill="#a87000" opacity="0.3"/>
+
+  <!-- Rusty axe head -->
+  <rect x="624" y="552" width="16" height="8" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="616" y="552" width="8" height="24" fill="#3b2010" opacity="0.35"/>
+
+  <!-- ===== WATER DRIPPING EFFECTS ===== -->
+  <rect x="561" y="160" width="3" height="8" fill="#50a8e8" opacity="0.5"/>
+  <rect x="1032" y="144" width="3" height="8" fill="#50a8e8" opacity="0.5"/>
+  <rect x="776" y="120" width="3" height="8" fill="#50a8e8" opacity="0.4"/>
+  <!-- Water puddle on floor -->
+  <rect x="344" y="576" width="24" height="8" fill="#50a8e8" opacity="0.1"/>
+  <rect x="352" y="584" width="16" height="4" fill="#50a8e8" opacity="0.07"/>
+  <!-- Another puddle -->
+  <rect x="864" y="544" width="16" height="8" fill="#50a8e8" opacity="0.08"/>
+
+  <!-- ===== AMBIENT PURPLE LIGHTING ===== -->
+  <!-- Subtle purple wash on walls from torches -->
+  <rect x="0" y="160" width="160" height="120" fill="#9050e0" opacity="0.03"/>
+  <rect x="1040" y="160" width="160" height="120" fill="#9050e0" opacity="0.03"/>
+  <!-- Deeper ambient -->
+  <rect x="160" y="224" width="96" height="96" fill="#9050e0" opacity="0.02"/>
+  <rect x="944" y="224" width="96" height="96" fill="#9050e0" opacity="0.02"/>
+  <!-- Floor purple reflections -->
+  <rect x="0" y="480" width="200" height="195" fill="#9050e0" opacity="0.02"/>
+  <rect x="1000" y="480" width="200" height="195" fill="#9050e0" opacity="0.02"/>
+  <!-- Gold light spill on floor from chest -->
+  <rect x="656" y="480" width="120" height="48" fill="#e8b800" opacity="0.03"/>
+
+  <!-- ===== COLUMN / PILLAR (adds depth, left side) ===== -->
+  <!-- Stone column on left side of corridor -->
+  <rect x="296" y="360" width="16" height="120" fill="#4a4a4a" opacity="0.6"/>
+  <rect x="296" y="352" width="16" height="8" fill="#6e6e6e" opacity="0.5"/>
+  <rect x="292" y="348" width="24" height="4" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="292" y="476" width="24" height="4" fill="#6e6e6e" opacity="0.4"/>
+  <!-- Column right side -->
+  <rect x="888" y="360" width="16" height="120" fill="#4a4a4a" opacity="0.6"/>
+  <rect x="888" y="352" width="16" height="8" fill="#6e6e6e" opacity="0.5"/>
+  <rect x="884" y="348" width="24" height="4" fill="#6e6e6e" opacity="0.4"/>
+  <rect x="884" y="476" width="24" height="4" fill="#6e6e6e" opacity="0.4"/>
+
+  <!-- ===== TITLE TEXT ===== -->
+  <!-- Dark backing for title -->
+  <rect x="16" y="580" width="440" height="72" fill="#0d0d0d" opacity="0.85"/>
+  <rect x="24" y="588" width="424" height="56" fill="#2b2b2b" opacity="0.5"/>
+
+  <!-- Title: ANCIENT DUNGEON -->
+  <text x="32" y="616" fill="#ffe040" font-size="30" font-family="monospace" font-weight="bold" letter-spacing="3">ANCIENT DUNGEON</text>
+
+  <!-- Descriptor -->
+  <text x="32" y="636" fill="#d090ff" font-size="12" font-family="monospace" opacity="0.9">Forgotten halls where treasure and terror lie in wait</text>
+
+  <!-- ===== PIXELREALM WATERMARK (bottom-right, 30% opacity) ===== -->
+  <text x="1064" y="660" fill="#c8c8c8" font-size="14" font-family="monospace" opacity="0.3">PixelRealm</text>
+
+</svg>
