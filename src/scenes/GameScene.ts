@@ -2482,7 +2482,7 @@ export class GameScene extends Phaser.Scene {
       }
       this.time.delayedCall(500, () => {
         this.cameras.main.fadeOut(400, 0, 0, 0, () => {
-          this.scene.start(SCENES.GAME, { zoneId, hardcore: this.isHardcore });
+          this.scene.start(SCENES.ZONE_TRANSITION, { zoneId, hardcore: this.isHardcore });
         });
       });
     };

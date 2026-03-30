@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { SCENES } from '../config/constants';
+import { SCENES, ZONES } from '../config/constants';
 import { SettingsManager } from '../systems/SettingsManager';
 import { DayNightSystem } from '../systems/DayNightSystem';
 
@@ -299,6 +299,16 @@ export class BootScene extends Phaser.Scene {
     this.load.image('item_rod_basic',              'assets/sprites/fishing/item_rod_basic.png');
     this.load.image('item_rod_reinforced',         'assets/sprites/fishing/item_rod_reinforced.png');
     this.load.image('item_rod_master',             'assets/sprites/fishing/item_rod_master.png');
+
+    // ── Zone loading screen backgrounds (PIX-421) ────────────────────────────
+    for (const zone of ZONES) {
+      const num  = zone.id.replace('zone', '');
+      const slug = zone.name.toLowerCase().replace(/\s+/g, '_');
+      this.load.image(
+        `bg_loading_zone${num}`,
+        `assets/backgrounds/loading/bg_loading_zone${num}_${slug}.png`,
+      );
+    }
 
     this.load.on('loaderror', () => {
       this.generateFallbackTextures();

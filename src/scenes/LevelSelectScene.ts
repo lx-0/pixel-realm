@@ -218,7 +218,7 @@ export class LevelSelectScene extends Phaser.Scene {
     this.sfx.playMenuClick();
     this.cameras.main.fadeOut(250, 0, 0, 0);
     this.time.delayedCall(250, () =>
-      this.scene.start(SCENES.GAME, { zoneId, hardcore: this._hardcoreMode }),
+      this.scene.start(SCENES.ZONE_TRANSITION, { zoneId, hardcore: this._hardcoreMode }),
     );
   }
 
