@@ -58,6 +58,7 @@ import {
   SKILL_BY_ID, computePassiveBonuses,
   type ClassId, type PassiveBonus,
 } from '../config/skills';
+import { TelemetryClient } from '../systems/TelemetryClient';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 
@@ -1579,6 +1580,10 @@ export class GameScene extends Phaser.Scene {
     this.fireAchievementEvent('zone_visited', { distinctZones: SaveManager.load().unlockedZones.length });
     AchievementTracker.recordEvent('zone_visit');
 
+    // Analytics — start session on first zone load, then record the zone entry
+    TelemetryClient.startSession();
+    TelemetryClient.enterZone(this.zone.id);
+
     // Incoming guild chat
     client.onGuildChatMessage = (sender, text) => {
       const senderName = localStorage.getItem('pr_username') ?? 'Hero';
@@ -2491,6 +2496,7 @@ export class GameScene extends Phaser.Scene {
       }
       this.time.delayedCall(500, () => {
         this.cameras.main.fadeOut(400, 0, 0, 0, () => {
+          TelemetryClient.exitZone();
           this.scene.start(SCENES.ZONE_TRANSITION, { zoneId, hardcore: this.isHardcore });
         });
       });
@@ -4537,6 +4543,7 @@ export class GameScene extends Phaser.Scene {
 
     this.cameras.main.fadeOut(600, 0, 0, 0);
     this.time.delayedCall(600, () => {
+      TelemetryClient.exitZone();
       this.scene.start(SCENES.GAME_OVER, {
         wave:         this.zone.waves + 1,
         kills:        this.kills,
@@ -4712,6 +4719,7 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(2800, () => {
       this.cameras.main.fadeOut(600, 0, 0, 0);
       this.time.delayedCall(600, () => {
+        TelemetryClient.exitZone();
         this.scene.start(SCENES.GAME_OVER, {
           wave:         this.wave,
           kills:        this.kills,

@@ -16,8 +16,13 @@ import { WorldBossScene }        from './scenes/WorldBossScene';
 import { ZoneTransitionScene }   from './scenes/ZoneTransitionScene';
 import { KeybindOverlay }        from './ui/KeybindOverlay';
 
+import { TelemetryClient } from './systems/TelemetryClient';
+
 // Restore saved language preference before any scenes are created
 initI18n();
+
+// Initialise telemetry (sets up global error handlers, opt-out support)
+TelemetryClient.init();
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
