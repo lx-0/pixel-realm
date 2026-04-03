@@ -52,5 +52,5 @@ const game = new Phaser.Game(config);
 // Expose game instance for E2E test hooks (no-op in production builds
 // where test code strips dead references, but harmless to leave in).
 if (typeof window !== 'undefined') {
-  (window as Record<string, unknown>).__pixelrealm = game;
+  (window as unknown as Record<string, unknown>).__pixelrealm = game;
 }

@@ -274,8 +274,8 @@ export class LeaderboardPanel {
     this.addText(PANEL_W - PAD - 22, listY, 'Score', '#445566', '4px');
 
     const entryY  = listY + 8;
-    const visible = this.entries.filter((_e, idx) => {
-      const y = entryY + idx * itemH - this.scrollOffset;
+    const visible = this.entries.filter((_e) => {
+      const y = entryY + (_e.rank - 1) * itemH - this.scrollOffset;
       return y + itemH > entryY && y < entryY + listHeight;
     });
 

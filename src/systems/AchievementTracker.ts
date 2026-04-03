@@ -234,6 +234,9 @@ export class AchievementTracker {
         tryUnlock('completionist', cleared);
         if (data.zoneId) {
           tryUnlock(`${data.zoneId}_completed`, 1);
+          if (data.zoneId === 'zone19') {
+            tryUnlock('game_complete', 1);
+          }
         }
         break;
       }

@@ -200,19 +200,20 @@ export class CraftingPanel {
     })
       .then(r => r.json().then(body => ({ ok: r.ok, body })))
       .then(({ ok, body }) => {
-        this.crafting = false;
         if (ok && body.success) {
           this.statusMsg   = `✓ ${body.message}`;
           this.statusColor = '#88ee88';
           SoundManager.getInstance().playCraft();
           this.onCraftSuccess?.(body.outputItemId, recipe.name);
-          // Refresh inventory to reflect consumed materials
+          // Refresh inventory before re-enabling the craft button to prevent double-craft
           const uid = localStorage.getItem('pr_userId') ?? '';
           if (uid) {
             fetch(`${SERVER_HTTP}/inventory/${uid}`)
               .then(r => r.ok ? r.json() : Promise.reject())
-              .then((inv: InventoryItem[]) => { this.inventory = inv; this.rebuild(); })
-              .catch(() => {/* keep old inventory */});
+              .then((inv: InventoryItem[]) => { this.inventory = inv; this.crafting = false; this.rebuild(); })
+              .catch(() => { this.crafting = false; /* keep old inventory */ if (this.visible) this.rebuild(); });
+          } else {
+            this.crafting = false;
           }
         } else if (body.craftFailed) {
           // High-tier failure — materials consumed but item not created
@@ -224,10 +225,13 @@ export class CraftingPanel {
           if (uid) {
             fetch(`${SERVER_HTTP}/inventory/${uid}`)
               .then(r => r.ok ? r.json() : Promise.reject())
-              .then((inv: InventoryItem[]) => { this.inventory = inv; this.rebuild(); })
-              .catch(() => {/* keep old inventory */});
+              .then((inv: InventoryItem[]) => { this.inventory = inv; this.crafting = false; this.rebuild(); })
+              .catch(() => { this.crafting = false; if (this.visible) this.rebuild(); });
+          } else {
+            this.crafting = false;
           }
         } else {
+          this.crafting    = false;
           this.statusMsg   = body.error ?? 'Craft failed.';
           this.statusColor = '#ff8888';
         }
