@@ -173,12 +173,71 @@ export class PauseScene extends Phaser.Scene {
 
   private clearSlot(slotIndex: number): void {
     this.sfx.playMenuClick();
-    SaveManager.clearSlot(slotIndex);
-    if (this.slotTexts[slotIndex]) {
-      this.slotTexts[slotIndex].setText('— empty —');
-      this.slotTexts[slotIndex].setColor('#445566');
-    }
-    this.flashText(`Slot ${slotIndex === 0 ? 'Auto' : slotIndex} cleared`, '#ffaa44');
+    this.showConfirmDialog(
+      `Clear slot ${slotIndex === 0 ? 'Auto' : slotIndex}?`,
+      () => {
+        SaveManager.clearSlot(slotIndex);
+        if (this.slotTexts[slotIndex]) {
+          this.slotTexts[slotIndex].setText('— empty —');
+          this.slotTexts[slotIndex].setColor('#445566');
+        }
+        this.flashText(`Slot ${slotIndex === 0 ? 'Auto' : slotIndex} cleared`, '#ffaa44');
+      },
+    );
+  }
+
+  /**
+   * Show a small modal confirmation dialog.
+   * Calls onConfirm if the player selects Yes; dismisses on No.
+   */
+  private showConfirmDialog(message: string, onConfirm: () => void): void {
+    const cx = CANVAS.WIDTH  / 2;
+    const cy = CANVAS.HEIGHT / 2;
+    const W  = 110;
+    const H  = 40;
+
+    const container = this.add.container(0, 0).setDepth(20);
+
+    // Dim overlay
+    const dim = this.add.rectangle(cx, cy, CANVAS.WIDTH, CANVAS.HEIGHT, 0x000000, 0.55);
+    container.add(dim);
+
+    // Dialog box
+    container.add(this.add.rectangle(cx, cy, W, H, 0x111130, 0.96));
+    const border = this.add.graphics();
+    border.lineStyle(1, 0xee9944, 0.9);
+    border.strokeRect(cx - W / 2, cy - H / 2, W, H);
+    container.add(border);
+
+    // Message
+    container.add(
+      this.add.text(cx, cy - 10, message, {
+        fontSize: '6px', color: '#ffffff', fontFamily: 'monospace',
+        stroke: '#000', strokeThickness: 1,
+      }).setOrigin(0.5),
+    );
+
+    const dismiss = (): void => { container.destroy(); };
+
+    // Yes button
+    const yes = this.add
+      .text(cx - 18, cy + 8, '[Yes]', { fontSize: '6px', color: '#ff6666', fontFamily: 'monospace' })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    yes.on('pointerover', () => yes.setColor('#ffffff'));
+    yes.on('pointerout',  () => yes.setColor('#ff6666'));
+    yes.on('pointerdown', () => { this.sfx.playMenuClick(); dismiss(); onConfirm(); });
+    container.add(yes);
+
+    // No button
+    const no = this.add
+      .text(cx + 18, cy + 8, '[No]', { fontSize: '6px', color: '#88ccff', fontFamily: 'monospace' })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    no.on('pointerover', () => no.setColor('#ffffff'));
+    no.on('pointerout',  () => no.setColor('#88ccff'));
+    no.on('pointerdown', () => { this.sfx.playMenuClick(); dismiss(); });
+    container.add(no);
   }
 
   /** Brief status message at the bottom of the panel. */

@@ -81,6 +81,8 @@ export interface SaveData {
     ownedRods:    string[];               // rod ids
     equippedRodId: string;
   };
+  /** Carried gold (persisted across sessions; 5% lost on death). */
+  gold?: number;
 }
 
 /**
@@ -166,6 +168,7 @@ export class SaveManager {
         bestiary:             p.bestiary,
         cosmetics:            p.cosmetics,
         fishing:              p.fishing,
+        gold:                 p.gold ?? 0,
       };
     } catch {
       return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
@@ -498,6 +501,7 @@ export class SaveManager {
         unlockedSkills: p.unlockedSkills       ?? [],
         skillPoints:    p.skillPoints          ?? 0,
         hotbar,
+        gold:            p.gold ?? 0,
         // Metadata
         schemaVersion:   p.schemaVersion,
         timestamp:       p.timestamp,
@@ -553,6 +557,7 @@ export class SaveManager {
       tutorialCompleted:    slot.tutorialCompleted,
       hardcoreHighestLevel: slot.hardcoreHighestLevel ?? 0,
       hardcoreZonesCleared: slot.hardcoreZonesCleared ?? 0,
+      gold:                 slot.gold ?? 0,
     });
 
     // Overwrite skill save
@@ -573,11 +578,13 @@ export class SaveManager {
     skillState: SkillSaveData,
     currentZoneId: string,
     currentZoneName: string,
+    currentGold = 0,
   ): SlotSaveData {
     const base = SaveManager.load();
     return {
       ...base,
       ...skillState,
+      gold:            currentGold,
       schemaVersion:   CURRENT_SCHEMA,
       timestamp:       Date.now(),
       currentZoneId,

@@ -643,7 +643,7 @@ export class GameScene extends Phaser.Scene {
     this.isBossWave        = false;
     this.kills             = 0;
     this.score             = 0;
-    this.gold              = 0;
+    this.gold              = 0; // overwritten below for solo mode (after loadSoloSkillState)
     this.deathCount        = 0;
     this.respawnImmune     = false;
     this.immunityEndAt     = 0;
@@ -661,6 +661,8 @@ export class GameScene extends Phaser.Scene {
 
     // Load solo skill state from localStorage
     this.loadSoloSkillState();
+    // Restore carried gold from the live save (solo mode only)
+    this.gold = SaveManager.load().gold ?? 0;
     this.applyPassiveBonuses();
 
     // Auto-save every 5 minutes in solo play (slot 0)
@@ -4517,6 +4519,11 @@ export class GameScene extends Phaser.Scene {
 
     // Auto-save on zone clear (slot 0) — captures updated level/XP from recordZoneClear
     if (!this.isMultiplayer) {
+      // Persist carried gold to live save before snapshotting
+      const live = SaveManager.load();
+      live.gold = this.gold;
+      SaveManager.save(live);
+      this._saveCache = null;
       SaveManager.saveSlot(0, this.buildSlotSaveData());
     }
 
@@ -5327,15 +5334,20 @@ export class GameScene extends Phaser.Scene {
       this.getCurrentSkillState(),
       this.zone.id,
       this.zone.name,
+      this.gold,
     );
   }
 
   /**
    * Write the current state to slot 0 (auto-save).
    * No-op in multiplayer or if the player is dead.
+   * Also persists carried gold to the live save so it survives a cold restart.
    */
   private triggerAutoSave(): void {
     if (this.isMultiplayer || this.isDead) return;
+    const live = SaveManager.load();
+    live.gold = this.gold;
+    SaveManager.save(live);
     SaveManager.saveSlot(0, this.buildSlotSaveData());
     this.showSaveToast('Auto-saved');
   }
