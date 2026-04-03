@@ -116,13 +116,6 @@ export class GuildPanel {
     this.detachKeyListener();
   }
 
-  /** Called by GameScene when guild_chat arrives from server. */
-  notifyGuildChat(sender: string, text: string): void {
-    // Guild messages are routed through ChatOverlay; panel just logs here.
-    // No-op — GameScene handles display via ChatOverlay.
-    void sender; void text;
-  }
-
   /** Refresh guild data from server (called after create/invite/kick etc.). */
   async refresh(): Promise<void> {
     if (!this.userId) return;
