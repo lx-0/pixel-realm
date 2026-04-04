@@ -396,9 +396,15 @@ Package v1.6.0 with M47 localization and telemetry content. Final QA and distrib
 ### M49: Launch Infrastructure Hardening — IN PROGRESS
 Operational readiness before the game hits real users. Monitoring, automated testing, and data protection.
 
-- [ ] PIX-461 — Server health monitoring, structured logging, and alerting for production launch
+- [x] PIX-461 — Server health monitoring, structured logging, and alerting for production launch
 - [ ] PIX-462 — Automated E2E smoke test suite for critical gameplay path
 - [ ] PIX-463 — Database backup automation and disaster recovery runbook
+
+### M50: Day-Night Cycle & Weather Enhancement — COMPLETE
+Polish pass on existing day-night and weather systems: added fog/storm visibility gameplay
+mechanic (enemy aggro range reduced in fog/storm), completing all acceptance criteria.
+
+- [x] PIX-78 — Day-night cycle and dynamic weather system (gameplay visibility impact)
 
 ### M14: NFT Integration — DEFERRED (post-launch)
 Scope confirmed deferred from v1. Will revisit after successful launch.

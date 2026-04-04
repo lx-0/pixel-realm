@@ -160,6 +160,19 @@ export class WeatherSystem {
     return WEATHER_DEFS[this.current].speedMult;
   }
 
+  /**
+   * Enemy detection/aggro range multiplier.
+   * Fog and storm reduce how far enemies can see the player.
+   *   fog   → 0.50× (dense — enemies nearly blind)
+   *   storm → 0.70× (heavy rain limits sight)
+   *   others → 1.00× (unaffected)
+   */
+  get visibilityMultiplier(): number {
+    if (this.current === 'fog')   return 0.50;
+    if (this.current === 'storm') return 0.70;
+    return 1.00;
+  }
+
   get currentState(): WeatherState {
     return this.current;
   }

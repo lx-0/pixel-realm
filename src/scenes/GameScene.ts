@@ -3858,6 +3858,8 @@ export class GameScene extends Phaser.Scene {
 
       const dist = Phaser.Math.Distance.Between(e.x, e.y, this.player.x, this.player.y);
       const spd  = def.speed + (this.level - 1) * 2;
+      // Fog/storm reduce enemy detection range (visibility gameplay mechanic).
+      const visRange = def.aggroRange * (this.weather?.visibilityMultiplier ?? 1);
 
       // Wraith phase cycling
       if (def.behaviour === 'phase') {
@@ -3880,14 +3882,14 @@ export class GameScene extends Phaser.Scene {
       // Ranged shoot
       if (['ranged','ranged_flee','charm'].includes(def.behaviour)) {
         extra.shootTimer -= delta;
-        if (extra.shootTimer <= 0 && dist < def.aggroRange * 1.5) {
+        if (extra.shootTimer <= 0 && dist < visRange * 1.5) {
           this.fireProjectile(e, def.baseDmg, def.projectileColor ?? 0xffaa44, def.behaviour === 'charm');
           extra.shootTimer = def.behaviour === 'charm' ? 3500 : 2200;
         }
       }
 
       // Movement
-      if (dist < def.aggroRange) {
+      if (dist < visRange) {
         const dx  = this.player.x - e.x;
         const dy  = this.player.y - e.y;
         const len = Math.sqrt(dx * dx + dy * dy) || 1;
