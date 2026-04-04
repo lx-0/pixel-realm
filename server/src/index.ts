@@ -712,7 +712,7 @@ app.get("/dungeon/cooldown/:userId", async (req, res) => {
 
 // ── Leaderboard REST endpoints ────────────────────────────────────────────────
 
-const VALID_CATEGORIES = new Set<LeaderboardCategory>(["xp", "kills", "quests", "achievements", "crafting", "prestige", "pvp_wins", "guild"]);
+const VALID_CATEGORIES = new Set<LeaderboardCategory>(["xp", "kills", "quests", "achievements", "crafting", "prestige", "pvp_wins", "guild", "gvg"]);
 const VALID_PERIODS    = new Set<LeaderboardPeriod>(["all", "weekly", "daily"]);
 
 // GET /leaderboard/:category?period=all|weekly|daily

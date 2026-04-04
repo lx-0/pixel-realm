@@ -39,7 +39,7 @@ const SERVER_HTTP: string = (() => {
 export class TerritoryMapPanel {
   private scene:   Phaser.Scene;
   private _visible = false;
-  private tKey!:   Phaser.Input.Keyboard.Key;
+  private bKey!:   Phaser.Input.Keyboard.Key;  // B = battles map
   private escKey!: Phaser.Input.Keyboard.Key;
 
   private container!:    Phaser.GameObjects.Container;
@@ -53,12 +53,13 @@ export class TerritoryMapPanel {
   private zoneObjects: Phaser.GameObjects.Container[] = [];
 
   // Context
+  userId    = "";   // set by GameScene after login
   private guildId   = "";
   private guildRole = "";
   private mgr!:     TerritoryManager;
 
-  // Pending war declaration
-  onDeclareWar?: (territoryId: string, territoryName: string) => void;
+  // Pending war declaration — includes ownerName so caller can show it without re-fetching
+  onDeclareWar?: (territoryId: string, territoryName: string, ownerName: string | null) => void;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -67,7 +68,7 @@ export class TerritoryMapPanel {
 
   create(): void {
     const kbd = this.scene.input.keyboard!;
-    this.tKey   = kbd.addKey(Phaser.Input.Keyboard.KeyCodes.T);
+    this.bKey   = kbd.addKey(Phaser.Input.Keyboard.KeyCodes.B);
     this.escKey = kbd.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
     this.container = this.scene.add.container(PANEL_X, PANEL_Y).setDepth(DEPTH).setVisible(false);
@@ -136,7 +137,7 @@ export class TerritoryMapPanel {
   }
 
   update(_delta: number): void {
-    if (Phaser.Input.Keyboard.JustDown(this.tKey)) {
+    if (Phaser.Input.Keyboard.JustDown(this.bKey)) {
       this._visible ? this.hide() : this.show();
     }
     if (Phaser.Input.Keyboard.JustDown(this.escKey) && this._visible) {
@@ -144,7 +145,27 @@ export class TerritoryMapPanel {
     }
   }
 
+  /** Close the panel if it is open. Returns true if it was open (for ESC chain). */
+  closeIfOpen(): boolean {
+    if (this._visible) { this.hide(); return true; }
+    return false;
+  }
+
   async show(): Promise<void> {
+    // Auto-fetch guild context from server if userId is set but guildId not yet known
+    if (this.userId && !this.guildId) {
+      try {
+        const res = await fetch(`${SERVER_HTTP}/guild/player/${this.userId}`);
+        if (res.ok) {
+          const info = await res.json() as { guildId?: string; role?: string } | null;
+          if (info?.guildId) {
+            this.guildId   = info.guildId;
+            this.guildRole = info.role ?? 'member';
+            this.mgr.setPlayer(this.userId, this.guildId);
+          }
+        }
+      } catch { /* non-fatal */ }
+    }
     this._visible = true;
     this.container.setVisible(true);
     this.statusText.setText('Loading...');
@@ -263,7 +284,7 @@ export class TerritoryMapPanel {
       btn.on('pointerover',  () => btn.setColor('#ffcc66'));
       btn.on('pointerout',   () => btn.setColor('#ff9944'));
       btn.on('pointerdown',  () => {
-        this.onDeclareWar?.(def.id, def.name);
+        this.onDeclareWar?.(def.id, def.name, info?.ownerGuildName ?? null);
       });
       c.add(btn);
     }

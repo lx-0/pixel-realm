@@ -37,6 +37,8 @@ import { PrestigePanel } from '../ui/PrestigePanel';
 import { SeasonalEventPanel, type SeasonalEventState } from '../ui/SeasonalEventPanel';
 import { WorldBossPanel } from '../ui/WorldBossPanel';
 import { GuildPanel } from '../ui/GuildPanel';
+import { TerritoryMapPanel } from '../ui/TerritoryMapPanel';
+import { WarDeclarationPanel } from '../ui/WarDeclarationPanel';
 import { PartyPanel } from '../ui/PartyPanel';
 import { SocialPanel } from '../ui/SocialPanel';
 import { MailboxPanel } from '../ui/MailboxPanel';
@@ -440,6 +442,12 @@ export class GameScene extends Phaser.Scene {
 
   /** Leaderboard panel (always present, L to open). */
   private leaderboardPanel?: LeaderboardPanel;
+
+  /** Territory wars map panel (multiplayer only, B to open). */
+  private territoryMapPanel?: TerritoryMapPanel;
+
+  /** War declaration confirmation dialog (opened from TerritoryMapPanel). */
+  private warDeclarationPanel?: WarDeclarationPanel;
 
   /** Per-session combat statistics, reset each zone load. */
   private sessionStats!: SessionStats;
@@ -885,6 +893,8 @@ export class GameScene extends Phaser.Scene {
         this.mailboxPanel?.closeIfOpen()      ||
         this.achievementPanel?.closeIfOpen()  ||
         this.leaderboardPanel?.closeIfOpen()  ||
+        this.warDeclarationPanel?.closeIfOpen() ||
+        this.territoryMapPanel?.closeIfOpen() ||
         (this.statsOverlayVisible && (() => { this.statsOverlayVisible = false; this.rebuildStatsOverlay(); return true; })()) ||
         this.factionPanel?.closeIfOpen()      ||
         this.fastTravelPanel?.closeIfOpen()   ||
@@ -1035,6 +1045,7 @@ export class GameScene extends Phaser.Scene {
     this.notificationToast?.update();
     this.achievementPanel?.update();
     this.leaderboardPanel?.update();
+    this.territoryMapPanel?.update(delta);
     this.factionPanel?.update();
     this.eventLogPanel?.update();
 
@@ -1559,6 +1570,24 @@ export class GameScene extends Phaser.Scene {
     // Load initial guild state
     this.guildPanel.refresh().catch(() => {/* non-fatal */});
 
+    // Territory wars map panel (B key — multiplayer only)
+    this.territoryMapPanel = new TerritoryMapPanel(this);
+    this.territoryMapPanel.userId = localStorage.getItem('pr_userId') ?? '';
+    this.territoryMapPanel.create();
+
+    // War declaration confirmation dialog (opened from territory map)
+    this.warDeclarationPanel = new WarDeclarationPanel(this);
+    this.warDeclarationPanel.create();
+    this.territoryMapPanel.onDeclareWar = (territoryId, territoryName, ownerName) => {
+      this.warDeclarationPanel?.showForTerritory(territoryId, territoryName, ownerName);
+    };
+    this.warDeclarationPanel.onClosed = () => {
+      // Refresh territory map after war declaration
+      if (this.territoryMapPanel?.visible) {
+        this.territoryMapPanel.show().catch(() => {/* non-fatal */});
+      }
+    };
+
     // Pet panel (J key — always present in multiplayer)
     this.petPanel = new PetPanel(this);
     this.petPanel.setStatusBarVisible(true);
@@ -1936,7 +1965,7 @@ export class GameScene extends Phaser.Scene {
 
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC/stable  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [L] events  [X] mount  [Z+1-6] emotes  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC/stable  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [L] events  [B] territory wars  [X] mount  [Z+1-6] emotes  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -2029,6 +2058,10 @@ export class GameScene extends Phaser.Scene {
       this.achievementPanel = new AchievementPanel(this); // re-create without userId for solo fallback
       this.leaderboardPanel?.destroy();
       this.leaderboardPanel = new LeaderboardPanel(this);
+      this.warDeclarationPanel?.hide();
+      this.warDeclarationPanel = undefined;
+      this.territoryMapPanel?.hide();
+      this.territoryMapPanel = undefined;
       // Resume local simulation after overlay hides (~2.5 s)
       // Social zones have no combat; skip wave spawn.
       if (!this.zone.isSocialZone && this.zone.waves > 0) {

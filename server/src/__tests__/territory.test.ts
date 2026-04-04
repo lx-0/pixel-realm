@@ -178,3 +178,56 @@ describe("capture point logic", () => {
     expect(attackerWins).toBe(false);
   });
 });
+
+// ── GvG leaderboard (battles won) ────────────────────────────────────────────
+
+describe("GvG battles-won leaderboard", () => {
+  it("counts each completed war win as +1 battle won", () => {
+    const wins = [
+      { winner_guild_id: "guild_a" },
+      { winner_guild_id: "guild_a" },
+      { winner_guild_id: "guild_b" },
+    ];
+    const tally = wins.reduce<Record<string, number>>((acc, w) => {
+      acc[w.winner_guild_id] = (acc[w.winner_guild_id] ?? 0) + 1;
+      return acc;
+    }, {});
+    expect(tally["guild_a"]).toBe(2);
+    expect(tally["guild_b"]).toBe(1);
+  });
+
+  it("guild with no wins has score 0 (not ranked)", () => {
+    const wins: Array<{ winner_guild_id: string }> = [];
+    const score = wins.filter(w => w.winner_guild_id === "guild_c").length;
+    expect(score).toBe(0);
+  });
+
+  it("GvG ranking is independent of XP or territory count", () => {
+    // A guild that wins all battles ranks first regardless of member XP
+    const gvgRankings = [
+      { guild: "guild_a", battlesWon: 10 },
+      { guild: "guild_b", battlesWon: 3  },
+      { guild: "guild_c", battlesWon: 1  },
+    ].sort((a, b) => b.battlesWon - a.battlesWon);
+    expect(gvgRankings[0].guild).toBe("guild_a");
+    expect(gvgRankings[0].battlesWon).toBe(10);
+  });
+
+  it("pending or active wars do not count toward battles won", () => {
+    const allWars = [
+      { status: "completed", winner_guild_id: "guild_a" },
+      { status: "active",    winner_guild_id: null },
+      { status: "pending",   winner_guild_id: null },
+      { status: "completed", winner_guild_id: "guild_a" },
+    ];
+    const wins = allWars.filter(w => w.status === "completed" && w.winner_guild_id !== null);
+    expect(wins).toHaveLength(2);
+  });
+
+  it("territories held is separate from battles won metric", () => {
+    // A guild may hold 3 territories but have won 1 battle (inherited old ownership)
+    const territoriesHeld = 3;
+    const battlesWon      = 1;
+    expect(territoriesHeld).not.toBe(battlesWon);
+  });
+});

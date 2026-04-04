@@ -23,7 +23,7 @@ import { getRedis } from "./redis";
 import { playerState } from "./schema";
 // Note: guild_territories is referenced via sql.raw() in the guild leaderboard query
 
-export type LeaderboardCategory = "xp" | "kills" | "quests" | "achievements" | "crafting" | "prestige" | "pvp_wins" | "guild";
+export type LeaderboardCategory = "xp" | "kills" | "quests" | "achievements" | "crafting" | "prestige" | "pvp_wins" | "guild" | "gvg";
 export type LeaderboardPeriod = "all" | "weekly" | "daily";
 
 export interface LeaderboardEntry {
@@ -157,6 +157,30 @@ async function queryLeaderboard(
       WHERE g.deleted_at IS NULL ${pf}
       GROUP BY gm.guild_id, g.name, tc.territory_count
       HAVING SUM(ps.xp) > 0
+      ORDER BY score DESC
+      LIMIT 100
+    `)) as unknown as typeof rows;
+  } else if (category === "gvg") {
+    // GvG battles won per guild (resolved wars where winner_guild_id = guild)
+    // Period filter applies to resolved_at
+    const gvgPeriodFilter = period === "daily"
+      ? "AND w.resolved_at >= NOW() - INTERVAL '1 day'"
+      : period === "weekly"
+        ? "AND w.resolved_at >= NOW() - INTERVAL '7 days'"
+        : "";
+    rows = await db.execute(sql.raw(`
+      SELECT
+        w.winner_guild_id AS player_id,
+        g.name            AS username,
+        COUNT(*)::int     AS score
+      FROM guild_wars w
+      JOIN guilds g ON g.id = w.winner_guild_id
+      WHERE w.status = 'completed'
+        AND w.winner_guild_id IS NOT NULL
+        AND g.deleted_at IS NULL
+        ${gvgPeriodFilter}
+      GROUP BY w.winner_guild_id, g.name
+      HAVING COUNT(*) > 0
       ORDER BY score DESC
       LIMIT 100
     `)) as unknown as typeof rows;

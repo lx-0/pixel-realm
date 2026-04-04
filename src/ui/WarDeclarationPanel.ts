@@ -163,6 +163,12 @@ export class WarDeclarationPanel {
     this.container.setVisible(false);
   }
 
+  /** Close the panel if it is open. Returns true if it was open (for ESC chain). */
+  closeIfOpen(): boolean {
+    if (this._visible) { this.hide(); return true; }
+    return false;
+  }
+
   get visible(): boolean { return this._visible; }
 
   private async _onConfirm(): Promise<void> {
