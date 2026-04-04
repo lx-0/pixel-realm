@@ -356,6 +356,9 @@ export class GameScene extends Phaser.Scene {
   /** Proximity hint shown when player is near the Transport NPC. */
   private transportHint?: Phaser.GameObjects.Text;
 
+  /** Zone exit portal — decorative archway at south wall showing next biome. */
+  private zoneExitPortal?: Phaser.GameObjects.Container;
+
   /** Dungeon portal (endgame zones only). */
   private dungeonPortal?: Phaser.GameObjects.Container;
   private dungeonPortalHint?: Phaser.GameObjects.Text;
@@ -2297,6 +2300,24 @@ export class GameScene extends Phaser.Scene {
     return xpBonusPets[pet.petType] ?? 0;
   }
 
+  // ── Biome helpers ─────────────────────────────────────────────────────────
+
+  /**
+   * Normalise a zone biome string into one of 8 tile-style categories.
+   * Used to select distinct ground/wall tile patterns and decoration shapes.
+   */
+  private getBiomeTileType(): 'forest' | 'desert' | 'ice' | 'volcanic' | 'ocean' | 'swamp' | 'dungeon' | 'default' {
+    const b = this.zone.biome.toLowerCase();
+    if (b.includes('forest'))                                  return 'forest';
+    if (b.includes('desert') || b.includes('plains'))         return 'desert';
+    if (b.includes('ice') || b.includes('cave') || b.includes('mountain')) return 'ice';
+    if (b.includes('volcanic') || b.includes('bone') || b.includes('wasteland')) return 'volcanic';
+    if (b.includes('ocean') || b.includes('coastal') || b.includes('sea') || b.includes('underwater')) return 'ocean';
+    if (b.includes('swamp'))                                   return 'swamp';
+    if (b.includes('dungeon'))                                 return 'dungeon';
+    return 'default';
+  }
+
   // ── Day/night helpers ─────────────────────────────────────────────────────
 
   /** Map zone biome strings to the BiomeKey expected by DayNightSystem. */
@@ -2324,13 +2345,63 @@ export class GameScene extends Phaser.Scene {
     const WALL = 32;
     const z    = this.zone;
 
-    // Ground texture
+    // Ground texture — biome-specific patterns for visual variety
     const gg = this.make.graphics({ x: 0, y: 0 });
     gg.fillStyle(z.groundColor);
     gg.fillRect(0, 0, 16, 16);
     const darkerGround = Phaser.Display.Color.IntegerToColor(z.groundColor).darken(12).color;
     gg.fillStyle(darkerGround);
-    [[2,3],[6,8],[10,2],[13,11],[7,6]].forEach(([x,y]) => gg.fillRect(x, y, 2, 1));
+    switch (this.getBiomeTileType()) {
+      case 'forest':
+        // Organic moss blobs
+        [[2,3],[8,2],[12,9],[4,11],[10,5]].forEach(([x,y]) => gg.fillCircle(x, y, 1.5));
+        break;
+      case 'desert':
+        // Cracked earth — intersecting hairline cracks
+        gg.fillRect(0, 5, 7, 1);
+        gg.fillRect(9, 11, 6, 1);
+        gg.fillRect(3, 9, 4, 1);
+        gg.fillRect(11, 2, 1, 5);
+        break;
+      case 'ice':
+        // Angular crystalline shards — diagonal slashes
+        gg.fillRect(2,  0, 1, 5);
+        gg.fillRect(8,  4, 1, 6);
+        gg.fillRect(13, 2, 1, 4);
+        gg.fillRect(5, 10, 1, 5);
+        gg.fillRect(1,  8, 4, 1);
+        break;
+      case 'volcanic':
+        // Lava crack network
+        gg.fillRect(0,  6, 5, 1);
+        gg.fillRect(5,  6, 1, 4);
+        gg.fillRect(5, 10, 7, 1);
+        gg.fillRect(12, 3, 4, 1);
+        gg.fillRect(12, 3, 1, 4);
+        break;
+      case 'ocean':
+        // Wavy horizontal ripples
+        [[0,4],[2,3],[4,4],[6,3],[8,4],[10,3],[12,4],[14,3]].forEach(([x,y]) => gg.fillRect(x, y, 2, 1));
+        [[0,10],[2,11],[4,10],[6,11],[8,10],[10,11],[12,10],[14,11]].forEach(([x,y]) => gg.fillRect(x, y, 2, 1));
+        break;
+      case 'swamp':
+        // Muddy irregular patches
+        gg.fillRect(1,  2, 4, 3);
+        gg.fillRect(6,  7, 3, 4);
+        gg.fillRect(11, 3, 3, 2);
+        gg.fillRect(2, 11, 5, 2);
+        break;
+      case 'dungeon':
+        // Stone masonry seams
+        gg.fillRect(0,  7, 16, 1);
+        gg.fillRect(7,  0, 1, 7);
+        gg.fillRect(10, 8, 1, 8);
+        break;
+      default:
+        // Void/celestial starfield — sparse single-pixel dots
+        [[2,3],[6,8],[10,2],[13,11],[7,6],[14,5],[1,13],[9,15]].forEach(([x,y]) => gg.fillRect(x, y, 1, 1));
+        break;
+    }
     gg.generateTexture('zone_ground', 16, 16);
     gg.destroy();
 
@@ -2389,6 +2460,12 @@ export class GameScene extends Phaser.Scene {
       this.addDungeonPortal(W - WALL - 24, H - WALL - 24);
     }
 
+    // Zone exit portal — south-centre archway showing the next biome destination
+    const nextZoneForPortal = ZONES[this.zoneIdx + 1] ?? null;
+    if (nextZoneForPortal) {
+      this.addZoneExitPortal(W / 2, H - WALL - 4, nextZoneForPortal);
+    }
+
     // Zone name splash
     const zColor = `#${z.accentColor.toString(16).padStart(6, '0')}`;
     const banner = this.add.text(CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2, z.name, {
@@ -2400,19 +2477,99 @@ export class GameScene extends Phaser.Scene {
   }
 
   private addBiomeDecor(W: number, H: number, WALL: number): void {
-    const cx  = W / 2;
-    const cy  = H / 2;
-    const pts = [[90,80],[550,80],[90,280],[550,280],[220,60],[420,60],[220,300],[420,300],[150,190],[490,190]];
-    const g   = this.add.graphics().setDepth(2);
+    const cx   = W / 2;
+    const cy   = H / 2;
+    const pts  = [[90,80],[550,80],[90,280],[550,280],[220,60],[420,60],[220,300],[420,300],[150,190],[490,190]];
+    const g    = this.add.graphics().setDepth(2);
+    const tile = this.getBiomeTileType();
 
     for (const [x, y] of pts) {
       if (x < WALL + 12 || x > W - WALL - 12) continue;
       if (y < WALL + 12 || y > H - WALL - 12) continue;
       if (Phaser.Math.Distance.Between(x, y, cx, cy) < 60) continue;
-      g.fillStyle(this.zone.wallColor);
-      g.fillRect(x - 6, y - 3, 12, 6);
-      g.fillStyle(this.zone.accentColor, 0.3);
-      g.fillRect(x - 4, y - 5, 4, 4);
+      this.drawBiomeDecorPiece(g, x, y, tile);
+    }
+  }
+
+  /** Draw a single biome-themed decoration piece centred at (x, y). */
+  private drawBiomeDecorPiece(
+    g:    Phaser.GameObjects.Graphics,
+    x:    number,
+    y:    number,
+    tile: ReturnType<GameScene['getBiomeTileType']>,
+  ): void {
+    switch (tile) {
+      case 'forest':
+        // Tree: dark trunk + translucent canopy blob
+        g.fillStyle(this.zone.wallColor);
+        g.fillRect(x - 2, y - 2, 4, 6);
+        g.fillStyle(this.zone.accentColor, 0.45);
+        g.fillCircle(x, y - 6, 5);
+        break;
+      case 'desert':
+        // Cactus: upright body + two stubby arms
+        g.fillStyle(this.zone.accentColor, 0.55);
+        g.fillRect(x - 1, y - 8, 3, 10);
+        g.fillRect(x - 5, y - 5, 4, 2);
+        g.fillRect(x + 2, y - 4, 4, 2);
+        g.fillRect(x - 5, y - 7, 2, 3);
+        g.fillRect(x + 4, y - 6, 2, 3);
+        break;
+      case 'ice':
+        // Icicle cluster — downward-pointing triangles
+        g.fillStyle(this.zone.accentColor, 0.5);
+        g.fillTriangle(x - 3, y - 8, x + 3, y - 8, x,     y);
+        g.fillTriangle(x + 2, y - 6, x + 6, y - 6, x + 4, y - 1);
+        g.fillTriangle(x - 6, y - 5, x - 2, y - 5, x - 4, y - 1);
+        break;
+      case 'volcanic':
+        // Lava pool + jagged cinder rock
+        g.fillStyle(0xff4400, 0.25);
+        g.fillCircle(x, y + 3, 5);
+        g.fillStyle(this.zone.wallColor);
+        g.fillRect(x - 6, y - 3, 12, 6);
+        g.fillStyle(this.zone.accentColor, 0.4);
+        g.fillCircle(x - 3, y, 2);
+        g.fillCircle(x + 3, y - 1, 1.5);
+        break;
+      case 'ocean':
+        // Coral: branching stalks with rounded tips
+        g.fillStyle(this.zone.accentColor, 0.5);
+        g.fillRect(x,     y - 8, 2, 9);
+        g.fillRect(x - 3, y - 5, 2, 6);
+        g.fillRect(x + 3, y - 7, 2, 7);
+        g.fillCircle(x + 1, y - 9, 2);
+        g.fillCircle(x - 2, y - 6, 1.5);
+        g.fillCircle(x + 4, y - 8, 1.5);
+        break;
+      case 'swamp':
+        // Reed cluster: tall thin stalks with bulbous heads
+        g.fillStyle(this.zone.accentColor, 0.4);
+        g.fillRect(x - 4, y - 7, 2, 8);
+        g.fillRect(x,     y - 9, 2, 9);
+        g.fillRect(x + 4, y - 6, 2, 7);
+        g.fillRect(x - 5, y - 9, 3, 3);
+        g.fillRect(x - 1, y - 11, 3, 3);
+        g.fillRect(x + 3, y - 8, 3, 3);
+        break;
+      case 'dungeon':
+        // Crumbling stone pillar with cap + base
+        g.fillStyle(this.zone.wallColor);
+        g.fillRect(x - 4, y - 12, 8, 14);
+        g.fillStyle(this.zone.accentColor, 0.2);
+        g.fillRect(x - 5, y - 14, 10, 3);
+        g.fillRect(x - 5, y + 2,  10, 3);
+        g.fillStyle(this.zone.wallColor);
+        g.fillRect(x - 1, y - 9, 2, 8);  // crack
+        break;
+      default:
+        // Crystal formation for void / celestial / endgame biomes
+        g.fillStyle(this.zone.accentColor, 0.35);
+        g.fillTriangle(x,     y - 12, x - 3, y, x + 3, y);
+        g.fillTriangle(x + 3, y - 8,  x + 1, y, x + 7, y);
+        g.fillStyle(this.zone.wallColor);
+        g.fillRect(x - 6, y - 2, 12, 5);
+        break;
     }
   }
 
@@ -3240,6 +3397,65 @@ export class GameScene extends Phaser.Scene {
         playerLevel: this.level,
       });
     };
+  }
+
+  /**
+   * Zone exit portal — decorative south-wall archway coloured in the next
+   * biome's accent hue.  Locked (dim) until the boss is defeated; the glow
+   * animation activates when `zoneExitPortalActivate()` is called.
+   */
+  private addZoneExitPortal(x: number, y: number, nextZone: ZoneConfig): void {
+    const g = this.add.graphics().setDepth(2);
+
+    // Archway frame in next zone's accent colour (muted)
+    const col = nextZone.accentColor;
+    g.fillStyle(nextZone.wallColor);
+    g.fillRect(-14, -22, 28, 26);
+    // Inner opening
+    g.fillStyle(nextZone.bgColor, 0.8);
+    g.fillRect(-10, -19, 20, 21);
+    // Top arc hint (two stacked lines)
+    g.lineStyle(1, col, 0.5);
+    g.strokeRect(-14, -22, 28, 26);
+    g.lineStyle(1, col, 0.25);
+    g.strokeRect(-12, -20, 24, 22);
+
+    // Destination label
+    const shortName = nextZone.name.length > 14 ? nextZone.name.slice(0, 14) : nextZone.name;
+    const hexCol = '#' + col.toString(16).padStart(6, '0');
+    const label = this.add.text(0, 8, `→ ${shortName}`, {
+      fontSize: '3px', color: hexCol, fontFamily: 'monospace',
+    }).setOrigin(0.5, 0).setDepth(3).setAlpha(0.5);
+
+    const biomeLbl = this.add.text(0, -24, nextZone.biome.split('/')[0].trim().toUpperCase().slice(0, 8), {
+      fontSize: '3px', color: hexCol, fontFamily: 'monospace',
+    }).setOrigin(0.5, 1).setDepth(3).setAlpha(0.4);
+
+    this.zoneExitPortal = this.add.container(x, y, [g, label, biomeLbl]).setDepth(2).setAlpha(0.4);
+
+    // Subtle idle pulse on the label
+    this.tweens.add({
+      targets: label,
+      alpha: 0.2,
+      duration: 1400,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
+  /**
+   * Brightens the zone exit portal after the boss is defeated, signalling the
+   * path to the next biome.  Called from zoneCleared().
+   */
+  private zoneExitPortalActivate(): void {
+    if (!this.zoneExitPortal) return;
+    this.tweens.add({
+      targets: this.zoneExitPortal,
+      alpha: 1.0,
+      duration: 600,
+      ease: 'Power2',
+    });
   }
 
   private updateDungeonPortalHint(): void {
@@ -4349,6 +4565,13 @@ export class GameScene extends Phaser.Scene {
       this.sessionStats.itemsLooted++;
     }
 
+    // Biome resource drop — zone-specific crafting material
+    if (this.zone.biomeResources.length > 0 && Math.random() < LOOT.BIOME_RESOURCE_DROP_RATE) {
+      const resource = this.zone.biomeResources[Math.floor(Math.random() * this.zone.biomeResources.length)];
+      this.floatingText(e.x, e.y - 32, `+ ${resource}`, '#ffdd88');
+      this.sessionStats.itemsLooted++;
+    }
+
     if (isBoss) {
       this.bossAlive    = false;
       this.bossSprite   = undefined;
@@ -4512,6 +4735,8 @@ export class GameScene extends Phaser.Scene {
 
   private zoneCleared(): void {
     if (this.isHardcore) this._hardcoreZonesCleared++;
+    // Light up the zone exit portal to signal the path to the next biome
+    this.zoneExitPortalActivate();
     const nextIdx   = this.zoneIdx + 1;
     const nextZone  = ZONES[nextIdx] ?? null;
     const isLastZone = nextZone === null;
@@ -5069,7 +5294,7 @@ export class GameScene extends Phaser.Scene {
       { fontSize: '5px', color: '#ffe040', fontFamily: 'monospace', stroke: '#000', strokeThickness: 2 },
     ).setOrigin(1, 0.5).setScrollFactor(0).setDepth(Z + 3).setVisible(false);
 
-    this.miniMap = new MiniMapOverlay(this);
+    this.miniMap = new MiniMapOverlay(this, this.zone.biome, this.zone.accentColor);
 
     // NPC markers: quest NPC + waystone (shown on minimap)
     const WALL = 32;

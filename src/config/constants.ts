@@ -263,6 +263,8 @@ export const LOOT = {
   RARE_DROP_RATE_BOSS: 0.075,
   /** Drop chance for an epic item from a boss. */
   EPIC_DROP_RATE_BOSS: 0.025,
+  /** Drop chance for a biome-specific crafting resource from any enemy kill. */
+  BIOME_RESOURCE_DROP_RATE: 0.12,
 } as const;
 
 // ── Scene Keys ────────────────────────────────────────────────────────────────
@@ -546,6 +548,8 @@ export interface ZoneConfig {
   unlockRequirement: string | null;
   /** Multiplier applied to enemy HP, damage, and XP for this zone tier. */
   difficultyMult: number;
+  /** Biome-specific crafting materials that can drop from enemies in this zone. */
+  biomeResources: string[];
 }
 
 // ── Status Effects ────────────────────────────────────────────────────────────
@@ -648,6 +652,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 150,
     unlockRequirement: null,
     difficultyMult: 1.0,
+    biomeResources: ['Forest Spore', 'Ancient Bark'],
   },
   {
     id: 'zone2',
@@ -665,6 +670,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 250,
     unlockRequirement: 'zone1',
     difficultyMult: 1.5,
+    biomeResources: ['Desert Amber', 'Cactus Spine'],
   },
   {
     id: 'zone3',
@@ -682,6 +688,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 400,
     unlockRequirement: 'zone2',
     difficultyMult: 2.0,
+    biomeResources: ['Arcane Shard', 'Cursed Dust'],
   },
   {
     id: 'zone4',
@@ -699,6 +706,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 600,
     unlockRequirement: 'zone3',
     difficultyMult: 2.5,
+    biomeResources: ['Sea Pearl', 'Storm Salt'],
   },
   {
     id: 'zone5',
@@ -716,6 +724,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 850,
     unlockRequirement: 'zone4',
     difficultyMult: 3.0,
+    biomeResources: ['Ice Crystal', 'Frost Essence'],
   },
   {
     id: 'zone6',
@@ -733,6 +742,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 1200,
     unlockRequirement: 'zone5',
     difficultyMult: 3.5,
+    biomeResources: ['Volcanic Ore', 'Magma Shard'],
   },
   {
     id: 'zone7',
@@ -750,6 +760,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 1800,
     unlockRequirement: 'zone6',
     difficultyMult: 4.0,
+    biomeResources: ['Bog Peat', 'Toxin Gland'],
   },
   {
     id: 'zone8',
@@ -767,6 +778,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 2500,
     unlockRequirement: 'zone7',
     difficultyMult: 4.5,
+    biomeResources: ['Glacial Dust', 'Mountain Shard'],
   },
   {
     id: 'zone9',
@@ -784,6 +796,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 3500,
     unlockRequirement: 'zone8',
     difficultyMult: 5.0,
+    biomeResources: ['Star Essence', 'Cosmic Dust'],
   },
   {
     id: 'zone10',
@@ -801,6 +814,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 4800,
     unlockRequirement: 'zone9',
     difficultyMult: 5.5,
+    biomeResources: ['Abyssal Pearl', 'Void Coral'],
   },
   {
     id: 'zone11',
@@ -818,6 +832,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 6000,
     unlockRequirement: 'zone10',
     difficultyMult: 6.0,
+    biomeResources: ['Dragon Bone', 'Ash Ember'],
   },
   {
     id: 'zone12',
@@ -835,6 +850,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 7500,
     unlockRequirement: 'zone11',
     difficultyMult: 6.5,
+    biomeResources: ['Void Shard', 'Dark Matter'],
   },
   {
     id: 'zone13',
@@ -852,6 +868,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 9500,
     unlockRequirement: 'zone12',
     difficultyMult: 7.0,
+    biomeResources: ['Eclipse Gem', 'Shadow Ore'],
   },
   {
     id: 'zone14',
@@ -869,6 +886,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 12000,
     unlockRequirement: 'zone13',
     difficultyMult: 7.5,
+    biomeResources: ['Reality Fragment', 'Dominion Crystal'],
   },
   {
     id: 'zone15',
@@ -886,6 +904,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 15000,
     unlockRequirement: 'zone14',
     difficultyMult: 8.0,
+    biomeResources: ['Genesis Ember', 'Primal Ore'],
   },
   {
     id: 'zone16',
@@ -903,6 +922,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 20000,
     unlockRequirement: 'zone15',
     difficultyMult: 8.5,
+    biomeResources: ['Nexus Crystal', 'Phase Essence'],
   },
   {
     id: 'zone17',
@@ -920,6 +940,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 26000,
     unlockRequirement: 'zone16',
     difficultyMult: 9.0,
+    biomeResources: ['Twilight Gem', 'Rift Shard'],
   },
   {
     id: 'zone18',
@@ -937,6 +958,7 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 33000,
     unlockRequirement: 'zone17',
     difficultyMult: 9.5,
+    biomeResources: ['Oblivion Dust', 'Spire Crystal'],
   },
   {
     id: 'zone19',
@@ -954,5 +976,6 @@ export const ZONES: ZoneConfig[] = [
     xpReward: 36500,
     unlockRequirement: 'zone18',
     difficultyMult: 10.0,
+    biomeResources: ['Astral Gem', 'Nebula Dust'],
   },
 ];

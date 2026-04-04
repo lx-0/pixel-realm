@@ -44,12 +44,20 @@ export interface NpcMarker {
 }
 
 export class MiniMapOverlay {
-  private gfx:       Phaser.GameObjects.Graphics;
-  private maskGfx:   Phaser.GameObjects.Graphics;
-  private header:    Phaser.GameObjects.Text;
-  private zoomScale  = 1.0;   // pinch-to-zoom multiplier
+  private gfx:        Phaser.GameObjects.Graphics;
+  private maskGfx:    Phaser.GameObjects.Graphics;
+  private header:     Phaser.GameObjects.Text;
+  private biomeColor: number;
+  private zoomScale   = 1.0;   // pinch-to-zoom multiplier
 
-  constructor(scene: Phaser.Scene) {
+  /**
+   * @param scene       The active Phaser scene.
+   * @param biomeName   Short biome label shown above the mini-map (e.g. 'Forest').
+   * @param biomeColor  Accent hex color for the biome border strip (e.g. 0x44dd44).
+   */
+  constructor(scene: Phaser.Scene, biomeName = 'Zone', biomeColor = 0x667788) {
+    this.biomeColor = biomeColor;
+
     this.gfx = scene.add.graphics()
       .setScrollFactor(0)
       .setDepth(DEPTH);
@@ -60,10 +68,12 @@ export class MiniMapOverlay {
       .fillRect(MAP_X, MAP_Y, MAP_W, MAP_H);
     this.gfx.setMask(this.maskGfx.createGeometryMask());
 
-    // Tiny "MAP" label above the mini-map
-    this.header = scene.add.text(MAP_X + MAP_W / 2, MAP_Y - 1, 'MAP', {
+    // Biome label above the mini-map (replaces generic "MAP")
+    const shortLabel = biomeName.length > 10 ? biomeName.slice(0, 10) : biomeName;
+    const labelHex = '#' + biomeColor.toString(16).padStart(6, '0');
+    this.header = scene.add.text(MAP_X + MAP_W / 2, MAP_Y - 1, shortLabel.toUpperCase(), {
       fontSize: '3px',
-      color: '#667788',
+      color: labelHex,
       fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH);
   }
@@ -84,6 +94,10 @@ export class MiniMapOverlay {
     // ── Background ───────────────────────────────────────────────────────────
     this.gfx.fillStyle(0x000000, 0.65);
     this.gfx.fillRect(MAP_X - 1, MAP_Y - 1, MAP_W + 2, MAP_H + 2);
+
+    // Biome color strip — 2px left-edge accent indicating current biome
+    this.gfx.fillStyle(this.biomeColor, 0.8);
+    this.gfx.fillRect(MAP_X - 1, MAP_Y - 1, 2, MAP_H + 2);
 
     // Outer border
     this.gfx.lineStyle(1, 0x445566, 0.9);

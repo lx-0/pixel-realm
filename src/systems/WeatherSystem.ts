@@ -65,11 +65,18 @@ const WEATHER_DEFS: Record<WeatherState, WeatherDef> = {
  * First element of each pair is the WeatherState, second is its relative weight.
  */
 const BIOME_WEIGHTS: Record<string, [WeatherState, number][]> = {
-  'Forest':          [['rain', 5], ['clear', 3], ['fog', 2]],
-  'Plains / Desert': [['clear', 6], ['storm', 3], ['fog', 1]],
-  'Dungeon':         [['fog', 6], ['clear', 3], ['rain', 1]],
-  'Ocean / Coastal': [['storm', 5], ['rain', 3], ['clear', 2]],
-  'Ice / Cave':      [['snow', 6], ['fog', 2], ['clear', 2]],
+  'Forest':             [['rain', 5], ['clear', 3], ['fog', 2]],
+  'Plains / Desert':    [['clear', 6], ['storm', 3], ['fog', 1]],
+  'Dungeon':            [['fog', 6], ['clear', 3], ['rain', 1]],
+  'Ocean / Coastal':    [['storm', 5], ['rain', 3], ['clear', 2]],
+  'Ice / Cave':         [['snow', 6], ['fog', 2], ['clear', 2]],
+  'Volcanic':           [['clear', 4], ['storm', 4], ['fog', 2]],
+  'Swamp':              [['fog', 5], ['rain', 4], ['clear', 1]],
+  'Ice / Mountain':     [['snow', 7], ['fog', 2], ['clear', 1]],
+  'Sky / Celestial':    [['clear', 7], ['storm', 2], ['fog', 1]],
+  'Deep-Sea / Underwater': [['fog', 5], ['storm', 3], ['clear', 2]],
+  'bone-wasteland':     [['clear', 5], ['fog', 3], ['storm', 2]],
+  'void-dimension':     [['fog', 6], ['clear', 3], ['storm', 1]],
 };
 
 const DEFAULT_WEIGHTS: [WeatherState, number][] = [['clear', 5], ['rain', 2], ['fog', 2], ['storm', 1]];
