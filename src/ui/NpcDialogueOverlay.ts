@@ -46,10 +46,10 @@ const QUEST_TYPE_PORTRAIT: Record<string, string> = {
 };
 
 const FACTION_PORTRAIT: Record<string, string> = {
-  merchant_guild: 'ui_portrait_npc_merchant',
-  scholars:       'ui_portrait_npc_scholar',
-  town_guard:     'ui_portrait_npc_guard',
-  farmers:        'ui_portrait_npc_farmer',
+  nature_wardens:  'ui_portrait_npc_farmer',
+  merchants_guild: 'ui_portrait_npc_merchant',
+  mages_circle:    'ui_portrait_npc_scholar',
+  shadow_clan:     'ui_portrait_npc_guard',
 };
 
 type Emotion = 'happy' | 'angry' | 'sad' | 'neutral' | 'surprised';

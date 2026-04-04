@@ -287,6 +287,7 @@ export class MultiplayerClient {
   onQuestData?: (quest: ClientQuest, isNew: boolean) => void;
   onQuestError?: (message: string) => void;
   onQuestCompleted?: (questId: string) => void;
+  onQuestReward?: (gold: number, xp: number, goldTotal: number, xpTotal: number, multiplier: number) => void;
 
   // Skill callbacks
   onSkillPointsUpdated?: (skillPoints: number) => void;
@@ -540,6 +541,10 @@ export class MultiplayerClient {
 
     room.onMessage('quest_completed', (msg: { questId: string }) => {
       this.onQuestCompleted?.(msg.questId);
+    });
+
+    room.onMessage('quest_reward', (msg: { gold: number; xp: number; goldTotal: number; xpTotal: number; multiplier: number }) => {
+      this.onQuestReward?.(msg.gold, msg.xp, msg.goldTotal, msg.xpTotal, msg.multiplier);
     });
 
     // ── Pet messages ──────────────────────────────────────────────────────

@@ -25,6 +25,7 @@ import {
   RIVAL_REP_LOSS,
   FACTION_BY_ID,
   canAccessVendor,
+  standingGoldMultiplier,
 } from "../factions";
 import { executeP2PTrade, type TradeItem } from "../db/marketplace";
 import { initSkillState, loadSkillState, saveSkillState, type SkillState } from "../db/skills";
@@ -1396,7 +1397,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
     if (!questId) return;
 
     try {
-      const { factionId, chainAdvanced, chainComplete } = await completeQuestForPlayer(userId, this.state.zoneId, questId);
+      const { factionId, chainAdvanced, chainComplete, rewards } = await completeQuestForPlayer(userId, this.state.zoneId, questId);
       client.send("quest_completed", { questId, chainAdvanced, chainComplete });
       if (chainAdvanced) {
         if (chainComplete) {
@@ -1420,13 +1421,15 @@ export class ZoneRoom extends Room<ZoneGameState> {
         } catch (_evErr) { /* non-fatal */ }
       }
 
-      // Award faction reputation
+      // Award faction reputation — also determines gold multiplier for rewards
+      let goldMultiplier = 1.0;
       if (factionId) {
         const faction = FACTION_BY_ID.get(factionId);
         if (faction) {
           const gain = faction.questRepGain;
           const newRep = await adjustFactionReputation(userId, factionId, gain);
           const standing = getStanding(newRep);
+          goldMultiplier = standingGoldMultiplier(standing);
 
           // Apply rival rep loss
           if (faction.rivalFactionId) {
@@ -1455,6 +1458,29 @@ export class ZoneRoom extends Room<ZoneGameState> {
             });
           }
         }
+      }
+
+      // Award quest gold and XP — apply faction standing gold multiplier
+      if (rewards.gold > 0 || rewards.xp > 0) {
+        const finalGold = Math.round(rewards.gold * goldMultiplier);
+        const pool = getPool();
+        const rewardRes = await pool.query<{ gold: number; xp: number }>(
+          `UPDATE player_state
+              SET gold = gold + $1,
+                  xp   = xp   + $2,
+                  updated_at = NOW()
+            WHERE player_id = $3
+            RETURNING gold, xp`,
+          [finalGold, rewards.xp, userId],
+        );
+        const updated = rewardRes.rows[0];
+        client.send("quest_reward", {
+          gold:        finalGold,
+          xp:          rewards.xp,
+          goldTotal:   updated?.gold ?? 0,
+          xpTotal:     updated?.xp   ?? 0,
+          multiplier:  goldMultiplier,
+        });
       }
     } catch (err) {
       console.warn(`[ZoneRoom] Quest completion error for ${userId}:`, (err as Error).message);
@@ -1843,12 +1869,19 @@ export class ZoneRoom extends Room<ZoneGameState> {
         return;
       }
 
+      // Apply standing-based price discount: higher standing = lower price.
+      // Discount is the inverse of the gold reward multiplier for that standing tier.
+      const multiplier = standingGoldMultiplier(result.standing);
+      const effectiveCost = multiplier > 1.0
+        ? Math.max(1, Math.round(item.goldCost / multiplier))
+        : item.goldCost;
+
       // Atomically deduct gold — SET gold = gold - $1 WHERE gold >= $1 prevents
       // race conditions where concurrent requests both pass the balance check.
       const pool = getPool();
       const deductRes = await pool.query<{ gold: number }>(
         "UPDATE player_state SET gold = gold - $1 WHERE player_id = $2 AND gold >= $1 RETURNING gold",
-        [item.goldCost, userId],
+        [effectiveCost, userId],
       );
       if (!deductRes.rows.length) {
         client.send("faction_vendor_buy_result", {
@@ -1868,7 +1901,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
         success: true,
         itemId,
         itemName: item.name,
-        goldCost: item.goldCost,
+        goldCost: effectiveCost,
         goldRemaining,
       });
     } catch (err) {

@@ -1342,7 +1342,14 @@ export class GameScene extends Phaser.Scene {
       this.questLog?.markCompleted(questId, questId);
       this.hasActiveQuest = false;
       this.npcMarkers = this.npcMarkers.map(m => ({ ...m, hasQuest: false }));
-      this.chat?.addMessage('Quest completed! Rewards granted.', '#88ee88');
+    };
+
+    client.onQuestReward = (gold, xp, goldTotal, _xpTotal, multiplier) => {
+      this.gold = goldTotal;
+      if (this.goldText) this.goldText.setText(`${goldTotal}g`);
+      const bonusPart = multiplier > 1.0 ? ` (×${multiplier.toFixed(2)} faction bonus)` : '';
+      this.chat?.addMessage(`Quest complete! +${gold}g +${xp}xp${bonusPart}`, '#88ee88');
+      this.floatingText(this.player?.x ?? 0, (this.player?.y ?? 0) - 16, `+${gold}g  +${xp}xp`, '#88ff88');
     };
 
     // Faction reputation callbacks

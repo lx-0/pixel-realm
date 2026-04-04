@@ -509,7 +509,7 @@ export async function completeQuestForPlayer(
   playerId: string,
   zoneId: string,
   questId: string,
-): Promise<{ factionId: string | null; chainAdvanced: boolean; chainComplete: boolean }> {
+): Promise<{ factionId: string | null; chainAdvanced: boolean; chainComplete: boolean; rewards: { gold: number; xp: number } }> {
   const db = getDb();
   const progressId = `llm:${zoneId}:${questId}`;
   await db
@@ -526,6 +526,8 @@ export async function completeQuestForPlayer(
 
   const factionId = rows[0]?.factionId ?? null;
   const questTitle = rows[0]?.title ?? "a quest";
+  const rawRewards = rows[0]?.rewards as { gold?: number; xp?: number } | undefined;
+  const rewards = { gold: rawRewards?.gold ?? 0, xp: rawRewards?.xp ?? 0 };
 
   // Record NPC memory for future quest generation
   const npcId = `quest_npc_${zoneId}`;
@@ -557,5 +559,5 @@ export async function completeQuestForPlayer(
     }
   } catch (_chainErr) { /* non-fatal */ }
 
-  return { factionId, chainAdvanced, chainComplete };
+  return { factionId, chainAdvanced, chainComplete, rewards };
 }
