@@ -62,7 +62,7 @@ export class DungeonEntrancePanel {
   // State
   private selectedTier = 1;
   private opts: DungeonEntrancePanelOptions | null = null;
-  private cooldownInterval: ReturnType<typeof setInterval> | null = null;
+  private cooldownTimer: Phaser.Time.TimerEvent | null = null;
   private cooldownRemaining = 0;
 
   // ── Game objects ──────────────────────────────────────────────────────────────
@@ -251,22 +251,26 @@ export class DungeonEntrancePanel {
     this.refreshCooldown();
 
     // Tick cooldown every second
-    if (this.cooldownInterval) clearInterval(this.cooldownInterval);
+    if (this.cooldownTimer) { this.cooldownTimer.remove(false); this.cooldownTimer = null; }
     if (this.cooldownRemaining > 0) {
-      this.cooldownInterval = setInterval(() => {
-        this.cooldownRemaining = Math.max(0, this.cooldownRemaining - 1000);
-        this.refreshCooldown();
-        if (this.cooldownRemaining === 0) {
-          if (this.cooldownInterval) clearInterval(this.cooldownInterval);
-        }
-      }, 1000);
+      this.cooldownTimer = this.scene.time.addEvent({
+        delay: 1000,
+        repeat: -1,
+        callback: () => {
+          this.cooldownRemaining = Math.max(0, this.cooldownRemaining - 1000);
+          this.refreshCooldown();
+          if (this.cooldownRemaining <= 0) {
+            if (this.cooldownTimer) { this.cooldownTimer.remove(false); this.cooldownTimer = null; }
+          }
+        },
+      });
     }
   }
 
   hide(): void {
     this.isOpen = false;
     this.setAllVisible(false);
-    if (this.cooldownInterval) { clearInterval(this.cooldownInterval); this.cooldownInterval = null; }
+    if (this.cooldownTimer) { this.cooldownTimer.remove(false); this.cooldownTimer = null; }
   }
 
   update(): void {
@@ -292,6 +296,7 @@ export class DungeonEntrancePanel {
   // ── Internal ──────────────────────────────────────────────────────────────────
 
   private selectTier(tier: number): void {
+    if (!(tier in TIER_LABELS)) return;
     this.selectedTier = tier;
     const info = TIER_LABELS[tier];
 

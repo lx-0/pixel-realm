@@ -2453,6 +2453,8 @@ export class GameScene extends Phaser.Scene {
    */
   private getBiomeTileType(): 'forest' | 'desert' | 'ice' | 'volcanic' | 'ocean' | 'swamp' | 'dungeon' | 'default' {
     const b = this.zone.biome.toLowerCase();
+    if (b === 'shattered-dominion' || b === 'ethereal-nexus' || b === 'oblivion-spire' || b === 'astral-pinnacle') return 'dungeon';
+    if (b === 'twilight-citadel')                              return 'volcanic';
     if (b.includes('forest'))                                  return 'forest';
     if (b.includes('desert') || b.includes('plains'))         return 'desert';
     if (b.includes('ice') || b.includes('cave') || b.includes('mountain')) return 'ice';
@@ -2468,6 +2470,8 @@ export class GameScene extends Phaser.Scene {
   /** Map zone biome strings to the BiomeKey expected by DayNightSystem. */
   private zoneToBiomeKey(biome: string): BiomeKey {
     const b = biome.toLowerCase();
+    if (b === 'shattered-dominion' || b === 'ethereal-nexus' || b === 'oblivion-spire' || b === 'astral-pinnacle') return 'dungeon';
+    if (b === 'twilight-citadel') return 'volcanic';
     if (b.includes('forest'))   return 'forest';
     if (b.includes('desert') || b.includes('plains')) return 'desert';
     if (b.includes('dungeon'))  return 'dungeon';

@@ -184,8 +184,9 @@ export class EventBanner {
   }
 
   private getCountdownString(): string {
-    if (!this.activeEvent?.endsAt) return '';
-    const msLeft = new Date(this.activeEvent.endsAt).getTime() - Date.now();
+    const event = this.activeEvent;
+    if (!event?.endsAt) return '';
+    const msLeft = new Date(event.endsAt).getTime() - Date.now();
     if (msLeft <= 0) return 'Ended';
     const h = Math.floor(msLeft / 3_600_000);
     const m = Math.floor((msLeft % 3_600_000) / 60_000);

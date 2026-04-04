@@ -42,6 +42,7 @@ export class FactionReputationPanel {
   private scene:       Phaser.Scene;
   private visible      = false;
   private rKey!:       Phaser.Input.Keyboard.Key;
+  private escKey!:     Phaser.Input.Keyboard.Key;
   private container:   Phaser.GameObjects.Container;
   private reputations: FactionRepEntry[] = [];
   private dailyTasks:  FactionDailyTask[] = [];
@@ -50,7 +51,8 @@ export class FactionReputationPanel {
     this.scene = scene;
     this.container = scene.add.container(0, 0)
       .setScrollFactor(0).setDepth(DEPTH).setVisible(false);
-    this.rKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+    this.rKey  = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+    this.escKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     this.rebuild();
   }
 
@@ -59,6 +61,9 @@ export class FactionReputationPanel {
   update(): void {
     if (Phaser.Input.Keyboard.JustDown(this.rKey)) {
       this.toggle();
+    }
+    if (Phaser.Input.Keyboard.JustDown(this.escKey) && this.visible) {
+      this.hide();
     }
   }
 
