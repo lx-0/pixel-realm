@@ -125,7 +125,7 @@ export interface SlotMeta {
 }
 
 const DEFAULT_SAVE: SaveData = {
-  unlockedZones: ['zone1'],
+  unlockedZones: ['zone1', 'zone_town'],
   playerLevel: 1,
   playerXP: 0,
   totalKills: 0,
@@ -146,10 +146,13 @@ export class SaveManager {
   static load(): SaveData {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
+      if (!raw) return { ...DEFAULT_SAVE, unlockedZones: ['zone1', 'zone_town'], highScores: {} };
       const p = JSON.parse(raw) as Partial<SaveData>;
+      const unlockedZones = p.unlockedZones ?? ['zone1'];
+      // Always ensure zone_town is unlocked (social hub accessible from any level)
+      if (!unlockedZones.includes('zone_town')) unlockedZones.push('zone_town');
       return {
-        unlockedZones:     p.unlockedZones     ?? ['zone1'],
+        unlockedZones,
         playerLevel:       p.playerLevel       ?? 1,
         playerXP:          p.playerXP          ?? 0,
         totalKills:        p.totalKills        ?? 0,
@@ -171,7 +174,7 @@ export class SaveManager {
         gold:                 p.gold ?? 0,
       };
     } catch {
-      return { ...DEFAULT_SAVE, unlockedZones: ['zone1'], highScores: {} };
+      return { ...DEFAULT_SAVE, unlockedZones: ['zone1', 'zone_town'], highScores: {} };
     }
   }
 

@@ -65,6 +65,7 @@ import {
   type WorldEventRecord,
 } from "../db/content";
 import { WorldEventManager } from "../WorldEventManager";
+import { getLandPlots, getPlayerHousing } from "../db/housing";
 import {
   getActiveSeasonalEvent,
   getOrJoinEvent,
@@ -519,8 +520,10 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
     const zoneId = options?.zoneId ?? "zone1";
     this.state.zoneId = zoneId;
-    this.state.totalWaves = 3;
-    this.state.waveState = "waiting";
+    // Social zones (e.g. zone_town) have no combat waves
+    const isSocialZone = zoneId === "zone_town";
+    this.state.totalWaves = isSocialZone ? 0 : 3;
+    this.state.waveState = isSocialZone ? "complete" : "waiting";
 
     // Register message handlers
     this.onMessage("move",             (client: Client, msg: MoveMessage)       => this.handleMove(client, msg));
@@ -592,6 +595,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.onMessage("faction_vendor_buy",      (client: Client, msg: { factionId: string; itemId: string }) => this.handleFactionVendorBuy(client, msg));
     this.onMessage("faction_daily_list",      (client: Client) => this.handleFactionDailyList(client));
     this.onMessage("faction_daily_complete",  (client: Client, msg: { factionId: string }) => this.handleFactionDailyComplete(client, msg));
+
+    // Housing messages (town zone)
+    this.onMessage("housing:plots_request", (client: Client) => this.handleHousingPlotsRequest(client));
 
     // Count every incoming WS message for /metrics
     this.onMessage("*", () => { incrementMessageCount(); });
@@ -3720,5 +3726,33 @@ export class ZoneRoom extends Room<ZoneGameState> {
    */
   broadcastWorldBossEvent(type: string, payload: Record<string, unknown>): void {
     this.broadcast("world_boss_event", { type, ...payload });
+  }
+
+  // ── Housing (town zone) ───────────────────────────────────────────────────
+
+  /** Send all land plots for this zone to the requesting client. */
+  private async handleHousingPlotsRequest(client: Client): Promise<void> {
+    try {
+      const plots = await getLandPlots(this.state.zoneId);
+      // Build a compact summary: plotIndex, ownerId (or null), ownerName (from player map)
+      const summary = plots.map((p) => ({
+        id:         p.id,
+        plotIndex:  p.plotIndex,
+        ownerId:    p.ownerId ?? null,
+        priceGold:  p.priceGold,
+      }));
+      client.send("housing:plots", { plots: summary });
+    } catch (err) {
+      console.warn("[ZoneRoom] housing:plots_request failed:", (err as Error).message);
+      client.send("housing:plots", { plots: [] });
+    }
+  }
+
+  /**
+   * Broadcast updated plot ownership to all clients in this room.
+   * Called server-side when a plot is purchased via the REST endpoint.
+   */
+  broadcastPlotUpdate(plotIndex: number, ownerId: string | null): void {
+    this.broadcast("housing:plot_update", { plotIndex, ownerId });
   }
 }

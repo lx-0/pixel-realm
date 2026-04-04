@@ -59,13 +59,23 @@ export class MiniMapOverlay {
   private header:     Phaser.GameObjects.Text;
   private biomeColor: number;
   private zoomScale   = 1.0;   // pinch-to-zoom multiplier
+  /** "My Plot" quick-travel button (shown only when player owns a house). */
+  private homePlotBtn: Phaser.GameObjects.Text | null = null;
 
   /**
-   * @param scene       The active Phaser scene.
-   * @param biomeName   Short biome label shown above the mini-map (e.g. 'Forest').
-   * @param biomeColor  Accent hex color for the biome border strip (e.g. 0x44dd44).
+   * @param scene         The active Phaser scene.
+   * @param biomeName     Short biome label shown above the mini-map (e.g. 'Forest').
+   * @param biomeColor    Accent hex color for the biome border strip (e.g. 0x44dd44).
+   * @param hasOwnedPlot  When true, renders the "My Plot" quick-travel button.
+   * @param onHomePlot    Called when the player clicks "My Plot" button.
    */
-  constructor(scene: Phaser.Scene, biomeName = 'Zone', biomeColor = 0x667788) {
+  constructor(
+    scene: Phaser.Scene,
+    biomeName = 'Zone',
+    biomeColor = 0x667788,
+    hasOwnedPlot = false,
+    onHomePlot?: () => void,
+  ) {
     this.scene      = scene;
     this.biomeColor = biomeColor;
 
@@ -87,6 +97,24 @@ export class MiniMapOverlay {
       color: labelHex,
       fontFamily: 'monospace',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(DEPTH);
+
+    // "My Plot" quick-travel button (below minimap, only when player has a house)
+    if (hasOwnedPlot && onHomePlot) {
+      this.homePlotBtn = scene.add.text(
+        MAP_X + MAP_W / 2, MAP_Y + MAP_H + 4,
+        '🏠 My Plot',
+        { fontSize: '4px', color: '#aaffaa', fontFamily: 'monospace',
+          stroke: '#000', strokeThickness: 1,
+          backgroundColor: '#1a3a12',
+          padding: { x: 4, y: 2 },
+        },
+      ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(DEPTH)
+       .setInteractive({ useHandCursor: true });
+
+      this.homePlotBtn.on('pointerover',  () => this.homePlotBtn?.setColor('#ffffff'));
+      this.homePlotBtn.on('pointerout',   () => this.homePlotBtn?.setColor('#aaffaa'));
+      this.homePlotBtn.on('pointerdown',  onHomePlot);
+    }
   }
 
   // ── Update ─────────────────────────────────────────────────────────────────
@@ -277,5 +305,6 @@ export class MiniMapOverlay {
     this.gfx.destroy();
     this.maskGfx.destroy();
     this.header.destroy();
+    this.homePlotBtn?.destroy();
   }
 }

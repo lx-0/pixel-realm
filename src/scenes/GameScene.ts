@@ -1234,18 +1234,32 @@ export class GameScene extends Phaser.Scene {
     const joined = await client.joinZone(zoneId, playerName, userId);
     if (!joined) {
       // Server not available — run in solo mode.
-      // Give tutorial players a brief grace period before the first wave.
-      const waveDelay = this.tutorial ? 4000 : 0;
-      if (waveDelay > 0) {
-        this.time.delayedCall(waveDelay, () => { if (!this.isDead) this.spawnWave(); });
-      } else {
-        this.spawnWave();
+      // Social zones (e.g. town) have no combat waves.
+      if (!this.zone.isSocialZone && this.zone.waves > 0) {
+        // Give tutorial players a brief grace period before the first wave.
+        const waveDelay = this.tutorial ? 4000 : 0;
+        if (waveDelay > 0) {
+          this.time.delayedCall(waveDelay, () => { if (!this.isDead) this.spawnWave(); });
+        } else {
+          this.spawnWave();
+        }
       }
       return;
     }
 
     this.mp = client;
     this.isMultiplayer = true;
+
+    // For town zone: request plot ownership state on join
+    if (this.zone.isSocialZone) {
+      client.requestHousingPlots();
+      client.onHousingPlots = (plots) => {
+        console.log(`[Housing] Received ${plots.length} plot(s) from server`);
+      };
+      client.onHousingPlotUpdate = (plotIndex, ownerId) => {
+        console.log(`[Housing] Plot ${plotIndex} ownership → ${ownerId ?? 'unclaimed'}`);
+      };
+    }
 
     // Chat overlay
     this.chat = new ChatOverlay(this);
@@ -2016,9 +2030,12 @@ export class GameScene extends Phaser.Scene {
       this.leaderboardPanel?.destroy();
       this.leaderboardPanel = new LeaderboardPanel(this);
       // Resume local simulation after overlay hides (~2.5 s)
-      this.time.delayedCall(2600, () => {
-        if (!this.isDead && !this.waveTransitioning) this.spawnWave();
-      });
+      // Social zones have no combat; skip wave spawn.
+      if (!this.zone.isSocialZone && this.zone.waves > 0) {
+        this.time.delayedCall(2600, () => {
+          if (!this.isDead && !this.waveTransitioning) this.spawnWave();
+        });
+      }
     };
 
     // Create the online player count HUD item
@@ -2128,6 +2145,9 @@ export class GameScene extends Phaser.Scene {
   // ── Server wave change ────────────────────────────────────────────────────
 
   private onServerWaveChange(wave: number, waveState: string): void {
+    // Social zones have no combat — ignore wave change events
+    if (this.zone.isSocialZone) return;
+
     this.wave = wave;
 
     if (waveState === 'active') {
@@ -2544,11 +2564,17 @@ export class GameScene extends Phaser.Scene {
     // Rod vendor NPC — placed near fishing spots
     this.addRodVendorNpc(W / 2, H - WALL - 32);
 
-    // Housing NPC (Realtor) — placed in bottom-right corner
-    this.addHousingNpc(W - WALL - 24, H - WALL - 24);
+    if (this.zone.isSocialZone) {
+      // Town zone: draw plot grid and realtor NPC at top of town
+      this._buildTownPlotGrid();
+      this.addHousingNpc(W / 2, WALL + 32);
+    } else {
+      // Housing NPC (Realtor) — placed in bottom-right corner
+      this.addHousingNpc(W - WALL - 24, H - WALL - 24);
+    }
 
     // Dungeon portal — appears in endgame zones (zone10+)
-    if (this.zoneIdx >= 9) {
+    if (!this.zone.isSocialZone && this.zoneIdx >= 9) {
       this.addDungeonPortal(W - WALL - 24, H - WALL - 24);
     }
 
@@ -3171,6 +3197,95 @@ export class GameScene extends Phaser.Scene {
     this.fishingPanel.update();
   }
 
+  // ── Town zone plot grid ──────────────────────────────────────────────────
+
+  /**
+   * Draws the land-plot grid for zone_town.
+   * Each plot is a 48×48 tile showing ownership status.
+   * Clicking an owned plot enters that player's HousingScene.
+   * Clicking an empty plot triggers the purchase dialog.
+   */
+  private _buildTownPlotGrid(): void {
+    const save          = SaveManager.load();
+    const playerHousing = save.housing;
+    // First plot slot is used as the player's own plot marker when they own a house.
+    // In real multiplayer the server sends the authoritative mapping; we just highlight
+    // slot 0 as a local fallback so the player can click their plot easily.
+    const mySlotIdx = playerHousing?.owned ? 0 : -1;
+
+    for (const slot of HOUSING.TOWN_PLOTS) {
+      const wx = slot.x;
+      const wy = slot.y;
+
+      // Determine if this is the local player's plot (local fallback: slot 0 when owned)
+      const isMyPlot = slot.plotIndex === mySlotIdx;
+
+      // Plot tile background
+      const tileColor  = isMyPlot ? 0x2a4a1a : 0x1a2a10;
+      const borderColor = isMyPlot ? 0x88ee44 : 0x446633;
+      const tile = this.add.rectangle(wx + 24, wy + 24, 48, 48, tileColor, 0.9)
+        .setDepth(1)
+        .setStrokeStyle(1, borderColor)
+        .setInteractive({ useHandCursor: true });
+
+      // Plot index label
+      this.add.text(wx + 4, wy + 4, `#${slot.plotIndex + 1}`, {
+        fontSize: '3px', color: '#668855', fontFamily: 'monospace',
+      }).setDepth(2);
+
+      if (isMyPlot) {
+        // Show "My Plot" house icon and label
+        this.add.text(wx + 24, wy + 20, '🏠', { fontSize: '10px' })
+          .setDepth(2).setOrigin(0.5, 0.5);
+        this.add.text(wx + 24, wy + 36, 'MY PLOT', {
+          fontSize: '3px', color: '#aaffaa', fontFamily: 'monospace',
+        }).setDepth(2).setOrigin(0.5, 0);
+
+        // Glow pulse
+        this.tweens.add({ targets: tile, alpha: 0.7, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+        tile.on('pointerdown', () => this.enterHouse());
+        tile.on('pointerover',  () => tile.setFillStyle(0x3a6a22));
+        tile.on('pointerout',   () => tile.setFillStyle(tileColor));
+      } else {
+        // Empty plot — available for purchase
+        this.add.text(wx + 24, wy + 20, '🏕️', { fontSize: '8px' })
+          .setDepth(2).setOrigin(0.5, 0.5);
+        this.add.text(wx + 24, wy + 34, 'FOR SALE', {
+          fontSize: '3px', color: '#aaccaa', fontFamily: 'monospace',
+        }).setDepth(2).setOrigin(0.5, 0);
+
+        // Price hint based on plot tier (plots 0-7 = tier 1, 8-15 = tier 2, 16-19 = tier 3)
+        const priceG = slot.plotIndex < 8  ? HOUSING.PLOT_COST
+                     : slot.plotIndex < 16 ? HOUSING.PLOT_COST + 500
+                     : HOUSING.PLOT_COST + 1500;
+        this.add.text(wx + 24, wy + 39, `${priceG}g`, {
+          fontSize: '3px', color: '#ffd700', fontFamily: 'monospace',
+        }).setDepth(2).setOrigin(0.5, 0);
+
+        tile.on('pointerdown', () => {
+          if (!save.housing?.owned) {
+            this.showHousingPurchaseDialog();
+          } else {
+            this.floatingText(wx + 24, wy + 10, 'You already own a plot!', '#ffaa44');
+          }
+        });
+        tile.on('pointerover',  () => tile.setFillStyle(0x243818));
+        tile.on('pointerout',   () => tile.setFillStyle(tileColor));
+      }
+    }
+
+    // Town centre sign
+    this.add.text(this.worldW / 2, 36, '⭐ PLAYER TOWN ⭐', {
+      fontSize: '8px', color: '#ddffaa', fontFamily: 'monospace',
+      stroke: '#000', strokeThickness: 2,
+    }).setDepth(5).setOrigin(0.5, 0.5);
+
+    this.add.text(this.worldW / 2, 48, 'Buy a plot • Build your home • Visit neighbours', {
+      fontSize: '4px', color: '#aabbaa', fontFamily: 'monospace',
+    }).setDepth(5).setOrigin(0.5, 0.5);
+  }
+
   // ── Housing NPC ────────────────────────────────────────────────────────────
 
   private addHousingNpc(x: number, y: number): void {
@@ -3332,7 +3447,19 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  // ── Mount toggle / cast ───────────────────────────────────────────────────
+  /** Quick-travel to Player Town via the minimap "My Plot" button. */
+  private _travelToTown(): void {
+    if (this.zone.id === 'zone_town') {
+      // Already in town — enter house directly
+      this.enterHouse();
+      return;
+    }
+    this.cameras.main.fadeOut(400, 0, 0, 0, () => {
+      this.scene.start(SCENES.ZONE_TRANSITION, { zoneId: 'zone_town' });
+    });
+  }
+
+  // ── Mount toggle / cast ────────────────────────────────���──────────────────
 
   private handleMountToggle(time: number): void {
     if (this.isMounted || this.isCasting) {
@@ -3991,7 +4118,7 @@ export class GameScene extends Phaser.Scene {
 
     if (this.isBossWave) {
       this.spawnBossWave();
-      this.sfx.startBossMusic(this.zone.bossType);
+      if (this.zone.bossType) this.sfx.startBossMusic(this.zone.bossType);
     } else {
       this.spawnNormalWave();
       this.sfx.startCombatMusic();
@@ -4030,6 +4157,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private spawnBossWave(): void {
+    if (!this.zone.bossType) return;
     const bossDef = BOSS_TYPES[this.zone.bossType];
     const hpScale = (1 + (this.level - 1) * 0.25) * this.zone.difficultyMult;
     const hp      = Math.floor(bossDef.baseHp * hpScale);
@@ -5386,7 +5514,13 @@ export class GameScene extends Phaser.Scene {
       { fontSize: '5px', color: '#ffe040', fontFamily: 'monospace', stroke: '#000', strokeThickness: 2 },
     ).setOrigin(1, 0.5).setScrollFactor(0).setDepth(Z + 3).setVisible(false);
 
-    this.miniMap = new MiniMapOverlay(this, this.zone.biome, this.zone.accentColor);
+    const _mmSave = SaveManager.load();
+    const _hasPlot = _mmSave.housing?.owned ?? false;
+    this.miniMap = new MiniMapOverlay(
+      this, this.zone.biome, this.zone.accentColor,
+      _hasPlot,
+      _hasPlot ? () => this._travelToTown() : undefined,
+    );
 
     // NPC markers: quest NPC + waystone (shown on minimap)
     const WALL = 32;

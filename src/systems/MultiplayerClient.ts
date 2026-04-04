@@ -57,6 +57,15 @@ export interface PetData {
   isEquipped: boolean;
 }
 
+// ── Housing data shapes ────────────────────────────────────────────────────────
+
+export interface HousingPlotSummary {
+  id:         string;
+  plotIndex:  number;
+  ownerId:    string | null;
+  priceGold:  number;
+}
+
 // ── Party data shapes ─────────────────────────────────────────────────────────
 
 export interface PartyMember {
@@ -402,6 +411,10 @@ export class MultiplayerClient {
   onPetHappiness?: (petId: string, happiness: number) => void;
   onPetError?:     (message: string) => void;
 
+  // Housing callbacks (town zone)
+  onHousingPlots?:      (plots: HousingPlotSummary[]) => void;
+  onHousingPlotUpdate?: (plotIndex: number, ownerId: string | null) => void;
+
   // Trade callbacks
   onTradeInvited?: (fromSessionId: string, fromName: string) => void;
   onTradePending?: (withSessionId: string) => void;
@@ -597,6 +610,14 @@ export class MultiplayerClient {
     });
     room.onMessage('pet_error', (msg: { message: string }) => {
       this.onPetError?.(msg.message);
+    });
+
+    // ── Housing messages (town zone) ──────────────────────────────────────
+    room.onMessage('housing:plots', (msg: { plots: HousingPlotSummary[] }) => {
+      this.onHousingPlots?.(msg.plots);
+    });
+    room.onMessage('housing:plot_update', (msg: { plotIndex: number; ownerId: string | null }) => {
+      this.onHousingPlotUpdate?.(msg.plotIndex, msg.ownerId);
     });
 
     // ── Trade messages ────────────────────────────────────────────────────
@@ -1124,6 +1145,11 @@ export class MultiplayerClient {
 
   sendRequestFriendsList(): void {
     this.room?.send('friends_list', {});
+  }
+
+  /** Request current plot ownership state for the town zone. */
+  requestHousingPlots(): void {
+    this.room?.send('housing:plots_request', {});
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

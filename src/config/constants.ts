@@ -357,6 +357,16 @@ export const HOUSING = {
     { id: 'decor_candle',    name: 'Candle',       key: 'decor_candle'    },
     { id: 'decor_clock',     name: 'Clock',        key: 'decor_clock'     },
   ] as const,
+  /**
+   * Grid positions (world coords) of land plots in zone_town.
+   * 20 plots arranged in a 4×5 grid.
+   * World is 640×360; plots are 48×48 with 24px gaps; grid starts at (80, 64).
+   */
+  TOWN_PLOTS: Array.from({ length: 20 }, (_, i) => ({
+    plotIndex: i,
+    x: 80 + (i % 4) * 72,
+    y: 64 + Math.floor(i / 4) * 72,
+  })),
 } as const;
 
 // ── Arena ─────────────────────────────────────────────────────────────────────
@@ -542,7 +552,7 @@ export interface ZoneConfig {
   accentColor: number;
   waves: number;
   enemyTypes: EnemyTypeName[];
-  bossType: BossTypeName;
+  bossType?: BossTypeName;
   minPlayerLevel: number;
   xpReward: number;
   unlockRequirement: string | null;
@@ -550,6 +560,8 @@ export interface ZoneConfig {
   difficultyMult: number;
   /** Biome-specific crafting materials that can drop from enemies in this zone. */
   biomeResources: string[];
+  /** When true, no combat spawns — used for social/housing zones. */
+  isSocialZone?: boolean;
 }
 
 // ── Status Effects ────────────────────────────────────────────────────────────
@@ -977,5 +989,23 @@ export const ZONES: ZoneConfig[] = [
     unlockRequirement: 'zone18',
     difficultyMult: 10.0,
     biomeResources: ['Astral Gem', 'Nebula Dust'],
+  },
+  {
+    id: 'zone_town',
+    name: 'Player Town',
+    biome: 'town',
+    description: 'A shared social hub where adventurers purchase land, build homes, and visit each other\'s plots. No monsters here — just community.',
+    bgColor: 0x0e1408,
+    groundColor: 0x2a3e18,
+    wallColor: 0x0a1006,
+    accentColor: 0xaaddaa,
+    waves: 0,
+    enemyTypes: [],
+    minPlayerLevel: 1,
+    xpReward: 0,
+    unlockRequirement: null,
+    difficultyMult: 1.0,
+    biomeResources: [],
+    isSocialZone: true,
   },
 ];
