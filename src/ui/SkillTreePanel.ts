@@ -305,8 +305,8 @@ export class SkillTreePanel {
       slotBg.on('pointerdown', () => {
         const newHotbar = [...(this.state.hotbar ?? [])];
         newHotbar[slot] = '';
-        while (newHotbar.length > 6) newHotbar.pop();
-        this.onSetHotbar?.(newHotbar);
+        const filtered = newHotbar.filter(s => s !== '').slice(0, 6);
+        this.onSetHotbar?.(filtered);
       });
     }
 
