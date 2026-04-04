@@ -49,6 +49,14 @@ export default defineConfig({
       },
       testMatch: ['**/smoke.spec.ts'],
     },
+    {
+      name: 'integration',
+      use: {
+        ...devices['Desktop Chrome'],
+        extraHTTPHeaders: {},
+      },
+      testMatch: ['**/integration.spec.ts'],
+    },
   ],
 
   /* Auto-start Vite dev server for client tests */
