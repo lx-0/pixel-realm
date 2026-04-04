@@ -501,6 +501,209 @@ export async function getOrGenerateQuest(
 }
 
 /**
+ * Returns up to 3 quest previews for the quest board (kill/fetch/explore) for
+ * a given zone+level combination. Quests are fetched from the cache or generated
+ * on demand. Quests are NOT assigned to any player — this is for board display.
+ */
+export async function getQuestPreviews(
+  zoneId: string,
+  playerLevel: number,
+): Promise<GeneratedQuest[]> {
+  const bucket = levelBucket(playerLevel);
+  const boardTypes: QuestType[] = ["kill", "fetch", "explore"];
+  const db = getDb();
+  const now = new Date();
+
+  const previews: GeneratedQuest[] = [];
+
+  for (const questType of boardTypes) {
+    const cacheKey = buildCacheKey(zoneId, bucket, questType);
+
+    // Try cache first
+    const rows = await db
+      .select()
+      .from(generatedQuests)
+      .where(and(eq(generatedQuests.cacheKey, cacheKey), gt(generatedQuests.expiresAt, now)))
+      .limit(1);
+
+    if (rows.length) {
+      const row = rows[0];
+      previews.push({
+        id: row.id,
+        zoneId: row.zoneId,
+        playerLevelBucket: row.playerLevelBucket,
+        questType: row.questType as QuestType,
+        factionId: row.factionId ?? null,
+        title: row.title,
+        description: row.description,
+        objectives: row.objectives as GeneratedQuest["objectives"],
+        rewards: row.rewards as GeneratedQuest["rewards"],
+        dialogue: row.dialogue as GeneratedQuest["dialogue"],
+        completionConditions: row.completionConditions as GeneratedQuest["completionConditions"],
+        cacheKey: row.cacheKey,
+        generatedAt: row.generatedAt.toISOString(),
+        expiresAt: row.expiresAt.toISOString(),
+      });
+      continue;
+    }
+
+    // Not cached — generate and store
+    try {
+      const meta = ZONE_META[zoneId] ?? ZONE_META["zone1"];
+      const faction = factionForZone(zoneId);
+      const [season, seasonalEvent] = await Promise.all([
+        getActiveSeason().catch(() => null),
+        getActiveSeasonalEvent().catch(() => null),
+      ]);
+
+      const effectiveSeasonName  = seasonalEvent?.name  ?? season?.name  ?? null;
+      const effectiveSeasonTheme = seasonalEvent?.theme ?? season?.storyPromptTemplate ?? null;
+
+      const ctx: QuestGenerationContext = {
+        zoneId,
+        zoneName: meta.name,
+        zoneBiome: meta.biome,
+        zoneDescription: meta.description,
+        playerLevel,
+        levelBucket: bucket,
+        questType,
+        enemyTypes: meta.enemyTypes,
+        factionId: faction?.id ?? null,
+        factionName: faction?.name ?? null,
+        playerStanding: null,
+        seasonName:  effectiveSeasonName,
+        seasonTheme: effectiveSeasonTheme,
+      };
+
+      const data = await generateQuestLLM(ctx);
+      const expiresAt = new Date(Date.now() + QUEST_CACHE_TTL_MS);
+
+      const [row] = await db
+        .insert(generatedQuests)
+        .values({
+          zoneId,
+          playerLevelBucket: bucket,
+          questType,
+          factionId: ctx.factionId,
+          title: data.title,
+          description: data.description,
+          objectives: data.objectives,
+          rewards: data.rewards,
+          dialogue: data.dialogue,
+          completionConditions: data.completionConditions,
+          cacheKey,
+          expiresAt,
+        })
+        .onConflictDoUpdate({
+          target: generatedQuests.cacheKey,
+          set: {
+            title: data.title,
+            description: data.description,
+            objectives: data.objectives,
+            rewards: data.rewards,
+            dialogue: data.dialogue,
+            completionConditions: data.completionConditions,
+            generatedAt: new Date(),
+            expiresAt,
+          },
+        })
+        .returning();
+
+      previews.push({
+        id: row.id,
+        zoneId: row.zoneId,
+        playerLevelBucket: row.playerLevelBucket,
+        questType: row.questType as QuestType,
+        factionId: row.factionId ?? null,
+        title: row.title,
+        description: row.description,
+        objectives: row.objectives as GeneratedQuest["objectives"],
+        rewards: row.rewards as GeneratedQuest["rewards"],
+        dialogue: row.dialogue as GeneratedQuest["dialogue"],
+        completionConditions: row.completionConditions as GeneratedQuest["completionConditions"],
+        cacheKey: row.cacheKey,
+        generatedAt: row.generatedAt.toISOString(),
+        expiresAt: row.expiresAt.toISOString(),
+      });
+    } catch (err) {
+      console.warn(`[Quest] Board preview generation failed for ${zoneId}/${questType}:`, (err as Error).message);
+      // Skip this type — board will show fewer quests rather than failing entirely
+    }
+  }
+
+  return previews;
+}
+
+/**
+ * Increments the kill count for a player's active kill quest (if any) targeting
+ * the given enemy type. Returns the quest ID and whether the quest is now
+ * complete, or null if no matching active quest was found.
+ */
+export async function updateQuestKillProgress(
+  playerId: string,
+  zoneId: string,
+  enemyType: string,
+): Promise<{ questId: string; completed: boolean; kills: number; required: number } | null> {
+  const db = getDb();
+  const prefix = `llm:${zoneId}:`;
+
+  // Find active progression rows for this player in this zone
+  const activeRows = await db
+    .select()
+    .from(progression)
+    .where(and(eq(progression.playerId, playerId), eq(progression.status, "active")));
+
+  const zoneRow = activeRows.find((r) => r.questId.startsWith(prefix));
+  if (!zoneRow) return null;
+
+  const questId = zoneRow.questId.replace(prefix, "");
+
+  // Look up the quest to check its completion conditions
+  const questRows = await db
+    .select()
+    .from(generatedQuests)
+    .where(eq(generatedQuests.id, questId))
+    .limit(1);
+
+  if (!questRows.length) return null;
+
+  const quest = questRows[0];
+  const conditions = quest.completionConditions as { type: string; target: string; count?: number };
+
+  if (conditions.type !== "kill") return null;
+
+  // Check if this kill matches the quest target (loose match — compare type substring)
+  const target = (conditions.target ?? "").toLowerCase();
+  const killed = enemyType.toLowerCase();
+  const matches = killed === target || killed.includes(target) || target.includes(killed);
+  if (!matches) return null;
+
+  const required = conditions.count ?? 1;
+  const currentProgress = (zoneRow.progress ?? {}) as Record<string, number>;
+  const kills = (currentProgress.kills ?? 0) + 1;
+
+  // Write updated progress
+  const pool = (await import("../db/client")).getPool();
+  await pool.query(
+    `UPDATE progression
+        SET progress = jsonb_set(COALESCE(progress, '{}'), '{kills}', $1::text::jsonb)
+      WHERE player_id = $2 AND quest_id = $3`,
+    [kills, playerId, zoneRow.questId],
+  );
+
+  const completed = kills >= required;
+  if (completed) {
+    // Mark as completed in the progression table
+    await db
+      .update(progression)
+      .set({ status: "completed", completedAt: new Date() })
+      .where(and(eq(progression.playerId, playerId), eq(progression.questId, zoneRow.questId)));
+  }
+
+  return { questId, completed, kills, required };
+}
+
+/**
  * Marks a player's LLM quest in a zone as completed.
  * Returns the factionId of the completed quest (for rep awards), or null.
  * Also records NPC memory and advances chain step if applicable.

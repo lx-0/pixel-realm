@@ -122,6 +122,7 @@ import { logger, logUnhandledException } from "./logger";
 import { startAlertLoop } from "./alerting";
 import { getPoolStats } from "./db/client";
 import { getRedis } from "./db/redis";
+import { getQuestPreviews } from "./quests/db";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
 
@@ -1390,6 +1391,27 @@ function playerAuth(req: Request, res: Response, next: NextFunction): void {
     res.status(401).json({ error: "Invalid or expired token" });
   }
 }
+
+// ── Quest board endpoints ─────────────────────────────────────────────────────
+
+// GET /quests/board?zoneId=X — returns 3 LLM-generated quests for the quest board UI
+app.get("/quests/board", playerAuth, async (req: Request, res: Response) => {
+  const playerId = (req as Request & { playerPayload: AccessTokenPayload }).playerPayload.sub;
+  const zoneId = String((req.query as Record<string, string>).zoneId ?? "zone1").slice(0, 50);
+  try {
+    const { getPool } = await import("./db/client");
+    const stateRow = await getPool().query<{ level: number }>(
+      "SELECT level FROM player_state WHERE player_id = $1 LIMIT 1",
+      [playerId],
+    );
+    const playerLevel = stateRow.rows[0]?.level ?? 1;
+    const quests = await getQuestPreviews(zoneId, playerLevel);
+    res.json(quests);
+  } catch (err) {
+    console.warn("[QuestBoard] board fetch failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to load quest board" });
+  }
+});
 
 // GET /daily-reward/status — returns streak state and whether a reward is available today
 app.get("/daily-reward/status", playerAuth, async (req: Request, res: Response) => {

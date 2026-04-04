@@ -1367,6 +1367,11 @@ export class GameScene extends Phaser.Scene {
       this.npcMarkers = this.npcMarkers.map(m => ({ ...m, hasQuest: false }));
     };
 
+    client.onQuestProgress = (questId, kills, required) => {
+      void questId;
+      this.chat?.addMessage(`Quest progress: ${kills}/${required} kills`, '#aaddff');
+    };
+
     client.onQuestReward = (gold, xp, goldTotal, _xpTotal, multiplier) => {
       this.gold = goldTotal;
       if (this.goldText) this.goldText.setText(`${goldTotal}g`);

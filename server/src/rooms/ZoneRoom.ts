@@ -6,7 +6,7 @@ import { loadPlayerState, savePlayerState, initPlayerState } from "../db/players
 import { performPrestigeReset, getPrestigeBonuses, MAX_PRESTIGE } from "../db/prestige";
 import { invalidateLeaderboardCache } from "../db/leaderboard";
 import { getPool } from "../db/client";
-import { getOrGenerateQuest, completeQuestForPlayer } from "../quests/db";
+import { getOrGenerateQuest, completeQuestForPlayer, updateQuestKillProgress } from "../quests/db";
 import { verifyRoomToken, AuthPayload } from "../auth/middleware";
 import {
   getPlayerFactionReputations,
@@ -1529,6 +1529,120 @@ export class ZoneRoom extends Room<ZoneGameState> {
     }
   }
 
+  /** Tracks kill progress for active kill quests and auto-sends quest_completed when done. */
+  private async trackKillQuestProgress(killerSessionId: string, enemyType: string): Promise<void> {
+    const userId = sessionUserMap.get(killerSessionId);
+    if (!userId) return;
+
+    const result = await updateQuestKillProgress(userId, this.state.zoneId, enemyType);
+    if (!result) return;
+
+    // Notify client of updated kill count
+    const killerClient = this.clients.find((c) => c.sessionId === killerSessionId);
+    if (!killerClient) return;
+
+    killerClient.send("quest_progress", {
+      questId: result.questId,
+      kills: result.kills,
+      required: result.required,
+    });
+
+    // Quest auto-completed — run full completion flow
+    if (result.completed) {
+      try {
+        const { factionId, chainAdvanced, chainComplete, rewards } = await completeQuestForPlayer(
+          userId,
+          this.state.zoneId,
+          result.questId,
+        );
+
+        killerClient.send("quest_completed", { questId: result.questId, chainAdvanced, chainComplete });
+        killerClient.send("chat", { sender: "System", text: `✦ Quest complete: objective fulfilled!`, whisper: false });
+
+        if (chainAdvanced) {
+          if (chainComplete) {
+            killerClient.send("chat", { sender: "System", text: "✦ Quest chain complete! Well done, adventurer.", whisper: false });
+          } else {
+            killerClient.send("chat", { sender: "System", text: "✦ Quest chain step complete — speak to the NPC for the next task!", whisper: false });
+          }
+        }
+
+        // Award seasonal event points
+        if (this.activeSeasonalEvent) {
+          try {
+            const EVENT_POINTS_PER_QUEST = 50;
+            const newTotal = await awardEventPoints(userId, this.activeSeasonalEvent.id, EVENT_POINTS_PER_QUEST);
+            killerClient.send("seasonal_event_points", {
+              eventId: this.activeSeasonalEvent.id,
+              pointsDelta: EVENT_POINTS_PER_QUEST,
+              totalPoints: newTotal,
+            });
+          } catch { /* non-fatal */ }
+        }
+
+        // Award faction rep and gold
+        let goldMultiplier = 1.0;
+        if (factionId) {
+          const faction = FACTION_BY_ID.get(factionId);
+          if (faction) {
+            const newRep = await adjustFactionReputation(userId, factionId, faction.questRepGain);
+            const standing = getStanding(newRep);
+            goldMultiplier = standingGoldMultiplier(standing);
+
+            if (faction.rivalFactionId) {
+              await adjustFactionReputation(userId, faction.rivalFactionId, -RIVAL_REP_LOSS);
+            }
+
+            const reps = await getPlayerFactionReputations(userId);
+            killerClient.send("faction_reputations", { reputations: reps });
+            killerClient.send("faction_rep_changed", {
+              factionId,
+              factionName: faction.name,
+              delta: faction.questRepGain,
+              newRep,
+              standing,
+            });
+
+            const newTitles = await awardEarnedFactionTitles(userId, factionId, newRep);
+            for (const title of newTitles) {
+              killerClient.send("faction_title_unlocked", {
+                factionId,
+                factionName: faction.name,
+                titleId: title.titleId,
+                title: title.title,
+              });
+            }
+          }
+        }
+
+        // Award gold and XP
+        if (rewards.gold > 0 || rewards.xp > 0) {
+          const finalGold = Math.round(rewards.gold * goldMultiplier);
+          const pool = getPool();
+          const rewardRes = await pool.query<{ gold: number; xp: number }>(
+            `UPDATE player_state
+                SET gold = gold + $1,
+                    xp   = xp   + $2,
+                    updated_at = NOW()
+              WHERE player_id = $3
+              RETURNING gold, xp`,
+            [finalGold, rewards.xp, userId],
+          );
+          const updated = rewardRes.rows[0];
+          killerClient.send("quest_reward", {
+            gold: finalGold,
+            xp: rewards.xp,
+            goldTotal: updated?.gold ?? 0,
+            xpTotal: updated?.xp ?? 0,
+            multiplier: goldMultiplier,
+          });
+        }
+      } catch (err) {
+        console.warn(`[ZoneRoom] Auto-complete quest ${result.questId} failed:`, (err as Error).message);
+      }
+    }
+  }
+
   // ── Wave Management ───────────────────────────────────────────────────────────
 
   private startNextWave() {
@@ -1614,6 +1728,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
       // Track world event participation (counts toward rewards on event end)
       this.worldEventManager?.onEnemyKill(killerSessionId);
+
+      // Track kill quest progress — auto-complete if objective met
+      this.trackKillQuestProgress(killerSessionId, enemy.type).catch(() => {/* best-effort */});
 
       // Apply healOnKill passive bonus
       const bonuses = this.getPassiveBonuses(killerSessionId);
