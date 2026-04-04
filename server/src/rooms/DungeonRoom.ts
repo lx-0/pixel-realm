@@ -51,6 +51,22 @@ const PERSIST_INTERVAL_MS = 30_000;
 /** Per-player dungeon cooldown (default 1 hour). Configurable via env. */
 export const DUNGEON_COOLDOWN_MS = Number(process.env.DUNGEON_COOLDOWN_MS ?? 3_600_000);
 
+// ── Dungeon Themes ────────────────────────────────────────────────────────────
+
+/**
+ * Named dungeon themes with distinct enemy flavour and visual identity.
+ * Tier 1 → Cursed Crypt (undead), Tier 2 → Volcanic Forge (fire),
+ * Tier 3 → Frozen Depths (ice), Tier 4 → Nightmare Void (endgame).
+ *
+ * Tier 4 can randomly pick from any endgame theme for variety.
+ */
+const DUNGEON_THEMES: Record<number, string> = {
+  1: "cursed_crypt",
+  2: "volcanic_forge",
+  3: "frozen_depths",
+  4: "nightmare_void",
+};
+
 // ── Seeded RNG (mulberry32) ────────────────────────────────────────────────────
 
 function hashString(s: string): number {
@@ -397,6 +413,16 @@ interface PartyInviteMessage  { targetSessionId: string }
 interface PartyRespondMessage { accept: boolean }
 interface PartyKickMessage    { targetSessionId: string }
 interface PartyLootModeMessage { mode: "round_robin" | "need_greed" }
+interface LootRollVoteMessage  { rollId: string; choice: "need" | "greed" | "pass" }
+
+/** Tracks an in-flight need/greed loot roll. */
+interface LootRoll {
+  rollId: string;
+  items: string[];
+  voterSessionIds: string[];
+  votes: Map<string, { choice: "need" | "greed" | "pass"; roll: number }>;
+  timeoutHandle: ReturnType<typeof setTimeout>;
+}
 
 // In-memory party state (mirrors ZoneRoom)
 interface PartyData {
@@ -449,6 +475,12 @@ export class DungeonRoom extends Room<DungeonGameState> {
   // Per-enemy last ranged shot timestamp (enemyId → ms)
   private lastRangedShot = new Map<string, number>();
 
+  // Wipe state
+  private wipeHandled = false;
+
+  // Active need/greed loot rolls (rollId → roll state)
+  private activeRolls = new Map<string, LootRoll>();
+
   // Boss state (set when entering boss room)
   private bossConfig: BossConfig | null = null;
   private bossId: string | null = null;
@@ -484,6 +516,9 @@ export class DungeonRoom extends Room<DungeonGameState> {
     this.state.currentRoom = 0;
     this.state.roomType    = this.roomLayout[0];
 
+    // Set dungeon theme
+    this.state.dungeonTheme = DUNGEON_THEMES[tier] ?? "cursed_crypt";
+
     // For tier 4, pick a random endgame boss from the pool
     let bossType: string;
     if (tier >= 4) {
@@ -505,6 +540,7 @@ export class DungeonRoom extends Room<DungeonGameState> {
     this.onMessage("party_kick",      (c, m: PartyKickMessage)     => this.handlePartyKick(c, m));
     this.onMessage("party_loot_mode", (c, m: PartyLootModeMessage) => this.handlePartyLootMode(c, m));
     this.onMessage("party_chat",      (c, m: PartyChatMessage)     => this.handlePartyChat(c, m));
+    this.onMessage("loot_roll_vote",  (c, m: LootRollVoteMessage)  => this.handleLootRollVote(c, m));
 
     // Count every incoming WS message for /metrics
     this.onMessage("*", () => { incrementMessageCount(); });
@@ -1045,6 +1081,61 @@ export class DungeonRoom extends Room<DungeonGameState> {
     }
   }
 
+  // ── Wipe Mechanic ─────────────────────────────────────────────────────────────
+
+  /** Check if all players are dead. If so, trigger a party wipe. */
+  private checkPartyWipe(): void {
+    if (this.wipeHandled) return;
+    if (this.state.dungeonState !== "room_active") return;
+    let anyAlive = false;
+    this.state.players.forEach((p: Player) => { if (p.hp > 0) anyAlive = true; });
+    if (!anyAlive) {
+      this.wipeHandled = true;
+      this.handleWipe();
+    }
+  }
+
+  /**
+   * Party wipe: apply 5% gold loss to each player and send them back to town.
+   * Per GDD: "death penalty = 5% non-equipped resource loss".
+   * We interpret this as 5% of the player's current gold.
+   */
+  private async handleWipe(): Promise<void> {
+    console.log(`[DungeonRoom] WIPE in tier-${this.state.tier} dungeon — applying penalties`);
+    this.state.dungeonState = "wiped";
+
+    const penaltyPromises = this.clients.map(async (client: Client) => {
+      const userId = dungeonSessionUserMap.get(client.sessionId);
+      let goldLost = 0;
+      if (userId) {
+        try {
+          const pool = getPool();
+          // Deduct 5% of current gold (floor), return how much was actually lost
+          const result = await pool.query<{ gold_before: number; gold_after: number }>(
+            `UPDATE player_state
+              SET gold = GREATEST(0, FLOOR(gold * 0.95))
+            WHERE player_id = $1
+            RETURNING
+              (SELECT gold FROM player_state WHERE player_id = $1) AS gold_before,
+              GREATEST(0, FLOOR(gold * 0.95)) AS gold_after`,
+            [userId],
+          );
+          if (result.rows[0]) {
+            goldLost = Math.max(0, (result.rows[0].gold_before ?? 0) - (result.rows[0].gold_after ?? 0));
+          }
+        } catch (err) {
+          console.warn("[DungeonRoom] wipe penalty failed for", userId, (err as Error).message);
+        }
+      }
+      client.send("dungeon_wipe", { goldLost });
+    });
+
+    await Promise.allSettled(penaltyPromises);
+
+    // Disconnect the room after a delay to give clients time to receive the message
+    this.clock.setTimeout(() => this.disconnect(), 4_000);
+  }
+
   // ── Loot ──────────────────────────────────────────────────────────────────────
 
   private async dropDungeonLootForParty(
@@ -1079,11 +1170,114 @@ export class DungeonRoom extends Room<DungeonGameState> {
       return;
     }
 
-    if (party.lootMode === "round_robin") {
+    if (party.lootMode === "need_greed" && isBoss) {
+      // Boss drops in need/greed mode → start a vote for each distinct item group
+      this.startNeedGreedRoll(droppedItems, onlineMembers);
+    } else if (party.lootMode === "round_robin") {
       party.roundRobinIndex = (party.roundRobinIndex + 1) % onlineMembers.length;
       await this.grantLootToSession(onlineMembers[party.roundRobinIndex], droppedItems);
     } else {
-      await this.grantLootToSession(killerSessionId, droppedItems);
+      // need_greed on non-boss enemies: round-robin for simplicity
+      party.roundRobinIndex = (party.roundRobinIndex + 1) % onlineMembers.length;
+      await this.grantLootToSession(onlineMembers[party.roundRobinIndex], droppedItems);
+    }
+  }
+
+  /**
+   * Start a need/greed roll for a set of items among party members.
+   * Returns immediately; roll resolves asynchronously via votes or timeout.
+   */
+  private startNeedGreedRoll(items: string[], voterSessionIds: string[]): void {
+    if (voterSessionIds.length === 0 || items.length === 0) return;
+
+    const ROLL_TIMEOUT_MS = 15_000;
+    const rollId = uid();
+
+    const timeoutHandle = setTimeout(() => {
+      this.resolveRoll(rollId);
+    }, ROLL_TIMEOUT_MS);
+
+    const roll: LootRoll = {
+      rollId,
+      items,
+      voterSessionIds: [...voterSessionIds],
+      votes: new Map(),
+      timeoutHandle,
+    };
+    this.activeRolls.set(rollId, roll);
+
+    // Notify all voters
+    for (const sid of voterSessionIds) {
+      this.clients.find((c: Client) => c.sessionId === sid)?.send("loot_roll_start", {
+        rollId,
+        items,
+        timeoutMs: ROLL_TIMEOUT_MS,
+      });
+    }
+  }
+
+  private handleLootRollVote(client: Client, msg: LootRollVoteMessage): void {
+    const roll = this.activeRolls.get(msg.rollId);
+    if (!roll) return;
+    if (!roll.voterSessionIds.includes(client.sessionId)) return;
+    if (roll.votes.has(client.sessionId)) return; // already voted
+
+    const rollValue = Math.floor(Math.random() * 100) + 1;
+    roll.votes.set(client.sessionId, { choice: msg.choice, roll: rollValue });
+
+    // Resolve immediately once all voters have voted
+    if (roll.votes.size >= roll.voterSessionIds.length) {
+      clearTimeout(roll.timeoutHandle);
+      this.resolveRoll(msg.rollId);
+    }
+  }
+
+  private resolveRoll(rollId: string): void {
+    const roll = this.activeRolls.get(rollId);
+    if (!roll) return;
+    this.activeRolls.delete(rollId);
+    clearTimeout(roll.timeoutHandle);
+
+    // Determine winner: NEED > GREED > PASS; ties broken by random roll value
+    let winnerSid: string | null = null;
+    let winnerRoll = -1;
+    let winnerChoice: "need" | "greed" | "pass" = "pass";
+
+    const CHOICE_PRIO: Record<string, number> = { need: 2, greed: 1, pass: 0 };
+
+    for (const [sid, vote] of roll.votes.entries()) {
+      const prio = CHOICE_PRIO[vote.choice] ?? 0;
+      const winPrio = CHOICE_PRIO[winnerChoice] ?? 0;
+      if (prio > winPrio || (prio === winPrio && vote.roll > winnerRoll)) {
+        winnerSid = sid;
+        winnerRoll = vote.roll;
+        winnerChoice = vote.choice;
+      }
+    }
+
+    const winnerName = winnerSid
+      ? (this.state.players.get(winnerSid)?.name ?? "Player")
+      : null;
+
+    const rollsSummary: Record<string, { choice: string; roll: number }> = {};
+    for (const [sid, vote] of roll.votes.entries()) {
+      const name = this.state.players.get(sid)?.name ?? sid;
+      rollsSummary[name] = { choice: vote.choice, roll: vote.roll };
+    }
+
+    // Broadcast result to all voters
+    for (const sid of roll.voterSessionIds) {
+      this.clients.find((c: Client) => c.sessionId === sid)?.send("loot_roll_result", {
+        rollId,
+        items: roll.items,
+        winnerName,
+        rolls: rollsSummary,
+      });
+    }
+
+    // Grant items to winner (NEED or GREED wins; PASS from all = no grant)
+    if (winnerSid && winnerChoice !== "pass") {
+      this.grantLootToSession(winnerSid, roll.items).catch(() => {/* best-effort */});
     }
   }
 
@@ -1491,6 +1685,7 @@ export class DungeonRoom extends Room<DungeonGameState> {
 
     if (player.hp === 0) {
       console.log(`[DungeonRoom] player ${player.sessionId} died in dungeon`);
+      this.checkPartyWipe();
     }
   }
 
@@ -1533,6 +1728,10 @@ export class DungeonRoom extends Room<DungeonGameState> {
         player.hp = Math.max(0, player.hp - projDmg);
         player.invincibleUntil = now + PLAYER_INVINCIBILITY_MS;
         toDelete.push(proj.id);
+        if (player.hp === 0) {
+          console.log(`[DungeonRoom] player ${player.sessionId} killed by projectile`);
+          this.checkPartyWipe();
+        }
       });
     });
     toDelete.forEach(id => this.state.projectiles.delete(id));

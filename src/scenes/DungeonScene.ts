@@ -14,6 +14,7 @@
 import Phaser from 'phaser';
 import { CANVAS, SCENES } from '../config/constants';
 import { MultiplayerClient } from '../systems/MultiplayerClient';
+import { LootRollPanel } from '../ui/LootRollPanel';
 
 // ── Data contracts ─────────────────────────────────────────────────────────────
 
@@ -51,6 +52,59 @@ const TIER_NAMES: Record<number, string> = {
   2: 'Champion',
   3: 'Legendary',
   4: 'Nightmare',
+};
+
+// ── Named dungeon themes ───────────────────────────────────────────────────────
+
+/** Human-readable name for each server-side dungeonTheme value. */
+const DUNGEON_THEME_NAMES: Record<string, string> = {
+  cursed_crypt:    'Cursed Crypt',
+  volcanic_forge:  'Volcanic Forge',
+  frozen_depths:   'Frozen Depths',
+  nightmare_void:  'Nightmare Void',
+};
+
+/**
+ * Per-theme palette overrides applied on top of the base room palettes.
+ * Keys are room type; values replace the corresponding ROOM_PALETTES entry.
+ */
+const THEME_PALETTES: Record<string, Partial<typeof ROOM_PALETTES>> = {
+  // Cursed Crypt — undead, purple/grey tones
+  cursed_crypt: {
+    spawn:    { bg: 0x080812, floor: 0x14142a, wall: 0x0b0b1a, accent: 0x8844cc },
+    combat:   { bg: 0x100818, floor: 0x200c30, wall: 0x160820, accent: 0xaa44cc },
+    arena:    { bg: 0x0e0814, floor: 0x1e1028, wall: 0x140a1c, accent: 0xcc4488 },
+    elite:    { bg: 0x0c0418, floor: 0x1a0828, wall: 0x100414, accent: 0xdd22aa },
+    treasure: { bg: 0x080e12, floor: 0x141e22, wall: 0x0a1418, accent: 0x88ccaa },
+    boss:     { bg: 0x0c0214, floor: 0x1c0428, wall: 0x12021a, accent: 0xff44cc },
+  },
+  // Volcanic Forge — fire, orange/red tones
+  volcanic_forge: {
+    spawn:    { bg: 0x140800, floor: 0x281400, wall: 0x1a0c00, accent: 0xff6622 },
+    combat:   { bg: 0x180400, floor: 0x2e0800, wall: 0x1e0400, accent: 0xff4411 },
+    arena:    { bg: 0x1a0600, floor: 0x301000, wall: 0x200800, accent: 0xff8833 },
+    elite:    { bg: 0x160400, floor: 0x2a0a00, wall: 0x1c0600, accent: 0xff5500 },
+    treasure: { bg: 0x120a00, floor: 0x221400, wall: 0x180e00, accent: 0xffcc44 },
+    boss:     { bg: 0x1a0000, floor: 0x300400, wall: 0x220000, accent: 0xff2200 },
+  },
+  // Frozen Depths — ice, blue/white tones
+  frozen_depths: {
+    spawn:    { bg: 0x040e18, floor: 0x0a1e30, wall: 0x061422, accent: 0x44ccff },
+    combat:   { bg: 0x040c18, floor: 0x08182e, wall: 0x060e1e, accent: 0x2288ff },
+    arena:    { bg: 0x041014, floor: 0x081e24, wall: 0x06141a, accent: 0x33aabb },
+    elite:    { bg: 0x030c18, floor: 0x06162e, wall: 0x040e1e, accent: 0x55aaff },
+    treasure: { bg: 0x050e12, floor: 0x0a1c22, wall: 0x07141a, accent: 0x88eeff },
+    boss:     { bg: 0x040818, floor: 0x08102e, wall: 0x060c1e, accent: 0x88ccff },
+  },
+  // Nightmare Void — cosmic horror, dark purple/void tones
+  nightmare_void: {
+    spawn:    { bg: 0x060008, floor: 0x100014, wall: 0x0a000e, accent: 0x8822cc },
+    combat:   { bg: 0x080008, floor: 0x140010, wall: 0x0c000a, accent: 0xaa11bb },
+    arena:    { bg: 0x060004, floor: 0x100008, wall: 0x0a0006, accent: 0xcc2288 },
+    elite:    { bg: 0x040008, floor: 0x0c0014, wall: 0x06000e, accent: 0x9933cc },
+    treasure: { bg: 0x060806, floor: 0x0e1410, wall: 0x080e08, accent: 0x44cc88 },
+    boss:     { bg: 0x0a0008, floor: 0x160012, wall: 0x0e000a, accent: 0xff0088 },
+  },
 };
 
 // ── Enemy type colors (matches client constants.ts ENEMY_TYPES) ───────────────
@@ -108,6 +162,10 @@ export class DungeonScene extends Phaser.Scene {
   private bossPhase    = 0;
   private enemiesAlive = 0;
   private tier         = 1;
+  private dungeonTheme = '';
+
+  // UI panels
+  private lootRollPanel!: LootRollPanel;
 
   // Sprites
   private playerSprites  = new Map<string, Phaser.GameObjects.Rectangle>();
@@ -167,6 +225,12 @@ export class DungeonScene extends Phaser.Scene {
     this.createHUD();
     this.setupInput();
 
+    // Loot roll panel (need/greed voting)
+    this.lootRollPanel = new LootRollPanel(this);
+    this.lootRollPanel.onVote = (rollId, choice) => {
+      this.dungeonRoom?.send('loot_roll_vote', { rollId, choice });
+    };
+
     // Attempt server connection
     this.connectToServer();
 
@@ -175,7 +239,7 @@ export class DungeonScene extends Phaser.Scene {
   }
 
   update() {
-    if (this.dungeonState === 'complete' || this.dungeonState === 'preparing') return;
+    if (this.dungeonState === 'complete' || this.dungeonState === 'preparing' || this.dungeonState === 'wiped') return;
     this.sendMoveIfChanged();
   }
 
@@ -219,6 +283,9 @@ export class DungeonScene extends Phaser.Scene {
       this.bossType     = state.bossType     ?? this.bossType;
       this.bossPhase    = state.bossPhase    ?? this.bossPhase;
       this.enemiesAlive = state.enemiesAlive ?? this.enemiesAlive;
+      if (state.dungeonTheme && state.dungeonTheme !== this.dungeonTheme) {
+        this.dungeonTheme = state.dungeonTheme;
+      }
       this.updateHUD();
     });
 
@@ -338,6 +405,24 @@ export class DungeonScene extends Phaser.Scene {
       this.time.delayedCall(4000, () => this.returnToGame());
     });
 
+    room.onMessage('dungeon_wipe', (data: any) => {
+      this.dungeonState = 'wiped';
+      this.hideBossHpBar();
+      this.cameras.main.flash(600, 160, 0, 0);
+      const penalty = data.goldLost > 0 ? `\n-${data.goldLost} gold` : '';
+      this.showNotice(`Party Wiped!${penalty}\nReturning to town...`);
+      this.time.delayedCall(3500, () => this.returnToGame());
+    });
+
+    // Need/Greed loot roll events
+    room.onMessage('loot_roll_start', (data: any) => {
+      this.lootRollPanel.show(data.rollId, data.items ?? [], data.timeoutMs ?? 15_000);
+    });
+
+    room.onMessage('loot_roll_result', (data: any) => {
+      this.lootRollPanel.showResult(data.items ?? [], data.winnerName ?? null, data.rolls ?? {});
+    });
+
     room.onMessage('loot_drop', (data: any) => {
       const items: string[] = data.items ?? [];
       this.showNotice(`Loot: ${items.join(', ')}`);
@@ -399,7 +484,10 @@ export class DungeonScene extends Phaser.Scene {
   // ── Room Visuals ──────────────────────────────────────────────────────────
 
   private buildRoomVisuals(roomType: string) {
-    const palette = ROOM_PALETTES[roomType] ?? ROOM_PALETTES['combat'];
+    // Merge base palette with theme override (if any)
+    const base = ROOM_PALETTES[roomType] ?? ROOM_PALETTES['combat'];
+    const themeOverrides = this.dungeonTheme ? (THEME_PALETTES[this.dungeonTheme] ?? {}) : {};
+    const palette = { ...base, ...(themeOverrides[roomType as keyof typeof themeOverrides] ?? {}) };
     const W = CANVAS.WIDTH;
     const H = CANVAS.HEIGHT;
     const WALL = 24;
@@ -443,9 +531,9 @@ export class DungeonScene extends Phaser.Scene {
     const sf = 0; // scrollFactor
     const d  = 50;
 
-    // Room progress
+    // Room progress (theme name shown if available, else tier name)
     this.hudRoomText = this.add.text(4, 4,
-      `Room 0/${this.totalRooms} — Tier ${TIER_NAMES[this.tier] ?? this.tier}`,
+      `Room 0/${this.totalRooms} — ${TIER_NAMES[this.tier] ?? this.tier}`,
       { fontSize: '5px', color: '#aaaaaa', fontFamily: 'monospace' },
     ).setScrollFactor(sf).setDepth(d);
 
@@ -489,7 +577,8 @@ export class DungeonScene extends Phaser.Scene {
   }
 
   private updateHUD() {
-    this.hudRoomText.setText(`Room ${this.currentRoom + 1}/${this.totalRooms} — ${TIER_NAMES[this.tier] ?? `T${this.tier}`}`);
+    const themeName = this.dungeonTheme ? (DUNGEON_THEME_NAMES[this.dungeonTheme] ?? TIER_NAMES[this.tier] ?? `T${this.tier}`) : (TIER_NAMES[this.tier] ?? `T${this.tier}`);
+    this.hudRoomText.setText(`Room ${this.currentRoom + 1}/${this.totalRooms} — ${themeName}`);
     this.hudTypeText.setText(ROOM_TYPE_LABELS[this.roomType] ?? this.roomType);
     if (this.enemiesAlive > 0) {
       this.hudEnemiesText.setText(`Enemies: ${this.enemiesAlive}`);

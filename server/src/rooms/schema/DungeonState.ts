@@ -56,4 +56,11 @@ export class DungeonGameState extends Schema {
 
   /** Number of players in this instance at dungeon start (used for scaling). */
   @type("int8")   partySize: number = 1;
+
+  /**
+   * Named dungeon theme for this instance.
+   * Drives client-side palette and boss flavour.
+   * e.g. "cursed_crypt" | "volcanic_forge" | "frozen_depths" | "nightmare_void"
+   */
+  @type("string") dungeonTheme: string = "";
 }
