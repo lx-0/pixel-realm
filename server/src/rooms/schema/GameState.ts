@@ -142,4 +142,10 @@ export class ZoneGameState extends Schema {
   @type("string")  waveState: string = "waiting";  // "waiting" | "active" | "complete" | "boss"
   @type("int32")   waveStartAt: number = 0;
   @type("int32")   enemiesAlive: number = 0;
+
+  // Active world event (empty string = no event)
+  @type("string")  activeEventType: string = "";
+  @type("float32") activeEventX: number = 0;
+  @type("float32") activeEventY: number = 0;
+  @type("int32")   activeEventEndsAt: number = 0;  // epoch ms / 1000 to fit int32
 }

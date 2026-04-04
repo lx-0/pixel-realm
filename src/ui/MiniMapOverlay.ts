@@ -43,7 +43,17 @@ export interface NpcMarker {
   hasQuest: boolean;
 }
 
+export interface EventMarker {
+  /** World-space X coordinate of the event focal point. */
+  x: number;
+  /** World-space Y coordinate of the event focal point. */
+  y: number;
+  /** Event type string, used to pick the pulse colour. */
+  type: string;
+}
+
 export class MiniMapOverlay {
+  private scene:      Phaser.Scene;
   private gfx:        Phaser.GameObjects.Graphics;
   private maskGfx:    Phaser.GameObjects.Graphics;
   private header:     Phaser.GameObjects.Text;
@@ -56,6 +66,7 @@ export class MiniMapOverlay {
    * @param biomeColor  Accent hex color for the biome border strip (e.g. 0x44dd44).
    */
   constructor(scene: Phaser.Scene, biomeName = 'Zone', biomeColor = 0x667788) {
+    this.scene      = scene;
     this.biomeColor = biomeColor;
 
     this.gfx = scene.add.graphics()
@@ -88,6 +99,7 @@ export class MiniMapOverlay {
     npcMarkers:         NpcMarker[] = [],
     deathMarker:        { x: number; y: number } | null = null,
     partySessionIds:    Set<string> = new Set(),
+    eventMarker:        EventMarker | null = null,
   ): void {
     this.gfx.clear();
 
@@ -186,6 +198,29 @@ export class MiniMapOverlay {
       this.gfx.lineStyle(1, 0xffffff, 0.9);
       this.gfx.lineBetween(dmx - 2, dmy - 2, dmx + 2, dmy + 2);
       this.gfx.lineBetween(dmx + 2, dmy - 2, dmx - 2, dmy + 2);
+    }
+
+    // ── Active world event marker — pulsing coloured diamond ─────────────
+    if (eventMarker) {
+      const emx = toMX(eventMarker.x);
+      const emy = toMY(eventMarker.y);
+      // Pick colour by event type
+      const colorMap: Record<string, number> = {
+        monster_invasion: 0xff4422,
+        boss_spawn:       0xff44ff,
+        treasure_hunt:    0xffdd44,
+        resource_surge:   0x44ffcc,
+        faction_conflict: 0xff9944,
+      };
+      const markerColor = colorMap[eventMarker.type] ?? 0xaa44ff;
+      // Pulsing ring (alpha oscillates with scene time, ~1 Hz)
+      const pulse = 0.5 + 0.5 * Math.sin(this.scene.time.now / 500);
+      this.gfx.lineStyle(1, markerColor, 0.6 + pulse * 0.4);
+      this.gfx.strokeCircle(emx, emy, 3.5);
+      // Solid diamond centre
+      this.gfx.fillStyle(markerColor, 0.9);
+      this.gfx.fillTriangle(emx, emy - 3, emx + 2.5, emy, emx, emy + 3);
+      this.gfx.fillTriangle(emx, emy - 3, emx - 2.5, emy, emx, emy + 3);
     }
 
     // ── Local player — directional arrow (bright yellow) ─────────────────

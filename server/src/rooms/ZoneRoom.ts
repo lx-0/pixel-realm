@@ -64,6 +64,7 @@ import {
   getActiveSeason,
   type WorldEventRecord,
 } from "../db/content";
+import { WorldEventManager } from "../WorldEventManager";
 import {
   getActiveSeasonalEvent,
   getOrJoinEvent,
@@ -498,6 +499,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
   private activeSeason: { name: string; storyPromptTemplate: string } | null = null;
   private activeSeasonalEvent: SeasonalEvent | null = null;
 
+  // ── Dynamic world event manager ───────────────────────────────────────────
+  private worldEventManager?: WorldEventManager;
+
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -601,6 +605,41 @@ export class ZoneRoom extends Room<ZoneGameState> {
 
     // Periodic mid-session persistence (every 30 s)
     this.clock.setInterval(() => this.persistAllPlayers(), PERSIST_INTERVAL_MS);
+
+    // Minimal server-side zone-to-biome mapping for event weighting
+    const ZONE_BIOME: Record<string, string> = {
+      zone1: "Forest",        zone2: "Plains / Desert", zone3: "Dungeon",
+      zone4: "Ocean / Coastal",zone5: "Ice / Cave",      zone6: "Volcanic",
+      zone7: "Swamp",         zone8: "Ice / Mountain",  zone9: "Sky / Celestial",
+    };
+    const biome = ZONE_BIOME[zoneId] ?? "Unknown";
+
+    // Initialize the dynamic world event manager
+    this.worldEventManager = new WorldEventManager(
+      zoneId,
+      biome,
+      (msgType, payload) => this.broadcast(msgType, payload),
+      (client, msgType, payload) => client.send(msgType, payload),
+    );
+
+    // Award event rewards to participants when an event ends
+    this.worldEventManager.onEventEnd = ({ participants, rewardXp, rewardItemId }) => {
+      for (const sessionId of participants) {
+        const player = this.state.players.get(sessionId);
+        const userId  = sessionUserMap.get(sessionId);
+        const client  = this.clients.find((c: Client) => c.sessionId === sessionId);
+        if (!player || !userId) continue;
+
+        // Award XP directly to in-room player state
+        player.xp += rewardXp;
+
+        // Award item to persistent inventory (best-effort)
+        addItem(userId, rewardItemId, 1).catch(() => { /* best-effort */ });
+
+        // Notify the client with a reward summary
+        client?.send("event_reward", { xp: rewardXp, itemId: rewardItemId });
+      }
+    };
 
     // Load world events, active season, and active seasonal event (best-effort)
     Promise.all([
@@ -751,6 +790,9 @@ export class ZoneRoom extends Room<ZoneGameState> {
         if (this.activeSeason) {
           client.send("season_info", { name: this.activeSeason.name });
         }
+
+        // Send current dynamic world event if one is active
+        this.worldEventManager?.sendCurrentEvent(client);
       } catch (err) {
         console.warn(`[ZoneRoom] Failed to load state for ${userId}:`, (err as Error).message);
       }
@@ -1562,9 +1604,16 @@ export class ZoneRoom extends Room<ZoneGameState> {
     // Drop crafting materials for the killer and increment kill counter
     if (killerSessionId) {
       this.dropLootForParty(killerSessionId, enemy).catch(() => {/* best-effort */});
+      // Resource surge: drop a second time for double materials
+      if (this.worldEventManager?.isResourceSurgeActive) {
+        this.dropLootForParty(killerSessionId, enemy).catch(() => {/* best-effort */});
+      }
       this.shareXpWithParty(killerSessionId, enemy);
       this.incrementPveKills(killerSessionId).catch(() => {/* best-effort */});
       this.awardKillFactionRep(killerSessionId, enemy.type).catch(() => {/* best-effort */});
+
+      // Track world event participation (counts toward rewards on event end)
+      this.worldEventManager?.onEnemyKill(killerSessionId);
 
       // Apply healOnKill passive bonus
       const bonuses = this.getPassiveBonuses(killerSessionId);
@@ -2042,6 +2091,27 @@ export class ZoneRoom extends Room<ZoneGameState> {
     this.tickStatusEffects(now);
     this.tickBuffs(now);
     this.tickPetHappiness(now);
+    this.tickWorldEvents(now);
+  }
+
+  private tickWorldEvents(now: number): void {
+    if (!this.worldEventManager) return;
+    this.worldEventManager.tick(now);
+
+    // Sync active event state into Colyseus schema for minimap display
+    const ev = this.worldEventManager.getActiveEvent();
+    if (ev) {
+      this.state.activeEventType   = ev.type;
+      this.state.activeEventX      = ev.eventX;
+      this.state.activeEventY      = ev.eventY;
+      // Store seconds in int32 to fit the schema type
+      this.state.activeEventEndsAt = Math.floor(ev.endsAt / 1000);
+    } else if (this.state.activeEventType !== "") {
+      this.state.activeEventType   = "";
+      this.state.activeEventX      = 0;
+      this.state.activeEventY      = 0;
+      this.state.activeEventEndsAt = 0;
+    }
   }
 
   /** Expire player status effects whose duration has elapsed. */

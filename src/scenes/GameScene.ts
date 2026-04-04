@@ -9,7 +9,7 @@ import {
 import { SoundManager } from '../systems/SoundManager';
 import { SettingsManager } from '../systems/SettingsManager';
 import { SaveManager, SKILL_SAVE_KEY, type SkillSaveData, type SlotSaveData, HARDCORE_UNLOCK_LEVEL }  from '../systems/SaveManager';
-import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FactionTitleUnlocked, type FactionDailyTask, type FriendEntry, type EmoteEvent, type WorldEventEntry, type EmoteId, type PetData } from '../systems/MultiplayerClient';
+import { MultiplayerClient, type RemotePlayer, type RemoteEnemy, type FactionRepEntry, type FactionRepChanged, type FactionTitleUnlocked, type FactionDailyTask, type FriendEntry, type EmoteEvent, type WorldEventEntry, type WorldEventStartPayload, type WorldEventEndPayload, type EmoteId, type PetData } from '../systems/MultiplayerClient';
 import { PetPanel } from '../ui/PetPanel';
 import { FactionReputationPanel } from '../ui/FactionReputationPanel';
 import { ChatOverlay }        from '../ui/ChatOverlay';
@@ -18,13 +18,14 @@ import { QuestLogPanel }      from '../ui/QuestLogPanel';
 import { InventoryPanel }     from '../ui/InventoryPanel';
 import { NpcDialogueOverlay } from '../ui/NpcDialogueOverlay';
 import { CraftingPanel }      from '../ui/CraftingPanel';
-import { MiniMapOverlay, type NpcMarker } from '../ui/MiniMapOverlay';
+import { MiniMapOverlay, type NpcMarker, type EventMarker } from '../ui/MiniMapOverlay';
 import { WorldMapOverlay } from '../ui/WorldMapOverlay';
 import { TutorialOverlay }  from '../ui/TutorialOverlay';
 import { TradeWindow }       from '../ui/TradeWindow';
 import { MarketplacePanel }  from '../ui/MarketplacePanel';
 import { QuestBoardPanel }   from '../ui/QuestBoardPanel';
 import { EventBanner, type WorldEventData } from '../ui/EventBanner';
+import { EventLogPanel } from '../ui/EventLogPanel';
 import { BestiaryPanel }     from '../ui/BestiaryPanel';
 import { CosmeticShopPanel, type EquippedCosmetics } from '../ui/CosmeticShopPanel';
 import { FishingSystem, ROD_DEFS } from '../systems/FishingSystem';
@@ -506,6 +507,15 @@ export class GameScene extends Phaser.Scene {
   /** World event announcement banner (slides in from top). */
   private eventBanner?: EventBanner;
 
+  /** Event history / log panel (L key). */
+  private eventLogPanel?: EventLogPanel;
+
+  /** Current active event marker for minimap (null = no event). */
+  private activeEventMarker: EventMarker | null = null;
+
+  /** Dark sky overlay rectangle for monster_invasion events. */
+  private invasionOverlay?: Phaser.GameObjects.Rectangle;
+
   /** Bestiary / monster compendium panel (Z key). */
   private bestiaryPanel?: BestiaryPanel;
 
@@ -729,6 +739,14 @@ export class GameScene extends Phaser.Scene {
 
     // Event banner (world event announcements)
     this.eventBanner = new EventBanner(this);
+
+    // Event log panel (L key — shows recent and active world events)
+    this.eventLogPanel = new EventLogPanel(this);
+
+    // Invasion sky overlay — darkens the whole screen during monster_invasion events
+    this.invasionOverlay = this.add.rectangle(
+      CANVAS.WIDTH / 2, CANVAS.HEIGHT / 2, CANVAS.WIDTH, CANVAS.HEIGHT, 0x110022, 0,
+    ).setScrollFactor(0).setDepth(5).setVisible(false);
 
     // Bestiary panel (Z key)
     this.bestiaryPanel = new BestiaryPanel(this);
@@ -1018,6 +1036,7 @@ export class GameScene extends Phaser.Scene {
     this.achievementPanel?.update();
     this.leaderboardPanel?.update();
     this.factionPanel?.update();
+    this.eventLogPanel?.update();
 
     // F key — toggle live stats overlay
     if (this.statsKey && Phaser.Input.Keyboard.JustDown(this.statsKey)) {
@@ -1159,6 +1178,7 @@ export class GameScene extends Phaser.Scene {
       this.npcMarkers,
       this.deathMarkerPos,
       this.partySessionIds,
+      this.activeEventMarker,
     );
 
     // Refresh save cache at most once per second to avoid synchronous
@@ -1823,6 +1843,68 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
+    // Dynamic world event start — banner, log, minimap marker, visual effect
+    client.onWorldEventStart = (ev: WorldEventStartPayload) => {
+      // Show event banner
+      if (this.eventBanner) {
+        const eventData: WorldEventData = {
+          id:          ev.id,
+          name:        ev.name,
+          description: ev.description,
+          endsAt:      ev.endsAt,
+          zoneId:      ev.zoneId,
+        };
+        this.eventBanner.showEvent(eventData);
+      }
+      // Add to event log
+      this.eventLogPanel?.onEventStart(ev);
+      // Chat notification
+      this.chat?.addMessage(`⚡ World Event: ${ev.name} — ${ev.description}`, '#ffdd44');
+      // Minimap marker at event focal point
+      this.activeEventMarker = { x: ev.eventX, y: ev.eventY, type: ev.type };
+      // Visual: darken sky during monster invasions
+      if (ev.type === 'monster_invasion' && this.invasionOverlay) {
+        this.invasionOverlay.setVisible(true);
+        this.tweens.add({
+          targets: this.invasionOverlay,
+          fillAlpha: 0.38,
+          duration: 2000,
+          ease: 'Sine.easeIn',
+        });
+      }
+      // Audio: camera shake on boss spawn
+      if (ev.type === 'boss_spawn') {
+        this.cameras.main.shake(400, 0.012);
+      }
+      this.sfx.playPanelOpen?.();
+    };
+
+    // Dynamic world event end — clear visual effects, log it, reward toast
+    client.onWorldEventEnd = (ev: WorldEventEndPayload) => {
+      this.eventLogPanel?.onEventEnd(ev);
+      this.activeEventMarker = null;
+      // Clear invasion overlay
+      if (ev.type === 'monster_invasion' && this.invasionOverlay?.visible) {
+        this.tweens.add({
+          targets: this.invasionOverlay,
+          fillAlpha: 0,
+          duration: 1500,
+          ease: 'Sine.easeOut',
+          onComplete: () => this.invasionOverlay?.setVisible(false),
+        });
+      }
+      const count = ev.participantCount;
+      this.chat?.addMessage(
+        `✔ ${ev.name} ended — ${count} participant${count !== 1 ? 's' : ''}`,
+        '#88ffcc',
+      );
+    };
+
+    // Event reward — show XP + item toast
+    client.onEventReward = (xp: number, itemId: string) => {
+      this.chat?.addMessage(`🎁 Event reward: +${xp} XP, ${itemId.replace(/_/g, ' ')}`, '#ffcc44');
+    };
+
     // Season info — show tiny label near top
     client.onSeasonInfo = (name: string) => {
       if (!this.seasonLabel) {
@@ -1835,7 +1917,7 @@ export class GameScene extends Phaser.Scene {
 
     // Show control hints once
     this.time.delayedCall(2000, () => {
-      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC/stable  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [X] mount  [Z+1-6] emotes  [RClick] trade', '#555577');
+      this.chat?.addMessage('[T] chat  [/g] guild  [/p] party  [Tab] players  [Q] quests  [I] inv  [E] NPC/stable  [F] craft  [J] market  [M] world map  [K] skills  [R] factions  [G] guild  [P] party  [O] friends  [H] achievements  [L] events  [X] mount  [Z+1-6] emotes  [RClick] trade', '#555577');
     });
 
     // Wave state changes from server
@@ -1903,6 +1985,11 @@ export class GameScene extends Phaser.Scene {
       this.questBoardPanel = undefined;
       this.eventBanner?.destroy();
       this.eventBanner = undefined;
+      this.eventLogPanel?.destroy();
+      this.eventLogPanel = undefined;
+      this.invasionOverlay?.destroy();
+      this.invasionOverlay = undefined;
+      this.activeEventMarker = null;
       this.bestiaryPanel?.destroy();
       this.bestiaryPanel = undefined;
       this.cosmeticPanel?.destroy();

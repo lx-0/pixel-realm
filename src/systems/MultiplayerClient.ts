@@ -220,6 +220,27 @@ export interface WorldEventEntry {
   endsAt:      string | null;
 }
 
+export interface WorldEventStartPayload {
+  id:          string;
+  type:        string;
+  name:        string;
+  description: string;
+  zoneId:      string;
+  startsAt:    string;
+  endsAt:      string;
+  eventX:      number;
+  eventY:      number;
+}
+
+export interface WorldEventEndPayload {
+  type:             string;
+  name:             string;
+  zoneId:           string;
+  participantCount: number;
+  rewardXp:         number;
+  rewardItemId:     string;
+}
+
 // ── Social data shapes ────────────────────────────────────────────────────────
 
 export interface FriendEntry {
@@ -358,6 +379,9 @@ export class MultiplayerClient {
   // World event / season callbacks
   onWorldEvents?: (events: WorldEventEntry[]) => void;
   onSeasonInfo?: (name: string) => void;
+  onWorldEventStart?: (event: WorldEventStartPayload) => void;
+  onWorldEventEnd?: (event: WorldEventEndPayload) => void;
+  onEventReward?: (xp: number, itemId: string) => void;
 
   // Social callbacks
   onFriendsList?: (friends: FriendEntry[]) => void;
@@ -758,6 +782,15 @@ export class MultiplayerClient {
     });
     room.onMessage('season_info', (msg: { name: string }) => {
       this.onSeasonInfo?.(msg.name);
+    });
+    room.onMessage('world_event_start', (msg: WorldEventStartPayload) => {
+      this.onWorldEventStart?.(msg);
+    });
+    room.onMessage('world_event_end', (msg: WorldEventEndPayload) => {
+      this.onWorldEventEnd?.(msg);
+    });
+    room.onMessage('event_reward', (msg: { xp: number; itemId: string }) => {
+      this.onEventReward?.(msg.xp, msg.itemId);
     });
 
     // ── Social messages ───────────────────────────────────────────────────
