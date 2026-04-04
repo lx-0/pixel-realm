@@ -73,6 +73,7 @@ export class AchievementPanel {
   private totalPoints  = 0;
   private activeCategory: AchievementCategory = 'combat';
   private scrollOffset = 0;
+  private _dataStale   = false;
 
   constructor(scene: Phaser.Scene) {
     this.scene     = scene;
@@ -124,13 +125,18 @@ export class AchievementPanel {
           const data = await res.json() as { achievements: AchievementData[]; points: number };
           this.achievements = data.achievements;
           this.totalPoints  = data.points;
+          this._dataStale   = false;
+        } else {
+          this._dataStale = true;
         }
       } catch {
         // Fallback to local on network error
         this.loadLocal();
+        this._dataStale = true;
       }
     } else {
       this.loadLocal();
+      this._dataStale = false;
     }
     this.scrollOffset = 0;
     if (this._visible) this.rebuild();
@@ -206,6 +212,9 @@ export class AchievementPanel {
     this.addText(PAD, PAD, '🏆 Achievements', '#ffd700', '6px');
     this.addText(PANEL_W - PAD - 30, PAD, pointsStr, '#ffdd88', '5px');
     this.addText(PANEL_W - PAD - 14, PAD, '[H/Esc]', '#445566', '4px');
+    if (this._dataStale) {
+      this.addText(PAD, PAD + 8, '⚠ data may be stale', '#ff9944', '4px');
+    }
 
     // Category tabs
     const tabY = 14;
