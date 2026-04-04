@@ -693,6 +693,10 @@ export class GameScene extends Phaser.Scene {
       callback: () => this.triggerAutoSave(),
     });
 
+    // Clear pending hitStop timeout when the scene is shut down or destroyed
+    this.events.once('shutdown', () => { clearTimeout(this.hitStopTimeoutId); this.hitStopTimeoutId = undefined; });
+    this.events.once('destroy',  () => { clearTimeout(this.hitStopTimeoutId); this.hitStopTimeoutId = undefined; });
+
     this.sfx = SoundManager.getInstance();
     this.adaptive = new AdaptiveMusicSystem(this.sfx);
 
@@ -5767,9 +5771,15 @@ export class GameScene extends Phaser.Scene {
     this.tweens.add({ targets: t, y: y - 24, alpha: 0, duration: 900, ease: 'Power2', onComplete: () => t.destroy() });
   }
 
+  private hitStopTimeoutId: ReturnType<typeof setTimeout> | undefined;
+
   private hitStop(ms: number): void {
     this.physics.pause();
-    setTimeout(() => { if (this.scene.isActive(SCENES.GAME) && !this.isDead) this.physics.resume(); }, ms);
+    clearTimeout(this.hitStopTimeoutId);
+    this.hitStopTimeoutId = setTimeout(() => {
+      this.hitStopTimeoutId = undefined;
+      if (this.scene.isActive(SCENES.GAME) && !this.isDead) this.physics.resume();
+    }, ms);
   }
 
   // ── Skill tree system ──────────────────────────────────────────────────────

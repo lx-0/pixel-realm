@@ -1921,9 +1921,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
   private async grantLootToSession(sessionId: string, itemIds: string[]): Promise<void> {
     const userId = sessionUserMap.get(sessionId);
     if (!userId) return;
-    for (const itemId of itemIds) {
-      await addItem(userId, itemId, 1);
-    }
+    await Promise.all(itemIds.map((itemId) => addItem(userId, itemId, 1)));
     const recipientClient = this.clients.find((c: Client) => c.sessionId === sessionId);
     if (recipientClient) {
       recipientClient.send("loot_drop", { items: itemIds });
