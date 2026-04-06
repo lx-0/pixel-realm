@@ -6,6 +6,19 @@ Browser-based pixelated MMORPG with LLM-generated content, real-time multiplayer
 
 ---
 
+## Current Status
+
+**MVP is feature-complete.** All milestones (M0–M50) are complete. v2.0.0 distribution package is built and verified. The game is ready for launch — pending itch.io distribution credentials (PIX-19, board-blocked).
+
+- 19 biomes (Forest → Astral Pinnacle, levels 1–50)
+- 4 classes with 12 archetype trees (Warrior, Mage, Ranger, Artisan)
+- 8-locale i18n, client + server telemetry, accessibility features
+- Guild territory wars, PvP arena, companion pets, hardcore mode
+- Player housing, mounts, auction house, faction reputation, procedural dungeons
+- Full deployment pipeline ready (butler/itch.io configured)
+
+---
+
 ## Milestones
 
 ### M0: Foundation — COMPLETE
@@ -393,12 +406,12 @@ Package v1.6.0 with M47 localization and telemetry content. Final QA and distrib
 - [x] PIX-456 — Rebuild distribution as v1.6.0 with M47 extended localization and telemetry content
 - [x] PIX-457 — Full v1.6.0 QA sweep (8-locale i18n verification, telemetry integration, regression tests)
 
-### M49: Launch Infrastructure Hardening — IN PROGRESS
+### M49: Launch Infrastructure Hardening — COMPLETE
 Operational readiness before the game hits real users. Monitoring, automated testing, and data protection.
 
 - [x] PIX-461 — Server health monitoring, structured logging, and alerting for production launch
-- [ ] PIX-462 — Automated E2E smoke test suite for critical gameplay path
-- [ ] PIX-463 — Database backup automation and disaster recovery runbook
+- [x] PIX-462 — Automated E2E smoke test suite for critical gameplay path
+- [x] PIX-463 — Database backup automation and disaster recovery runbook
 
 ### M50: Day-Night Cycle & Weather Enhancement — COMPLETE
 Polish pass on existing day-night and weather systems: added fog/storm visibility gameplay
@@ -500,4 +513,5 @@ M5 → M6 ──────────────────┘
 - **M46: Localization & v1.5.0 Release** — All 3 tasks complete: French/German/Japanese translations (PIX-445), v1.5.0 distribution rebuild (PIX-444), full QA sweep (PIX-446). Complete as of 2026-03-30.
 - **M47: Extended Localization & Observability** — All 4 tasks complete: Spanish (PIX-451), Portuguese (PIX-452), Korean (PIX-453) translations, and client-side telemetry (PIX-454). Complete as of 2026-03-30.
 - **M48: v1.6.0 Distribution & Launch Final** — All complete as of 2026-03-30. v1.6.0 rebuilt with 7-locale bundle and telemetry (PIX-456). Full QA sweep passed (PIX-457).
-- **M49: Launch Infrastructure Hardening** — Operational readiness before go-live: server monitoring/alerting (PIX-461), automated E2E smoke tests (PIX-462), database backup/recovery (PIX-463). Created 2026-03-30 to keep team productive while PIX-19 distribution remains board-blocked.
+- **M49: Launch Infrastructure Hardening** — All complete: server monitoring/alerting (PIX-461), automated E2E smoke tests (PIX-462), database backup/recovery (PIX-463). Complete as of 2026-04-06.
+- **v2.0.0 Release** — Comprehensive enhancement pass (security hardening, LLM safety, performance optimization, 5-bug fix sweep, full integration test sweep). Built and verified as v2.0.0. Complete as of 2026-04-06. Game is ready to ship — awaiting PIX-19 (itch.io distribution, board-blocked).
