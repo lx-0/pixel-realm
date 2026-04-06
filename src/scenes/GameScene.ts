@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import {
   CANVAS, PLAYER, COMBAT, MANA, STAMINA, LEVELS, PRESTIGE, SCENES, SPRINT, DODGE,
-  ZONES, ENEMY_TYPES, BOSS_TYPES, ECONOMY, LOOT,
+  ZONES, ALL_ZONES, ENEMY_TYPES, BOSS_TYPES, ECONOMY, LOOT,
   STATUS_EFFECTS, MELEE_STATUS_ON_HIT, PROJECTILE_STATUS_ON_HIT,
   MOUNTS, MOUNT, HOUSING,
   type EnemyTypeName, type BossTypeName, type ZoneConfig, type EffectKey,
@@ -618,7 +618,7 @@ export class GameScene extends Phaser.Scene {
 
   create(data: GameSceneData): void {
     const zoneId = data?.zoneId ?? 'zone1';
-    const found  = ZONES.find(z => z.id === zoneId);
+    const found  = ALL_ZONES.find(z => z.id === zoneId);
     this.zone    = found ?? ZONES[0];
     this.zoneIdx = ZONES.indexOf(this.zone);
 

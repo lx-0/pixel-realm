@@ -1,6 +1,6 @@
 {
   "name": "pixelrealm",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "private": true,
   "description": "PixelRealm — browser-based pixelated MMORPG with LLM-generated content",
   "scripts": {
@@ -21,7 +21,7 @@
     "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "@playwright/test": "^1.44.0",
+    "@playwright/test": "^1.59.1",
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
     "canvas": "^3.2.2",

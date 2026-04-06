@@ -990,22 +990,27 @@ export const ZONES: ZoneConfig[] = [
     difficultyMult: 10.0,
     biomeResources: ['Astral Gem', 'Nebula Dust'],
   },
-  {
-    id: 'zone_town',
-    name: 'Player Town',
-    biome: 'town',
-    description: 'A shared social hub where adventurers purchase land, build homes, and visit each other\'s plots. No monsters here — just community.',
-    bgColor: 0x0e1408,
-    groundColor: 0x2a3e18,
-    wallColor: 0x0a1006,
-    accentColor: 0xaaddaa,
-    waves: 0,
-    enemyTypes: [],
-    minPlayerLevel: 1,
-    xpReward: 0,
-    unlockRequirement: null,
-    difficultyMult: 1.0,
-    biomeResources: [],
-    isSocialZone: true,
-  },
 ];
+
+/** Social/town zone — always unlocked, no combat. Excluded from ZONES to keep that array strictly combat-zone contracts. */
+export const TOWN_ZONE: ZoneConfig = {
+  id: 'zone_town',
+  name: 'Player Town',
+  biome: 'town',
+  description: 'A shared social hub where adventurers purchase land, build homes, and visit each other\'s plots. No monsters here — just community.',
+  bgColor: 0x0e1408,
+  groundColor: 0x2a3e18,
+  wallColor: 0x0a1006,
+  accentColor: 0xaaddaa,
+  waves: 0,
+  enemyTypes: [],
+  minPlayerLevel: 1,
+  xpReward: 0,
+  unlockRequirement: null,
+  difficultyMult: 1.0,
+  biomeResources: [],
+  isSocialZone: true,
+};
+
+/** All zones including social zones — use this when looking up any zone by id. */
+export const ALL_ZONES: ZoneConfig[] = [...ZONES, TOWN_ZONE];

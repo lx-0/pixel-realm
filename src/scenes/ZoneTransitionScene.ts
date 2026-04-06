@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { SCENES, ZONES, CANVAS } from '../config/constants';
+import { SCENES, ALL_ZONES, CANVAS } from '../config/constants';
 
 /**
  * ZoneTransitionScene — brief loading overlay shown when entering a zone.
@@ -16,7 +16,7 @@ export class ZoneTransitionScene extends Phaser.Scene {
 
   create(data: Record<string, unknown>): void {
     const { zoneId, ...gameData } = data as { zoneId: string } & Record<string, unknown>;
-    const zone = ZONES.find(z => z.id === zoneId);
+    const zone = ALL_ZONES.find(z => z.id === zoneId);
     const num  = zoneId.replace('zone', '');
     const bgKey = `bg_loading_zone${num}`;
 
