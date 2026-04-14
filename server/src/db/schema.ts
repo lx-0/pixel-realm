@@ -18,6 +18,8 @@ export const players = pgTable("players", {
   usernameLower: varchar("username_lower", { length: 20 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique(),
+  walletAddress: varchar("wallet_address", { length: 42 }).unique(),
+  walletLinkedAt: timestamp("wallet_linked_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });

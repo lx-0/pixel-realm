@@ -16,9 +16,12 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@wagmi/connectors": "^5.7.0",
+    "@wagmi/core": "^2.16.0",
     "colyseus.js": "^0.15.28",
     "phaser": "^3.80.0",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "viem": "^2.21.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

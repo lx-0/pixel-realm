@@ -26,6 +26,7 @@ import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyJwt from "@fastify/jwt";
 import { logAuthFailure } from "../logger";
 import { incrementAuthFailure } from "../metrics";
+import { registerWalletRoutes } from "./wallet";
 import {
   createUser,
   findUserByUsername,
@@ -404,6 +405,9 @@ export async function buildAuthApp(): Promise<FastifyInstance> {
       return reply.send({ ok: true });
     },
   );
+
+  // Wallet linking (SIWE / M14a)
+  await registerWalletRoutes(app);
 
   // Health
   app.get("/health", async (_req, reply) => reply.send({ status: "ok", ts: Date.now() }));

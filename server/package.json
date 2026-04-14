@@ -30,7 +30,8 @@
     "fastify": "^4.29.1",
     "ioredis": "^5.10.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "viem": "^2.47.17"
   },
   "devDependencies": {
     "@msgpack/msgpack": "^3.1.3",
