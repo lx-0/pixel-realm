@@ -29,7 +29,7 @@ import {
 } from "../factions";
 import { executeP2PTrade, type TradeItem } from "../db/marketplace";
 import { initSkillState, loadSkillState, saveSkillState, type SkillState } from "../db/skills";
-import { ALL_SKILLS, SKILL_BY_ID, computePassiveBonuses, type ClassId } from "../skills";
+import { ALL_SKILLS, SKILL_BY_ID, CLASS_ARCHETYPES, computePassiveBonuses, type ClassId } from "../skills";
 import { addItem } from "../db/inventory";
 import { getPlayerGuild } from "../db/guilds";
 import {
@@ -2915,7 +2915,7 @@ export class ZoneRoom extends Room<ZoneGameState> {
     const skillState = this.skillStateMap.get(client.sessionId);
     if (!skillState) return;
     const classId = String(msg.classId ?? "").slice(0, 20) as ClassId;
-    if (classId !== "warrior" && classId !== "mage") {
+    if (!(classId in CLASS_ARCHETYPES)) {
       client.send("skill_error", { message: "Invalid class" }); return;
     }
     if (Object.keys(skillState.unlockedSkills).length > 0) {
