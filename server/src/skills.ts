@@ -29,6 +29,7 @@ export interface PassiveBonus {
   attackCdReductionPct?: number;    // % reduction to attack cooldown
   allCdReductionPct?: number;       // % reduction to all skill cooldowns
   damageReductionPct?: number;      // % damage reduction when hit
+  healOnKill?: number;              // flat HP restored on each non-boss kill
 }
 
 export interface SkillDef {
@@ -80,7 +81,7 @@ const BERSERKER: SkillDef[] = [
     name: 'Bloodthirst',
     description: '+18% attack damage. Kills restore 8 HP.',
     type: 'passive', tier: 4, prerequisiteId: 'blade_fury',
-    passiveBonus: { damagePct: 0.18 },
+    passiveBonus: { damagePct: 0.18, healOnKill: 8 },
   },
   {
     id: 'berserk_mode',
@@ -660,6 +661,7 @@ export function computePassiveBonuses(unlockedIds: string[]): Required<PassiveBo
     attackCdReductionPct: 0,
     allCdReductionPct: 0,
     damageReductionPct: 0,
+    healOnKill: 0,
   };
   for (const id of unlockedIds) {
     const sk = SKILL_BY_ID.get(id);
@@ -674,6 +676,7 @@ export function computePassiveBonuses(unlockedIds: string[]): Required<PassiveBo
     total.attackCdReductionPct += b.attackCdReductionPct ?? 0;
     total.allCdReductionPct    += b.allCdReductionPct    ?? 0;
     total.damageReductionPct   += b.damageReductionPct   ?? 0;
+    total.healOnKill           += b.healOnKill           ?? 0;
   }
   return total;
 }
