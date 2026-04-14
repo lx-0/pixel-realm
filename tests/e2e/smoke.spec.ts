@@ -157,11 +157,8 @@ test('2 · register and login flow returns JWT', async ({ request }) => {
 
 test('3 · character creation — menu loads and play is reachable', async ({ page }) => {
   await blockColyseus(page);
-  await seedSave(page);  // pre-seed before navigating (storage is set synchronously)
-
-  // Navigate; storage set before navigation applies immediately in Playwright
   await page.goto('/');
-  // Seed again after DOM is ready in case the page wiped storage on load
+  // Seed localStorage after navigation — localStorage is origin-bound and requires a loaded page
   await seedSave(page);
   await waitForGame(page);
 

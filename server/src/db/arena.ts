@@ -299,10 +299,10 @@ export async function recordArenaMatch(
         .update(pvpRatings)
         .set({
           rating:     newR,
-          wins:       won ? sql`${pvpRatings.wins} + 1`   : pvpRatings.wins,
-          losses:     won ? pvpRatings.losses              : sql`${pvpRatings.losses} + 1`,
+          wins:       sql`${pvpRatings.wins} + ${won ? 1 : 0}`,
+          losses:     sql`${pvpRatings.losses} + ${won ? 0 : 1}`,
           kills:      sql`${pvpRatings.kills} + ${kills[id] ?? 0}`,
-          peakRating: newR > prev.peakRating ? newR : pvpRatings.peakRating,
+          peakRating: sql`GREATEST(${pvpRatings.peakRating}, ${newR})`,
           updatedAt:  new Date(),
         })
         .where(and(eq(pvpRatings.playerId, id), eq(pvpRatings.seasonId, seasonId)));
