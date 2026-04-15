@@ -1,0 +1,13 @@
+# Foundry build artifacts
+out/
+cache/
+broadcast/
+.env
+
+# Coverage reports
+lcov.info
+coverage/
+
+# Slither
+.slither/
+slither-report.json
