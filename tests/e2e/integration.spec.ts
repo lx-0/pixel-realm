@@ -25,8 +25,11 @@ import { test, expect, type Page } from '@playwright/test';
 const BASE_TIMEOUT = 25_000;
 
 async function blockColyseus(page: Page): Promise<void> {
-  await page.route('**/2567/**', (route) => route.abort());
-  await page.route('ws://**:2567/**', (route) => route.abort());
+  // Block Colyseus matchmaking HTTP requests (host-agnostic via path)
+  await page.route('**/matchmake/**', (route) => route.abort());
+  // Block direct port connections for the default dev URL
+  await page.route('http://localhost:2567/**', (route) => route.abort());
+  await page.route('ws://localhost:2567/**', (route) => route.abort());
 }
 
 async function seedSave(page: Page, overrides: Record<string, unknown> = {}): Promise<void> {
@@ -785,7 +788,7 @@ test.describe('PIX-106 · Player Housing', () => {
       () => {
         const game = (window as Record<string, unknown>).__pixelrealm as
           { scene?: { getScene?: (key: string) => unknown } } | undefined;
-        return !!(game?.scene?.getScene?.('HousingScene') as { panel?: object } | null)?.panel;
+        return !!(game?.scene?.getScene?.('HousingScene') as { housingPanel?: object } | null)?.housingPanel;
       },
       { timeout: BASE_TIMEOUT },
     ).catch(() => null);
@@ -795,7 +798,7 @@ test.describe('PIX-106 · Player Housing', () => {
       const game = (window as Record<string, unknown>).__pixelrealm as
         { scene?: { getScene?: (key: string) => unknown } } | undefined;
       const hs = game?.scene?.getScene?.('HousingScene') as
-        { panel?: { onSaveLayout?: () => void }; onSaveLayout?: () => void } | null;
+        { housingPanel?: { onSaveLayout?: () => void }; onSaveLayout?: () => void } | null;
       // Try scene-level save or panel-level
       if (typeof (hs as Record<string, unknown>)?.['onSaveLayout'] === 'function') {
         (hs as Record<string, unknown>)['onSaveLayout']?.();
@@ -1197,7 +1200,7 @@ test.describe('Cross-system Interactions', () => {
         { scene?: { getScene?: (key: string) => unknown } } | undefined;
       const ds = game?.scene?.getScene?.('DungeonScene') as
         { dungeonTheme?: string; tier?: number } | null;
-      return { theme: ds?.dungeonTheme ?? null, tier: ds?.tier ?? null };
+      return { theme: ds?.dungeonTheme || null, tier: ds?.tier ?? null };
     });
 
     // DungeonScene should have a valid theme string

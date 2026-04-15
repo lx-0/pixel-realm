@@ -29,7 +29,7 @@ const AUTH_URL = process.env.E2E_AUTH_URL ?? 'http://localhost:3001';
 async function seedSave(page: Page, overrides: Record<string, unknown> = {}): Promise<void> {
   await page.evaluate((data) => {
     const save = {
-      unlockedZones: ['zone-1'],
+      unlockedZones: ['zone1'],
       playerLevel: 1,
       playerXP: 0,
       totalKills: 0,
@@ -57,14 +57,23 @@ async function waitForGame(page: Page): Promise<void> {
 }
 
 /**
- * Block WebSocket connections to the Colyseus game server so the game
- * starts in solo mode without needing a running backend.
+ * Block Colyseus connections so the game falls back to solo mode immediately.
+ *
+ * The Colyseus client uses:
+ *   1. HTTP  http://host:2567/matchmake/joinOrCreate/<room>  (matchmaking)
+ *   2. WS    ws://host:2567/<session-id>                     (room connection)
+ *
+ * Playwright's page.route() intercepts both if we match on the actual host:port
+ * or the /matchmake/ path segment.  The previously used **/2567/** glob did NOT
+ * match because 2567 appears as a TCP port (after a colon), not a URL path
+ * segment (after a slash).
  */
 async function blockColyseus(page: Page): Promise<void> {
-  await page.route('**/2567/**', (route) => route.abort());
-  await page.route('ws://**:2567/**', (route) => route.abort());
-  // Phaser also tries WebSocket via the URL stored in VITE_COLYSEUS_URL;
-  // intercepting by port covers both ws:// and http:// upgrade paths.
+  // Block Colyseus HTTP matchmaking (works regardless of configured host/port)
+  await page.route('**/matchmake/**', (route) => route.abort());
+  // Block direct port connections for the default dev URL
+  await page.route('http://localhost:2567/**', (route) => route.abort());
+  await page.route('ws://localhost:2567/**', (route) => route.abort());
 }
 
 /** Return the key of the currently active Phaser scene. */
@@ -201,7 +210,7 @@ test('4 · tutorial zone loads — GameScene starts in solo mode', async ({ page
   await page.evaluate(() => {
     const game = (window as Record<string, unknown>).__pixelrealm as
       { scene?: { start?: (key: string, data?: unknown) => void } } | undefined;
-    game?.scene?.start?.('GameScene', { zoneId: 'zone-1' });
+    game?.scene?.start?.('GameScene', { zoneId: 'zone1' });
   });
 
   // GameScene should become active within 15 s
@@ -216,8 +225,16 @@ test('4 · tutorial zone loads — GameScene starts in solo mode', async ({ page
     { timeout: 20_000 },
   );
 
-  const scene = await activeScene(page);
-  expect(scene).toBe('GameScene');
+  // Use keys.includes rather than scenes[0] — multiple scenes may be active
+  // simultaneously during the MenuScene→GameScene transition.
+  const gameSceneActive = await page.evaluate(() => {
+    const game = (window as Record<string, unknown>).__pixelrealm as
+      { scene?: { getScenes?: (active: boolean) => Array<{ sys?: { settings?: { key?: string } } }> } }
+      | undefined;
+    const keys = (game?.scene?.getScenes?.(true) ?? []).map((s) => s?.sys?.settings?.key);
+    return keys.includes('GameScene');
+  });
+  expect(gameSceneActive).toBe(true);
 
   // Canvas must still be rendering (game loop running)
   const canvas = page.locator('#game-container canvas').first();
@@ -236,7 +253,7 @@ test('5 · player movement — WASD input changes player position', async ({ pag
   await page.evaluate(() => {
     const game = (window as Record<string, unknown>).__pixelrealm as
       { scene?: { start?: (key: string, data?: unknown) => void } } | undefined;
-    game?.scene?.start?.('GameScene', { zoneId: 'zone-1' });
+    game?.scene?.start?.('GameScene', { zoneId: 'zone1' });
   });
 
   // Wait for GameScene + player sprite to initialise
@@ -279,77 +296,76 @@ test('6 · combat — attacking an enemy awards XP', async ({ page }) => {
   await page.evaluate(() => {
     const game = (window as Record<string, unknown>).__pixelrealm as
       { scene?: { start?: (key: string, data?: unknown) => void } } | undefined;
-    game?.scene?.start?.('GameScene', { zoneId: 'zone-1' });
+    game?.scene?.start?.('GameScene', { zoneId: 'zone1' });
   });
 
-  // Wait for GameScene to start and enemies to spawn (solo wave spawns ~2 s after scene create)
+  // Wait for GameScene to start and enemies to spawn (solo wave spawns ~2 s after scene create).
+  // enemies is a Phaser.Physics.Arcade.Group, not a plain array — use countActive().
   await page.waitForFunction(
     () => {
       const game = (window as Record<string, unknown>).__pixelrealm as
         { scene?: { getScene?: (key: string) => Record<string, unknown> | null } } | undefined;
       const gs = game?.scene?.getScene?.('GameScene') as
-        { enemies?: unknown[]; player?: object } | null;
-      return Array.isArray(gs?.enemies) && (gs.enemies.length ?? 0) > 0 && !!gs?.player;
+        { enemies?: { countActive?: (active: boolean) => number }; player?: object } | null;
+      return (gs?.enemies?.countActive?.(true) ?? 0) > 0 && !!gs?.player;
     },
     { timeout: 25_000 },
   );
 
-  // Teleport the first enemy on top of the player for guaranteed melee contact
+  // Teleport the first active enemy on top of the player for guaranteed melee contact.
+  // enemies is a Phaser.Physics.Arcade.Group — use getChildren(), not array index.
   await page.evaluate(() => {
     const game = (window as Record<string, unknown>).__pixelrealm as
       { scene?: { getScene?: (key: string) => Record<string, unknown> | null } } | undefined;
     const gs = game?.scene?.getScene?.('GameScene') as
-      { enemies?: Array<{ setPosition?: (x: number, y: number) => void }>; player?: { x?: number; y?: number } } | null;
+      {
+        enemies?: { getChildren?: () => Array<{ setPosition?: (x: number, y: number) => void; active?: boolean }> };
+        player?: { x?: number; y?: number };
+      } | null;
     if (!gs) return;
-    const enemy = gs.enemies?.[0];
+    const enemy = gs.enemies?.getChildren?.().find((e) => e.active);
     const px = gs.player?.x ?? 160;
     const py = gs.player?.y ?? 90;
     enemy?.setPosition?.(px + 12, py);
   });
 
-  // Hold attack key (J) for 2 seconds — melee hits should register
+  // Attack with SPACE (the actual melee attack key — not 'j' which opens the pet panel).
+  // Phaser uses JustDown so we press+release several times to register multiple hits.
   const canvas = page.locator('#game-container canvas').first();
   await canvas.click();
-  await page.keyboard.down('j');
-  await page.waitForTimeout(2_000);
-  await page.keyboard.up('j');
+  for (let i = 0; i < 5; i++) {
+    await page.keyboard.press(' ');
+    await page.waitForTimeout(300);
+  }
 
-  // Wait up to 10 s for any XP gain (enemy dies or deals at least one hit)
-  const xpGained = await page.waitForFunction(
-    () => {
+  // Check whether any enemy took damage (live game-state check — most reliable).
+  // HP is stored per-sprite via Phaser's data manager key 'extra'.
+  const combatWorking = await page.evaluate(() => {
+    const game = (window as Record<string, unknown>).__pixelrealm as
+      { scene?: { getScene?: (key: string) => Record<string, unknown> | null } } | undefined;
+    const gs = game?.scene?.getScene?.('GameScene') as
+      { enemies?: { getChildren?: () => Array<unknown> } } | null;
+    const children = gs?.enemies?.getChildren?.() ?? [];
+    for (const enemy of children) {
+      const extra = (enemy as { getData?: (k: string) => { hp?: number; maxHp?: number } | undefined })
+        .getData?.('extra');
+      if (extra && typeof extra.hp === 'number' && typeof extra.maxHp === 'number') {
+        if (extra.hp < extra.maxHp) return true;  // enemy took damage
+        if (extra.hp <= 0) return true;            // enemy killed
+      }
+    }
+    // Also accept if enemies were cleared (all killed → wave cleared)
+    return (gs?.enemies?.getChildren?.()?.length ?? -1) === 0;
+  });
+  if (!combatWorking) {
+    // Fallback: also accept XP in localStorage (written when enemy is killed and save flushes)
+    const xpRaw = await page.evaluate(() => {
       try {
         const raw = localStorage.getItem('pixelrealm_save_v1');
-        if (!raw) return false;
-        const save = JSON.parse(raw) as { playerXP?: number };
-        return (save.playerXP ?? 0) > 0;
-      } catch {
-        return false;
-      }
-    },
-    { timeout: 10_000 },
-  ).catch(() => null);
-
-  // XP was awarded — combat loop is functional
-  if (xpGained) {
-    const xp = await page.evaluate(() => {
-      const raw = localStorage.getItem('pixelrealm_save_v1');
-      return raw ? (JSON.parse(raw) as { playerXP?: number }).playerXP ?? 0 : 0;
+        return raw ? (JSON.parse(raw) as { playerXP?: number }).playerXP ?? 0 : 0;
+      } catch { return 0; }
     });
-    expect(xp).toBeGreaterThan(0);
-  } else {
-    // Fallback: verify enemy HP reduced (less strict — GameScene may not auto-save mid-combat)
-    const enemyDamaged = await page.evaluate(() => {
-      const game = (window as Record<string, unknown>).__pixelrealm as
-        { scene?: { getScene?: (key: string) => Record<string, unknown> | null } } | undefined;
-      const gs = game?.scene?.getScene?.('GameScene') as
-        { enemyExtras?: Map<unknown, { hp?: number; maxHp?: number }> } | null;
-      if (!gs?.enemyExtras) return false;
-      for (const extra of gs.enemyExtras.values()) {
-        if ((extra.hp ?? Infinity) < (extra.maxHp ?? Infinity)) return true;
-      }
-      return false;
-    });
-    expect(enemyDamaged).toBe(true);
+    expect(xpRaw, 'Combat did not register: no enemy HP reduction and no XP in localStorage').toBeGreaterThan(0);
   }
 });
 
@@ -364,7 +380,7 @@ test('7 · inventory — loot pickup appears in inventory panel', async ({ page 
   await page.evaluate(() => {
     const game = (window as Record<string, unknown>).__pixelrealm as
       { scene?: { start?: (key: string, data?: unknown) => void } } | undefined;
-    game?.scene?.start?.('GameScene', { zoneId: 'zone-1' });
+    game?.scene?.start?.('GameScene', { zoneId: 'zone1' });
   });
 
   await page.waitForFunction(
@@ -441,7 +457,7 @@ test('8 · save and logout — session state persists across reload', async ({ p
   await page.evaluate(() => {
     const game = (window as Record<string, unknown>).__pixelrealm as
       { scene?: { start?: (key: string, data?: unknown) => void } } | undefined;
-    game?.scene?.start?.('GameScene', { zoneId: 'zone-1' });
+    game?.scene?.start?.('GameScene', { zoneId: 'zone1' });
   });
 
   await page.waitForFunction(
