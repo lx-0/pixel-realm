@@ -5,13 +5,14 @@ import { SoundManager } from '../systems/SoundManager';
 import type { ColorblindMode, UiScale } from '../systems/SettingsManager';
 import { t, getLanguage, changeLanguage, SUPPORTED_LOCALES } from '../i18n';
 import type { Locale } from '../i18n';
+import { WalletPanel } from '../ui/WalletPanel';
 
 export interface SettingsSceneData {
   /** Which scene to return to when settings are closed. */
   origin: 'menu' | 'pause';
 }
 
-type Tab = 'audio' | 'display' | 'controls' | 'access';
+type Tab = 'audio' | 'display' | 'controls' | 'access' | 'wallet';
 
 /**
  * SettingsScene — full-screen tabbed settings overlay.
@@ -28,6 +29,8 @@ export class SettingsScene extends Phaser.Scene {
 
   private origin: 'menu' | 'pause' = 'menu';
   private langChanged = false;
+
+  private walletPanel!: WalletPanel;
 
   constructor() {
     super(SCENES.SETTINGS);
@@ -64,18 +67,20 @@ export class SettingsScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(3);
 
     // ── Tab buttons ───────────────────────────────────────────────────────────
-    const tabs: Tab[] = ['audio', 'display', 'controls', 'access'];
+    const tabs: Tab[] = ['audio', 'display', 'controls', 'access', 'wallet'];
     const tabLabelKeys: Record<Tab, string> = {
       audio:    'settings.tab_audio',
       display:  'settings.tab_display',
       controls: 'settings.tab_controls',
       access:   'settings.tab_access',
+      wallet:   'settings.tab_wallet',
     };
-    const tabW = 42;
+    // 5 tabs: narrower width so they fit within the 200-px panel
+    const tabW = 36;
     const tabY = cy - panelH / 2 + 22;
 
     tabs.forEach((tab, i) => {
-      const tx = cx - tabW * 1.5 + i * tabW;
+      const tx = cx - tabW * 2 + i * tabW;
       const btn = this.add.text(tx, tabY, t(tabLabelKeys[tab]), {
         fontSize: '5px', color: '#888899', fontFamily: 'monospace',
       })
@@ -104,6 +109,9 @@ export class SettingsScene extends Phaser.Scene {
     this.tabContainers.display  = this.buildDisplayTab(cx, contentY);
     this.tabContainers.controls = this.buildControlsTab(cx, contentY);
     this.tabContainers.access   = this.buildAccessibilityTab(cx, contentY);
+    // Wallet tab: the WalletPanel manages its own container; we use an empty placeholder
+    this.walletPanel = new WalletPanel(this);
+    this.tabContainers.wallet = this.add.container(0, 0).setDepth(3);
 
     // ── Close button ──────────────────────────────────────────────────────────
     const closeBtn = this.add.text(cx + panelW / 2 - 6, cy - panelH / 2 + 5, 'X', {
@@ -419,19 +427,27 @@ export class SettingsScene extends Phaser.Scene {
   private switchTab(tab: Tab): void {
     this.activeTab = tab;
 
-    const tabs: Tab[] = ['audio', 'display', 'controls', 'access'];
+    const tabs: Tab[] = ['audio', 'display', 'controls', 'access', 'wallet'];
     tabs.forEach((t) => {
       this.tabButtons[t].setColor(t === tab ? '#ffd700' : '#888899');
     });
     tabs.forEach((t) => {
       this.tabContainers[t].setVisible(t === tab);
     });
+
+    // Wallet panel is a separate component — open/close it with the tab
+    if (tab === 'wallet') {
+      void this.walletPanel.show();
+    } else {
+      this.walletPanel.hide();
+    }
   }
 
   // ── Close ──────────────────────────────────────────────────────────────────
 
   private closeSettings(): void {
     this.sfx.playMenuClick();
+    this.walletPanel.hide();
     this.cameras.main.fadeOut(120, 0, 0, 0);
     this.time.delayedCall(120, () => {
       const langChanged = this.langChanged;

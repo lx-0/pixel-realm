@@ -4,6 +4,7 @@
  * Covers:
  *   - Player identity (create, find by username/id)
  *   - Player state (load, save, upsert on first load)
+ *   - Wallet linking (link/unlink EVM wallet address)
  */
 
 import { randomUUID } from "crypto";
@@ -148,4 +149,46 @@ export async function savePlayerState(
     .update(playerState)
     .set({ ...update, updatedAt: new Date(), lastSeenAt: new Date() })
     .where(eq(playerState.playerId, playerId));
+}
+
+// ── Wallet Linking ────────────────────────────────────────────────────────────
+
+/** Find a player by their linked EVM wallet address (checksummed). */
+export async function findPlayerByWalletAddress(
+  walletAddress: string,
+): Promise<Player | null> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(players)
+    .where(eq(players.walletAddress, walletAddress))
+    .limit(1);
+  const row = rows[0] ?? null;
+  if (row?.deletedAt) return null;
+  return row;
+}
+
+/** Link a checksummed EVM wallet address to a player. Throws WALLET_TAKEN if already linked to another player. */
+export async function linkPlayerWallet(playerId: string, walletAddress: string): Promise<void> {
+  const db = getDb();
+
+  // Guard: ensure address isn't already linked to a different player
+  const existing = await findPlayerByWalletAddress(walletAddress);
+  if (existing && existing.id !== playerId) {
+    throw new Error("WALLET_TAKEN");
+  }
+
+  await db
+    .update(players)
+    .set({ walletAddress, walletLinkedAt: new Date() })
+    .where(eq(players.id, playerId));
+}
+
+/** Remove the wallet link from a player. No-op if not linked. */
+export async function unlinkPlayerWallet(playerId: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(players)
+    .set({ walletAddress: null, walletLinkedAt: null })
+    .where(eq(players.id, playerId));
 }

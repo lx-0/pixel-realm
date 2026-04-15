@@ -141,3 +141,34 @@ run: ./scripts/deploy-itch.sh
 ```
 
 Obtain `BUTLER_API_KEY` from [itch.io → Settings → API keys](https://itch.io/user/settings/api-keys).
+
+---
+
+## Environment Variables
+
+### Client (Vite — set in `.env` or CI secrets)
+
+| Variable | Required | Description |
+|---|---|---|
+| `VITE_COLYSEUS_URL` | Yes | WebSocket URL of the Colyseus game server (e.g. `wss://game.pixelrealm.app`) |
+| `VITE_AUTH_URL` | Yes (for wallet) | HTTP URL of the Fastify auth server (e.g. `https://auth.pixelrealm.app`) |
+| `VITE_WALLETCONNECT_PROJECT_ID` | Optional | [WalletConnect Cloud](https://cloud.walletconnect.com) project ID — enables WalletConnect v2 connector in the wallet settings panel. Without it, MetaMask and Coinbase Wallet still work. |
+
+### Server (set in `.env` or Docker env)
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `REDIS_URL` | Yes | Redis connection string (used for sessions and SIWE nonces) |
+| `JWT_SECRET` | Yes | Secret for signing JWT access/refresh tokens — keep this private |
+| `AUTH_PORT` | No | Port the Fastify auth server listens on (default `3001`) |
+| `ALLOWED_ORIGINS` | Yes | Comma-separated list of allowed CORS origins |
+| `SIWE_DOMAIN` | Yes (for wallet) | Domain shown in SIWE challenge messages — must match the player-facing domain (no scheme/port, e.g. `pixelrealm.app`) |
+| `SIWE_URI` | Yes (for wallet) | Auth server URI used in SIWE challenge messages (e.g. `https://auth.pixelrealm.app`) |
+
+#### Getting a WalletConnect Project ID
+
+1. Sign in at [cloud.walletconnect.com](https://cloud.walletconnect.com)
+2. Create a new project → copy the **Project ID**
+3. Set `VITE_WALLETCONNECT_PROJECT_ID` in your deploy environment
+4. Add your production domain to the project's **Allowed Domains** list in the WalletConnect Cloud dashboard

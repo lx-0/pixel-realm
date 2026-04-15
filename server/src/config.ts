@@ -56,6 +56,10 @@ export const config = {
     .map((o) => o.trim())
     .filter(Boolean),
 
+  // SIWE (Sign-In with Ethereum) — wallet linking challenge config
+  siweDomain: optional("SIWE_DOMAIN", "localhost"),
+  siweUri:    optional("SIWE_URI",    "http://localhost:3001"),
+
   // Admin usernames — comma-separated list of usernames that receive role:"admin" in JWT
   adminUsernames: new Set(
     (optional("ADMIN_USERNAMES", ""))
