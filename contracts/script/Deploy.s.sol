@@ -5,6 +5,7 @@ import {Script, console2} from "forge-std/Script.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {PixelRealmItems} from "../src/PixelRealmItems.sol";
 import {PixelRealmLand} from "../src/PixelRealmLand.sol";
+import {PixelRealmMarketplace} from "../src/PixelRealmMarketplace.sol";
 
 /// @title Deploy
 /// @notice Deploys PixelRealmItems and PixelRealmLand behind ERC-1967 UUPS proxies.
@@ -19,10 +20,10 @@ import {PixelRealmLand} from "../src/PixelRealmLand.sol";
 ///
 /// Required env vars:
 ///   DEPLOYER_PRIVATE_KEY   — deployer EOA private key
-///   ADMIN_ADDRESS          — will receive DEFAULT_ADMIN_ROLE
+///   ADMIN_ADDRESS          — will receive DEFAULT_ADMIN_ROLE on all contracts
 ///   MINTER_ADDRESS         — will receive MINTER_ROLE (server operator key)
 ///   UPGRADER_ADDRESS       — will receive UPGRADER_ROLE (Gnosis Safe 3-of-5)
-///   TREASURY_ADDRESS       — ERC-2981 royalty recipient
+///   TREASURY_ADDRESS       — ERC-2981 royalty recipient + marketplace platform fees
 ///   ITEMS_BASE_URI         — base IPFS URI for items (e.g. "ipfs://Qm.../")
 ///   LAND_BASE_URI          — base IPFS URI for land  (e.g. "ipfs://Qm.../")
 contract Deploy is Script {
@@ -61,6 +62,18 @@ contract Deploy is Script {
         console2.log("PixelRealmLand implementation: ", address(landImpl));
         console2.log("PixelRealmLand proxy:          ", address(landProxy));
 
+        // ── PixelRealmMarketplace ────────────────────────────────────────────────
+        PixelRealmMarketplace marketImpl = new PixelRealmMarketplace();
+        bytes memory marketInit = abi.encodeCall(
+            PixelRealmMarketplace.initialize,
+            (treasury, admin, upgrader)
+        );
+        ERC1967Proxy marketProxy = new ERC1967Proxy(address(marketImpl), marketInit);
+        PixelRealmMarketplace marketplace = PixelRealmMarketplace(address(marketProxy));
+
+        console2.log("PixelRealmMarketplace implementation:", address(marketImpl));
+        console2.log("PixelRealmMarketplace proxy:         ", address(marketProxy));
+
         vm.stopBroadcast();
 
         // Sanity assertions (run in simulation; don't revert on-chain)
@@ -68,6 +81,8 @@ contract Deploy is Script {
         assert(items.hasRole(items.UPGRADER_ROLE(), upgrader));
         assert(land.hasRole(land.MINTER_ROLE(), minter));
         assert(land.hasRole(land.UPGRADER_ROLE(), upgrader));
+        assert(marketplace.hasRole(marketplace.UPGRADER_ROLE(), upgrader));
+        assert(marketplace.treasury() == treasury);
 
         console2.log("\n=== Deployment summary ===");
         console2.log("Network:             Base Sepolia");
@@ -77,6 +92,7 @@ contract Deploy is Script {
         console2.log("Treasury:           ", treasury);
         console2.log("Items proxy:        ", address(itemsProxy));
         console2.log("Land  proxy:        ", address(landProxy));
+        console2.log("Marketplace proxy:  ", address(marketProxy));
         console2.log("==========================\n");
     }
 }

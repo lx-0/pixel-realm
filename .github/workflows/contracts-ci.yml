@@ -2,7 +2,7 @@ name: Contracts CI
 
 on:
   push:
-    branches: [main, "feat/pix-155*"]
+    branches: [main, "feat/pix-155*", "feat/pix-160*"]
     paths: ["contracts/**"]
   pull_request:
     paths: ["contracts/**"]
