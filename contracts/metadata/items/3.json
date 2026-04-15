@@ -1,0 +1,13 @@
+{
+  "name": "Small Health Potion",
+  "description": "A vial of crimson liquid that restores a small amount of health. Brewed by alchemists throughout the realm.",
+  "image": "ipfs://QmPLACEHOLDER_ITEMS_CID/potion_health_small.png",
+  "external_url": "https://pixelrealm.gg/items/3",
+  "attributes": [
+    { "trait_type": "Category",     "value": "Consumable" },
+    { "trait_type": "Consumable Type", "value": "Potion" },
+    { "trait_type": "Effect",       "value": "Heal" },
+    { "trait_type": "Rarity",       "value": "Common" },
+    { "display_type": "number", "trait_type": "HP Restored", "value": 50 }
+  ]
+}

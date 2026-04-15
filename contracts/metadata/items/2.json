@@ -1,0 +1,14 @@
+{
+  "name": "Iron Shield",
+  "description": "A solid iron shield that has defended many adventurers against the dangers of Pixel Realm.",
+  "image": "ipfs://QmPLACEHOLDER_ITEMS_CID/shield_iron.png",
+  "external_url": "https://pixelrealm.gg/items/2",
+  "attributes": [
+    { "trait_type": "Category",   "value": "Armor" },
+    { "trait_type": "Armor Type", "value": "Shield" },
+    { "trait_type": "Material",   "value": "Iron" },
+    { "trait_type": "Rarity",     "value": "Common" },
+    { "display_type": "number", "trait_type": "Defense",     "value": 15 },
+    { "display_type": "number", "trait_type": "Block Chance","value": 20 }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "_comment": "Template for land plot metadata. Replace all PLACEHOLDER values.",
+  "name": "Pixel Realm Land — ZONE_NAME #PLOT_INDEX",
+  "description": "A plot of land in the ZONE_NAME zone of Pixel Realm.",
+  "image": "ipfs://QmPLACEHOLDER_LAND_CID/ZONE_ID/PLOT_INDEX.png",
+  "external_url": "https://pixelrealm.gg/land/ZONE_ID/PLOT_INDEX",
+  "attributes": [
+    { "trait_type": "Zone",       "value": "ZONE_NAME" },
+    { "trait_type": "Zone ID",    "value": "ZONE_ID" },
+    { "trait_type": "Plot Index", "value": "PLOT_INDEX" },
+    { "trait_type": "Biome",      "value": "Forest | Desert | Ruins | Harbor | Ice | Volcanic | Astral | Town" },
+    { "trait_type": "Rarity",     "value": "Common | Uncommon | Rare | Epic | Legendary" },
+    { "display_type": "number", "trait_type": "Plot Size (tiles)", "value": 16 }
+  ]
+}
