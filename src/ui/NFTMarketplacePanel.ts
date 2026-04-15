@@ -31,7 +31,6 @@ const PRICE_COLOR = "#f0c040";
 const BTN_BUY_COLOR = 0x2d7a2d;
 const BTN_CANCEL_COLOR = 0x7a2d2d;
 const BTN_LIST_COLOR = 0x0f3460;
-const BTN_CONNECT_COLOR = 0xe94560;
 
 type Tab = "browse" | "myNFTs" | "myListings";
 
@@ -59,7 +58,6 @@ export class NFTMarketplacePanel {
   private statusText = "";
 
   private listPriceInput = "";
-  private listAmountInput = "1";
   private selectedNFT: NFTRow | null = null;
 
   constructor(scene: Phaser.Scene, wallet: WalletManager) {

@@ -108,7 +108,10 @@ export class WalletManager {
       throw new Error("MetaMask is not installed. Please install it at https://metamask.io");
     }
 
-    const ethereum = (window as { ethereum: ethers.Eip1193Provider }).ethereum;
+    type Ethereum = ethers.Eip1193Provider & {
+      on: (event: string, listener: (...args: unknown[]) => void) => void;
+    };
+    const ethereum = (window as unknown as { ethereum: Ethereum }).ethereum;
     this.provider = new ethers.BrowserProvider(ethereum);
 
     // Request account access
@@ -125,7 +128,8 @@ export class WalletManager {
     };
 
     // Register event listeners for account/chain changes
-    ethereum.on("accountsChanged", (accounts: string[]) => {
+    ethereum.on("accountsChanged", (...args: unknown[]) => {
+      const accounts = args[0] as string[];
       this.state = {
         ...this.state,
         address: accounts[0] ?? null,
