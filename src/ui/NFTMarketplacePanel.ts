@@ -478,7 +478,7 @@ export class NFTMarketplacePanel {
         rows.push({
           label: `Item #${item.itemTypeId} ×${item.balance}`,
           itemTypeId: item.itemTypeId,
-          amount: parseInt(item.balance, 10),
+          amount: parseInt(item.balance, 10) || 0,
           type: "item",
         });
       }

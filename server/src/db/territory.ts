@@ -24,6 +24,7 @@ import {
 } from "./schema";
 // nextWarWindow lives in server/src/config/territory so the server rootDir is respected
 export { nextWarWindow } from "../config/territory";
+import { nextWarWindow as _nextWarWindow } from "../config/territory";
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
