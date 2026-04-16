@@ -46,12 +46,12 @@ export interface PlacedBuilding {
 const BUILDING_DEFS: {
   type:        BuildingType;
   label:       string;
-  icon:        string;       // texture key loaded in Preloader
+  icon:        string;       // texture key for panel icon (icon_building_*)
   stubAction:  string;       // log message for interaction stub
 }[] = [
-  { type: "house",  label: "House",  icon: "building_house",  stubAction: "enter_house"  },
-  { type: "shop",   label: "Shop",   icon: "building_shop",   stubAction: "talk_shop_npc" },
-  { type: "garden", label: "Garden", icon: "building_garden", stubAction: "water_garden"  },
+  { type: "house",  label: "House",  icon: "icon_building_house",  stubAction: "enter_house"  },
+  { type: "shop",   label: "Shop",   icon: "icon_building_shop",   stubAction: "talk_shop_npc" },
+  { type: "garden", label: "Garden", icon: "icon_building_garden", stubAction: "water_garden"  },
 ];
 
 // ── Panel class ───────────────────────────────────────────────────────────────
@@ -280,11 +280,28 @@ export class BuildingPanel {
             .rectangle(btnX + 58, y + 14, 56, 20, BTN_DANGER, 1)
             .setOrigin(0, 0.5)
             .setInteractive({ useHandCursor: true });
-          const removeText = this.scene.add.text(btnX + 62, y + 14, "Remove", {
-            fontSize: "9px", color: TEXT_COLOR, fontFamily: "monospace",
-          }).setOrigin(0, 0.5);
           removeBtn.on("pointerdown", () => void this._remove(placedBuilding));
-          this.container.add([removeBtn, removeText]);
+          const removeBtnItems: Phaser.GameObjects.GameObject[] = [removeBtn];
+          if (this.scene.textures.exists("icon_building_remove")) {
+            removeBtnItems.push(
+              this.scene.add
+                .image(btnX + 62, y + 14, "icon_building_remove")
+                .setOrigin(0, 0.5)
+                .setDisplaySize(14, 14),
+            );
+            removeBtnItems.push(
+              this.scene.add.text(btnX + 78, y + 14, "Remove", {
+                fontSize: "9px", color: TEXT_COLOR, fontFamily: "monospace",
+              }).setOrigin(0, 0.5),
+            );
+          } else {
+            removeBtnItems.push(
+              this.scene.add.text(btnX + 62, y + 14, "Remove", {
+                fontSize: "9px", color: TEXT_COLOR, fontFamily: "monospace",
+              }).setOrigin(0, 0.5),
+            );
+          }
+          this.container.add(removeBtnItems);
         }
       } else if (this.isOwner) {
         // Place button

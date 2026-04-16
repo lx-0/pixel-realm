@@ -324,6 +324,11 @@ export class BootScene extends Phaser.Scene {
     this.load.image('building_house',             'assets/nft/buildings/building_house.png');
     this.load.image('building_shop',              'assets/nft/buildings/building_shop.png');
     this.load.image('building_garden',            'assets/nft/buildings/building_garden.png');
+    // Parcel building UI panel icons (M14e / PIX-173)
+    this.load.image('icon_building_house',        'assets/nft/icon_building_house.png');
+    this.load.image('icon_building_shop',         'assets/nft/icon_building_shop.png');
+    this.load.image('icon_building_garden',       'assets/nft/icon_building_garden.png');
+    this.load.image('icon_building_remove',       'assets/nft/icon_building_remove.png');
 
     // ── Zone loading screen backgrounds (PIX-421) ────────────────────────────
     for (const zone of ZONES) {
