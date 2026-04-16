@@ -140,8 +140,8 @@ export class LandParcelPanel {
 
     // ── Wallet status ────────────────────────────────────────────────────────────
     const { connected, address } = this.wallet.state;
-    const walletLabel = connected
-      ? `${address!.slice(0, 6)}…${address!.slice(-4)}`
+    const walletLabel = (connected && address)
+      ? `${address.slice(0, 6)}…${address.slice(-4)}`
       : "No wallet connected";
     const walletIconKey = connected ? "icon_wallet_connected" : "icon_wallet_disconnected";
     if (this.scene.textures.exists(walletIconKey)) {
@@ -304,7 +304,7 @@ export class LandParcelPanel {
         }),
       );
       this.container!.add(
-        this.scene.add.text(28, y + 16, `Plot ${parcel.plotIndex} / ${typeof maxPlots === "number" ? maxPlots - 1 : maxPlots}  |  Token #${parcel.tokenId.slice(0, 8)}…`, {
+        this.scene.add.text(28, y + 16, `Plot ${typeof parcel.plotIndex === "number" ? parcel.plotIndex + 1 : parcel.plotIndex} / ${maxPlots}  |  Token #${parcel.tokenId.slice(0, 8)}…`, {
           fontSize: "9px", color: DIM_COLOR, fontFamily: "monospace",
         }),
       );

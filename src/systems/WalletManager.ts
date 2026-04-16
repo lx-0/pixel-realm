@@ -240,6 +240,7 @@ export class WalletManager {
       priceWei,
     );
     const receipt = await tx.wait(1);
+    if (!receipt) throw new Error("Transaction receipt not found — item listing may not have been mined");
     const iface = new ethers.Interface(MARKETPLACE_ABI);
     let listingId = "0";
     for (const log of receipt.logs) {
@@ -272,6 +273,7 @@ export class WalletManager {
       priceWei,
     );
     const receipt = await tx.wait(1);
+    if (!receipt) throw new Error("Transaction receipt not found — land listing may not have been mined");
     const iface = new ethers.Interface(MARKETPLACE_ABI);
     let listingId = "0";
     for (const log of receipt.logs) {

@@ -143,8 +143,8 @@ export class NFTMarketplacePanel {
 
     // ── Wallet status bar ────────────────────────────────────────────────────────
     const { connected, address } = this.wallet.state;
-    const walletLabel = connected
-      ? `${address!.slice(0, 6)}…${address!.slice(-4)}`
+    const walletLabel = (connected && address)
+      ? `${address.slice(0, 6)}…${address.slice(-4)}`
       : "No wallet connected";
     const walletColor = connected ? "#50fa7b" : "#ff6666";
     const walletIconKey = connected ? "icon_wallet_connected" : "icon_wallet_disconnected";
