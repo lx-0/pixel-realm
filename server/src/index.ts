@@ -130,6 +130,8 @@ import {
   getNFTInventory,
   getMarketplaceListings,
   getListingsBySeller,
+  getLandParcelsByOwner,
+  getLandParcelByTokenId,
 } from "./db/blockchain";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
@@ -1904,6 +1906,70 @@ app.get("/nft/marketplace/listings/:sellerAddress", async (req: Request, res: Re
   } catch (err) {
     console.warn("[NFT] getListingsBySeller failed:", (err as Error).message);
     res.status(500).json({ error: "Marketplace query failed" });
+  }
+});
+
+// ── NFT Land Parcel endpoints (M14d) ──────────────────────────────────────────
+
+/**
+ * GET /nft/land/parcels/:walletAddress
+ * Returns all ERC-721 land parcels owned by a wallet address.
+ */
+app.get("/nft/land/parcels/:walletAddress", async (req: Request, res: Response) => {
+  try {
+    const { walletAddress } = req.params;
+    const parcels = await getLandParcelsByOwner(walletAddress);
+    res.json({ parcels });
+  } catch (err) {
+    console.warn("[NFT] getLandParcelsByOwner failed:", (err as Error).message);
+    res.status(500).json({ error: "Land parcel query failed" });
+  }
+});
+
+/**
+ * GET /nft/land/parcel/:tokenId
+ * Returns details for a specific land parcel token.
+ */
+app.get("/nft/land/parcel/:tokenId", async (req: Request, res: Response) => {
+  try {
+    const { tokenId } = req.params;
+    const parcel = await getLandParcelByTokenId(tokenId);
+    res.json(parcel);
+  } catch (err) {
+    console.warn("[NFT] getLandParcelByTokenId failed:", (err as Error).message);
+    res.status(500).json({ error: "Land parcel query failed" });
+  }
+});
+
+/**
+ * POST /nft/land/claim
+ * Authenticated endpoint for a player to claim (mint) a land parcel.
+ * Body: { walletAddress, zoneId, plotIndex }
+ * Requires player JWT auth; server mints the NFT on their behalf.
+ */
+app.post("/nft/land/claim", playerAuth, async (req: Request, res: Response) => {
+  try {
+    const { walletAddress, zoneId, plotIndex } = req.body as {
+      walletAddress: string;
+      zoneId: string;
+      plotIndex: number;
+    };
+    if (!walletAddress || !zoneId || plotIndex === undefined) {
+      return void res.status(400).json({ error: "walletAddress, zoneId, plotIndex required" });
+    }
+    // Validate address format
+    if (!/^0x[0-9a-fA-F]{40}$/.test(walletAddress)) {
+      return void res.status(400).json({ error: "Invalid wallet address" });
+    }
+    const result = await mintLand(walletAddress, zoneId, plotIndex);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    const msg = (err as Error).message ?? "Unknown error";
+    console.warn("[NFT] land claim failed:", msg);
+    if (msg.includes("TokenAlreadyMinted")) {
+      return void res.status(409).json({ error: "That land parcel is already claimed" });
+    }
+    res.status(500).json({ error: "Land claim failed" });
   }
 });
 

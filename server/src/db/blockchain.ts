@@ -193,6 +193,74 @@ export async function getNFTInventory(
   return { items: itemsResult, land: landResult };
 }
 
+// ── Land parcel queries ──────────────────────────────────────────────────────
+
+export interface LandParcel {
+  tokenId: string;
+  zoneId: string;
+  plotIndex: string;
+  owner?: string;
+}
+
+/**
+ * Get all land parcels owned by a wallet address.
+ */
+export async function getLandParcelsByOwner(
+  walletAddress: string,
+): Promise<LandParcel[]> {
+  const provider = getProvider();
+  const landAddr = process.env.LAND_CONTRACT_ADDRESS;
+  if (!landAddr) throw new Error("LAND_CONTRACT_ADDRESS not set");
+
+  const contract = new ethers.Contract(landAddr, LAND_ABI, provider);
+  const balance: bigint = await contract.balanceOf(walletAddress);
+  const parcels: LandParcel[] = [];
+
+  for (let i = 0n; i < balance; i++) {
+    const tokenId: bigint = await contract.tokenOfOwnerByIndex(walletAddress, i);
+    const zoneId: string = await contract.tokenZone(tokenId);
+    const plotIndex: bigint = await contract.tokenPlotIndex(tokenId);
+    parcels.push({
+      tokenId: tokenId.toString(),
+      zoneId,
+      plotIndex: plotIndex.toString(),
+      owner: walletAddress,
+    });
+  }
+
+  return parcels;
+}
+
+/**
+ * Get details for a specific land parcel by token ID.
+ */
+export async function getLandParcelByTokenId(
+  tokenId: string,
+): Promise<LandParcel & { owner: string }> {
+  const provider = getProvider();
+  const landAddr = process.env.LAND_CONTRACT_ADDRESS;
+  if (!landAddr) throw new Error("LAND_CONTRACT_ADDRESS not set");
+
+  const abiWithOwner = [
+    ...LAND_ABI,
+    "function ownerOf(uint256 tokenId) external view returns (address)",
+  ] as const;
+
+  const contract = new ethers.Contract(landAddr, abiWithOwner, provider);
+  const [owner, zoneId, plotIndex] = await Promise.all([
+    contract.ownerOf(BigInt(tokenId)) as Promise<string>,
+    contract.tokenZone(BigInt(tokenId)) as Promise<string>,
+    contract.tokenPlotIndex(BigInt(tokenId)) as Promise<bigint>,
+  ]);
+
+  return {
+    tokenId,
+    zoneId,
+    plotIndex: plotIndex.toString(),
+    owner,
+  };
+}
+
 // ── Marketplace queries ──────────────────────────────────────────────────────
 
 export interface MarketplaceListing {

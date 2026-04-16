@@ -30,10 +30,12 @@ const LAND_ABI = [
   "function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256)",
   "function tokenZone(uint256 tokenId) external view returns (string)",
   "function tokenPlotIndex(uint256 tokenId) external view returns (uint256)",
+  "function ownerOf(uint256 tokenId) external view returns (address)",
   "function approve(address to, uint256 tokenId) external",
   "function getApproved(uint256 tokenId) external view returns (address)",
   "function setApprovalForAll(address operator, bool approved) external",
   "function isApprovedForAll(address account, address operator) external view returns (bool)",
+  "function safeTransferFrom(address from, address to, uint256 tokenId) external",
 ] as const;
 
 const MARKETPLACE_ABI = [
@@ -68,6 +70,13 @@ export interface WalletState {
   connected: boolean;
   address: string | null;
   chainId: number | null;
+}
+
+export interface LandParcel {
+  tokenId: string;
+  zoneId: string;
+  plotIndex: string;
+  owner?: string;
 }
 
 // ── WalletManager ─────────────────────────────────────────────────────────────
@@ -356,5 +365,61 @@ export class WalletManager {
         priceEth: ethers.formatEther(l.priceWei),
         active: l.active,
       }));
+  }
+
+  // ── Land parcel methods ──────────────────────────────────────────────────────
+
+  /**
+   * Fetch all land parcels owned by a wallet from the server.
+   * Falls back to on-chain query via the land contract if server is unavailable.
+   */
+  async getOwnerParcels(walletAddress: string): Promise<LandParcel[]> {
+    const resp = await fetch(`/nft/land/parcels/${walletAddress}`);
+    if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+    const data = await resp.json() as { parcels: LandParcel[] };
+    return data.parcels;
+  }
+
+  /**
+   * Transfer an ERC-721 land NFT from the connected wallet to another address.
+   */
+  async transferLand(
+    tokenId: string,
+    toAddress: string,
+  ): Promise<{ txHash: string }> {
+    const from = this.state.address;
+    if (!from) throw new Error("Wallet not connected");
+    const tx = await this.landContract.safeTransferFrom(from, toAddress, BigInt(tokenId));
+    await tx.wait(1);
+    return { txHash: tx.hash };
+  }
+
+  /**
+   * Claim (mint) a land parcel as a player — server-side minting.
+   * Requires the player to be authenticated and their wallet connected.
+   */
+  async claimLandParcel(
+    zoneId: string,
+    plotIndex: number,
+    authToken: string,
+  ): Promise<{ txHash: string; tokenId: string }> {
+    if (!this.state.address) throw new Error("Wallet not connected");
+    const resp = await fetch("/nft/land/claim", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({
+        walletAddress: this.state.address,
+        zoneId,
+        plotIndex,
+      }),
+    });
+    if (!resp.ok) {
+      const body = await resp.json().catch(() => ({ error: "Unknown error" })) as { error?: string };
+      throw new Error(body.error ?? `HTTP ${resp.status}`);
+    }
+    return resp.json() as Promise<{ txHash: string; tokenId: string }>;
   }
 }
