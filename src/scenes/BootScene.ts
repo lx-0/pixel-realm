@@ -300,6 +300,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('item_rod_reinforced',         'assets/sprites/fishing/item_rod_reinforced.png');
     this.load.image('item_rod_master',             'assets/sprites/fishing/item_rod_master.png');
 
+    // ── NFT marketplace + land parcel art (PIX-159/PIX-160/PIX-161) ─────────
+    this.load.image('nft_badge_overlay',          'assets/nft/nft_badge_overlay.png');
+    this.load.image('nft_badge_minting',          'assets/nft/nft_badge_minting.png');
+    this.load.image('nft_frame_common',           'assets/nft/nft_frame_common.png');
+    this.load.image('nft_frame_rare',             'assets/nft/nft_frame_rare.png');
+    this.load.image('nft_frame_epic',             'assets/nft/nft_frame_epic.png');
+    this.load.image('nft_frame_legendary',        'assets/nft/nft_frame_legendary.png');
+    this.load.spritesheet('nft_effect_minting',   'assets/nft/nft_effect_minting.png', { frameWidth: 16, frameHeight: 16 });
+    this.load.image('ui_panel_nft_marketplace',   'assets/nft/ui_panel_nft_marketplace.png');
+    this.load.image('ui_panel_nft_detail',        'assets/nft/ui_panel_nft_detail.png');
+    this.load.image('ui_dialog_nft_confirm',      'assets/nft/ui_dialog_nft_confirm.png');
+    this.load.image('icon_token_eth',             'assets/nft/icon_token_eth.png');
+    this.load.image('icon_token_base',            'assets/nft/icon_token_base.png');
+    this.load.image('icon_wallet_connected',      'assets/nft/icon_wallet_connected.png');
+    this.load.image('icon_wallet_disconnected',   'assets/nft/icon_wallet_disconnected.png');
+    this.load.image('item_land_deed',             'assets/nft/item_land_deed.png');
+    this.load.image('marker_territory_own',       'assets/nft/marker_territory_own.png');
+    this.load.image('marker_territory_other',     'assets/nft/marker_territory_other.png');
+    this.load.image('tile_parcel_grid',           'assets/nft/tile_parcel_grid.png');
+    this.load.image('tile_parcel_highlight',      'assets/nft/tile_parcel_highlight.png');
+
     // ── Zone loading screen backgrounds (PIX-421) ────────────────────────────
     for (const zone of ZONES) {
       const num  = zone.id.replace('zone', '');
@@ -331,6 +352,9 @@ export class BootScene extends Phaser.Scene {
     }
     if (this.textures.get('marker_player_anim').frameTotal > 1) {
       this.anims.create({ key: 'marker-player-pulse', frames: this.anims.generateFrameNumbers('marker_player_anim', { start: 0, end: 5 }), frameRate: 8, repeat: -1 });
+    }
+    if (this.textures.get('nft_effect_minting').frameTotal > 1) {
+      this.anims.create({ key: 'nft-minting', frames: this.anims.generateFrameNumbers('nft_effect_minting', { start: 0, end: 5 }), frameRate: 8, repeat: -1 });
     }
 
     SettingsManager.getInstance().applyAll();

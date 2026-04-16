@@ -144,12 +144,17 @@ export class NFTMarketplacePanel {
     // ── Wallet status bar ────────────────────────────────────────────────────────
     const { connected, address } = this.wallet.state;
     const walletLabel = connected
-      ? `🔗 ${address!.slice(0, 6)}…${address!.slice(-4)}`
+      ? `${address!.slice(0, 6)}…${address!.slice(-4)}`
       : "No wallet connected";
     const walletColor = connected ? "#50fa7b" : "#ff6666";
-
+    const walletIconKey = connected ? "icon_wallet_connected" : "icon_wallet_disconnected";
+    if (this.scene.textures.exists(walletIconKey)) {
+      this.container.add(
+        this.scene.add.image(4, 32, walletIconKey).setOrigin(0, 0.5).setDisplaySize(14, 14),
+      );
+    }
     this.container.add(
-      this.scene.add.text(10, 32, walletLabel, {
+      this.scene.add.text(22, 32, walletLabel, {
         fontSize: "10px", color: walletColor, fontFamily: "monospace",
       }),
     );
@@ -253,17 +258,28 @@ export class NFTMarketplacePanel {
     for (const listing of this.listings) {
       if (y + rowH < startY || y > startY + _height) { y += rowH; continue; }
 
-      const label = listing.tokenType === "ERC1155"
-        ? `Item #${listing.tokenId} ×${listing.amount}`
-        : `Land #${listing.tokenId}`;
-
+      const isLand = listing.tokenType === "ERC721";
+      const label = isLand
+        ? `Land #${listing.tokenId}`
+        : `Item #${listing.tokenId} ×${listing.amount}`;
+      const rowIconKey = isLand ? "item_land_deed" : "nft_badge_overlay";
+      if (this.scene.textures.exists(rowIconKey)) {
+        this.container!.add(
+          this.scene.add.image(10, y + 10, rowIconKey).setOrigin(0, 0.5).setDisplaySize(14, 14),
+        );
+      }
       this.container!.add(
-        this.scene.add.text(10, y + 4, label, {
+        this.scene.add.text(28, y + 4, label, {
           fontSize: "10px", color: TEXT_COLOR, fontFamily: "monospace",
         }),
       );
+      if (this.scene.textures.exists("icon_token_eth")) {
+        this.container!.add(
+          this.scene.add.image(28, y + 22, "icon_token_eth").setOrigin(0, 0.5).setDisplaySize(10, 10),
+        );
+      }
       this.container!.add(
-        this.scene.add.text(10, y + 18, `${listing.priceEth} ETH`, {
+        this.scene.add.text(42, y + 18, `${listing.priceEth} ETH`, {
           fontSize: "10px", color: PRICE_COLOR, fontFamily: "monospace",
         }),
       );
@@ -324,8 +340,14 @@ export class NFTMarketplacePanel {
         );
       }
 
+      const nftIconKey = nft.type === "land" ? "item_land_deed" : "nft_badge_overlay";
+      if (this.scene.textures.exists(nftIconKey)) {
+        this.container!.add(
+          this.scene.add.image(10, y + 10, nftIconKey).setOrigin(0, 0.5).setDisplaySize(14, 14),
+        );
+      }
       this.container!.add(
-        this.scene.add.text(10, y + 4, nft.label, {
+        this.scene.add.text(28, y + 4, nft.label, {
           fontSize: "10px", color: TEXT_COLOR, fontFamily: "monospace",
         }),
       );
@@ -407,17 +429,28 @@ export class NFTMarketplacePanel {
     for (const listing of this.myListings) {
       if (y + rowH < startY || y > startY + _height) { y += rowH; continue; }
 
-      const label = listing.tokenType === "ERC1155"
-        ? `Item #${listing.tokenId} ×${listing.amount}`
-        : `Land #${listing.tokenId}`;
-
+      const isLandListing = listing.tokenType === "ERC721";
+      const label = isLandListing
+        ? `Land #${listing.tokenId}`
+        : `Item #${listing.tokenId} ×${listing.amount}`;
+      const listingIconKey = isLandListing ? "item_land_deed" : "nft_badge_overlay";
+      if (this.scene.textures.exists(listingIconKey)) {
+        this.container!.add(
+          this.scene.add.image(10, y + 10, listingIconKey).setOrigin(0, 0.5).setDisplaySize(14, 14),
+        );
+      }
       this.container!.add(
-        this.scene.add.text(10, y + 4, label, {
+        this.scene.add.text(28, y + 4, label, {
           fontSize: "10px", color: TEXT_COLOR, fontFamily: "monospace",
         }),
       );
+      if (this.scene.textures.exists("icon_token_eth")) {
+        this.container!.add(
+          this.scene.add.image(28, y + 22, "icon_token_eth").setOrigin(0, 0.5).setDisplaySize(10, 10),
+        );
+      }
       this.container!.add(
-        this.scene.add.text(10, y + 18, `${listing.priceEth} ETH`, {
+        this.scene.add.text(42, y + 18, `${listing.priceEth} ETH`, {
           fontSize: "10px", color: PRICE_COLOR, fontFamily: "monospace",
         }),
       );

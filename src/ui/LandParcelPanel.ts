@@ -141,10 +141,16 @@ export class LandParcelPanel {
     // ── Wallet status ────────────────────────────────────────────────────────────
     const { connected, address } = this.wallet.state;
     const walletLabel = connected
-      ? `🔗 ${address!.slice(0, 6)}…${address!.slice(-4)}`
+      ? `${address!.slice(0, 6)}…${address!.slice(-4)}`
       : "No wallet connected";
+    const walletIconKey = connected ? "icon_wallet_connected" : "icon_wallet_disconnected";
+    if (this.scene.textures.exists(walletIconKey)) {
+      this.container.add(
+        this.scene.add.image(4, 32, walletIconKey).setOrigin(0, 0.5).setDisplaySize(14, 14),
+      );
+    }
     this.container.add(
-      this.scene.add.text(10, 32, walletLabel, {
+      this.scene.add.text(22, 32, walletLabel, {
         fontSize: "10px",
         color: connected ? ACCENT_COLOR : WARN_COLOR,
         fontFamily: "monospace",
@@ -243,15 +249,21 @@ export class LandParcelPanel {
     }
 
     if (this.parcels.length === 0) {
+      if (this.scene.textures.exists("tile_parcel_grid")) {
+        this.container!.add(
+          this.scene.add.image(PANEL_W / 2, startY + 10, "tile_parcel_grid")
+            .setOrigin(0.5, 0).setDisplaySize(32, 32).setAlpha(0.4),
+        );
+      }
       this.container!.add(
-        this.scene.add.text(PANEL_W / 2, startY + 20, "No land parcels owned", {
+        this.scene.add.text(PANEL_W / 2, startY + 46, "No land parcels owned", {
           fontSize: "11px", color: DIM_COLOR, fontFamily: "monospace",
         }).setOrigin(0.5, 0),
       );
 
       // Claim prompt
       this.container!.add(
-        this.scene.add.text(PANEL_W / 2, startY + 40, "Visit a zone and claim land to start building", {
+        this.scene.add.text(PANEL_W / 2, startY + 62, "Visit a zone and claim land to start building", {
           fontSize: "9px", color: DIM_COLOR, fontFamily: "monospace",
           wordWrap: { width: PANEL_W - 40 },
         }).setOrigin(0.5, 0),
@@ -276,13 +288,23 @@ export class LandParcelPanel {
       const maxPlots = grid?.maxPlots ?? "?";
       const zoneName = parcel.zoneId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
+      if (this.scene.textures.exists("item_land_deed")) {
+        this.container!.add(
+          this.scene.add.image(10, y + 8, "item_land_deed").setOrigin(0, 0).setDisplaySize(14, 14),
+        );
+      }
+      if (this.scene.textures.exists("marker_territory_own")) {
+        this.container!.add(
+          this.scene.add.image(10, y + 24, "marker_territory_own").setOrigin(0, 0).setDisplaySize(12, 12),
+        );
+      }
       this.container!.add(
-        this.scene.add.text(10, y + 4, `${zoneName}`, {
+        this.scene.add.text(28, y + 4, `${zoneName}`, {
           fontSize: "10px", color: ACCENT_COLOR, fontFamily: "monospace",
         }),
       );
       this.container!.add(
-        this.scene.add.text(10, y + 16, `Plot ${parcel.plotIndex} / ${typeof maxPlots === "number" ? maxPlots - 1 : maxPlots}  |  Token #${parcel.tokenId.slice(0, 8)}…`, {
+        this.scene.add.text(28, y + 16, `Plot ${parcel.plotIndex} / ${typeof maxPlots === "number" ? maxPlots - 1 : maxPlots}  |  Token #${parcel.tokenId.slice(0, 8)}…`, {
           fontSize: "9px", color: DIM_COLOR, fontFamily: "monospace",
         }),
       );
