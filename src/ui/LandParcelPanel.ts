@@ -36,8 +36,10 @@ const BTN_DANGER_COLOR = 0x7a2d2d;
 type Tab = "myLand" | "transfer";
 
 export interface LandParcelPanelCallbacks {
-  /** Called when the player wants to build on a parcel (opens HousingScene). */
+  /** Called when the player wants to decorate the interior (opens HousingScene). */
   onBuild?: (parcel: LandParcel) => void;
+  /** Called when the player wants to place exterior buildings (opens BuildingPanel). */
+  onPlace?: (parcel: LandParcel) => void;
   /** Called when a transfer succeeds — caller should refresh world map. */
   onTransferComplete?: (parcel: LandParcel, toAddress: string) => void;
   /** Auth token for /nft/land/claim endpoint. */
@@ -309,7 +311,21 @@ export class LandParcelPanel {
         }),
       );
 
-      // Build button
+      // Place buildings button (exterior structures — PIX-172)
+      if (this.callbacks.onPlace) {
+        const placeBtn = this.scene.add
+          .rectangle(PANEL_W - 178, y + 8, 48, 18, 0x1a4a3a, 1)
+          .setOrigin(0, 0)
+          .setInteractive({ useHandCursor: true });
+        const placeLabel = this.scene.add.text(PANEL_W - 176, y + 10, "Structs", {
+          fontSize: "9px", color: ACCENT_COLOR, fontFamily: "monospace",
+        });
+        const captured = parcel;
+        placeBtn.on("pointerdown", () => this.callbacks.onPlace!(captured));
+        this.container!.add([placeBtn, placeLabel]);
+      }
+
+      // Build button (interior decoration — HousingScene)
       if (this.callbacks.onBuild) {
         const buildBtn = this.scene.add
           .rectangle(PANEL_W - 120, y + 8, 50, 18, BTN_COLOR, 1)

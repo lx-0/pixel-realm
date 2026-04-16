@@ -320,6 +320,10 @@ export class BootScene extends Phaser.Scene {
     this.load.image('marker_territory_other',     'assets/nft/marker_territory_other.png');
     this.load.image('tile_parcel_grid',           'assets/nft/tile_parcel_grid.png');
     this.load.image('tile_parcel_highlight',      'assets/nft/tile_parcel_highlight.png');
+    // Parcel building sprites (M14e / PIX-172)
+    this.load.image('building_house',             'assets/nft/buildings/building_house.png');
+    this.load.image('building_shop',              'assets/nft/buildings/building_shop.png');
+    this.load.image('building_garden',            'assets/nft/buildings/building_garden.png');
 
     // ── Zone loading screen backgrounds (PIX-421) ────────────────────────────
     for (const zone of ZONES) {

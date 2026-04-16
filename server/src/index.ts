@@ -16,6 +16,14 @@ import {
   WORLD_BOSS_DEFS,
 } from "./db/worldBoss";
 import { getDungeonCooldownRemainingDb } from "./db/cooldowns";
+import {
+  getParcelBuildings,
+  getBuildingsByZone,
+  placeBuilding,
+  removeBuilding,
+  VALID_BUILDING_TYPES,
+  type BuildingType,
+} from "./db/buildings";
 import { closeDb } from "./db/client";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
@@ -1970,6 +1978,141 @@ app.post("/nft/land/claim", playerAuth, async (req: Request, res: Response) => {
       return void res.status(409).json({ error: "That land parcel is already claimed" });
     }
     res.status(500).json({ error: "Land claim failed" });
+  }
+});
+
+// ── Parcel Buildings endpoints (M14e / PIX-172) ───────────────────────────────
+// Client-side persistence for exterior building structures on NFT land parcels.
+// Ownership is verified on-chain when LAND_CONTRACT_ADDRESS is configured;
+// skipped gracefully in local dev (no RPC configured).
+
+/**
+ * GET /buildings/parcel/:tokenId
+ * Returns all buildings placed on the given ERC-721 land parcel.
+ */
+app.get("/buildings/parcel/:tokenId", async (req: Request, res: Response) => {
+  const { tokenId } = req.params as { tokenId: string };
+  if (!tokenId || tokenId.length > 100) {
+    return void res.status(400).json({ error: "Invalid tokenId" });
+  }
+  try {
+    const buildings = await getParcelBuildings(tokenId);
+    res.json(buildings);
+  } catch (err) {
+    console.warn("[Buildings] getParcelBuildings failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch buildings" });
+  }
+});
+
+/**
+ * GET /buildings/zone/:zoneId
+ * Returns all buildings in a zone — used by visiting players to render
+ * structures on parcels they don't own.
+ */
+app.get("/buildings/zone/:zoneId", async (req: Request, res: Response) => {
+  const { zoneId } = req.params as { zoneId: string };
+  if (!zoneId || zoneId.length > 50) {
+    return void res.status(400).json({ error: "Invalid zoneId" });
+  }
+  try {
+    const buildings = await getBuildingsByZone(zoneId);
+    res.json(buildings);
+  } catch (err) {
+    console.warn("[Buildings] getBuildingsByZone failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch zone buildings" });
+  }
+});
+
+/**
+ * POST /buildings/parcel/:tokenId
+ * Place a building on a parcel.
+ * Body: { buildingType: 'house' | 'shop' | 'garden', walletAddress: string, zoneId: string, plotIndex: number }
+ * Verifies on-chain ownership when blockchain is configured.
+ */
+app.post("/buildings/parcel/:tokenId", async (req: Request, res: Response) => {
+  const { tokenId } = req.params as { tokenId: string };
+  const { buildingType, walletAddress, zoneId, plotIndex } = req.body as {
+    buildingType?: string;
+    walletAddress?: string;
+    zoneId?: string;
+    plotIndex?: number;
+  };
+
+  if (!tokenId || tokenId.length > 100) {
+    return void res.status(400).json({ error: "Invalid tokenId" });
+  }
+  if (!buildingType || !VALID_BUILDING_TYPES.includes(buildingType as BuildingType)) {
+    return void res.status(400).json({ error: "buildingType must be 'house', 'shop', or 'garden'" });
+  }
+  if (!walletAddress || !/^0x[0-9a-fA-F]{40}$/.test(walletAddress)) {
+    return void res.status(400).json({ error: "Valid walletAddress required" });
+  }
+  if (!zoneId || zoneId.length > 50 || plotIndex === undefined || typeof plotIndex !== "number") {
+    return void res.status(400).json({ error: "zoneId and plotIndex required" });
+  }
+
+  // Verify on-chain ownership when the land contract is configured.
+  if (process.env.LAND_CONTRACT_ADDRESS) {
+    try {
+      const parcel = await getLandParcelByTokenId(tokenId);
+      if (parcel.owner.toLowerCase() !== walletAddress.toLowerCase()) {
+        return void res.status(403).json({ error: "Not the parcel owner" });
+      }
+    } catch (err) {
+      console.warn("[Buildings] ownership check failed:", (err as Error).message);
+      return void res.status(500).json({ error: "Ownership verification failed" });
+    }
+  }
+
+  try {
+    const building = await placeBuilding(tokenId, zoneId, plotIndex, buildingType as BuildingType);
+    res.status(201).json(building);
+  } catch (err) {
+    const msg = (err as Error).message;
+    if (msg === "AlreadyPlaced") {
+      return void res.status(409).json({ error: "A building of this type already exists on this parcel" });
+    }
+    console.warn("[Buildings] placeBuilding failed:", msg);
+    res.status(500).json({ error: "Failed to place building" });
+  }
+});
+
+/**
+ * DELETE /buildings/parcel/:tokenId/:buildingId
+ * Remove a building from a parcel.
+ * Body: { walletAddress: string }
+ * Verifies on-chain ownership when blockchain is configured.
+ */
+app.delete("/buildings/parcel/:tokenId/:buildingId", async (req: Request, res: Response) => {
+  const { tokenId, buildingId } = req.params as { tokenId: string; buildingId: string };
+  const { walletAddress } = req.body as { walletAddress?: string };
+
+  if (!tokenId || tokenId.length > 100 || !buildingId || buildingId.length > 100) {
+    return void res.status(400).json({ error: "Invalid tokenId or buildingId" });
+  }
+  if (!walletAddress || !/^0x[0-9a-fA-F]{40}$/.test(walletAddress)) {
+    return void res.status(400).json({ error: "Valid walletAddress required" });
+  }
+
+  // Verify on-chain ownership when the land contract is configured.
+  if (process.env.LAND_CONTRACT_ADDRESS) {
+    try {
+      const parcel = await getLandParcelByTokenId(tokenId);
+      if (parcel.owner.toLowerCase() !== walletAddress.toLowerCase()) {
+        return void res.status(403).json({ error: "Not the parcel owner" });
+      }
+    } catch (err) {
+      console.warn("[Buildings] ownership check failed:", (err as Error).message);
+      return void res.status(500).json({ error: "Ownership verification failed" });
+    }
+  }
+
+  try {
+    await removeBuilding(buildingId);
+    res.json({ ok: true });
+  } catch (err) {
+    console.warn("[Buildings] removeBuilding failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to remove building" });
   }
 });
 
