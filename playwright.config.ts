@@ -67,6 +67,14 @@ export default defineConfig({
       },
       testMatch: ['**/integration.spec.ts'],
     },
+    {
+      name: 'nft-marketplace',
+      use: {
+        ...devices['Desktop Chrome'],
+        extraHTTPHeaders: {},
+      },
+      testMatch: ['**/nft-marketplace.spec.ts'],
+    },
   ],
 
   /* Auto-start Vite dev server for client tests */
