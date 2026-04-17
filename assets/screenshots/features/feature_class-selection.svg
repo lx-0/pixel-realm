@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" style="image-rendering: pixelated;">
+  <defs><style>text { font-family: monospace; }</style></defs>
+  <rect width="1200" height="675" fill="#0a0a1a"/>
+  <rect width="1200" height="675" fill="#171727" opacity="0.3"/>
+  
+        <rect x="80" y="150" width="220" height="380" rx="6" fill="#0a0a1a" stroke="#cc4444" stroke-width="2" opacity="0.9"/>
+        <rect x="80" y="150" width="220" height="50" rx="6" fill="#cc4444" opacity="0.2"/>
+        <text x="190" y="182" font-family="monospace" font-size="20" fill="#cc4444" text-anchor="middle" font-weight="bold">Warrior</text>
+        <!-- Character silhouette -->
+        <rect x="150" y="220" width="80" height="100" rx="4" fill="#cc4444" opacity="0.15"/>
+        <rect x="166" y="230" width="48" height="48" fill="#cc4444" opacity="0.25"/>
+        <rect x="174" y="216" width="32" height="32" fill="#cc4444" opacity="0.3"/>
+        <rect x="162" y="280" width="20" height="30" fill="#cc4444" opacity="0.2"/>
+        <rect x="198" y="280" width="20" height="30" fill="#cc4444" opacity="0.2"/>
+        
+          <rect x="100" y="345" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="190" y="369" font-family="monospace" font-size="14" fill="#cc4444" text-anchor="middle">Berserker</text>
+        
+          <rect x="100" y="395" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="190" y="419" font-family="monospace" font-size="14" fill="#cc4444" text-anchor="middle">Guardian</text>
+        
+          <rect x="100" y="445" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="190" y="469" font-family="monospace" font-size="14" fill="#cc4444" text-anchor="middle">Paladin</text>
+        
+      
+        <rect x="360" y="150" width="220" height="380" rx="6" fill="#0a0a1a" stroke="#4488dd" stroke-width="2" opacity="0.9"/>
+        <rect x="360" y="150" width="220" height="50" rx="6" fill="#4488dd" opacity="0.2"/>
+        <text x="470" y="182" font-family="monospace" font-size="20" fill="#4488dd" text-anchor="middle" font-weight="bold">Mage</text>
+        <!-- Character silhouette -->
+        <rect x="430" y="220" width="80" height="100" rx="4" fill="#4488dd" opacity="0.15"/>
+        <rect x="446" y="230" width="48" height="48" fill="#4488dd" opacity="0.25"/>
+        <rect x="454" y="216" width="32" height="32" fill="#4488dd" opacity="0.3"/>
+        <rect x="442" y="280" width="20" height="30" fill="#4488dd" opacity="0.2"/>
+        <rect x="478" y="280" width="20" height="30" fill="#4488dd" opacity="0.2"/>
+        
+          <rect x="380" y="345" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="470" y="369" font-family="monospace" font-size="14" fill="#4488dd" text-anchor="middle">Pyromancer</text>
+        
+          <rect x="380" y="395" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="470" y="419" font-family="monospace" font-size="14" fill="#4488dd" text-anchor="middle">Frostbinder</text>
+        
+          <rect x="380" y="445" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="470" y="469" font-family="monospace" font-size="14" fill="#4488dd" text-anchor="middle">Arcanist</text>
+        
+      
+        <rect x="640" y="150" width="220" height="380" rx="6" fill="#0a0a1a" stroke="#44aa44" stroke-width="2" opacity="0.9"/>
+        <rect x="640" y="150" width="220" height="50" rx="6" fill="#44aa44" opacity="0.2"/>
+        <text x="750" y="182" font-family="monospace" font-size="20" fill="#44aa44" text-anchor="middle" font-weight="bold">Ranger</text>
+        <!-- Character silhouette -->
+        <rect x="710" y="220" width="80" height="100" rx="4" fill="#44aa44" opacity="0.15"/>
+        <rect x="726" y="230" width="48" height="48" fill="#44aa44" opacity="0.25"/>
+        <rect x="734" y="216" width="32" height="32" fill="#44aa44" opacity="0.3"/>
+        <rect x="722" y="280" width="20" height="30" fill="#44aa44" opacity="0.2"/>
+        <rect x="758" y="280" width="20" height="30" fill="#44aa44" opacity="0.2"/>
+        
+          <rect x="660" y="345" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="750" y="369" font-family="monospace" font-size="14" fill="#44aa44" text-anchor="middle">Sharpshooter</text>
+        
+          <rect x="660" y="395" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="750" y="419" font-family="monospace" font-size="14" fill="#44aa44" text-anchor="middle">Shadowstalker</text>
+        
+          <rect x="660" y="445" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="750" y="469" font-family="monospace" font-size="14" fill="#44aa44" text-anchor="middle">Beastmaster</text>
+        
+      
+        <rect x="920" y="150" width="220" height="380" rx="6" fill="#0a0a1a" stroke="#ccaa44" stroke-width="2" opacity="0.9"/>
+        <rect x="920" y="150" width="220" height="50" rx="6" fill="#ccaa44" opacity="0.2"/>
+        <text x="1030" y="182" font-family="monospace" font-size="20" fill="#ccaa44" text-anchor="middle" font-weight="bold">Artisan</text>
+        <!-- Character silhouette -->
+        <rect x="990" y="220" width="80" height="100" rx="4" fill="#ccaa44" opacity="0.15"/>
+        <rect x="1006" y="230" width="48" height="48" fill="#ccaa44" opacity="0.25"/>
+        <rect x="1014" y="216" width="32" height="32" fill="#ccaa44" opacity="0.3"/>
+        <rect x="1002" y="280" width="20" height="30" fill="#ccaa44" opacity="0.2"/>
+        <rect x="1038" y="280" width="20" height="30" fill="#ccaa44" opacity="0.2"/>
+        
+          <rect x="940" y="345" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="1030" y="369" font-family="monospace" font-size="14" fill="#ccaa44" text-anchor="middle">Blacksmith</text>
+        
+          <rect x="940" y="395" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="1030" y="419" font-family="monospace" font-size="14" fill="#ccaa44" text-anchor="middle">Alchemist</text>
+        
+          <rect x="940" y="445" width="180" height="38" rx="3" fill="#111122" stroke="#333" stroke-width="1"/>
+          <text x="1030" y="469" font-family="monospace" font-size="14" fill="#ccaa44" text-anchor="middle">Enchanter</text>
+        
+      <rect x="80" y="150" width="220" height="380" rx="6" fill="none" stroke="#fff" stroke-width="3" opacity="0.5"/>
+  <!-- Title banner -->
+  <rect x="0" y="620" width="1200" height="55" fill="#000" opacity="0.7"/>
+  <text x="24" y="653" font-family="monospace" font-size="22" fill="#aaccff" font-weight="bold">Choose Your Class</text>
+  <text x="24" y="669" font-family="monospace" font-size="12" fill="#888">4 Classes - 12 Archetypes</text>
+  <text x="1176" y="663" font-family="monospace" font-size="11" fill="#555" text-anchor="end">PixelRealm MMORPG</text>
+</svg>

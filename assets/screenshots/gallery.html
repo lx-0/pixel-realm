@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PixelRealm - Zone Preview Gallery</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a14;
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+  }
+  .header {
+    background: linear-gradient(180deg, #0d1a2a 0%, #0a0a14 100%);
+    padding: 40px 20px;
+    text-align: center;
+    border-bottom: 2px solid #222;
+  }
+  .header h1 {
+    font-size: 36px;
+    color: #88ccff;
+    margin-bottom: 8px;
+    letter-spacing: 4px;
+  }
+  .header p {
+    font-size: 14px;
+    color: #666;
+  }
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px;
+    background: #0c0c18;
+    border-bottom: 1px solid #1a1a2a;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .nav button {
+    background: #1a1a2a;
+    color: #888;
+    border: 1px solid #333;
+    padding: 8px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .nav button:hover, .nav button.active {
+    background: #222240;
+    color: #88ccff;
+    border-color: #88ccff;
+  }
+  .section {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+  .section h2 {
+    font-size: 22px;
+    color: #88ccff;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  .section .subtitle {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 30px;
+  }
+  .zone-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+  }
+  .zone-card {
+    background: #0e0e1a;
+    border: 1px solid #1a1a2a;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .zone-card:hover {
+    transform: translateY(-4px);
+    border-color: #88ccff44;
+  }
+  .zone-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    image-rendering: pixelated;
+  }
+  .zone-card .info {
+    padding: 14px 16px;
+  }
+  .zone-card .zone-num {
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .zone-card .zone-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 4px 0;
+  }
+  .zone-card .zone-biome {
+    font-size: 12px;
+    color: #666;
+  }
+  .zone-card .zone-meta {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #555;
+  }
+  .zone-card .zone-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
+    gap: 24px;
+  }
+  .feature-card {
+    background: #0e0e1a;
+    border: 1px solid #1a1a2a;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: #88ccff44;
+  }
+  .feature-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    image-rendering: pixelated;
+  }
+  .feature-card .info {
+    padding: 14px 16px;
+  }
+  .feature-card .feature-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  .feature-card .feature-desc {
+    font-size: 12px;
+    color: #666;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid #1a1a2a;
+    margin: 20px 0;
+  }
+  .footer {
+    text-align: center;
+    padding: 30px;
+    color: #333;
+    font-size: 12px;
+    border-top: 1px solid #1a1a2a;
+  }
+  /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.92);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img {
+    max-width: 95%;
+    max-height: 90vh;
+    image-rendering: pixelated;
+    border: 2px solid #333;
+    border-radius: 4px;
+  }
+  .lightbox .caption {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #888;
+    font-size: 14px;
+  }
+  @media (max-width: 768px) {
+    .zone-grid { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 24px; }
+    .nav { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>PIXELREALM</h1>
+  <p>Zone Preview Gallery &mdash; 19 Biomes, 7 Feature Showcases</p>
+</div>
+
+<div class="nav">
+  <button class="active" onclick="showSection('zones')">All Zones (19)</button>
+  <button onclick="showSection('features')">Features (7)</button>
+  <button onclick="showSection('all')">Show All</button>
+</div>
+
+<div id="zones-section" class="section">
+  <h2>ZONE WALKTHROUGH</h2>
+  <p class="subtitle">Journey from Verdant Hollow to the Astral Pinnacle across 19 unique biomes</p>
+  <div class="zone-grid" id="zone-grid"></div>
+</div>
+
+<hr class="divider">
+
+<div id="features-section" class="section">
+  <h2>FEATURE SHOWCASE</h2>
+  <p class="subtitle">Key gameplay systems that define the PixelRealm experience</p>
+  <div class="feature-grid" id="feature-grid"></div>
+</div>
+
+<div class="footer">
+  PixelRealm MMORPG &mdash; Screenshot Gallery &mdash; Generated for launch marketing
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+  <div class="caption" id="lightbox-caption"></div>
+</div>
+
+<script>
+const zones = [
+  { id: 'zone1',  name: 'Verdant Hollow',     biome: 'Forest',           level: 1,  diff: '1.0', accent: '#44dd44', boss: 'Slime King' },
+  { id: 'zone2',  name: 'Dusty Trail',         biome: 'Plains / Desert',  level: 3,  diff: '1.5', accent: '#ffaa44', boss: 'Bandit Chief Korran' },
+  { id: 'zone3',  name: 'Ironveil Ruins',      biome: 'Dungeon',          level: 5,  diff: '2.0', accent: '#aa88ff', boss: 'Archon Thessar' },
+  { id: 'zone4',  name: 'Saltmarsh Harbor',    biome: 'Ocean / Coastal',  level: 7,  diff: '2.5', accent: '#22aacc', boss: 'Maw of the Deep' },
+  { id: 'zone5',  name: 'Ice Caverns',         biome: 'Ice / Cave',       level: 9,  diff: '3.0', accent: '#44aaff', boss: 'Glacial Wyrm Vorthex' },
+  { id: 'zone6',  name: 'Volcanic Highlands',  biome: 'Volcanic',         level: 11, diff: '3.5', accent: '#ff5500', boss: 'Infernal Warden' },
+  { id: 'zone7',  name: 'Shadowmire Swamp',    biome: 'Swamp',            level: 14, diff: '4.0', accent: '#44cc44', boss: 'Mire Queen' },
+  { id: 'zone8',  name: 'Frostpeak Highlands', biome: 'Ice / Mountain',   level: 17, diff: '4.5', accent: '#88ccff', boss: 'Frost Titan' },
+  { id: 'zone9',  name: 'Celestial Spire',     biome: 'Sky / Celestial',  level: 20, diff: '5.0', accent: '#aaccff', boss: 'Celestial Arbiter' },
+  { id: 'zone10', name: 'Abyssal Depths',      biome: 'Deep-Sea',         level: 23, diff: '5.5', accent: '#0088cc', boss: 'Abyssal Kraken Lord' },
+  { id: 'zone11', name: 'Dragonbone Wastes',   biome: 'Bone Wasteland',   level: 26, diff: '6.0', accent: '#ff8c00', boss: 'Ancient Dracolich' },
+  { id: 'zone12', name: 'Void Sanctum',        biome: 'Void Dimension',   level: 29, diff: '6.5', accent: '#cc33ff', boss: 'Void Architect' },
+  { id: 'zone13', name: 'Eclipsed Throne',     biome: 'Eclipsed Throne',  level: 32, diff: '7.0', accent: '#ffaa00', boss: 'The Eclipsed King' },
+  { id: 'zone14', name: 'Shattered Dominion',  biome: 'Shattered Realm',  level: 35, diff: '7.5', accent: '#cc00ff', boss: 'The Unmaker' },
+  { id: 'zone15', name: 'Primordial Core',     biome: 'Primordial Core',  level: 38, diff: '8.0', accent: '#ff6600', boss: 'The Genesis Flame' },
+  { id: 'zone16', name: 'Ethereal Nexus',      biome: 'Ethereal Nexus',   level: 41, diff: '8.5', accent: '#00aaff', boss: 'The Nexus Overseer' },
+  { id: 'zone17', name: 'Twilight Citadel',    biome: 'Twilight Citadel', level: 44, diff: '9.0', accent: '#aa55ff', boss: 'The Twilight Warden' },
+  { id: 'zone18', name: 'Oblivion Spire',      biome: 'Oblivion Spire',   level: 47, diff: '9.5', accent: '#ffd040', boss: 'The Spire Keeper' },
+  { id: 'zone19', name: 'Astral Pinnacle',     biome: 'Astral Pinnacle',  level: 50, diff: '10.0', accent: '#88ccff', boss: 'The Astral Sovereign' },
+];
+
+const features = [
+  { id: 'class-selection',  name: 'Class Selection',      desc: '4 classes with 12 archetypes and 5-tier skill trees' },
+  { id: 'combat-system',    name: 'Real-Time Combat',     desc: 'Action combat with melee, ranged, and magic across 19 zones' },
+  { id: 'crafting-station', name: 'Crafting & Economy',   desc: 'Forge weapons, brew potions, and trade on the marketplace' },
+  { id: 'guild-territory',  name: 'Guild Wars',           desc: 'Claim territory, wage war, and build your guild empire' },
+  { id: 'pvp-arena',        name: 'PvP Arena',            desc: '1v1 and 2v2 ranked matches with ELO rating system' },
+  { id: 'player-housing',   name: 'Player Housing',       desc: '20 plots with cottages, manors, estates, and 20+ furniture types' },
+  { id: 'fishing-system',   name: 'Fishing & Exploration', desc: 'Zone-specific catches with fish journal tracking' },
+];
+
+function buildZoneCards() {
+  const grid = document.getElementById('zone-grid');
+  grid.innerHTML = zones.map(z => `
+    <div class="zone-card" onclick="openLightbox('zones/walkthrough_${z.id}_${z.name.toLowerCase().replace(/\\s+/g, '_')}.svg', '${z.name} - ${z.biome}')">
+      <img src="zones/walkthrough_${z.id}_${z.name.toLowerCase().replace(/\\s+/g, '_')}.svg" alt="${z.name}" loading="lazy">
+      <div class="info">
+        <div class="zone-num">Zone ${z.id.replace('zone', '')}</div>
+        <div class="zone-name" style="color: ${z.accent}">${z.name}</div>
+        <div class="zone-biome">${z.biome} &mdash; Boss: ${z.boss}</div>
+        <div class="zone-meta">
+          <span>Lv. ${z.level}+</span>
+          <span>Difficulty: ${z.diff}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function buildFeatureCards() {
+  const grid = document.getElementById('feature-grid');
+  grid.innerHTML = features.map(f => `
+    <div class="feature-card" onclick="openLightbox('features/feature_${f.id}.svg', '${f.name}')">
+      <img src="features/feature_${f.id}.svg" alt="${f.name}" loading="lazy">
+      <div class="info">
+        <div class="feature-name">${f.name}</div>
+        <div class="feature-desc">${f.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showSection(which) {
+  const zs = document.getElementById('zones-section');
+  const fs = document.getElementById('features-section');
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (which === 'zones') { zs.style.display = 'block'; fs.style.display = 'none'; }
+  else if (which === 'features') { zs.style.display = 'none'; fs.style.display = 'block'; }
+  else { zs.style.display = 'block'; fs.style.display = 'block'; }
+}
+
+function openLightbox(src, caption) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox-caption').textContent = caption;
+  document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+buildZoneCards();
+buildFeatureCards();
+</script>
+</body>
+</html>
