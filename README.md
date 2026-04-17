@@ -2,6 +2,8 @@
 
 A browser-based pixelated MMORPG where the world, quests, and NPCs perpetually evolve through LLM-generated content. Explore biome-rich zones, battle monsters, craft gear, and form guilds — all in a living world that writes new stories every day. Rare items and land parcels are NFTs, enabling true player ownership and a player-driven economy.
 
+**Play now:** [https://lx-0.github.io/pixel-realm/](https://lx-0.github.io/pixel-realm/)
+
 ---
 
 ## Tech Stack
