@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "colyseus.js": "^0.15.28",
+    "ethers": "^6.13.5",
     "phaser": "^3.80.0",
     "sharp": "^0.34.5"
   },

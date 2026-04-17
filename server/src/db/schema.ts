@@ -320,6 +320,21 @@ export const playerHousing = pgTable("player_housing", {
   updatedAt:       timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Parcel Buildings (exterior structures on NFT land parcels) ────────────────
+
+export const parcelBuildings = pgTable("parcel_buildings", {
+  id:           uuid("id").defaultRandom().primaryKey(),
+  /** ERC-721 tokenId (string representation of the on-chain uint256). */
+  tokenId:      varchar("token_id", { length: 100 }).notNull(),
+  /** Zone the parcel belongs to — used for zone-level building queries. */
+  zoneId:       varchar("zone_id", { length: 50 }).notNull(),
+  /** Plot index within the zone grid. */
+  plotIndex:    integer("plot_index").notNull(),
+  /** 'house' | 'shop' | 'garden' */
+  buildingType: varchar("building_type", { length: 20 }).notNull(),
+  placedAt:     timestamp("placed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Dungeon Cooldowns (persisted per-player cooldown after dungeon completion) ─
 
 export const playerDungeonCooldowns = pgTable(
@@ -771,3 +786,4 @@ export type WarCapturePoint = typeof warCapturePoints.$inferSelect;
 export type PlayerPet = typeof playerPets.$inferSelect;
 export type MailMessage = typeof mailMessages.$inferSelect;
 export type PlayerNotification = typeof playerNotifications.$inferSelect;
+export type ParcelBuilding = typeof parcelBuildings.$inferSelect;

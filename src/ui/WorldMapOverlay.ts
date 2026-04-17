@@ -9,7 +9,7 @@
  */
 
 import Phaser from 'phaser';
-import { CANVAS, ZONES } from '../config/constants';
+import { CANVAS, ZONES, getLandPlotMapPos, type LandParcelInfo } from '../config/constants';
 
 // ── Layout ────────────────────────────────────────────────────────────────────
 
@@ -82,6 +82,8 @@ export interface WorldMapState {
   currentZoneId:   string;
   unlockedZoneIds: string[];
   hasActiveQuest:  boolean;
+  /** Player's owned land parcels — shown as green markers on the map. */
+  ownedParcels?:   LandParcelInfo[];
 }
 
 // Per-zone display objects
@@ -110,6 +112,7 @@ export class WorldMapOverlay {
   private container!:    Phaser.GameObjects.Container;
   private mapContent!:   Phaser.GameObjects.Container;
   private pathGfx!:      Phaser.GameObjects.Graphics;
+  private landGfx!:      Phaser.GameObjects.Graphics;
   private playerMarker!: Phaser.GameObjects.Sprite;
   private questMarker!:  Phaser.GameObjects.Image;
   private zoomLabel!:    Phaser.GameObjects.Text;
@@ -155,7 +158,9 @@ export class WorldMapOverlay {
     const changed =
       state.currentZoneId   !== this.state.currentZoneId   ||
       state.hasActiveQuest  !== this.state.hasActiveQuest   ||
-      state.unlockedZoneIds.join() !== this.state.unlockedZoneIds.join();
+      state.unlockedZoneIds.join() !== this.state.unlockedZoneIds.join() ||
+      (state.ownedParcels ?? []).map(p => p.tokenId).join() !==
+        (this.state.ownedParcels ?? []).map(p => p.tokenId).join();
 
     this.state = { ...state };
     if (changed) this._refresh();
@@ -231,6 +236,10 @@ export class WorldMapOverlay {
     // Path graphics drawn underneath icons
     this.pathGfx = this.scene.add.graphics().setScrollFactor(0);
     this.mapContent.add(this.pathGfx);
+
+    // Land ownership graphics drawn above paths but below zone icons
+    this.landGfx = this.scene.add.graphics().setScrollFactor(0);
+    this.mapContent.add(this.landGfx);
 
     // Build zone displays
     const halfW = W / 2;
@@ -309,6 +318,9 @@ export class WorldMapOverlay {
     // Draw path lines between consecutive zones
     this._drawPaths();
 
+    // Draw owned land parcel markers
+    this._drawLandMarkers(halfW, halfH);
+
     for (const zone of ZONES) {
       const disp = this.zoneDisplays.get(zone.id);
       if (!disp) continue;
@@ -362,6 +374,31 @@ export class WorldMapOverlay {
     }
 
     this.zoomLabel.setText(`zoom ${Math.round(this.zoom * 100)}%`);
+  }
+
+  private _drawLandMarkers(halfW: number, halfH: number): void {
+    this.landGfx.clear();
+    const parcels = this.state.ownedParcels;
+    if (!parcels || parcels.length === 0) return;
+
+    for (const parcel of parcels) {
+      const plotIdx = parseInt(parcel.plotIndex, 10);
+      if (isNaN(plotIdx)) continue;
+
+      const pos = getLandPlotMapPos(parcel.zoneId, plotIdx);
+      if (!pos) continue;
+
+      const mx = pos.x - halfW;
+      const my = pos.y - halfH;
+
+      // Green filled square marker for owned plot
+      this.landGfx.fillStyle(0x50fa7b, 0.85);
+      this.landGfx.fillRect(mx - 1, my - 1, 3, 3);
+
+      // Subtle bright border
+      this.landGfx.lineStyle(0.5, 0x88ffaa, 0.6);
+      this.landGfx.strokeRect(mx - 1, my - 1, 3, 3);
+    }
   }
 
   private _drawPaths(): void {

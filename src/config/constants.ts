@@ -1014,3 +1014,74 @@ export const TOWN_ZONE: ZoneConfig = {
 
 /** All zones including social zones — use this when looking up any zone by id. */
 export const ALL_ZONES: ZoneConfig[] = [...ZONES, TOWN_ZONE];
+
+// ── Land Grid ─────────────────────────────────────────────────────────────────
+
+/**
+ * Land parcel info used for UI and world map display.
+ */
+export interface LandParcelInfo {
+  tokenId: string;
+  zoneId: string;
+  plotIndex: string;
+  owner?: string;
+}
+
+/**
+ * Per-zone land plot layout config.
+ * Defines grid dimensions and pixel origin on the world map (320×180 space).
+ * Plots are laid out in rows, COLS wide, starting at (originX, originY) with plotSize spacing.
+ */
+export const LAND_GRID: Record<string, {
+  cols: number;
+  rows: number;
+  /** Top-left pixel origin on the 320×180 worldmap_bg */
+  originX: number;
+  originY: number;
+  /** Size of each plot cell in map pixels */
+  plotSize: number;
+  /** Max plots in this zone */
+  maxPlots: number;
+}> = {
+  // Town zone has 20 plots in a 4×5 grid (mirrors HOUSING.TOWN_PLOTS world coords, scaled to map)
+  zone_town: { cols: 4, rows: 5, originX: 18, originY: 84, plotSize: 4, maxPlots: 20 },
+  // Combat zones each have 4 plots (2×2) placed near their zone icon
+  zone1:  { cols: 2, rows: 2, originX: 40,  originY: 46,  plotSize: 3, maxPlots: 4 },
+  zone2:  { cols: 2, rows: 2, originX: 96,  originY: 46,  plotSize: 3, maxPlots: 4 },
+  zone3:  { cols: 2, rows: 2, originX: 152, originY: 46,  plotSize: 3, maxPlots: 4 },
+  zone4:  { cols: 2, rows: 2, originX: 208, originY: 46,  plotSize: 3, maxPlots: 4 },
+  zone5:  { cols: 2, rows: 2, originX: 264, originY: 46,  plotSize: 3, maxPlots: 4 },
+  zone6:  { cols: 2, rows: 2, originX: 264, originY: 86,  plotSize: 3, maxPlots: 4 },
+  zone7:  { cols: 2, rows: 2, originX: 208, originY: 86,  plotSize: 3, maxPlots: 4 },
+  zone8:  { cols: 2, rows: 2, originX: 152, originY: 86,  plotSize: 3, maxPlots: 4 },
+  zone9:  { cols: 2, rows: 2, originX: 96,  originY: 86,  plotSize: 3, maxPlots: 4 },
+  zone10: { cols: 2, rows: 2, originX: 40,  originY: 86,  plotSize: 3, maxPlots: 4 },
+  zone11: { cols: 2, rows: 2, originX: 40,  originY: 124, plotSize: 3, maxPlots: 4 },
+  zone12: { cols: 2, rows: 2, originX: 96,  originY: 124, plotSize: 3, maxPlots: 4 },
+  zone13: { cols: 2, rows: 2, originX: 152, originY: 124, plotSize: 3, maxPlots: 4 },
+  zone14: { cols: 2, rows: 2, originX: 208, originY: 124, plotSize: 3, maxPlots: 4 },
+  zone15: { cols: 2, rows: 2, originX: 264, originY: 124, plotSize: 3, maxPlots: 4 },
+  zone16: { cols: 2, rows: 2, originX: 264, originY: 156, plotSize: 3, maxPlots: 4 },
+  zone17: { cols: 2, rows: 2, originX: 208, originY: 156, plotSize: 3, maxPlots: 4 },
+  zone18: { cols: 2, rows: 2, originX: 152, originY: 156, plotSize: 3, maxPlots: 4 },
+  zone19: { cols: 2, rows: 2, originX: 96,  originY: 156, plotSize: 3, maxPlots: 4 },
+} as const;
+
+/**
+ * Get the pixel position of a plot on the 320×180 world map image.
+ * Returns null if the zone or plot index is out of range.
+ */
+export function getLandPlotMapPos(
+  zoneId: string,
+  plotIndex: number,
+): { x: number; y: number } | null {
+  const grid = LAND_GRID[zoneId];
+  if (!grid) return null;
+  if (plotIndex < 0 || plotIndex >= grid.maxPlots) return null;
+  const col = plotIndex % grid.cols;
+  const row = Math.floor(plotIndex / grid.cols);
+  return {
+    x: grid.originX + col * grid.plotSize,
+    y: grid.originY + row * grid.plotSize,
+  };
+}

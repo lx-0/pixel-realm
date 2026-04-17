@@ -62,6 +62,10 @@ import {
   type ClassId, type PassiveBonus,
 } from '../config/skills';
 import { TelemetryClient } from '../systems/TelemetryClient';
+import { WalletManager, type LandParcel } from '../systems/WalletManager';
+import { NFTMarketplacePanel } from '../ui/NFTMarketplacePanel';
+import { LandParcelPanel } from '../ui/LandParcelPanel';
+import { BuildingPanel, type PlacedBuilding } from '../ui/BuildingPanel';
 
 // ── Internal types ────────────────────────────────────────────────────────────
 
@@ -391,6 +395,13 @@ export class GameScene extends Phaser.Scene {
 
   /** Marketplace / auction-house panel (multiplayer only). */
   private marketplace?: MarketplacePanel;
+
+  // ── NFT / Blockchain panels (M14a–M14e) ──────────────────────────────────────
+  private wallet?: WalletManager;
+  private nftMarketplacePanel?: NFTMarketplacePanel;
+  private landParcelPanel?: LandParcelPanel;
+  private buildingPanel?: BuildingPanel;
+  private ownedLandParcels: LandParcel[] = [];
 
   /** Guild panel (multiplayer only). */
   private guildPanel?: GuildPanel;
@@ -1207,6 +1218,7 @@ export class GameScene extends Phaser.Scene {
       currentZoneId:   this.zone.id,
       unlockedZoneIds: save.unlockedZones,
       hasActiveQuest:  this.hasActiveQuest,
+      ownedParcels:    this.ownedLandParcels,
     });
 
     this.tutorial?.update(time, delta);
@@ -1356,6 +1368,27 @@ export class GameScene extends Phaser.Scene {
       if (this.inventory?.isVisible) this.inventory.show();
       this.chat?.addMessage('Marketplace transaction complete.', '#ffd700');
     };
+
+    // ── NFT wallet + panels (M14a–M14d) ─────────────────────────────────────────
+    // Only initialized when contract addresses are configured (Base Sepolia).
+    // Degrade gracefully if env vars are absent (no-op in local dev without a node).
+    const _itemsAddr = (import.meta as unknown as { env: Record<string, string> }).env.VITE_ITEMS_CONTRACT_ADDRESS ?? '';
+    const _landAddr  = (import.meta as unknown as { env: Record<string, string> }).env.VITE_LAND_CONTRACT_ADDRESS  ?? '';
+    const _mktAddr   = (import.meta as unknown as { env: Record<string, string> }).env.VITE_MARKETPLACE_CONTRACT_ADDRESS ?? '';
+    if (_itemsAddr && _landAddr && _mktAddr) {
+      this.wallet = new WalletManager({
+        itemsAddress:       _itemsAddr,
+        landAddress:        _landAddr,
+        marketplaceAddress: _mktAddr,
+        onStateChange: () => { this._refreshOwnedParcels(); },
+      });
+      this.nftMarketplacePanel = new NFTMarketplacePanel(this, this.wallet);
+      this.landParcelPanel = new LandParcelPanel(this, this.wallet, {
+        onBuild:  (parcel) => { this._enterNFTHouse(parcel); },
+        onPlace:  (parcel) => { this._openBuildingPanel(parcel); },
+        onTransferComplete: () => { this._refreshOwnedParcels(); },
+      });
+    }
 
     // NPC dialogue overlay
     this.npcDialogue = new NpcDialogueOverlay(this);
@@ -2033,6 +2066,12 @@ export class GameScene extends Phaser.Scene {
       this.tradeWindow = undefined;
       this.marketplace?.destroy();
       this.marketplace = undefined;
+      this.nftMarketplacePanel?.close();
+      this.nftMarketplacePanel = undefined;
+      this.landParcelPanel?.close();
+      this.landParcelPanel = undefined;
+      this.buildingPanel?.close();
+      this.buildingPanel = undefined;
       this.questBoardPanel?.destroy();
       this.questBoardPanel = undefined;
       this.eventBanner?.destroy();
@@ -3325,6 +3364,9 @@ export class GameScene extends Phaser.Scene {
     this.add.text(this.worldW / 2, 48, 'Buy a plot • Build your home • Visit neighbours', {
       fontSize: '4px', color: '#aabbaa', fontFamily: 'monospace',
     }).setDepth(5).setOrigin(0.5, 0.5);
+
+    // Render exterior building structures placed by NFT parcel owners (M14e / PIX-172)
+    void this._renderParcelBuildingsInWorld();
   }
 
   // ── Housing NPC ────────────────────────────────────────────────────────────
@@ -3486,6 +3528,110 @@ export class GameScene extends Phaser.Scene {
         permission:      housing.permission,
       });
     });
+  }
+
+  /** Enter HousingScene for an NFT-owned land parcel. */
+  private _enterNFTHouse(parcel: LandParcel): void {
+    const save    = SaveManager.load();
+    const plotId  = `nft_${parcel.zoneId}_${parcel.plotIndex}`;
+    this.cameras.main.fadeOut(300, 0, 0, 0, () => {
+      this.scene.start(SCENES.HOUSING, {
+        playerId:        save.userId ?? 'local',
+        plotId,
+        zoneId:          parcel.zoneId,
+        isOwner:         true,
+        houseTier:       1,
+        furnitureLayout: [],
+        permission:      'public',
+      });
+    });
+  }
+
+  /**
+   * Open the building placement panel for an owned parcel (PIX-172 / M14e).
+   * Non-owner parcels open in read-only mode (no place/remove buttons shown).
+   */
+  private _openBuildingPanel(parcel: LandParcel): void {
+    if (this.buildingPanel?.isOpen()) {
+      this.buildingPanel.close();
+      if (this.buildingPanel['parcel']?.tokenId === parcel.tokenId) return;
+    }
+    const wsUrl = ((import.meta as Record<string, any>).env?.VITE_COLYSEUS_URL as string | undefined)
+      ?? 'ws://localhost:2567';
+    const serverUrl = wsUrl.replace('ws://', 'http://').replace('wss://', 'https://');
+    const walletAddress = this.wallet?.state.address ?? '';
+    const isOwner = !!walletAddress && this.ownedLandParcels.some(p => p.tokenId === parcel.tokenId);
+    this.buildingPanel = new BuildingPanel(this, parcel, isOwner, walletAddress, serverUrl);
+    this.buildingPanel.open();
+  }
+
+  /**
+   * Fetch buildings for the current zone from the server and render them as
+   * sprites on the parcel tiles.  Called once per zone entry.
+   * Only renders in zone_town where plot world coordinates are known.
+   */
+  private async _renderParcelBuildingsInWorld(): Promise<void> {
+    const zoneId = this.zone.id;
+    if (zoneId !== 'zone_town') return;   // other zones TBD in a future milestone
+
+    const wsUrl = ((import.meta as Record<string, any>).env?.VITE_COLYSEUS_URL as string | undefined)
+      ?? 'ws://localhost:2567';
+    const serverUrl = wsUrl.replace('ws://', 'http://').replace('wss://', 'https://');
+
+    let buildings: PlacedBuilding[] = [];
+    try {
+      const res = await fetch(`${serverUrl}/buildings/zone/${encodeURIComponent(zoneId)}`);
+      if (res.ok) buildings = (await res.json()) as PlacedBuilding[];
+    } catch {
+      // Non-fatal: world still renders without buildings if server is unreachable
+      return;
+    }
+
+    // HOUSING.TOWN_PLOTS gives us the world-pixel position of each plot.
+    const BUILDING_ICON_KEYS: Record<string, string> = {
+      house:  'building_house',
+      shop:   'building_shop',
+      garden: 'building_garden',
+    };
+
+    for (const b of buildings) {
+      const slot = HOUSING.TOWN_PLOTS[b.plotIndex];
+      if (!slot) continue;
+
+      // Anchor sprite to top-centre of the plot tile.
+      // Plot tile is 48×48 starting at (slot.x, slot.y).
+      const wx = slot.x + 24;   // centre of tile
+      const wy = slot.y + 2;    // just above the tile interior
+
+      const iconKey = BUILDING_ICON_KEYS[b.buildingType];
+      if (iconKey && this.textures.exists(iconKey)) {
+        this.add.image(wx, wy, iconKey)
+          .setOrigin(0.5, 1)
+          .setDisplaySize(24, 24)
+          .setDepth(3)
+          .setAlpha(0.92);
+      } else {
+        // Placeholder colored rectangle while art is loading
+        const COLORS: Record<string, number> = { house: 0x8b4513, shop: 0x4682b4, garden: 0x228b22 };
+        const color = COLORS[b.buildingType] ?? 0x888888;
+        this.add.rectangle(wx, wy, 16, 16, color, 0.85)
+          .setOrigin(0.5, 1)
+          .setDepth(3);
+      }
+    }
+  }
+
+  /** Refresh the ownedLandParcels cache from the blockchain (via server). */
+  private async _refreshOwnedParcels(): Promise<void> {
+    if (!this.wallet?.state.address) {
+      this.ownedLandParcels = [];
+      return;
+    }
+    try {
+      this.ownedLandParcels = await this.wallet.getOwnerParcels(this.wallet.state.address);
+    } catch {
+      this.ownedLandParcels = [];
+    }
   }
 
   /** Quick-travel to Player Town via the minimap "My Plot" button. */

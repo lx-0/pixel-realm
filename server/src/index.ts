@@ -16,6 +16,14 @@ import {
   WORLD_BOSS_DEFS,
 } from "./db/worldBoss";
 import { getDungeonCooldownRemainingDb } from "./db/cooldowns";
+import {
+  getParcelBuildings,
+  getBuildingsByZone,
+  placeBuilding,
+  removeBuilding,
+  VALID_BUILDING_TYPES,
+  type BuildingType,
+} from "./db/buildings";
 import { closeDb } from "./db/client";
 import { startAuthServer } from "./auth/fastify";
 import { runMigrations } from "./db/migrate";
@@ -123,6 +131,16 @@ import { startAlertLoop } from "./alerting";
 import { getPoolStats } from "./db/client";
 import { getRedis } from "./db/redis";
 import { getQuestPreviews } from "./quests/db";
+import {
+  mintItem,
+  mintItemBatch,
+  mintLand,
+  getNFTInventory,
+  getMarketplaceListings,
+  getListingsBySeller,
+  getLandParcelsByOwner,
+  getLandParcelByTokenId,
+} from "./db/blockchain";
 
 // ── DB bootstrap ──────────────────────────────────────────────────────────────
 
@@ -1773,6 +1791,328 @@ app.get("/world-boss/history", async (_req, res) => {
   } catch (err) {
     console.warn("[WorldBoss] history failed:", (err as Error).message);
     res.status(500).json({ error: "Failed to fetch boss history" });
+  }
+});
+
+// ── NFT / Blockchain endpoints (M14c) ─────────────────────────────────────────
+// These routes are only functional when blockchain env vars are configured.
+// They degrade gracefully (500) if the RPC / contract addresses are missing.
+
+// Known item type IDs for inventory queries (mirrors items seeded in DB)
+const ALL_ITEM_TYPE_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+/**
+ * GET /nft/inventory/:walletAddress
+ * Returns a player's NFT holdings (ERC-1155 items + ERC-721 land) from the chain.
+ */
+app.get("/nft/inventory/:walletAddress", async (req: Request, res: Response) => {
+  try {
+    const { walletAddress } = req.params;
+    const inventory = await getNFTInventory(walletAddress, ALL_ITEM_TYPE_IDS);
+    res.json(inventory);
+  } catch (err) {
+    console.warn("[NFT] inventory lookup failed:", (err as Error).message);
+    res.status(500).json({ error: "Blockchain query failed" });
+  }
+});
+
+/**
+ * POST /nft/mint-item
+ * Mint ERC-1155 item(s) to a player's wallet.
+ * Body: { walletAddress, itemTypeId, amount }
+ * Requires MINTER_PRIVATE_KEY env var.
+ */
+app.post("/nft/mint-item", adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { walletAddress, itemTypeId, amount } = req.body as {
+      walletAddress: string;
+      itemTypeId: number;
+      amount: number;
+    };
+    if (!walletAddress || !itemTypeId || !amount) {
+      return void res.status(400).json({ error: "walletAddress, itemTypeId, amount required" });
+    }
+    const result = await mintItem(walletAddress, itemTypeId, amount);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.warn("[NFT] mintItem failed:", (err as Error).message);
+    res.status(500).json({ error: "Mint failed" });
+  }
+});
+
+/**
+ * POST /nft/mint-item-batch
+ * Batch-mint multiple ERC-1155 item types to a player's wallet.
+ * Body: { walletAddress, itemTypeIds: number[], amounts: number[] }
+ */
+app.post("/nft/mint-item-batch", adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { walletAddress, itemTypeIds, amounts } = req.body as {
+      walletAddress: string;
+      itemTypeIds: number[];
+      amounts: number[];
+    };
+    if (!walletAddress || !Array.isArray(itemTypeIds) || !Array.isArray(amounts)) {
+      return void res.status(400).json({ error: "walletAddress, itemTypeIds[], amounts[] required" });
+    }
+    const result = await mintItemBatch(walletAddress, itemTypeIds, amounts);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.warn("[NFT] mintItemBatch failed:", (err as Error).message);
+    res.status(500).json({ error: "Batch mint failed" });
+  }
+});
+
+/**
+ * POST /nft/mint-land
+ * Mint an ERC-721 land plot to a player's wallet.
+ * Body: { walletAddress, zoneId, plotIndex }
+ */
+app.post("/nft/mint-land", adminAuth, async (req: Request, res: Response) => {
+  try {
+    const { walletAddress, zoneId, plotIndex } = req.body as {
+      walletAddress: string;
+      zoneId: string;
+      plotIndex: number;
+    };
+    if (!walletAddress || !zoneId || plotIndex === undefined) {
+      return void res.status(400).json({ error: "walletAddress, zoneId, plotIndex required" });
+    }
+    const result = await mintLand(walletAddress, zoneId, plotIndex);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.warn("[NFT] mintLand failed:", (err as Error).message);
+    res.status(500).json({ error: "Land mint failed" });
+  }
+});
+
+/**
+ * GET /nft/marketplace/listings?from=1&count=50
+ * Returns active marketplace listings from the blockchain.
+ */
+app.get("/nft/marketplace/listings", async (req: Request, res: Response) => {
+  try {
+    const from = parseInt(String(req.query.from ?? "1"), 10) || 1;
+    const count = Math.min(parseInt(String(req.query.count ?? "50"), 10) || 50, 200);
+    const listings = await getMarketplaceListings(from, count);
+    res.json({ listings });
+  } catch (err) {
+    console.warn("[NFT] getMarketplaceListings failed:", (err as Error).message);
+    res.status(500).json({ error: "Marketplace query failed" });
+  }
+});
+
+/**
+ * GET /nft/marketplace/listings/:sellerAddress
+ * Returns active listings for a specific seller.
+ */
+app.get("/nft/marketplace/listings/:sellerAddress", async (req: Request, res: Response) => {
+  try {
+    const { sellerAddress } = req.params;
+    const listings = await getListingsBySeller(sellerAddress);
+    res.json({ listings });
+  } catch (err) {
+    console.warn("[NFT] getListingsBySeller failed:", (err as Error).message);
+    res.status(500).json({ error: "Marketplace query failed" });
+  }
+});
+
+// ── NFT Land Parcel endpoints (M14d) ──────────────────────────────────────────
+
+/**
+ * GET /nft/land/parcels/:walletAddress
+ * Returns all ERC-721 land parcels owned by a wallet address.
+ */
+app.get("/nft/land/parcels/:walletAddress", async (req: Request, res: Response) => {
+  try {
+    const { walletAddress } = req.params;
+    const parcels = await getLandParcelsByOwner(walletAddress);
+    res.json({ parcels });
+  } catch (err) {
+    console.warn("[NFT] getLandParcelsByOwner failed:", (err as Error).message);
+    res.status(500).json({ error: "Land parcel query failed" });
+  }
+});
+
+/**
+ * GET /nft/land/parcel/:tokenId
+ * Returns details for a specific land parcel token.
+ */
+app.get("/nft/land/parcel/:tokenId", async (req: Request, res: Response) => {
+  try {
+    const { tokenId } = req.params;
+    const parcel = await getLandParcelByTokenId(tokenId);
+    res.json(parcel);
+  } catch (err) {
+    console.warn("[NFT] getLandParcelByTokenId failed:", (err as Error).message);
+    res.status(500).json({ error: "Land parcel query failed" });
+  }
+});
+
+/**
+ * POST /nft/land/claim
+ * Authenticated endpoint for a player to claim (mint) a land parcel.
+ * Body: { walletAddress, zoneId, plotIndex }
+ * Requires player JWT auth; server mints the NFT on their behalf.
+ */
+app.post("/nft/land/claim", playerAuth, async (req: Request, res: Response) => {
+  try {
+    const { walletAddress, zoneId, plotIndex } = req.body as {
+      walletAddress: string;
+      zoneId: string;
+      plotIndex: number;
+    };
+    if (!walletAddress || !zoneId || plotIndex === undefined) {
+      return void res.status(400).json({ error: "walletAddress, zoneId, plotIndex required" });
+    }
+    // Validate address format
+    if (!/^0x[0-9a-fA-F]{40}$/.test(walletAddress)) {
+      return void res.status(400).json({ error: "Invalid wallet address" });
+    }
+    const result = await mintLand(walletAddress, zoneId, plotIndex);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    const msg = (err as Error).message ?? "Unknown error";
+    console.warn("[NFT] land claim failed:", msg);
+    if (msg.includes("TokenAlreadyMinted")) {
+      return void res.status(409).json({ error: "That land parcel is already claimed" });
+    }
+    res.status(500).json({ error: "Land claim failed" });
+  }
+});
+
+// ── Parcel Buildings endpoints (M14e / PIX-172) ───────────────────────────────
+// Client-side persistence for exterior building structures on NFT land parcels.
+// Ownership is verified on-chain when LAND_CONTRACT_ADDRESS is configured;
+// skipped gracefully in local dev (no RPC configured).
+
+/**
+ * GET /buildings/parcel/:tokenId
+ * Returns all buildings placed on the given ERC-721 land parcel.
+ */
+app.get("/buildings/parcel/:tokenId", async (req: Request, res: Response) => {
+  const { tokenId } = req.params as { tokenId: string };
+  if (!tokenId || tokenId.length > 100) {
+    return void res.status(400).json({ error: "Invalid tokenId" });
+  }
+  try {
+    const buildings = await getParcelBuildings(tokenId);
+    res.json(buildings);
+  } catch (err) {
+    console.warn("[Buildings] getParcelBuildings failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch buildings" });
+  }
+});
+
+/**
+ * GET /buildings/zone/:zoneId
+ * Returns all buildings in a zone — used by visiting players to render
+ * structures on parcels they don't own.
+ */
+app.get("/buildings/zone/:zoneId", async (req: Request, res: Response) => {
+  const { zoneId } = req.params as { zoneId: string };
+  if (!zoneId || zoneId.length > 50) {
+    return void res.status(400).json({ error: "Invalid zoneId" });
+  }
+  try {
+    const buildings = await getBuildingsByZone(zoneId);
+    res.json(buildings);
+  } catch (err) {
+    console.warn("[Buildings] getBuildingsByZone failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to fetch zone buildings" });
+  }
+});
+
+/**
+ * POST /buildings/parcel/:tokenId
+ * Place a building on a parcel.
+ * Body: { buildingType: 'house' | 'shop' | 'garden', walletAddress: string, zoneId: string, plotIndex: number }
+ * Verifies on-chain ownership when blockchain is configured.
+ */
+app.post("/buildings/parcel/:tokenId", async (req: Request, res: Response) => {
+  const { tokenId } = req.params as { tokenId: string };
+  const { buildingType, walletAddress, zoneId, plotIndex } = req.body as {
+    buildingType?: string;
+    walletAddress?: string;
+    zoneId?: string;
+    plotIndex?: number;
+  };
+
+  if (!tokenId || tokenId.length > 100) {
+    return void res.status(400).json({ error: "Invalid tokenId" });
+  }
+  if (!buildingType || !VALID_BUILDING_TYPES.includes(buildingType as BuildingType)) {
+    return void res.status(400).json({ error: "buildingType must be 'house', 'shop', or 'garden'" });
+  }
+  if (!walletAddress || !/^0x[0-9a-fA-F]{40}$/.test(walletAddress)) {
+    return void res.status(400).json({ error: "Valid walletAddress required" });
+  }
+  if (!zoneId || zoneId.length > 50 || plotIndex === undefined || typeof plotIndex !== "number") {
+    return void res.status(400).json({ error: "zoneId and plotIndex required" });
+  }
+
+  // Verify on-chain ownership when the land contract is configured.
+  if (process.env.LAND_CONTRACT_ADDRESS) {
+    try {
+      const parcel = await getLandParcelByTokenId(tokenId);
+      if (parcel.owner.toLowerCase() !== walletAddress.toLowerCase()) {
+        return void res.status(403).json({ error: "Not the parcel owner" });
+      }
+    } catch (err) {
+      console.warn("[Buildings] ownership check failed:", (err as Error).message);
+      return void res.status(500).json({ error: "Ownership verification failed" });
+    }
+  }
+
+  try {
+    const building = await placeBuilding(tokenId, zoneId, plotIndex, buildingType as BuildingType);
+    res.status(201).json(building);
+  } catch (err) {
+    const msg = (err as Error).message;
+    if (msg === "AlreadyPlaced") {
+      return void res.status(409).json({ error: "A building of this type already exists on this parcel" });
+    }
+    console.warn("[Buildings] placeBuilding failed:", msg);
+    res.status(500).json({ error: "Failed to place building" });
+  }
+});
+
+/**
+ * DELETE /buildings/parcel/:tokenId/:buildingId
+ * Remove a building from a parcel.
+ * Body: { walletAddress: string }
+ * Verifies on-chain ownership when blockchain is configured.
+ */
+app.delete("/buildings/parcel/:tokenId/:buildingId", async (req: Request, res: Response) => {
+  const { tokenId, buildingId } = req.params as { tokenId: string; buildingId: string };
+  const { walletAddress } = req.body as { walletAddress?: string };
+
+  if (!tokenId || tokenId.length > 100 || !buildingId || buildingId.length > 100) {
+    return void res.status(400).json({ error: "Invalid tokenId or buildingId" });
+  }
+  if (!walletAddress || !/^0x[0-9a-fA-F]{40}$/.test(walletAddress)) {
+    return void res.status(400).json({ error: "Valid walletAddress required" });
+  }
+
+  // Verify on-chain ownership when the land contract is configured.
+  if (process.env.LAND_CONTRACT_ADDRESS) {
+    try {
+      const parcel = await getLandParcelByTokenId(tokenId);
+      if (parcel.owner.toLowerCase() !== walletAddress.toLowerCase()) {
+        return void res.status(403).json({ error: "Not the parcel owner" });
+      }
+    } catch (err) {
+      console.warn("[Buildings] ownership check failed:", (err as Error).message);
+      return void res.status(500).json({ error: "Ownership verification failed" });
+    }
+  }
+
+  try {
+    await removeBuilding(buildingId);
+    res.json({ ok: true });
+  } catch (err) {
+    console.warn("[Buildings] removeBuilding failed:", (err as Error).message);
+    res.status(500).json({ error: "Failed to remove building" });
   }
 });
 
