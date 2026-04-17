@@ -46,24 +46,24 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_arena_defeat',            'assets/bg_arena_defeat.png');
 
     // ── Housing furniture sprites (16×16) ─────────────────────────────────────
-    this.load.image('furn_bed',            'assets/sprite_furn_bed.png');
-    this.load.image('furn_table',          'assets/sprite_furn_table.png');
-    this.load.image('furn_chair',          'assets/sprite_furn_chair.png');
-    this.load.image('furn_chest',          'assets/sprite_furn_chest.png');
-    this.load.image('furn_shelf',          'assets/sprite_furn_shelf.png');
-    this.load.image('furn_rug',            'assets/sprite_furn_rug.png');
-    this.load.image('furn_lamp',           'assets/sprite_furn_lamp.png');
-    this.load.image('furn_fireplace',      'assets/sprite_furn_fireplace.png');
-    this.load.image('furn_crafting_bench', 'assets/sprite_furn_crafting_bench.png');
-    this.load.image('furn_cooking_pot',    'assets/sprite_furn_cooking_pot.png');
+    this.load.image('furn_bed',            'assets/sprites/housing/sprite_furn_bed.png');
+    this.load.image('furn_table',          'assets/sprites/housing/sprite_furn_table.png');
+    this.load.image('furn_chair',          'assets/sprites/housing/sprite_furn_chair.png');
+    this.load.image('furn_chest',          'assets/sprites/housing/sprite_furn_chest.png');
+    this.load.image('furn_shelf',          'assets/sprites/housing/sprite_furn_shelf.png');
+    this.load.image('furn_rug',            'assets/sprites/housing/sprite_furn_rug.png');
+    this.load.image('furn_lamp',           'assets/sprites/housing/sprite_furn_lamp.png');
+    this.load.image('furn_fireplace',      'assets/sprites/housing/sprite_furn_fireplace.png');
+    this.load.image('furn_crafting_bench', 'assets/sprites/housing/sprite_furn_crafting_bench.png');
+    this.load.image('furn_cooking_pot',    'assets/sprites/housing/sprite_furn_cooking_pot.png');
 
     // ── Housing decoration sprites (16×16) ────────────────────────────────────
-    this.load.image('decor_painting', 'assets/sprite_decor_painting.png');
-    this.load.image('decor_plant',    'assets/sprite_decor_plant.png');
-    this.load.image('decor_trophy',   'assets/sprite_decor_trophy.png');
-    this.load.image('decor_pet_bed',  'assets/sprite_decor_pet_bed.png');
-    this.load.image('decor_banner',   'assets/sprite_decor_banner.png');
-    this.load.image('decor_candles',  'assets/sprite_decor_candles.png');
+    this.load.image('decor_painting', 'assets/sprites/housing/sprite_decor_painting.png');
+    this.load.image('decor_plant',    'assets/sprites/housing/sprite_decor_plant.png');
+    this.load.image('decor_trophy',   'assets/sprites/housing/sprite_decor_trophy.png');
+    this.load.image('decor_pet_bed',  'assets/sprites/housing/sprite_decor_pet_bed.png');
+    this.load.image('decor_banner',   'assets/sprites/housing/sprite_decor_banner.png');
+    this.load.image('decor_candles',  'assets/sprites/housing/sprite_decor_candles.png');
 
     // ── Companion pet sprites (12×12 each) ───────────────────────────────────
     this.load.image('pet_wolf',         'assets/pets/pet_wolf.png');
