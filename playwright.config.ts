@@ -28,14 +28,18 @@ export default defineConfig({
 
   use: {
     /* Base URL for client tests */
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:5173',
     /* Capture traces on first retry for debugging */
     trace: 'on-first-retry',
     /* Screenshot on failure */
     screenshot: 'only-on-failure',
-    /* Allow Phaser to use WebGL in headless mode */
+    /* Container-friendly Chrome flags. */
     launchOptions: {
-      args: ['--disable-web-security', '--no-sandbox'],
+      args: [
+        '--disable-web-security',
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+      ],
     },
   },
 
@@ -62,7 +66,7 @@ export default defineConfig({
   /* Auto-start Vite dev server for client tests */
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
+    url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
     stdout: 'pipe',
@@ -72,7 +76,7 @@ export default defineConfig({
   /* Pass auth URL to tests */
   globalSetup: undefined,
   expect: {
-    timeout: 15_000,
+    timeout: 20_000,
   },
-  timeout: 60_000,
+  timeout: 120_000,
 });

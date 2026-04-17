@@ -24,8 +24,17 @@ initI18n();
 // Initialise telemetry (sets up global error handlers, opt-out support)
 TelemetryClient.init();
 
+// Force Canvas2D renderer when the E2E test harness requests it.
+// Tests set window.__pixelrealm_force_canvas = true via page.addInitScript()
+// so it is already present before this module executes.
+const rendererType =
+  (typeof window !== 'undefined' &&
+    (window as unknown as Record<string, unknown>).__pixelrealm_force_canvas)
+    ? Phaser.CANVAS
+    : Phaser.AUTO;
+
 const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
+  type: rendererType,
   width: CANVAS.WIDTH,
   height: CANVAS.HEIGHT,
   backgroundColor: '#0a0a0a',

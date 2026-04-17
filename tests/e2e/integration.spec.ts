@@ -20,6 +20,14 @@
 
 import { test, expect, type Page } from '@playwright/test';
 
+// Force Phaser to use the Canvas2D renderer in every test to avoid WebGL
+// context accumulation that crashes the headless Chrome process after ~4 tests.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as unknown as Record<string, unknown>).__pixelrealm_force_canvas = true;
+  });
+});
+
 // ── Shared helpers (mirror smoke.spec.ts to stay self-contained) ──────────────
 
 const BASE_TIMEOUT = 25_000;
