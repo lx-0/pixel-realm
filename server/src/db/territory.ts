@@ -22,9 +22,8 @@ import {
   guilds,
   guildMemberships,
 } from "./schema";
-// nextWarWindow is defined in the shared client config to keep it DB-free and testable
-import { nextWarWindow as _nextWarWindow } from "../../../src/config/territory";
-export { nextWarWindow } from "../../../src/config/territory";
+// nextWarWindow lives in server/src/config/territory so the server rootDir is respected
+export { nextWarWindow } from "../config/territory";
 
 // ── Public types ──────────────────────────────────────────────────────────────
 

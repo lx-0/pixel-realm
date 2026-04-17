@@ -178,16 +178,16 @@ export class WorldBossRoom extends Room<WorldBossState> {
   // ── Player init ─────────────────────────────────────────────────────────────
 
   private async initPlayer(client: Client, auth: AuthPayload): Promise<void> {
-    let ps = await loadPlayerState(auth.sub);
-    if (!ps) ps = await initPlayerState(auth.sub);
+    let ps = await loadPlayerState(auth.userId);
+    if (!ps) ps = await initPlayerState(auth.userId);
 
     let guildId = "";
     let guildTag = "";
     try {
-      const membership = await getPlayerGuild(auth.sub);
+      const membership = await getPlayerGuild(auth.userId);
       if (membership) {
-        guildId = membership.guild.id;
-        guildTag = membership.guild.tag;
+        guildId = membership.guildId;
+        guildTag = membership.guildTag;
       }
     } catch { /* non-fatal */ }
 
@@ -203,14 +203,14 @@ export class WorldBossRoom extends Room<WorldBossState> {
     this.state.players.set(client.sessionId, player);
 
     // Ensure participant entry exists in state
-    if (!this.state.participants.has(auth.sub)) {
+    if (!this.state.participants.has(auth.userId)) {
       const p = new WorldBossParticipant();
-      p.playerId = auth.sub;
+      p.playerId = auth.userId;
       p.username = auth.username;
       p.damageDealt = 0;
       p.guildId = guildId;
       p.guildTag = guildTag;
-      this.state.participants.set(auth.sub, p);
+      this.state.participants.set(auth.userId, p);
     }
   }
 
@@ -235,10 +235,10 @@ export class WorldBossRoom extends Room<WorldBossState> {
     const player = this.state.players.get(client.sessionId);
     const guildId = player?.guildId || null;
 
-    const result = await applyBossDamage(this.instanceId, auth.sub, rawDamage, guildId);
+    const result = await applyBossDamage(this.instanceId, auth.userId, rawDamage, guildId);
 
     // Update in-room contribution counter
-    const participant = this.state.participants.get(auth.sub);
+    const participant = this.state.participants.get(auth.userId);
     if (participant) {
       participant.damageDealt += rawDamage;
       participant.tier = result.currentHp / result.maxHp >= 0.10
@@ -265,7 +265,7 @@ export class WorldBossRoom extends Room<WorldBossState> {
 
     // Broadcast the hit to all clients for visual feedback
     this.broadcast("boss_hit", {
-      playerId: auth.sub,
+      playerId: auth.userId,
       username: auth.username,
       damage: rawDamage,
       currentHp: result.currentHp,
