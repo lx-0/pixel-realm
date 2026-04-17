@@ -1,0 +1,26 @@
+# PixelRealm Colyseus game server — Railway deployment config
+# Root directory: server/
+#
+# Required environment variables (set in Railway dashboard):
+#   PORT=2567                                    game server port
+#   AUTH_PORT=3001                               auth server port
+#   JWT_SECRET=<generate via: openssl rand -hex 32>
+#   DATABASE_URL=${{Postgres.DATABASE_URL}}      Railway Postgres reference
+#   REDIS_URL=${{Redis.REDIS_URL}}               Railway Redis reference
+#   ALLOWED_ORIGINS=https://lx-0.github.io,...  comma-separated CORS origins
+#   NODE_ENV=production
+#
+# Optional:
+#   ANTHROPIC_API_KEY=sk-ant-...                 LLM quest generation
+#   ADMIN_USERNAMES=admin,...                    comma-separated admin usernames
+#   LOG_LEVEL=info
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
