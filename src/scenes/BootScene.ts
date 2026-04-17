@@ -22,28 +22,28 @@ export class BootScene extends Phaser.Scene {
     // ── Core sprites ─────────────────────────────────────────────────────────
     // player: 14 frames × 16px = 224×24  (idle:0-1, walk:2-5, attack:6-9, death:10-13)
     // enemy : 12 frames × 16px = 192×24  (idle:0-1, walk:2-5, attack:6-9, death:10-11)
-    this.load.spritesheet('player', 'assets/char_player_warrior.png', { frameWidth: 16, frameHeight: 24 });
-    this.load.spritesheet('enemy',  'assets/char_enemy_goblin.png',   { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('player', 'assets/sprites/characters/char_player_warrior.png', { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('enemy',  'assets/sprites/characters/char_enemy_goblin.png',   { frameWidth: 16, frameHeight: 24 });
 
     // Pickups used in GameScene
-    this.load.image('pickup',      'assets/icon_pickup_xp.png');
-    this.load.image('pickup_coin', 'assets/icon_pickup_coin.png');
+    this.load.image('pickup',      'assets/sprites/pickups/icon_pickup_xp.png');
+    this.load.image('pickup_coin', 'assets/sprites/pickups/icon_pickup_coin.png');
 
     // ── Skill tree UI ─────────────────────────────────────────────────────────
     // ui_icon_skill is the fallback badge; archetype badges are used per class
-    this.load.image('ui_icon_skill',              'assets/ui_icon_skill.png');
+    this.load.image('ui_icon_skill',              'assets/ui/skill_tree/ui_icon_skill.png');
     this.load.image('ui_archetype_badge_warrior', 'assets/ui/skill_tree/ui_archetype_badge_warrior.png');
     this.load.image('ui_archetype_badge_mage',    'assets/ui/skill_tree/ui_archetype_badge_mage.png');
     this.load.image('ui_archetype_badge_ranger',  'assets/ui/skill_tree/ui_archetype_badge_ranger.png');
     this.load.image('ui_archetype_badge_artisan', 'assets/ui/skill_tree/ui_class_emblem_artisan.png');
 
     // ── PvP Arena ─────────────────────────────────────────────────────────────
-    this.load.image('tileset_arena_gladiator',    'assets/tileset_arena_gladiator.png');
-    this.load.image('tileset_arena_shadow',       'assets/tileset_arena_shadow.png');
-    this.load.image('ui_arena_hud',               'assets/ui_arena_hud.png');
-    this.load.image('ui_panel_arena_leaderboard', 'assets/ui_panel_arena_leaderboard.png');
-    this.load.image('bg_arena_victory',           'assets/bg_arena_victory.png');
-    this.load.image('bg_arena_defeat',            'assets/bg_arena_defeat.png');
+    this.load.image('tileset_arena_gladiator',    'assets/tilesets/tileset_arena_gladiator.png');
+    this.load.image('tileset_arena_shadow',       'assets/tilesets/tileset_arena_shadow.png');
+    this.load.image('ui_arena_hud',               'assets/ui/arena/ui_arena_hud.png');
+    this.load.image('ui_panel_arena_leaderboard', 'assets/ui/arena/ui_panel_arena_leaderboard.png');
+    this.load.image('bg_arena_victory',           'assets/backgrounds/bg_arena_victory.png');
+    this.load.image('bg_arena_defeat',            'assets/backgrounds/bg_arena_defeat.png');
 
     // ── Housing furniture sprites (16×16) ─────────────────────────────────────
     this.load.image('furn_bed',            'assets/sprites/housing/sprite_furn_bed.png');
