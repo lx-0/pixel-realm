@@ -332,59 +332,53 @@ test('6 · combat — attacking an enemy awards XP', async ({ page }) => {
   // which are unreliable in headless containers; bypassing the keyboard entirely is
   // the only reliable approach.  TypeScript private is compile-time only — at JS
   // runtime we can call gs['handleAttack'] directly.
-  await page.evaluate(() => {
+  // Attack the enemy and verify combat in ONE evaluate to avoid race with new enemy spawns.
+  // The combat system awards XP via gs.kills and gs.sessionStats.damageDealt.
+  // We record kills/damageDealt BEFORE the attack and confirm they increased AFTER —
+  // this is immune to the "new enemies spawned before the check" timing race.
+  const combatWorking = await page.evaluate(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const game = (window as any).__pixelrealm;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const gs = game?.scene?.getScene?.('GameScene') as any;
-    if (!gs) return;
+    if (!gs) return false;
 
-    // Teleport an active enemy directly onto the player (well within 36 px range).
+    // Snapshot session stats before attack so we can detect any increase.
+    const killsBefore: number   = gs.kills ?? 0;
+    const dmgBefore:   number   = gs.sessionStats?.damageDealt ?? 0;
+    const hitsBefore:  number   = gs.sessionStats?.totalHits   ?? 0;
+
+    // Teleport first active enemy onto the player (well within ATTACK_RANGE_PX = 36 px).
     const enemy = gs.enemies?.getChildren?.().find((e: { active?: boolean }) => e.active);
+    if (!enemy) return false;
     const px: number = gs.player?.x ?? 160;
     const py: number = gs.player?.y ?? 90;
-    if (enemy?.setPosition) enemy.setPosition(px + 4, py);
+    enemy.setPosition(px + 4, py);
 
-    // Fire 3 attacks by resetting the cooldown timer and spoofing JustDown each time.
+    // Fire 3 attacks: reset cooldown + spoof Phaser's JustDown flag each time.
     const now: number = gs.time?.now ?? 5000;
     for (let i = 0; i < 3; i++) {
-      gs.lastAttackTime = 0;          // bypass attack cooldown
-      if (gs.attackKey) gs.attackKey._justDown = true;   // make JustDown return true
-      if (typeof gs.handleAttack === 'function') {
-        gs.handleAttack(now + i * 600); // advance time > 480 ms cooldown per call
-      }
+      gs.lastAttackTime = 0;
+      if (gs.attackKey) gs.attackKey._justDown = true;
+      if (typeof gs.handleAttack === 'function') gs.handleAttack(now + i * 600);
     }
+
+    // Check session stats immediately (same JS turn — no race with spawns).
+    if ((gs.kills ?? 0) > killsBefore)                          return true;
+    if ((gs.sessionStats?.damageDealt ?? 0) > dmgBefore)       return true;
+    if ((gs.sessionStats?.totalHits   ?? 0) > hitsBefore)      return true;
+
+    // Also check if the specific enemy we attacked took damage or was destroyed.
+    if (!enemy.active) return true;  // destroyed = killed
+    const extra = enemy.getData?.('extra');
+    if (extra && typeof extra.hp === 'number' && typeof extra.maxHp === 'number') {
+      if (extra.hp < extra.maxHp) return true;
+    }
+
+    return false;
   });
 
-  // Check whether any enemy took damage (live game-state check — most reliable).
-  // HP is stored per-sprite via Phaser's data manager key 'extra'.
-  const combatWorking = await page.evaluate(() => {
-    const game = (window as Record<string, unknown>).__pixelrealm as
-      { scene?: { getScene?: (key: string) => Record<string, unknown> | null } } | undefined;
-    const gs = game?.scene?.getScene?.('GameScene') as
-      { enemies?: { getChildren?: () => Array<unknown> } } | null;
-    const children = gs?.enemies?.getChildren?.() ?? [];
-    for (const enemy of children) {
-      const extra = (enemy as { getData?: (k: string) => { hp?: number; maxHp?: number } | undefined })
-        .getData?.('extra');
-      if (extra && typeof extra.hp === 'number' && typeof extra.maxHp === 'number') {
-        if (extra.hp < extra.maxHp) return true;  // enemy took damage
-        if (extra.hp <= 0) return true;            // enemy killed
-      }
-    }
-    // Also accept if enemies were cleared (all killed → wave cleared)
-    return (gs?.enemies?.getChildren?.()?.length ?? -1) === 0;
-  });
-  if (!combatWorking) {
-    // Fallback: also accept XP in localStorage (written when enemy is killed and save flushes)
-    const xpRaw = await page.evaluate(() => {
-      try {
-        const raw = localStorage.getItem('pixelrealm_save_v1');
-        return raw ? (JSON.parse(raw) as { playerXP?: number }).playerXP ?? 0 : 0;
-      } catch { return 0; }
-    });
-    expect(xpRaw, 'Combat did not register: no enemy HP reduction and no XP in localStorage').toBeGreaterThan(0);
-  }
+  expect(combatWorking, 'Combat did not register: kills/damage/HP unchanged after attack').toBe(true);
 });
 
 // ── Test: 7 — Inventory ───────────────────────────────────────────────────────

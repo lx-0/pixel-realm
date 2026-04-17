@@ -33,12 +33,18 @@ export default defineConfig({
     trace: 'on-first-retry',
     /* Screenshot on failure */
     screenshot: 'only-on-failure',
-    /* Container-friendly Chrome flags. */
+    /* Container-friendly Chrome flags.
+     * --disable-gpu        : skip GPU process (saves ~10 PIDs)
+     * --no-zygote          : skip zygote pre-fork helper
+     * --disable-dev-shm-usage: use /tmp instead of /dev/shm
+     */
     launchOptions: {
       args: [
         '--disable-web-security',
         '--no-sandbox',
         '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-zygote',
       ],
     },
   },
