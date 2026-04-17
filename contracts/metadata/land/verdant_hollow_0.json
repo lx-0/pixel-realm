@@ -1,0 +1,14 @@
+{
+  "name": "Pixel Realm Land — Verdant Hollow #0",
+  "description": "A lush plot of land nestled in the Verdant Hollow zone of Pixel Realm. Landowners can build structures, host events, and earn in-game revenue from visitors.",
+  "image": "ipfs://QmPLACEHOLDER_LAND_CID/verdant_hollow/0.png",
+  "external_url": "https://pixelrealm.gg/land/verdant_hollow/0",
+  "attributes": [
+    { "trait_type": "Zone",        "value": "Verdant Hollow" },
+    { "trait_type": "Zone ID",     "value": "zone1" },
+    { "trait_type": "Plot Index",  "value": "0" },
+    { "trait_type": "Biome",       "value": "Forest" },
+    { "trait_type": "Rarity",      "value": "Common" },
+    { "display_type": "number", "trait_type": "Plot Size (tiles)", "value": 16 }
+  ]
+}

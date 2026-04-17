@@ -1,0 +1,12 @@
+{
+  "_comment": "Template for new item types. Replace all PLACEHOLDER values.",
+  "name": "ITEM_NAME",
+  "description": "ITEM_DESCRIPTION",
+  "image": "ipfs://QmPLACEHOLDER_ITEMS_CID/SPRITE_FILENAME.png",
+  "external_url": "https://pixelrealm.gg/items/ITEM_TYPE_ID",
+  "attributes": [
+    { "trait_type": "Category",   "value": "Weapon | Armor | Consumable | Material | Seasonal" },
+    { "trait_type": "Rarity",     "value": "Common | Uncommon | Rare | Epic | Legendary" },
+    { "display_type": "number", "trait_type": "STAT_NAME", "value": 0 }
+  ]
+}

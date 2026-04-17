@@ -1,0 +1,14 @@
+{
+  "name": "Iron Sword",
+  "description": "A sturdy iron sword forged in the smithies of Pixel Realm. Reliable for early adventures.",
+  "image": "ipfs://QmPLACEHOLDER_ITEMS_CID/sword_iron.png",
+  "external_url": "https://pixelrealm.gg/items/1",
+  "attributes": [
+    { "trait_type": "Category",   "value": "Weapon" },
+    { "trait_type": "Weapon Type","value": "Sword" },
+    { "trait_type": "Material",   "value": "Iron" },
+    { "trait_type": "Rarity",     "value": "Common" },
+    { "display_type": "number", "trait_type": "Attack",  "value": 12 },
+    { "display_type": "number", "trait_type": "Durability", "value": 80 }
+  ]
+}
